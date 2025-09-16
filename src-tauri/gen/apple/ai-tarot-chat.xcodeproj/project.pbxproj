@@ -1,0 +1,489 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		186D57015402A8ACAF4276B8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50204C2931E832B8594EFF78 /* CoreGraphics.framework */; };
+		1B7A7B84544CE51A84A5901D /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 57FABD941F301F6E8F2A932C /* libapp.a */; };
+		2409FE90130AE362FEBB8AAA /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4EC14C8203DB0E15866FEA49 /* main.mm */; };
+		39450C9BD7D8F41EE5EAEF30 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DA36807AEF2044FB25FD497 /* WebKit.framework */; };
+		525DB7CBFB418BE73DF6F44C /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D9A8A6D4B2EC95E4779FDD10 /* libapp.a */; };
+		55ECD7423F4497BE135A9ED0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E811AF693ACD74A431916DB2 /* QuartzCore.framework */; };
+		6E81DE64E60685B4B6DF4CA4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD59AB7074DC23B22B000540 /* Assets.xcassets */; };
+		735886FD467076F990A61185 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95B28D595386437D20A76CCC /* MetalKit.framework */; };
+		82D033400D9B41E2F972FF68 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 523D6F51E469F4D3D8D6968A /* UIKit.framework */; };
+		9D4B4D37608A52CBBDE8F83C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B03D045DC8D87EB85259F22 /* LaunchScreen.storyboard */; };
+		A5249977CA73B3D2B3CE238F /* assets in Resources */ = {isa = PBXBuildFile; fileRef = CDE37EED6E123071AA6BA68A /* assets */; };
+		C8DB7EDB632FFA0BDB020ED3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D577C2746201F60545EBE76 /* Security.framework */; };
+		FD964312DCABF6BCEA8EAA90 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C4036F302E437919962F403 /* Metal.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		12EC2D6D3D670A6AE29D4632 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		1A6F1FE7377E789A9DCF39B0 /* ai-tarot-chat_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ai-tarot-chat_iOS.entitlements"; sourceTree = "<group>"; };
+		1B03D045DC8D87EB85259F22 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3BACE8009BDFA10E8DDD61DD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3DA36807AEF2044FB25FD497 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		42DDE40CDB845A0C8FDD5887 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		4817CDAE86509F48F1194505 /* ai-tarot-chat_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "ai-tarot-chat_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EC14C8203DB0E15866FEA49 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		4FE3C59A11D312272BC17236 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		50204C2931E832B8594EFF78 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		523D6F51E469F4D3D8D6968A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		57FABD941F301F6E8F2A932C /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		5C4036F302E437919962F403 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		95B28D595386437D20A76CCC /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		9D577C2746201F60545EBE76 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		BD59AB7074DC23B22B000540 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CDE37EED6E123071AA6BA68A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		D9A8A6D4B2EC95E4779FDD10 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		E811AF693ACD74A431916DB2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A0DBB58D3D9C270961345B99 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				525DB7CBFB418BE73DF6F44C /* libapp.a in Frameworks */,
+				186D57015402A8ACAF4276B8 /* CoreGraphics.framework in Frameworks */,
+				FD964312DCABF6BCEA8EAA90 /* Metal.framework in Frameworks */,
+				735886FD467076F990A61185 /* MetalKit.framework in Frameworks */,
+				55ECD7423F4497BE135A9ED0 /* QuartzCore.framework in Frameworks */,
+				C8DB7EDB632FFA0BDB020ED3 /* Security.framework in Frameworks */,
+				82D033400D9B41E2F972FF68 /* UIKit.framework in Frameworks */,
+				39450C9BD7D8F41EE5EAEF30 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3ED0D8A5218CA2DABDAA482F /* src */ = {
+			isa = PBXGroup;
+			children = (
+				4FE3C59A11D312272BC17236 /* lib.rs */,
+				12EC2D6D3D670A6AE29D4632 /* main.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		42EA515DD8D142FB7EE2CF7F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				50204C2931E832B8594EFF78 /* CoreGraphics.framework */,
+				D9A8A6D4B2EC95E4779FDD10 /* libapp.a */,
+				5C4036F302E437919962F403 /* Metal.framework */,
+				95B28D595386437D20A76CCC /* MetalKit.framework */,
+				E811AF693ACD74A431916DB2 /* QuartzCore.framework */,
+				9D577C2746201F60545EBE76 /* Security.framework */,
+				523D6F51E469F4D3D8D6968A /* UIKit.framework */,
+				3DA36807AEF2044FB25FD497 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4E1CAD96B34958AC5EDCF97F /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				57FABD941F301F6E8F2A932C /* libapp.a */,
+			);
+			path = debug;
+			sourceTree = "<group>";
+		};
+		65DE3EB6B7CE2A2209EAEC7D = {
+			isa = PBXGroup;
+			children = (
+				CDE37EED6E123071AA6BA68A /* assets */,
+				BD59AB7074DC23B22B000540 /* Assets.xcassets */,
+				1B03D045DC8D87EB85259F22 /* LaunchScreen.storyboard */,
+				74C139C7CD73D3A5DADE1297 /* ai-tarot-chat_iOS */,
+				804C2F21E086B4760CB48B06 /* Externals */,
+				B10BC6C6144A0EBE12FF8A94 /* Sources */,
+				3ED0D8A5218CA2DABDAA482F /* src */,
+				42EA515DD8D142FB7EE2CF7F /* Frameworks */,
+				FDD92D253009A0FC081716CE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		71FD3A77B66C78126D5B673E /* ai-tarot-chat */ = {
+			isa = PBXGroup;
+			children = (
+				4EC14C8203DB0E15866FEA49 /* main.mm */,
+				F7A89E63F719EDB42B8F91F7 /* bindings */,
+			);
+			path = "ai-tarot-chat";
+			sourceTree = "<group>";
+		};
+		74C139C7CD73D3A5DADE1297 /* ai-tarot-chat_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				1A6F1FE7377E789A9DCF39B0 /* ai-tarot-chat_iOS.entitlements */,
+				3BACE8009BDFA10E8DDD61DD /* Info.plist */,
+			);
+			path = "ai-tarot-chat_iOS";
+			sourceTree = "<group>";
+		};
+		804C2F21E086B4760CB48B06 /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+				917C2BD94B5A5F6E2335DE7F /* arm64 */,
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		917C2BD94B5A5F6E2335DE7F /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				4E1CAD96B34958AC5EDCF97F /* debug */,
+			);
+			path = arm64;
+			sourceTree = "<group>";
+		};
+		B10BC6C6144A0EBE12FF8A94 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				71FD3A77B66C78126D5B673E /* ai-tarot-chat */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		F7A89E63F719EDB42B8F91F7 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				42DDE40CDB845A0C8FDD5887 /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		FDD92D253009A0FC081716CE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4817CDAE86509F48F1194505 /* ai-tarot-chat_iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		"TEMP_AE762D02-5D5B-4D05-9C23-7F3273D8728E" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A356AF575D9BF88B60D06E71 /* ai-tarot-chat_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C6D84569B360F78E4BFDE043 /* Build configuration list for PBXNativeTarget "ai-tarot-chat_iOS" */;
+			buildPhases = (
+				E6D392BE7610A4AE3E13B5F9 /* Build Rust Code */,
+				CA49B25E82064AC7CF078BC4 /* Sources */,
+				4F90B78FF00F0A5BEFFCB2E4 /* Resources */,
+				A0DBB58D3D9C270961345B99 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "ai-tarot-chat_iOS";
+			packageProductDependencies = (
+			);
+			productName = "ai-tarot-chat_iOS";
+			productReference = 4817CDAE86509F48F1194505 /* ai-tarot-chat_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DA9C103DEBA6265C89890C87 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = BBC23A955512057F6639B1DA /* Build configuration list for PBXProject "ai-tarot-chat" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 65DE3EB6B7CE2A2209EAEC7D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A356AF575D9BF88B60D06E71 /* ai-tarot-chat_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4F90B78FF00F0A5BEFFCB2E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E81DE64E60685B4B6DF4CA4 /* Assets.xcassets in Resources */,
+				9D4B4D37608A52CBBDE8F83C /* LaunchScreen.storyboard in Resources */,
+				A5249977CA73B3D2B3CE238F /* assets in Resources */,
+				1B7A7B84544CE51A84A5901D /* libapp.a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E6D392BE7610A4AE3E13B5F9 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "npm run -- tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CA49B25E82064AC7CF078BC4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2409FE90130AE362FEBB8AAA /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2489AA76F018807595173E7A /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = debug;
+		};
+		61F00F3D9057C4CB255EBCA4 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+					x86_64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "ai-tarot-chat_iOS/ai-tarot-chat_iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "ai-tarot-chat_iOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.m_shioya.ai-tarot-chat;
+				PRODUCT_NAME = "ai-tarot-chat";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64  x86_64";
+				DEVELOPMENT_TEAM = "M3H8JH3V6A";
+			};
+			name = debug;
+		};
+		D74CBCEA4EE7674E3D927041 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+					x86_64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "ai-tarot-chat_iOS/ai-tarot-chat_iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "ai-tarot-chat_iOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.m_shioya.ai-tarot-chat;
+				PRODUCT_NAME = "ai-tarot-chat";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64  x86_64";
+				DEVELOPMENT_TEAM = "M3H8JH3V6A";
+			};
+			name = release;
+		};
+		E3C5ED9CAAC90270A8638C4A /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BBC23A955512057F6639B1DA /* Build configuration list for PBXProject "ai-tarot-chat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2489AA76F018807595173E7A /* debug */,
+				E3C5ED9CAAC90270A8638C4A /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		C6D84569B360F78E4BFDE043 /* Build configuration list for PBXNativeTarget "ai-tarot-chat_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61F00F3D9057C4CB255EBCA4 /* debug */,
+				D74CBCEA4EE7674E3D927041 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DA9C103DEBA6265C89890C87 /* Project object */;
+}

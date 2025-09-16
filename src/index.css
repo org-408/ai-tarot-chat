@@ -1,0 +1,393 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  padding-top: 80px; /* ヘッダー分のスペース */
+  padding-bottom: 120px; /* ボトムナビ + 広告バナー分のスペース */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* 固定ヘッダースタイル */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.header-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.header-title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  margin: 0.25rem 0 0 0;
+  line-height: 1;
+}
+
+/* ボトムナビゲーションスタイル */
+.bottom-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: white;
+  border-top: 1px solid #e9ecef;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bottom-nav-container {
+  display: flex;
+  justify-content: space-around;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0.5rem;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 60px;
+  font-size: 0.75rem;
+}
+
+.bottom-nav-item:hover:not(.disabled) {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.bottom-nav-item.active {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.bottom-nav-item.disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.nav-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.coming-soon-badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  background: #ff6b6b;
+  color: white;
+  font-size: 0.5rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  line-height: 1;
+}
+
+/* 固定広告バナースタイル */
+.ad-banner-fixed {
+  position: fixed;
+  bottom: 70px; /* ボトムナビの上 */
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: #ffeb3b;
+  border-top: 1px solid #fdd835;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ad-banner-content {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #333;
+  font-weight: 500;
+}
+
+/* メインコンテナ調整 */
+.main-container {
+  max-width: 400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 0;
+  padding: 30px 20px;
+  min-height: calc(100vh - 200px);
+}
+
+/* タイトルスタイル */
+.page-title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* プラン固有の色 */
+.plan-free {
+  background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.plan-standard {
+  background: linear-gradient(45deg, #007bff, #6610f2);
+}
+
+.plan-coaching {
+  background: linear-gradient(45deg, #ffc107, #fd7e14);
+}
+
+/* 選択肢スタイル */
+.option-item {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.option-item:hover {
+  background: #e9ecef;
+}
+
+.option-item.selected {
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
+}
+
+.radio-button {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #6c757d;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.radio-button.selected {
+  background: #007bff;
+  border-color: #007bff;
+}
+
+/* ボタンスタイル */
+.primary-button {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1rem;
+  transition: transform 0.2s;
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 広告バナー（ページ内） */
+.ads-banner {
+  background: #ffeb3b;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  margin-top: 1rem;
+  border-radius: 0.25rem;
+  color: #333;
+}
+
+/* アップグレードヒント */
+.upgrade-hint {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* 入力フィールド */
+.text-input {
+  width: 100%;
+  border: 2px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 16px; /* 16px以上でモバイルズームを防ぐ */
+  box-sizing: border-box;
+  margin-top: 0.5rem;
+  /* モバイルズーム完全防止 */
+  transform: scale(1);
+  transition: border-color 0.2s;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #667eea;
+  /* フォーカス時のズーム防止 */
+  font-size: 16px;
+}
+
+/* 動的UIエリア */
+.dynamic-ui {
+  border: 2px dashed #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.ai-recommendations {
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid #667eea;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+/* セクションタイトル */
+.section-title {
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+  color: #495057;
+}
+
+.section-subtitle {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+/* プラン情報表示 */
+.plan-info {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: white;
+}
+
+.daily-limit {
+  font-size: 0.875rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+  .main-container {
+    margin: 0;
+    padding: 20px 15px;
+    border-radius: 0;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f6f6f6;
+    background-color: #2f2f2f;
+  }
+
+  .main-container {
+    background: #1f1f1f;
+    color: #f6f6f6;
+  }
+
+  .option-item {
+    background: #2d2d2d;
+    color: #f6f6f6;
+  }
+
+  .option-item:hover {
+    background: #3d3d3d;
+  }
+
+  .text-input {
+    background: #2d2d2d;
+    color: #f6f6f6;
+    border-color: #4a4a4a;
+  }
+
+  .bottom-navigation {
+    background: #1f1f1f;
+    border-top-color: #374151;
+  }
+
+  .bottom-nav-item {
+    color: #9ca3af;
+  }
+
+  .bottom-nav-item:hover:not(.disabled) {
+    color: #f3f4f6;
+    background: #374151;
+  }
+}
