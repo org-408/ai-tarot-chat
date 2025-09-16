@@ -1,0 +1,22 @@
+```
+app/
+  layout.tsx
+  globals.css
+  (admin)/
+    admin/
+      layout.tsx
+      page.tsx
+      spreads/
+        page.tsx
+components/
+  admin/
+    header.tsx
+    sidebar.tsx
+  spreads/
+    spread-toolbar.tsx
+    spread-grid.tsx
+    spread-settings.tsx
+    spread-legend.tsx
+lib/
+  types.ts
+```
