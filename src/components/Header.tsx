@@ -35,11 +35,11 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
       case "reading":
         switch (currentPlan) {
           case "Free":
-            return "お試しで楽しむタロット占い";
+            return "お気軽なタロット占い";
           case "Standard":
-            return "回数無制限でしっかり占い";
+            return "本格的なタロット占い";
           case "Coaching":
-            return "AIと対話しながら本格占い";
+            return "AIと対話しながら本格タロット占い";
           default:
             return "";
         }

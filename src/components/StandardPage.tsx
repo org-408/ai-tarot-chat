@@ -163,19 +163,9 @@ const StandardPage: React.FC<StandardPageProps> = ({ features, onUpgrade }) => {
 
   return (
     <div className="main-container">
-      {/* ヘッダー */}
-      <div className="page-title">⭐ スタンダード占い</div>
+      {/* ヘッダー -> 共通化して省略 */}
 
-      {/* プラン情報 */}
-      <div className="plan-info plan-standard rounded-lg mb-6">
-        <div className="font-bold text-lg text-white">
-          💎 スタンダードプラン
-        </div>
-        <div className="text-sm text-white opacity-90">¥480/月</div>
-      </div>
-
-      {/* 無制限表示 */}
-      <div className="daily-limit mb-4">回数無制限</div>
+      {/* プラン情報 -> 共通化して省略 */}
 
       {/* ジャンル選択 */}
       <div className="mb-6">
