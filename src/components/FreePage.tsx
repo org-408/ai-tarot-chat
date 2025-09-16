@@ -9,7 +9,7 @@ interface FreePageProps {
 const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
   const [selectedGenre, setSelectedGenre] = useState<string>("恋愛運");
   const [selectedSpread, setSelectedSpread] = useState<string>("ワンカード");
-  const [remainingReads] = useState<number>(3); // TODO: 実際の残り回数を取得
+  const [remainingReads] = useState<number>(features.free_count); // TODO: 実際の残り回数を取得
 
   const genres: Genre[] = [
     {
@@ -45,14 +45,9 @@ const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
 
   return (
     <div className="main-container">
-      {/* ヘッダー */}
-      <div className="page-title">🔮 今日のタロット占い</div>
+      {/* ヘッダー -> 共通化して省略 */}
 
-      {/* プラン情報 */}
-      <div className="plan-info plan-free rounded-lg mb-6">
-        <div className="font-bold text-lg text-white">🆓 フリープラン</div>
-        <div className="text-sm text-white opacity-90">✅ 現在利用中</div>
-      </div>
+      {/* プラン情報 -> 共通化して省略 */}
 
       {/* 残り回数表示 */}
       <div className="daily-limit mb-4">残り {remainingReads} 回</div>
@@ -119,11 +114,6 @@ const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
       >
         🔮 占いを始める
       </button>
-
-      {/* 広告バナー */}
-      {features.ads && (
-        <div className="ads-banner">📱 広告 - 有料プランで広告なし</div>
-      )}
 
       {/* アップグレードヒント */}
       <div className="upgrade-hint">💎 もっと詳しく占うには→アップグレード</div>

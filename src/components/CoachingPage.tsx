@@ -241,14 +241,9 @@ const CoachingPage: React.FC<CoachingPageProps> = ({
 
   return (
     <div className="main-container">
-      {/* ヘッダー */}
-      <div className="page-title">🤖 AIタロットコーチング</div>
+      {/* ヘッダー -> 共通化して省略 */}
 
-      {/* プラン情報 */}
-      <div className="plan-info plan-coaching rounded-lg mb-6">
-        <div className="font-bold text-lg text-white">👑 コーチングプラン</div>
-        <div className="text-sm text-white opacity-90">¥980/月</div>
-      </div>
+      {/* プラン情報 -> 共通化して省略 */}
 
       {/* ユーザー入力 */}
       <div className="mb-6">

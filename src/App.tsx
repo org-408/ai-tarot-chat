@@ -21,6 +21,19 @@ function App() {
     loadPlanInfo();
   }, []);
 
+  // 広告表示スタイル関連
+  useEffect(() => {
+    if (currentPlan === "Free") {
+      document.body.classList.add("with-ads");
+    } else {
+      document.body.classList.remove("with-ads");
+    }
+
+    return () => {
+      document.body.classList.remove("with-ads");
+    };
+  }, [currentPlan]);
+
   const loadPlanInfo = async () => {
     try {
       const plan = await invoke<UserPlan>("get_current_plan");
@@ -118,7 +131,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 w-full overflow-x-hidden">
+    <div className="bg-gray-100 w-full overflow-x-hidden">
       {/* 固定ヘッダー */}
       <Header currentPlan={currentPlan} currentPage={pageType} />
 

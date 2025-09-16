@@ -40,6 +40,7 @@ fn get_plan_features(state: State<AppState>) -> PlanFeatures {
             ai_chat: false,
             ads: true,
             plan_name: "フリープラン".to_string(),
+            free_count: 3,
         },
         UserPlan::Standard => PlanFeatures {
             daily_limit: None,
@@ -47,6 +48,7 @@ fn get_plan_features(state: State<AppState>) -> PlanFeatures {
             ai_chat: false,
             ads: false,
             plan_name: "スタンダードプラン".to_string(),
+            free_count: 0,
         },
         UserPlan::Coaching => PlanFeatures {
             daily_limit: None,
@@ -54,6 +56,7 @@ fn get_plan_features(state: State<AppState>) -> PlanFeatures {
             ai_chat: true,
             ads: false,
             plan_name: "コーチングプラン".to_string(),
+            free_count: 0,
         },
     }
 }
@@ -65,6 +68,7 @@ struct PlanFeatures {
     ai_chat: bool,
     ads: bool,
     plan_name: String,
+    free_count: i32,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

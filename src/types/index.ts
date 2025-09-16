@@ -10,6 +10,7 @@ export interface PlanFeatures {
   ai_chat: boolean;
   ads: boolean;
   plan_name: string;
+  free_count: number;
 }
 
 export interface SpreadRecommendation {

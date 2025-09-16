@@ -18,9 +18,17 @@ body {
   margin: 0;
   padding: 0;
   padding-top: 80px; /* ヘッダー分のスペース */
-  padding-bottom: 120px; /* ボトムナビ + 広告バナー分のスペース */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* padding-bottom: 80px; ボトムナビ分のスペース */
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   min-height: 100vh;
+}
+
+body.with-ads {
+  padding-bottom: 110px; /* ボトムナビ70px + 広告バナー40px */
+}
+
+body:not(.with-ads) {
+  padding-bottom: 70px; /* ボトムナビのみ */
 }
 
 /* 固定ヘッダースタイル */
@@ -160,8 +168,8 @@ body {
   margin: 0 auto;
   background: white;
   border-radius: 0;
-  padding: 30px 20px;
-  min-height: calc(100vh - 200px);
+  padding: 30px 20px 20px 20px;
+  /* min-height: calc(100vh - 200px); */
 }
 
 /* タイトルスタイル */
