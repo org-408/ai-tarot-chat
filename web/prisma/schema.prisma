@@ -116,8 +116,8 @@ model SpreadCell {
   hLabel    String?
   vOrder    Int?
   hOrder    Int?
-  spread    Spread   @relation(fields: [spreadId], references: [id])
-  spreadId  String
+  spread    Spread?   @relation(fields: [spreadId], references: [id])
+  spreadId  String?
 }
 
 // カテゴリモデル
