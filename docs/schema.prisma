@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// タロットデッキモデル
+model TarotDeck {
+  id          String      @id @default(cuid())
+  name        String
+  version     String
+  purpose     String
+  totalCards  Int
+  sources     String[]
+  optimizedFor String
+  primaryFocus String
+  categories  String[]
+  status      String
+  updatedAt   DateTime    @default(now())
+  cards       TarotCard[]
+}
+
+// タロットカードモデル
+model TarotCard {
+  id                String        @id
+  name              String
+  type              String        // major, minor
+  number            Int
+  suit              String?
+  element           String?
+  zodiac            String?
+  uprightKeywords   String[]      // 配列を直接保存
+  reversedKeywords  String[]      // 配列を直接保存
+  promptContext     String        @db.Text
+  deckId            String
+  deck              TarotDeck     @relation(fields: [deckId], references: [id])
+  meanings          CardMeaning[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+// カードの意味モデル
+model CardMeaning {
+  id          String    @id @default(cuid())
+  category    String    // love, career, money, health
+  upright     String    @db.Text
+  reversed    String    @db.Text
+  cardId      String
+  card        TarotCard @relation(fields: [cardId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([cardId, category])
+}
+
+// 必要に応じてスプレッドモデルを追加
+model Spread {
+  id        String       @id @default(cuid())
+  name      String
+  category  String
+  level     String
+  plan      String
+  guide     String?      @db.Text
+  updatedAt DateTime?
+  cells     SpreadCell[]
+}
+
+model SpreadCell {
+  id        String   @id @default(cuid())
+  x         Int
+  y         Int
+  vLabel    String?
+  hLabel    String?
+  vOrder    Int?
+  hOrder    Int?
+  spread    Spread   @relation(fields: [spreadId], references: [id])
+  spreadId  String
+}

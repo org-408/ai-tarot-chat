@@ -25,8 +25,8 @@ export function SpreadGrid({
     onSelect(sel);
   }
 
-  function findCell(x: number, y: number) {
-    return cells.find((c) => c.x === x && c.y === y);
+  function findCells(x: number, y: number) {
+    return cells.filter((c) => c.x === x && c.y === y);
   }
 
   return (
@@ -40,16 +40,14 @@ export function SpreadGrid({
           }}
         >
           {grid.flat().map(({ x, y }) => {
-            const c = findCell(x, y);
+            const cs = findCells(x, y);
             const isSel = selected && selected.x === x && selected.y === y;
 
-            const hasV = !!(
-              c &&
-              (c.vLabel || (c.vOrder != null && c.vOrder > 0))
+            const hasV = cs.find(
+              (c) => c.vLabel || (c.vOrder != null && c.vOrder > 0)
             );
-            const hasH = !!(
-              c &&
-              (c.hLabel || (c.hOrder != null && c.hOrder > 0))
+            const hasH = cs.find(
+              (c) => c.hLabel || (c.hOrder != null && c.hOrder > 0)
             );
 
             return (
@@ -58,7 +56,7 @@ export function SpreadGrid({
                 onClick={() => onCellClick(x, y)}
                 className={cn(
                   "relative w-[120px] h-[120px] rounded-md border-2 cursor-pointer",
-                  c ? "border-sky-300 bg-sky-50" : "border-sky-200",
+                  cs.length > 0 ? "border-sky-300 bg-sky-50" : "border-sky-200",
                   isSel ? "border-sky-400" : "border-dashed"
                 )}
               >
@@ -71,7 +69,7 @@ export function SpreadGrid({
                       : "bg-transparent border-blue-300/60"
                   )}
                 >
-                  {c?.vOrder ?? " "}
+                  {hasV?.vOrder ?? " "}
                 </div>
                 {/* 横カード */}
                 <div
@@ -82,7 +80,7 @@ export function SpreadGrid({
                       : "bg-transparent border-pink-300/40"
                   )}
                 >
-                  {c?.hOrder ?? " "}
+                  {hasH?.hOrder ?? " "}
                 </div>
               </div>
             );

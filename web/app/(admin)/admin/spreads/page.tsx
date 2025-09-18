@@ -7,92 +7,73 @@ import { SpreadTable } from "@/components/spreads/spread-table";
 import { SpreadToolbar } from "@/components/spreads/spread-toolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Spread, SpreadCell, SpreadMeta } from "@/lib/types";
-import { nanoid } from "nanoid";
-import { useEffect, useMemo, useState } from "react";
+import { useSpreads } from "@/lib/hooks/use-spreads";
+import type { Spread, SpreadCell } from "@/lib/types";
+import { useState } from "react";
 import { MdAdd, MdContentCopy, MdSave } from "react-icons/md";
+
+type SpreadMeta = {
+  name: string;
+  category: string;
+  level: string;
+  plan: string;
+  guide?: string;
+  updatedAt?: string;
+};
+
+const GRID_SIZE = [10, 10];
 
 export default function SpreadsPage() {
   // デモ用データ（ケルト十字・恋愛三角）
-  const initialSpreads = useMemo<Spread[]>(
-    () => [
-      {
-        id: "celtic",
-        meta: {
-          name: "ケルト十字",
-          category: "総合",
-          level: "最上級",
-          plan: "コーチング",
-          guide: "中央クロスから過去・未来・内外・結末へ広げて読む。",
-          updatedAt: "2025-09-10",
-        },
-        cells: [
-          { x: 1, y: 1, vLabel: "可能な未来", vOrder: 1 },
-          { x: 1, y: 1, hLabel: "可能な未来", hOrder: 2 },
-          { x: 1, y: 2, vLabel: "遠い過去", vOrder: 3 },
-          { x: 0, y: 1, vLabel: "近い過去", vOrder: 4 },
-          { x: 1, y: 0, vLabel: "可能な未来", vOrder: 5 },
-          { x: 2, y: 1, vLabel: "近い未来", vOrder: 6 },
-          { x: 4, y: 3, vLabel: "あなたのアプローチ", vOrder: 7 },
-          { x: 4, y: 2, vLabel: "周囲の影響", vOrder: 8 },
-          { x: 4, y: 1, vLabel: "内面・感情", vOrder: 9 },
-          { x: 4, y: 0, vLabel: "最終結果", vOrder: 10 },
-        ],
-      },
-      {
-        id: "love-triangle",
-        meta: {
-          name: "恋愛三角",
-          category: "恋愛",
-          level: "中級者",
-          plan: "スタンダード",
-          guide: "心の状態／現在の愛／未来の愛の三点を結ぶ。",
-          updatedAt: "2025-09-12",
-        },
-        cells: [
-          { x: 0, y: 2, vLabel: "心の状態", vOrder: 1 },
-          { x: 2, y: 2, vLabel: "現在の愛", vOrder: 2 },
-          { x: 1, y: 0, vLabel: "未来の愛", vOrder: 3 },
-        ],
-      },
-    ],
-    []
-  );
+  // const initialSpreads = useMemo<Spread[]>(
+  //   () => [
+  //     {
+  //       id: "1",
+  //       name: "ケルト十字",
+  //       category: "総合",
+  //       level: "最上級",
+  //       plan: "コーチング",
+  //       guide: "中央クロスから過去・未来・内外・結末へ広げて読む。",
+  //       updatedAt: "2025-09-10",
+  //       cells: [
+  //         { id: "1", x: 1, y: 1, vLabel: "可能な未来", vOrder: 1 },
+  //         { id: "2", x: 1, y: 1, hLabel: "可能な未来", hOrder: 2 },
+  //         { id: "3", x: 1, y: 2, vLabel: "遠い過去", vOrder: 3 },
+  //         { id: "4", x: 0, y: 1, vLabel: "近い過去", vOrder: 4 },
+  //         { id: "5", x: 1, y: 0, vLabel: "可能な未来", vOrder: 5 },
+  //         { id: "6", x: 2, y: 1, vLabel: "近い未来", vOrder: 6 },
+  //         { id: "7", x: 4, y: 3, vLabel: "あなたのアプローチ", vOrder: 7 },
+  //         { id: "8", x: 4, y: 2, vLabel: "周囲の影響", vOrder: 8 },
+  //         { id: "9", x: 4, y: 1, vLabel: "内面・感情", vOrder: 9 },
+  //         { id: "10", x: 4, y: 0, vLabel: "最終結果", vOrder: 10 },
+  //       ],
+  //     },
+  //     {
+  //       id: "2",
+  //       name: "恋愛三角",
+  //       category: "恋愛",
+  //       level: "中級者",
+  //       plan: "スタンダード",
+  //       guide: "心の状態／現在の愛／未来の愛の三点を結ぶ。",
+  //       updatedAt: "2025-09-12",
+  //       cells: [
+  //         { id: "11", x: 0, y: 2, vLabel: "心の状態", vOrder: 1 },
+  //         { id: "12", x: 2, y: 2, vLabel: "現在の愛", vOrder: 2 },
+  //         { id: "13", x: 1, y: 0, vLabel: "未来の愛", vOrder: 3 },
+  //       ],
+  //     },
+  //   ],
+  //   []
+  // );
+  const { spreads, loading, error, createSpread, updateSpread, deleteSpread } =
+    useSpreads();
 
-  const [rows, setRows] = useState<Spread[]>(initialSpreads);
+  // const [rows, setRows] = useState<Spread[]>(initialSpreads);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 編集対象（選択時のみ下のエディタを表示）
-  const selected = rows.find((r) => r.id === selectedId) || null;
+  const selected = spreads.find((r) => r.id === selectedId) || null;
 
-  // 同じ座標のセルが複数ある場合はマージする
-  // （縦カードと横カードを別々に設定できるようにするため）
-  function mergeCells(cells: SpreadCell[]): SpreadCell[] {
-    const mergedCells = Object.values(
-      cells.reduce(
-        (acc: { [key: string]: SpreadCell }, cell) => ({
-          ...acc,
-          [`${cell.x},${cell.y}`]: {
-            ...(acc[`${cell.x},${cell.y}`] ?? {}),
-            ...cell,
-          },
-        }),
-        {}
-      )
-    );
-    return mergedCells;
-  }
-
-  // グリッド／メタの編集用ローカル状態
-  const [cells, setCells] = useState<SpreadCell[]>(selected?.cells ?? []);
-  const [meta, setMeta] = useState<SpreadMeta>(
-    selected?.meta ?? {
-      name: "",
-      category: "その他",
-      level: "初心者",
-      plan: "フリー",
-    }
-  );
   const [gridSelected, setGridSelected] = useState<{
     x: number;
     y: number;
@@ -100,18 +81,20 @@ export default function SpreadsPage() {
 
   const [lastOrder, setLastOrder] = useState<number>(0);
 
+  function findGridCells() {
+    if (!selected || !gridSelected) return [];
+    return (selected.cells || []).filter(
+      (c) => c.x === gridSelected.x && c.y === gridSelected.y
+    );
+  }
+
   function handleSelectRow(id: string) {
     setSelectedId(id === selectedId ? null : id);
-    const s = rows.find((r) => r.id === id);
-    setCells(s ? mergeCells(s.cells) : []);
-    setMeta(
-      s
-        ? s.meta
-        : { name: "", category: "その他", level: "初心者", plan: "フリー" }
-    );
+    const s = spreads.find((r) => r.id === id);
     setGridSelected(null);
     // 表示順の最大値を計算（新規セル追加時のデフォルト値に使う）
-    const _lastOrder = s?.cells.reduce(
+    const cells = s?.cells || [];
+    const _lastOrder = cells.reduce(
       (max, cell) =>
         Math.max(max, cell.vOrder ?? -Infinity, cell.hOrder ?? -Infinity),
       -Infinity
@@ -121,73 +104,42 @@ export default function SpreadsPage() {
     );
   }
 
-  function upsertCell(next: SpreadCell) {
-    setCells((prev) => {
-      const i = prev.findIndex((c) => c.x === next.x && c.y === next.y);
-      if (i >= 0) {
-        const cp = [...prev];
-        cp[i] = next;
-        return cp;
-      }
-      return [...prev, next];
-    });
+  function handleChange(updated: Spread) {
+    // TODO:
+  }
+
+  function upsertCell(next: SpreadCell[]) {
+    // TODO:
   }
 
   function removeCell(x: number, y: number) {
-    setCells((prev) => prev.filter((c) => !(c.x === x && c.y === y)));
-    setGridSelected(null);
+    // TODO:
   }
 
   function saveCurrent() {
-    if (!selected || ["draft", "duplicate"].includes(selectedId ?? "")) {
-      // 新規
-      const id = nanoid(8);
-      setRows((prev) => [
-        ...prev,
-        { id, meta: { ...meta, updatedAt: today() }, cells },
-      ]);
-      setSelectedId(null);
-      return;
-    }
-    // 既存更新
-    setRows((prev) =>
-      prev.map((r) =>
-        r.id === selected.id
-          ? { ...r, meta: { ...meta, updatedAt: today() }, cells }
-          : r
-      )
-    );
+    // TODO:
   }
 
   function newBlank() {
-    setSelectedId("draft");
-    setCells([]);
-    setMeta({
+    createSpread({
+      code: `spread-${today()}`,
       name: "新規スプレッド",
       category: "その他",
-      level: "初心者",
-      plan: "フリー",
-      guide: "",
+      levelId: "BEGINNER",
+      planId: "FREE",
+      guide: "ガイドを編集してください。",
+      cells: [],
+      categoryIds: ["総合"],
+    }).then((newSpread) => {
+      if (newSpread) {
+        handleSelectRow(newSpread.id);
+      }
     });
-    setGridSelected(null);
   }
 
   function duplicateCurrent() {
-    if (!selected) return;
-    setSelectedId("duplicate");
-    setCells(mergeCells(selected.cells));
-    setMeta({
-      ...selected.meta,
-      name: `${selected.meta.name} のコピー`,
-      updatedAt: undefined,
-    });
-    setGridSelected(null);
+    // 既存スプレッドを複製し、セレクト状態にする
   }
-
-  useEffect(() => {
-    console.log("selected changed", selected);
-    console.log("cells changed", cells);
-  }, [selected, cells]);
 
   return (
     <div className="space-y-2">
@@ -216,7 +168,7 @@ export default function SpreadsPage() {
         </CardHeader>
         <CardContent>
           <SpreadTable
-            items={rows}
+            items={spreads}
             selectedId={selectedId ?? undefined}
             onSelect={handleSelectRow}
           />
@@ -224,21 +176,19 @@ export default function SpreadsPage() {
       </Card>
 
       {/* 行を選んだらエディタ（グリッド＋設定）を表示 */}
-      {selectedId != null && (
+      {selected != null && (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-2">
           <Card className="col-span-1">
             <CardHeader>
-              <CardTitle>
-                🧩 スプレッド編集（{meta.name || "新規スプレッド"}）
-              </CardTitle>
+              <CardTitle>🧩 スプレッド編集（{selected.name}）</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <SpreadToolbar meta={meta} onChangeMeta={setMeta} />
+              <SpreadToolbar spread={selected} onChange={handleChange} />
               <SpreadLegend />
               <SpreadGrid
-                cols={10}
-                rows={10}
-                cells={cells}
+                cols={GRID_SIZE[0]}
+                rows={GRID_SIZE[1]}
+                cells={selected?.cells || []}
                 selected={gridSelected}
                 onSelect={setGridSelected}
               />
@@ -255,16 +205,10 @@ export default function SpreadsPage() {
                   gridSelected ? `${gridSelected.x}-${gridSelected.y}` : "none"
                 }
                 selected={gridSelected}
-                cell={
-                  gridSelected
-                    ? cells.find(
-                        (c) => c.x === gridSelected.x && c.y === gridSelected.y
-                      )
-                    : undefined
-                }
+                cells={findGridCells()}
                 onUpsert={upsertCell}
                 onRemove={removeCell}
-                lastOrder={lastOrder}
+                onSave={saveCurrent}
               />
             </CardContent>
           </Card>

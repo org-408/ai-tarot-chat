@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// タロットデッキモデル
+model TarotDeck {
+  id          String      @id @default(cuid())
+  name        String
+  version     String
+  purpose     String
+  totalCards  Int
+  sources     String[]
+  optimizedFor String
+  primaryFocus String
+  categories  String[]
+  status      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  cards       TarotCard[]
+}
+
+// タロットカードモデル
+model TarotCard {
+  id                String        @id
+  name              String
+  type              String        // major, minor
+  number            Int
+  suit              String?
+  element           String?
+  zodiac            String?
+  uprightKeywords   String[]      // 配列を直接保存
+  reversedKeywords  String[]      // 配列を直接保存
+  promptContext     String        @db.Text
+  deckId            String
+  deck              TarotDeck     @relation(fields: [deckId], references: [id])
+  meanings          CardMeaning[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+// カードの意味モデル
+model CardMeaning {
+  id          String    @id @default(cuid())
+  category    String    // love, career, money, health
+  upright     String    @db.Text
+  reversed    String    @db.Text
+  cardId      String
+  card        TarotCard @relation(fields: [cardId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([cardId, category])
+}
+
+// プランモデル
+model Plan {
+  id          String    @id @default(cuid())
+  code        String    @unique  // "FREE", "STANDARD", "COACH", 場合によっては, "MASTER"
+  name        String    // "フリー", "スタンダード", "コーチング", "マスター"
+  description String?   @db.Text
+  price       Int       @default(0)  // 月額価格または1回あたりの価格
+  isActive    Boolean   @default(true)
+  features    String[]  // 含まれる機能の配列
+  maxReadings Int?      // 1ヶ月の最大リーディング回数
+  hasAICoach  Boolean   @default(false)  // AIコーチング機能の有無
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  spreads     Spread[]  // このプランで利用可能なスプレッド
+}
+
+// スプレッドレベルマスター
+model SpreadLevel {
+  id          String    @id @default(cuid())
+  code        String    @unique  // "BEGINNER", "MEDIUM", "ADVANCED", "EXPERT"
+  name        String    // "初心者", "中級者", "上級者", "最上級"
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  spreads     Spread[]
+}
+
+// スプレッドモデル
+model Spread {
+  id          String       @id @default(cuid())
+  code        String       @unique  // "CROSS", "CelticCross", "ThreeCard", "Horseshoe"など
+  name        String
+  category    String       // 簡易表示用のカテゴリ名
+  levelId     String
+  level       SpreadLevel  @relation(fields: [levelId], references: [id])
+  planId      String
+  plan        Plan         @relation(fields: [planId], references: [id])
+  guide       String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  cells       SpreadCell[]
+  categories  SpreadToCategory[]
+}
+// スプレッドのセルモデル
+model SpreadCell {
+  id        String   @id @default(cuid())
+  x         Int
+  y         Int
+  vLabel    String?
+  hLabel    String?
+  vOrder    Int?
+  hOrder    Int?
+  spread    Spread   @relation(fields: [spreadId], references: [id])
+  spreadId  String
+}
+
+// カテゴリモデル
+model ReadingCategory {
+  id          String                @id @default(cuid())
+  name        String                @unique // 表示名: 総合、恋愛、仕事など
+  description String?               // カテゴリの説明（オプション）
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  spreads     SpreadToCategory[]
+}
+
+// スプレッドとカテゴリの中間テーブル
+model SpreadToCategory {
+  id           String          @id @default(cuid())
+  spreadId     String
+  categoryId   String
+  spread       Spread        @relation(fields: [spreadId], references: [id])
+  category     ReadingCategory @relation(fields: [categoryId], references: [id])
+  
+  @@unique([spreadId, categoryId])
+}
+

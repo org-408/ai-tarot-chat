@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>タロット・スプレッド配置図（縦並び・全種）</title>
+    <style>
+      :root {
+        --unit: 70px; /* 1マス */
+        --gap: 14px; /* 余白 */
+        --card-w: 54px; /* 縦カード幅 */
+        --card-h: 86px; /* 縦カード高（横は回転） */
+        --radius: 10px;
+        --sky: #0984e3;
+        --sky-2: #74b9ff;
+        --ink: #0a1a2b;
+        --bg: #f2f8ff;
+      }
+      body {
+        background: #f7fbff;
+        margin: 0;
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica,
+          Arial;
+      }
+      h1 {
+        margin: 24px 16px;
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 12px 16px 100px;
+      }
+      .box {
+        background: #fff;
+        border: 1px solid #cfe8ff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        padding: 10px 12px 16px;
+        margin-bottom: 32px;
+      }
+      .title {
+        font-weight: 700;
+        margin: 6px 2px 12px;
+        font-size: 18px;
+      }
+      .canvas {
+        position: relative;
+        background: linear-gradient(
+              90deg,
+              rgba(9, 132, 227, 0.06) 1px,
+              transparent 1px
+            )
+            0 0 / var(--unit) var(--unit),
+          linear-gradient(0deg, rgba(9, 132, 227, 0.06) 1px, transparent 1px) 0
+            0 / var(--unit) var(--unit),
+          var(--bg);
+        border: 1px solid #d8ecff;
+        border-radius: 12px;
+        margin: 0 auto 8px;
+        overflow: hidden;
+      }
+      .card {
+        position: absolute;
+        width: var(--card-w);
+        height: var(--card-h);
+        background: linear-gradient(135deg, var(--sky-2), var(--sky));
+        border: 2px solid #0b79d0;
+        border-radius: var(--radius);
+        color: #fff;
+        font-weight: 800;
+        display: grid;
+        place-items: center;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 8px 16px rgba(9, 132, 227, 0.25);
+        user-select: none;
+        font-size: 14px;
+      }
+      .card.h {
+        transform: rotate(90deg);
+      } /* 横カード */
+      .label {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: calc(100% + 4px);
+        font-size: 11px;
+        color: #2b4a6a;
+        white-space: nowrap;
+        background: #eaf5ff;
+        border: 1px solid #cfe8ff;
+        padding: 2px 6px;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>🔮 タロット・スプレッド配置図（縦並び・全種）</h1>
+      <div id="root"></div>
+    </div>
+
+    <script>
+      /**
+       * 座標系：
+       * - 左上 (0,0) の整数グリッド。x 横、y 縦。
+       * - {n,x,y,h?,label?}：n=番号（または A/B）、h=true で横置き。
+       * - キャンバスは maxX/maxY から自動サイズ。
+       */
+
+      const SPREADS = [
+        {
+          name: "ワンカード（1）",
+          items: [{ n: 1, x: 1, y: 1, label: "中核メッセージ" }],
+        },
+
+        {
+          name: "3枚引きA：Past/Present/Future（3）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "過去" },
+            { n: 2, x: 1, y: 1, label: "現在" },
+            { n: 3, x: 2, y: 1, label: "未来" },
+          ],
+        },
+
+        {
+          name: "3枚引きB：状況/行動/結果（3）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "状況" },
+            { n: 2, x: 1, y: 1, label: "行動" },
+            { n: 3, x: 2, y: 1, label: "結果" },
+          ],
+        },
+
+        {
+          name: "3枚引きC：Mind/Body/Spirit（3）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "心" },
+            { n: 2, x: 1, y: 1, label: "体" },
+            { n: 3, x: 2, y: 1, label: "魂" },
+          ],
+        },
+
+        {
+          name: "5枚スプレッド（5）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "現在" },
+            { n: 2, x: 1, y: 0, label: "課題" },
+            { n: 3, x: 1, y: 1, label: "過去" },
+            { n: 4, x: 1, y: 2, label: "未来" },
+            { n: 5, x: 2, y: 1, label: "アドバイス" },
+          ],
+        },
+
+        {
+          name: "ホースシュー（7）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "過去" },
+            { n: 2, x: 1, y: 1, label: "現在" },
+            { n: 3, x: 2, y: 1, label: "未来" },
+            { n: 4, x: 3, y: 1, label: "姿勢" },
+            { n: 5, x: 4, y: 1, label: "周囲" },
+            { n: 6, x: 5, y: 1, label: "障害" },
+            { n: 7, x: 6, y: 1, label: "結果" },
+          ],
+        },
+
+        {
+          name: "関係性（3）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "あなた" },
+            { n: 2, x: 2, y: 0, label: "相手" },
+            { n: 3, x: 1, y: 1, label: "関係性" },
+          ],
+        },
+
+        {
+          name: "恋愛三角（3）",
+          items: [
+            { n: 1, x: 0, y: 2, label: "心の状態" },
+            { n: 2, x: 2, y: 2, label: "現在の愛" },
+            { n: 3, x: 1, y: 0, label: "未来の愛" },
+          ],
+        },
+
+        {
+          name: "ソウルメイト（5）",
+          items: [
+            { n: 1, x: 0, y: 2, label: "現状" },
+            { n: 2, x: 1, y: 0, label: "準備度" },
+            { n: 3, x: 2, y: 2, label: "出会い方" },
+            { n: 4, x: 3, y: 0, label: "相手像" },
+            { n: 5, x: 1, y: 3, label: "時期" },
+          ],
+        },
+
+        {
+          name: "関係性ヘルスチェック（6）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "あなた" },
+            { n: 2, x: 2, y: 0, label: "相手" },
+            { n: 3, x: 0, y: 1, label: "強み" },
+            { n: 4, x: 2, y: 1, label: "課題" },
+            { n: 5, x: 0, y: 2, label: "アドバイス" },
+            { n: 6, x: 2, y: 2, label: "未来" },
+          ],
+        },
+
+        {
+          name: "復縁（4）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "過去の関係" },
+            { n: 2, x: 2, y: 0, label: "現在の状況" },
+            { n: 3, x: 0, y: 1, label: "相手の気持ち" },
+            { n: 4, x: 2, y: 1, label: "復縁可能性" },
+          ],
+        },
+
+        {
+          name: "キャリアパス（7）",
+          items: [
+            { n: 1, x: 0, y: 2, label: "現状" },
+            { n: 2, x: 1, y: 2, label: "課題" },
+            { n: 3, x: 2, y: 2, label: "強み" },
+            { n: 4, x: 2, y: 0, label: "長期目標" },
+            { n: 5, x: 3, y: 2, label: "行動" },
+            { n: 6, x: 4, y: 2, label: "機会" },
+            { n: 7, x: 5, y: 2, label: "結果" },
+          ],
+        },
+
+        {
+          name: "面接（Interview / Job Interview, 3）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "あなたの強み" },
+            { n: 2, x: 1, y: 1, label: "面接官の印象" },
+            { n: 3, x: 2, y: 1, label: "結果" },
+          ],
+        },
+
+        {
+          name: "ワークライフバランス（5）",
+          items: [
+            { n: 1, x: 0, y: 2, label: "現状" },
+            { n: 2, x: 1, y: 0, label: "仕事・学業" },
+            { n: 3, x: 1, y: 2, label: "バランス" },
+            { n: 4, x: 1, y: 4, label: "プライベート" },
+            { n: 5, x: 2, y: 2, label: "未来" },
+          ],
+        },
+
+        {
+          name: "金運予測（6）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "現在" },
+            { n: 2, x: 1, y: 0, label: "収入" },
+            { n: 3, x: 2, y: 0, label: "支出" },
+            { n: 4, x: 0, y: 2, label: "投資運" },
+            { n: 5, x: 1, y: 2, label: "節約法" },
+            { n: 6, x: 2, y: 2, label: "総合金運" },
+          ],
+        },
+
+        {
+          name: "投資判断（4）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "リスク" },
+            { n: 2, x: 2, y: 0, label: "リターン" },
+            { n: 3, x: 0, y: 2, label: "タイミング" },
+            { n: 4, x: 2, y: 2, label: "結論" },
+          ],
+        },
+
+        {
+          name: "マネーブロック（5）",
+          items: [
+            { n: 1, x: 0, y: 2, label: "現状" },
+            { n: 2, x: 1, y: 4, label: "原因" },
+            { n: 3, x: 1, y: 0, label: "ブロック" },
+            { n: 4, x: 3, y: 2, label: "解決法" },
+            { n: 5, x: 2, y: 2, label: "連絡点" },
+          ],
+        },
+
+        {
+          name: "ブロック（心理/トラウマ・クリアリング, 5）",
+          items: [
+            { n: 1, x: 0, y: 2, label: "現状" },
+            { n: 2, x: 1, y: 4, label: "根因" },
+            { n: 3, x: 1, y: 0, label: "中核ブロック" },
+            { n: 4, x: 3, y: 2, label: "介入" },
+            { n: 5, x: 2, y: 2, label: "統合" },
+          ],
+        },
+
+        {
+          name: "ヘルスチェック（4）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "心" },
+            { n: 2, x: 2, y: 0, label: "体" },
+            { n: 3, x: 0, y: 2, label: "必要な行動" },
+            { n: 4, x: 2, y: 2, label: "回復の兆し" },
+          ],
+        },
+
+        {
+          name: "ヒーリング・ジャーニー（6）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "現在" },
+            { n: 2, x: 1, y: 0, label: "根本原因" },
+            { n: 3, x: 2, y: 0, label: "対処" },
+            { n: 4, x: 0, y: 2, label: "心の癒し" },
+            { n: 5, x: 1, y: 2, label: "体の癒し" },
+            { n: 6, x: 2, y: 2, label: "回復像" },
+          ],
+        },
+
+        {
+          name: "エナジーバランス（7）",
+          items: [
+            { n: 1, x: 0, y: 1, label: "現状" },
+            { n: 2, x: 1, y: 0, label: "精神" },
+            { n: 3, x: 1, y: 2, label: "肉体" },
+            { n: 4, x: 2, y: 1, label: "行動" },
+            { n: 5, x: 0, y: 3, label: "栄養" },
+            { n: 6, x: 2, y: 3, label: "運動" },
+            { n: 7, x: 1, y: 1, label: "バランス" },
+          ],
+        },
+
+        {
+          name: "ケルト十字（10）",
+          items: [
+            { n: 1, x: 3, y: 3, label: "現在" },
+            { n: 2, x: 4, y: 3, h: true, label: "課題/障害" },
+            { n: 3, x: 3, y: 5, label: "遠い過去" },
+            { n: 4, x: 1, y: 3, label: "近い過去" },
+            { n: 5, x: 3, y: 1, label: "可能な未来" },
+            { n: 6, x: 5, y: 3, label: "近い未来" },
+            { n: 7, x: 7, y: 6, label: "あなたの姿勢" },
+            { n: 8, x: 7, y: 5, label: "周囲の影響" },
+            { n: 9, x: 7, y: 4, label: "内面/感情" },
+            { n: 10, x: 7, y: 3, label: "最終結果" },
+          ],
+        },
+
+        /* ここから “ケルト十字以上の多枚数” 3種を追加 */
+        {
+          name: "アステロイド / ホロスコープ（12＋総括任意）",
+          items: [
+            { n: 1, x: 6, y: 6, label: "1:自我" },
+            { n: 2, x: 8, y: 6, label: "2:収入" },
+            { n: 3, x: 10, y: 6, label: "3:学習" },
+            { n: 4, x: 12, y: 6, label: "4:家庭" },
+            { n: 5, x: 14, y: 6, label: "5:創造" },
+            { n: 6, x: 14, y: 4, label: "6:健康" },
+            { n: 7, x: 14, y: 2, label: "7:対人" },
+            { n: 8, x: 12, y: 2, label: "8:変容" },
+            { n: 9, x: 10, y: 2, label: "9:高次" },
+            { n: 10, x: 8, y: 2, label: "10:仕事" },
+            { n: 11, x: 6, y: 2, label: "11:友人" },
+            { n: 12, x: 4, y: 4, label: "12:潜在" },
+            // 任意の総括カードを中央へ追加したい場合は次行を有効化：
+            // {n:13,x:10,y:4,label:"総括"},
+          ],
+        },
+
+        {
+          name: "イヤースプレッド（12＋総括）",
+          items: [
+            { n: 1, x: 0, y: 0, label: "Jan" },
+            { n: 2, x: 1, y: 0, label: "Feb" },
+            { n: 3, x: 2, y: 0, label: "Mar" },
+            { n: 4, x: 3, y: 0, label: "Apr" },
+            { n: 5, x: 0, y: 1, label: "May" },
+            { n: 6, x: 1, y: 1, label: "Jun" },
+            { n: 7, x: 2, y: 1, label: "Jul" },
+            { n: 8, x: 3, y: 1, label: "Aug" },
+            { n: 9, x: 0, y: 2, label: "Sep" },
+            { n: 10, x: 1, y: 2, label: "Oct" },
+            { n: 11, x: 2, y: 2, label: "Nov" },
+            { n: 12, x: 3, y: 2, label: "Dec" },
+            { n: 13, x: 1.5, y: 3.2, label: "総括" },
+          ],
+        },
+
+        {
+          name: "生命の樹（Tree of Life, 10）",
+          items: [
+            { n: 1, x: 3, y: 0, label: "Kether" },
+            { n: 2, x: 5, y: 1, label: "Chokmah" },
+            { n: 3, x: 1, y: 1, label: "Binah" },
+            { n: 4, x: 5, y: 3, label: "Chesed" },
+            { n: 5, x: 1, y: 3, label: "Geburah" },
+            { n: 6, x: 3, y: 4, label: "Tiphereth" },
+            { n: 7, x: 5, y: 6, label: "Netzach" },
+            { n: 8, x: 1, y: 6, label: "Hod" },
+            { n: 9, x: 3, y: 7, label: "Yesod" },
+            { n: 10, x: 3, y: 9, label: "Malkuth" },
+          ],
+        },
+
+        {
+          name: "二重ケルト十字（20：各位置2枚）",
+          items: [
+            { n: "1A", x: 3, y: 3 },
+            { n: "1B", x: 3.6, y: 3.3 },
+            { n: "2A", x: 4, y: 3, h: true },
+            { n: "2B", x: 4.6, y: 3.3, h: true },
+            { n: "3A", x: 3, y: 5 },
+            { n: "3B", x: 3.6, y: 5.3 },
+            { n: "4A", x: 1, y: 3 },
+            { n: "4B", x: 1.6, y: 3.3 },
+            { n: "5A", x: 3, y: 1 },
+            { n: "5B", x: 3.6, y: 1.3 },
+            { n: "6A", x: 5, y: 3 },
+            { n: "6B", x: 5.6, y: 3.3 },
+            { n: "7A", x: 7, y: 6 },
+            { n: "7B", x: 7.6, y: 6.3 },
+            { n: "8A", x: 7, y: 5 },
+            { n: "8B", x: 7.6, y: 5.3 },
+            { n: "9A", x: 7, y: 4 },
+            { n: "9B", x: 7.6, y: 4.3 },
+            { n: "10A", x: 7, y: 3 },
+            { n: "10B", x: 7.6, y: 3.3 },
+          ],
+        },
+
+        {
+          name: "グランド・タブロー（Lenormand 由来, 36／参考）",
+          items: (() => {
+            const arr = [];
+            let n = 1;
+            for (let r = 0; r < 4; r++) {
+              for (let c = 0; c < 9; c++) {
+                arr.push({ n: n++, x: c, y: r });
+              }
+            }
+            return arr;
+          })(),
+        },
+      ];
+
+      const root = document.getElementById("root");
+
+      for (const spread of SPREADS) {
+        const box = document.createElement("div");
+        box.className = "box";
+
+        const h = document.createElement("div");
+        h.className = "title";
+        h.textContent = spread.name;
+        box.appendChild(h);
+
+        const maxX = Math.max(...spread.items.map((it) => it.x));
+        const maxY = Math.max(...spread.items.map((it) => it.y));
+
+        const canvas = document.createElement("div");
+        canvas.className = "canvas";
+        canvas.style.width = `calc(${maxX + 2} * var(--unit))`;
+        canvas.style.height = `calc(${maxY + 2} * var(--unit))`;
+
+        spread.items.forEach((it) => {
+          const card = document.createElement("div");
+          card.className = "card" + (it.h ? " h" : "");
+          card.style.left = `calc(${it.x} * var(--unit) + var(--gap))`;
+          card.style.top = `calc(${it.y} * var(--unit) + var(--gap))`;
+          card.textContent = it.n;
+
+          if (it.label) {
+            const lab = document.createElement("div");
+            lab.className = "label";
+            lab.textContent = it.label;
+            card.appendChild(lab);
+          }
+          canvas.appendChild(card);
+        });
+
+        box.appendChild(canvas);
+        root.appendChild(box);
+      }
+    </script>
+  </body>
+</html>

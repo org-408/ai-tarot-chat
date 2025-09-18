@@ -1,0 +1,3573 @@
+{
+  "name": "default tarot deck",
+  "metadata": {
+    "version": "1.0",
+    "purpose": "AI-powered tarot interpretation system",
+    "total_cards": 78,
+    "sources": ["Biddy Tarot", "Labyrinthos Academy"],
+    "optimized_for": "prompt_generation",
+    "primary_focus": "love_readings",
+    "categories": ["love", "career", "money", "health"],
+    "status": "complete"
+  },
+  "cards": [
+    {
+      "name": "The Fool",
+      "type": "major",
+      "number": 0,
+      "suit": null,
+      "element": null,
+      "zodiac": "Uranus",
+      "upright_keywords": [
+        "beginnings",
+        "innocence",
+        "spontaneity",
+        "free spirit",
+        "leap of faith",
+        "potential"
+      ],
+      "reversed_keywords": [
+        "recklessness",
+        "holding back",
+        "poor judgment",
+        "fear of commitment"
+      ],
+      "meanings": [
+        {
+          "upright": "New romantic adventure awaits. Take a leap of faith in love. Trust your heart and be open to unexpected encounters. Perfect time for innocent, pure romance.",
+          "reversed": "Fear of romantic commitment or being too reckless in love. Either holding back from relationships or jumping in too quickly without thought.",
+          "category": "love"
+        },
+        {
+          "upright": "Exciting new career opportunity. Time to take professional risks and follow your passion. Fresh start or entrepreneurial venture beckons.",
+          "reversed": "Lack of career planning or being too impulsive with professional decisions. Need more preparation before making major work changes.",
+          "category": "career"
+        },
+        {
+          "upright": "New financial opportunities on the horizon. Optimistic money outlook with potential for investment or income growth. Trust in abundance.",
+          "reversed": "Financial recklessness or excessive caution with money. Poor financial planning or fear of taking necessary economic risks.",
+          "category": "money"
+        },
+        {
+          "upright": "Fresh start with health and wellness. New exercise routine or holistic healing approach. Youthful energy and vitality returning.",
+          "reversed": "Neglecting health needs or taking dangerous health risks. Need more careful planning with wellness decisions.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Fool represents new beginnings and unlimited potential. In readings, emphasize the energy of fresh starts and trusting the journey ahead.",
+      "id": "0_fool"
+    },
+    {
+      "name": "The Magician",
+      "type": "major",
+      "number": 1,
+      "suit": null,
+      "element": "Air",
+      "zodiac": "Mercury",
+      "upright_keywords": [
+        "manifestation",
+        "willpower",
+        "skill",
+        "resourcefulness",
+        "power",
+        "action"
+      ],
+      "reversed_keywords": [
+        "manipulation",
+        "trickery",
+        "unused potential",
+        "lack of focus"
+      ],
+      "meanings": [
+        {
+          "upright": "You have the power to manifest the love you desire. Use your charm and communication skills. Take initiative in romantic situations.",
+          "reversed": "Manipulative behavior in relationships or someone trying to deceive you in love. Dishonesty or using others for personal gain.",
+          "category": "love"
+        },
+        {
+          "upright": "Excellent leadership abilities and professional skills. Time to take charge of your career. Successful projects and networking opportunities.",
+          "reversed": "Misuse of professional power or workplace manipulation. Scattered focus preventing career progress. Unused talents and potential.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial manifestation power is strong. Wise use of resources and successful investments. Money-making opportunities through skills.",
+          "reversed": "Financial deception or get-rich-quick schemes. Mismanagement of resources. Need to focus financial energy more effectively.",
+          "category": "money"
+        },
+        {
+          "upright": "Taking control of your health with effective treatments. Strong mind-body connection. Healing energy and wellness manifestation.",
+          "reversed": "Ignoring health issues or unrealistic health goals. Ineffective treatments or health-related deception.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Magician represents personal power and the ability to manifest desires. Focus on taking action and using available resources.",
+      "id": "1_magician"
+    },
+    {
+      "name": "The High Priestess",
+      "type": "major",
+      "number": 2,
+      "suit": null,
+      "element": "Water",
+      "zodiac": "Moon",
+      "upright_keywords": [
+        "intuition",
+        "mystery",
+        "subconscious",
+        "inner wisdom",
+        "spirituality"
+      ],
+      "reversed_keywords": [
+        "disconnected intuition",
+        "secrets",
+        "repressed feelings",
+        "lack of inner voice"
+      ],
+      "meanings": [
+        {
+          "upright": "Trust your intuition in love matters. Deep spiritual connection with partner. Hidden aspects of relationships will be revealed.",
+          "reversed": "Ignoring romantic red flags or gut feelings. Secrets in relationships. Disconnected from emotional needs and desires.",
+          "category": "love"
+        },
+        {
+          "upright": "Trust professional instincts. Behind-the-scenes influence at work. Research, counseling, or spiritual work may be highlighted.",
+          "reversed": "Office politics or hidden workplace agendas. Ignoring gut feelings about job situations. Need to reconnect with professional intuition.",
+          "category": "career"
+        },
+        {
+          "upright": "Trust financial instincts and hidden money opportunities. Intuitive investment decisions. Look beyond surface financial information.",
+          "reversed": "Financial secrets or hidden money problems. Poor money intuition. Ignoring financial red flags or warning signs.",
+          "category": "money"
+        },
+        {
+          "upright": "Trust your body's wisdom and inner healing knowledge. Alternative healing methods. Strong mind-body awareness.",
+          "reversed": "Ignoring body signals or symptoms. Disconnected from physical needs. Suppressed health issues requiring attention.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The High Priestess represents inner wisdom and intuition. Encourage the querent to look within and trust their instincts.",
+      "id": "2_high_priestess"
+    },
+    {
+      "name": "The Empress",
+      "type": "major",
+      "number": 3,
+      "suit": null,
+      "element": "Earth",
+      "zodiac": "Venus",
+      "upright_keywords": [
+        "fertility",
+        "femininity",
+        "abundance",
+        "nature",
+        "nurturing",
+        "creativity"
+      ],
+      "reversed_keywords": [
+        "dependence",
+        "smothering",
+        "creative blocks",
+        "neglect",
+        "emptiness"
+      ],
+      "meanings": [
+        {
+          "upright": "Abundant, nurturing love. Pregnancy or family growth possible. Natural, flowing romance with deep connection to feminine energy.",
+          "reversed": "Codependent relationships or smothering behavior. Fertility challenges. Neglecting self-love and personal needs in romance.",
+          "category": "love"
+        },
+        {
+          "upright": "Creative career flourishing. Nurturing work environment. Business growth and professional abundance. Artistic projects succeeding.",
+          "reversed": "Creative blocks at work. Unsupportive work environment. Lack of professional growth opportunities. Career burnout from overgiving.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial abundance and growth. Money flowing naturally. Profitable investments. Generous approach to wealth sharing.",
+          "reversed": "Financial lack or blocks to money flow. Overspending on others. Economic codependency. Need to nurture personal financial health.",
+          "category": "money"
+        },
+        {
+          "upright": "Vibrant physical health. Fertility and reproductive health strong. Natural healing approaches. Excellent self-care practices.",
+          "reversed": "Neglecting self-care and physical needs. Fertility or feminine health issues. Health problems from lack of nurturing.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Empress represents abundance, creativity, and nurturing energy. Emphasize growth and the power of feminine energy.",
+      "id": "3_empress"
+    },
+    {
+      "name": "The Emperor",
+      "type": "major",
+      "number": 4,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Aries",
+      "upright_keywords": [
+        "authority",
+        "structure",
+        "control",
+        "leadership",
+        "fatherhood",
+        "stability"
+      ],
+      "reversed_keywords": [
+        "tyranny",
+        "rigidity",
+        "abuse of power",
+        "lack of discipline",
+        "controlling"
+      ],
+      "meanings": [
+        {
+          "upright": "Stable, committed relationship. Protective partner or traditional romantic structure. Strong masculine energy bringing security.",
+          "reversed": "Controlling or domineering partner. Power struggles in relationships. Lack of commitment or emotional availability.",
+          "category": "love"
+        },
+        {
+          "upright": "Leadership position or authority at work. Structured professional environment. Career stability and success through discipline.",
+          "reversed": "Workplace tyranny or abuse of authority. Overly rigid professional environment. Problems with bosses or authority figures.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial stability and structure. Disciplined money management. Successful long-term investments and wealth building.",
+          "reversed": "Financial control issues or rigid budgeting. Abuse of economic power. Unstable money situation requiring more structure.",
+          "category": "money"
+        },
+        {
+          "upright": "Disciplined health routine. Strong physical constitution. Taking authoritative approach to wellness and fitness.",
+          "reversed": "Ignoring medical authority or health advice. Overly rigid health approaches. Control issues affecting physical well-being.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Emperor represents structure, authority, and masculine energy. Focus on stability and taking control.",
+      "id": "4_emperor"
+    },
+    {
+      "name": "The Hierophant",
+      "type": "major",
+      "number": 5,
+      "suit": null,
+      "element": "Earth",
+      "zodiac": "Taurus",
+      "upright_keywords": [
+        "tradition",
+        "conformity",
+        "spiritual guidance",
+        "education",
+        "institutions",
+        "mentorship"
+      ],
+      "reversed_keywords": [
+        "rebellion",
+        "unconventional",
+        "challenging norms",
+        "personal beliefs",
+        "restriction"
+      ],
+      "meanings": [
+        {
+          "upright": "Traditional romantic approach. Marriage or formal commitment. Religious or spiritual bond. Conventional relationship values.",
+          "reversed": "Unconventional relationship or challenging romantic norms. Non-traditional love. Freedom from restrictive relationship expectations.",
+          "category": "love"
+        },
+        {
+          "upright": "Traditional career path or working within established systems. Educational roles. Learning from mentors or institutions.",
+          "reversed": "Unconventional career or challenging workplace norms. Breaking free from traditional professional expectations.",
+          "category": "career"
+        },
+        {
+          "upright": "Conservative financial approaches. Traditional investments. Working with established financial institutions and advisors.",
+          "reversed": "Alternative financial methods or challenging economic norms. Innovative money approaches. Freedom from traditional wealth restrictions.",
+          "category": "money"
+        },
+        {
+          "upright": "Traditional medical approaches. Following established health authority and conventional treatments. Learning from health experts.",
+          "reversed": "Alternative health methods or questioning medical authority. Unconventional healing approaches. Personal health beliefs.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Hierophant represents tradition and spiritual guidance. Consider both conventional wisdom and the need for personal truth.",
+      "id": "5_hierophant"
+    },
+    {
+      "name": "The Lovers",
+      "type": "major",
+      "number": 6,
+      "suit": null,
+      "element": "Air",
+      "zodiac": "Gemini",
+      "upright_keywords": [
+        "love",
+        "union",
+        "partnership",
+        "choices",
+        "harmony",
+        "attraction",
+        "soul mates"
+      ],
+      "reversed_keywords": [
+        "disharmony",
+        "imbalance",
+        "misalignment",
+        "poor choices",
+        "separation"
+      ],
+      "meanings": [
+        {
+          "upright": "True love and deep soul connection. Important relationship choice ahead. Perfect harmony and attraction between partners.",
+          "reversed": "Relationship imbalance or poor romantic choices. Communication problems with partner. Misalignment of values in love.",
+          "category": "love"
+        },
+        {
+          "upright": "Important career choice or work partnership. Collaboration and team harmony. Aligning professional values with personal beliefs.",
+          "reversed": "Workplace conflicts or difficult career decisions. Imbalanced work relationships. Poor professional choices affecting partnerships.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial partnerships or important money decisions. Shared values around wealth. Joint investments or financial harmony.",
+          "reversed": "Financial disagreements or poor money choices. Imbalanced financial sharing. Conflicts over economic values and priorities.",
+          "category": "money"
+        },
+        {
+          "upright": "Important health choices ahead. Mind-body harmony and balance. Wellness partnerships or shared health values.",
+          "reversed": "Poor health choices or conflicting wellness advice. Imbalanced approach to physical and mental health needs.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Lovers represents important choices and partnerships. Focus on harmony, attraction, and alignment of values.",
+      "id": "6_lovers"
+    },
+    {
+      "name": "The Chariot",
+      "type": "major",
+      "number": 7,
+      "suit": null,
+      "element": "Water",
+      "zodiac": "Cancer",
+      "upright_keywords": [
+        "victory",
+        "willpower",
+        "determination",
+        "control",
+        "journey",
+        "triumph"
+      ],
+      "reversed_keywords": [
+        "lack of control",
+        "lack of direction",
+        "aggression",
+        "defeat"
+      ],
+      "meanings": [
+        {
+          "upright": "Victory in love through determination. Successfully moving relationship forward. Overcoming romantic obstacles with willpower.",
+          "reversed": "Lack of direction in relationships. Conflicted romantic feelings. Aggressive approach to love causing problems.",
+          "category": "love"
+        },
+        {
+          "upright": "Career victory and professional momentum. Determined work effort paying off. Successfully overcoming workplace obstacles.",
+          "reversed": "Lack of career direction or scattered professional focus. Workplace aggression. Losing control of professional situation.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial progress and money victories. Determined approach to wealth building. Successfully overcoming economic obstacles.",
+          "reversed": "Lack of financial control or scattered money focus. Aggressive financial behavior. Losing grip on economic situation.",
+          "category": "money"
+        },
+        {
+          "upright": "Health progress and physical victory. Determined wellness effort succeeding. Overcoming illness through willpower and control.",
+          "reversed": "Health control issues or scattered wellness efforts. Aggressive health approach. Lack of clear direction for recovery.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Chariot represents victory through determination and control. Emphasize forward momentum and overcoming obstacles.",
+      "id": "7_chariot"
+    },
+    {
+      "name": "Strength",
+      "type": "major",
+      "number": 8,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Leo",
+      "upright_keywords": [
+        "inner strength",
+        "courage",
+        "compassion",
+        "patience",
+        "gentle control",
+        "resilience"
+      ],
+      "reversed_keywords": [
+        "self-doubt",
+        "weakness",
+        "insecurity",
+        "lack of confidence",
+        "abuse of power"
+      ],
+      "meanings": [
+        {
+          "upright": "Inner strength in relationships. Compassionate love and patience with partner. Emotional resilience through romantic challenges.",
+          "reversed": "Relationship insecurity and lack of confidence in love. Weak romantic boundaries. Emotional volatility in partnerships.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional confidence and workplace resilience. Leadership through compassion. Inner strength overcoming work challenges.",
+          "reversed": "Career insecurity and lack of professional confidence. Weak leadership. Self-doubt affecting work performance.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial confidence and patient money approach. Inner strength with economic challenges. Disciplined yet compassionate spending.",
+          "reversed": "Financial insecurity and lack of money confidence. Impulsive spending. Weak financial boundaries and discipline.",
+          "category": "money"
+        },
+        {
+          "upright": "Physical and emotional healing strength. Mind over matter approach to wellness. Healthy resilience and recovery power.",
+          "reversed": "Health insecurity and lack of healing confidence. Weak immune system. Poor confidence in recovery abilities.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Strength represents inner power and gentle control. Focus on compassion, patience, and emotional resilience.",
+      "id": "8_strength"
+    },
+    {
+      "name": "The Hermit",
+      "type": "major",
+      "number": 9,
+      "suit": null,
+      "element": "Earth",
+      "zodiac": "Virgo",
+      "upright_keywords": [
+        "introspection",
+        "soul searching",
+        "inner guidance",
+        "wisdom",
+        "solitude",
+        "meditation"
+      ],
+      "reversed_keywords": [
+        "isolation",
+        "loneliness",
+        "withdrawal",
+        "lost direction",
+        "avoiding others"
+      ],
+      "meanings": [
+        {
+          "upright": "Soul searching in romantic matters. Need for relationship space and introspection. Finding inner love wisdom before committing.",
+          "reversed": "Romantic loneliness or avoiding relationships. Isolation from potential partners. Lost direction in love matters.",
+          "category": "love"
+        },
+        {
+          "upright": "Career soul searching and professional introspection. Need for work solitude. Finding true vocational purpose and meaning.",
+          "reversed": "Career isolation or avoiding work relationships. Lost professional direction. Withdrawing from career opportunities.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial introspection and careful money consideration. Finding inner wisdom about wealth values and economic priorities.",
+          "reversed": "Financial isolation or avoiding money responsibilities. Lost economic direction. Withdrawing from financial planning.",
+          "category": "money"
+        },
+        {
+          "upright": "Health introspection and finding inner healing wisdom. Quiet recovery time. Deep body awareness and meditation.",
+          "reversed": "Health isolation or avoiding medical help. Lost wellness direction. Withdrawing from healing opportunities.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Hermit represents inner wisdom and soul searching. Emphasize the need for introspection and finding inner truth.",
+      "id": "9_hermit"
+    },
+    {
+      "name": "Wheel of Fortune",
+      "type": "major",
+      "number": 10,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Jupiter",
+      "upright_keywords": [
+        "fate",
+        "destiny",
+        "cycles",
+        "turning point",
+        "luck",
+        "karma",
+        "change"
+      ],
+      "reversed_keywords": [
+        "bad luck",
+        "lack of control",
+        "negative cycles",
+        "resistance to change"
+      ],
+      "meanings": [
+        {
+          "upright": "Destined love meeting or karmic romantic connection. Relationship turning point. Positive love cycles beginning.",
+          "reversed": "Bad luck in love or negative romantic cycles. Resisting necessary relationship changes. Clinging to past romantic patterns.",
+          "category": "love"
+        },
+        {
+          "upright": "Career turning point or destined professional opportunity. Positive work cycles. Lucky breaks in professional life.",
+          "reversed": "Career bad luck or negative professional cycles. Resisting necessary work changes. Professional stagnation.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial turning point or destined wealth opportunity. Positive money cycles. Economic luck and karmic abundance.",
+          "reversed": "Financial bad luck or negative economic cycles. Resisting necessary money changes. Economic downturn or stagnation.",
+          "category": "money"
+        },
+        {
+          "upright": "Health turning point or destined wellness opportunity. Positive healing cycles. Lucky recovery or karmic health lessons.",
+          "reversed": "Health bad luck or negative wellness cycles. Resisting necessary health changes. Chronic health conditions.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Wheel of Fortune represents fate and cycles of change. Focus on destiny, timing, and karmic influences.",
+      "id": "10_wheel_fortune"
+    },
+    {
+      "name": "Justice",
+      "type": "major",
+      "number": 11,
+      "suit": null,
+      "element": "Air",
+      "zodiac": "Libra",
+      "upright_keywords": [
+        "fairness",
+        "truth",
+        "cause and effect",
+        "balance",
+        "legal matters",
+        "karma"
+      ],
+      "reversed_keywords": [
+        "unfairness",
+        "lack of accountability",
+        "bias",
+        "dishonesty",
+        "legal issues"
+      ],
+      "meanings": [
+        {
+          "upright": "Fair and balanced relationships. Honest romantic communication. Relationship karma and truth coming to light.",
+          "reversed": "Unfair treatment in relationships. Dishonesty or bias in love. Avoiding responsibility for romantic actions.",
+          "category": "love"
+        },
+        {
+          "upright": "Fair treatment at work and honest professional dealings. Balanced work relationships. Professional integrity rewarded.",
+          "reversed": "Workplace unfairness or dishonest business practices. Imbalanced professional treatment. Legal issues at work.",
+          "category": "career"
+        },
+        {
+          "upright": "Fair financial dealings and honest money matters. Balanced economic approach. Financial karma and legal money matters.",
+          "reversed": "Unfair financial treatment or dishonest money dealings. Financial imbalance. Avoiding economic responsibility.",
+          "category": "money"
+        },
+        {
+          "upright": "Balanced health approach and fair medical treatment. Honest health assessment. Health karma and natural consequences.",
+          "reversed": "Unfair health treatment or dishonest medical advice. Imbalanced wellness approach. Avoiding health responsibility.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Justice represents truth, fairness, and karma. Focus on balance, accountability, and the consequences of actions.",
+      "id": "11_justice"
+    },
+    {
+      "name": "The Hanged Man",
+      "type": "major",
+      "number": 12,
+      "suit": null,
+      "element": "Water",
+      "zodiac": "Neptune",
+      "upright_keywords": [
+        "sacrifice",
+        "waiting",
+        "new perspective",
+        "suspension",
+        "patience",
+        "surrender"
+      ],
+      "reversed_keywords": [
+        "delays",
+        "resistance",
+        "stalling",
+        "avoiding sacrifice"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship sacrifice for greater good. Patient approach to love. Seeing romantic situation from new perspective.",
+          "reversed": "Avoiding necessary relationship sacrifice. Impatient with romantic progress. Refusing to see partner's perspective.",
+          "category": "love"
+        },
+        {
+          "upright": "Career sacrifice for future gain. Patient professional approach. New work perspective bringing clarity.",
+          "reversed": "Avoiding career sacrifice or refusing to wait. Impatient with professional progress. Stalling necessary work changes.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial sacrifice for long-term gain. Patient money approach. New economic perspective bringing wisdom.",
+          "reversed": "Avoiding financial sacrifice or refusing to wait. Impatient with wealth building. Stalling necessary money changes.",
+          "category": "money"
+        },
+        {
+          "upright": "Health sacrifice for recovery. Patient healing approach. New wellness perspective bringing understanding.",
+          "reversed": "Avoiding health sacrifice or refusing treatment. Impatient with healing process. Stalling necessary wellness changes.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Hanged Man represents sacrifice and new perspectives. Emphasize patience, surrender, and the wisdom in waiting.",
+      "id": "12_hanged_man"
+    },
+    {
+      "name": "Death",
+      "type": "major",
+      "number": 13,
+      "suit": null,
+      "element": "Water",
+      "zodiac": "Scorpio",
+      "upright_keywords": [
+        "transformation",
+        "endings",
+        "new beginnings",
+        "rebirth",
+        "change",
+        "release"
+      ],
+      "reversed_keywords": [
+        "resistance to change",
+        "fear of endings",
+        "stagnation",
+        "clinging to past"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship transformation or ending toxic romantic patterns. Love rebirth and evolution. Major romantic change ahead.",
+          "reversed": "Resisting necessary relationship changes. Fear of romantic transformation. Clinging to dead or unhealthy love patterns.",
+          "category": "love"
+        },
+        {
+          "upright": "Career transformation or ending old professional phase. Work rebirth and evolution. Major professional change ahead.",
+          "reversed": "Resisting necessary career changes. Fear of professional transformation. Clinging to dead-end or unfulfilling job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial transformation or ending old money patterns. Economic rebirth and evolution. Major financial change ahead.",
+          "reversed": "Resisting necessary financial changes. Fear of economic transformation. Clinging to outdated or harmful money habits.",
+          "category": "money"
+        },
+        {
+          "upright": "Health transformation or ending illness cycle. Wellness rebirth and healing evolution. Major physical change ahead.",
+          "reversed": "Resisting necessary health changes. Fear of wellness transformation. Clinging to unhealthy or limiting physical patterns.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Death represents transformation and new beginnings. Focus on necessary endings leading to rebirth and positive change.",
+      "id": "13_death"
+    },
+    {
+      "name": "Temperance",
+      "type": "major",
+      "number": 14,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Sagittarius",
+      "upright_keywords": [
+        "balance",
+        "moderation",
+        "patience",
+        "harmony",
+        "synthesis",
+        "middle path"
+      ],
+      "reversed_keywords": [
+        "imbalance",
+        "extremes",
+        "lack of patience",
+        "discord",
+        "excess"
+      ],
+      "meanings": [
+        {
+          "upright": "Balanced relationships and patient love approach. Harmonious romantic partnership. Moderate and healthy relationship dynamics.",
+          "reversed": "Imbalanced relationships or impatient approach to love. Extreme romantic behavior. Relationship discord and excess.",
+          "category": "love"
+        },
+        {
+          "upright": "Balanced work approach and patient career progress. Harmonious workplace relationships. Moderate professional pace and growth.",
+          "reversed": "Imbalanced work life or impatient career approach. Extreme professional behavior. Workplace discord and overwork.",
+          "category": "career"
+        },
+        {
+          "upright": "Balanced finances and patient money approach. Harmonious financial flow. Moderate spending and saving habits.",
+          "reversed": "Imbalanced finances or impatient wealth building. Extreme money behavior. Financial discord between spending and saving.",
+          "category": "money"
+        },
+        {
+          "upright": "Balanced health approach and patient healing process. Harmonious wellness routine. Moderate lifestyle and self-care.",
+          "reversed": "Imbalanced health habits or impatient healing approach. Extreme wellness behavior. Health discord and excess.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Temperance represents balance and moderation. Focus on patience, harmony, and finding the middle path.",
+      "id": "14_temperance"
+    },
+    {
+      "name": "The Devil",
+      "type": "major",
+      "number": 15,
+      "suit": null,
+      "element": "Earth",
+      "zodiac": "Capricorn",
+      "upright_keywords": [
+        "bondage",
+        "addiction",
+        "materialism",
+        "temptation",
+        "restriction",
+        "obsession"
+      ],
+      "reversed_keywords": [
+        "freedom",
+        "release",
+        "breaking chains",
+        "overcoming addiction",
+        "enlightenment"
+      ],
+      "meanings": [
+        {
+          "upright": "Toxic or obsessive relationships. Unhealthy romantic attachment. Sexual temptation or codependent love patterns.",
+          "reversed": "Breaking free from toxic relationships. Overcoming romantic obsession. Healing unhealthy love patterns and dependencies.",
+          "category": "love"
+        },
+        {
+          "upright": "Toxic work environment or professional obsession. Workplace addiction. Being trapped in unfulfilling career by materialism.",
+          "reversed": "Breaking free from toxic workplace. Overcoming career obsession. Leaving unfulfilling job for meaningful work.",
+          "category": "career"
+        },
+        {
+          "upright": "Money obsession or financial bondage. Material addiction and greed. Being controlled by wealth or debt.",
+          "reversed": "Breaking free from money obsession. Overcoming financial bondage. Finding freedom from material dependencies.",
+          "category": "money"
+        },
+        {
+          "upright": "Health addictions or unhealthy physical obsessions. Body image issues. Being controlled by unhealthy habits.",
+          "reversed": "Breaking health addictions. Overcoming body obsessions. Healing relationship with physical self and habits.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Devil represents bondage and temptation. When reversed, focus on liberation and breaking free from limitations.",
+      "id": "15_devil"
+    },
+    {
+      "name": "The Tower",
+      "type": "major",
+      "number": 16,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Mars",
+      "upright_keywords": [
+        "sudden change",
+        "upheaval",
+        "revelation",
+        "destruction",
+        "liberation",
+        "awakening"
+      ],
+      "reversed_keywords": [
+        "avoiding disaster",
+        "fear of change",
+        "delayed upheaval",
+        "resisting truth"
+      ],
+      "meanings": [
+        {
+          "upright": "Sudden relationship breakdown or romantic revelation. Love upheaval leading to liberation. Destruction of false romantic illusions.",
+          "reversed": "Avoiding relationship problems or delaying romantic breakdown. Fear of love truth. Resisting necessary relationship changes.",
+          "category": "love"
+        },
+        {
+          "upright": "Sudden job loss or career upheaval. Professional revelation leading to liberation. Destruction of false career expectations.",
+          "reversed": "Avoiding career problems or delaying job changes. Fear of professional truth. Resisting necessary work transformations.",
+          "category": "career"
+        },
+        {
+          "upright": "Sudden financial loss or economic upheaval. Money revelation leading to liberation. Destruction of false wealth beliefs.",
+          "reversed": "Avoiding financial problems or delaying economic changes. Fear of money truth. Resisting necessary financial transformations.",
+          "category": "money"
+        },
+        {
+          "upright": "Sudden health crisis or wellness revelation. Physical upheaval leading to healing breakthrough. Destruction of false health beliefs.",
+          "reversed": "Avoiding health problems or delaying medical changes. Fear of health truth. Resisting necessary wellness transformations.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Tower represents sudden change and revelation. Focus on necessary destruction leading to liberation and truth.",
+      "id": "16_tower"
+    },
+    {
+      "name": "The Star",
+      "type": "major",
+      "number": 17,
+      "suit": null,
+      "element": "Air",
+      "zodiac": "Aquarius",
+      "upright_keywords": [
+        "hope",
+        "faith",
+        "inspiration",
+        "healing",
+        "renewal",
+        "guidance",
+        "wishes"
+      ],
+      "reversed_keywords": [
+        "despair",
+        "lack of faith",
+        "disconnection",
+        "hopelessness",
+        "self-doubt"
+      ],
+      "meanings": [
+        {
+          "upright": "Hopeful romance and inspiring love connection. Healing relationship energy. Faith in romantic future and wish fulfillment.",
+          "reversed": "Lost hope in love or romantic despair. Lack of faith in relationships. Disconnected from love inspiration and guidance.",
+          "category": "love"
+        },
+        {
+          "upright": "Hopeful career prospects and inspiring work opportunities. Professional healing. Faith in vocational future and goal achievement.",
+          "reversed": "Lost career hope or professional despair. Lack of faith in work future. Disconnected from professional inspiration.",
+          "category": "career"
+        },
+        {
+          "upright": "Hopeful finances and inspiring money opportunities. Economic healing. Faith in financial future and abundance manifestation.",
+          "reversed": "Lost financial hope or economic despair. Lack of faith in money future. Disconnected from abundance inspiration.",
+          "category": "money"
+        },
+        {
+          "upright": "Hopeful healing and inspiring wellness opportunities. Physical renewal. Faith in health recovery and body restoration.",
+          "reversed": "Lost health hope or wellness despair. Lack of faith in healing. Disconnected from recovery inspiration and guidance.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Star represents hope and divine guidance. Focus on faith, inspiration, and the power of wishes coming true.",
+      "id": "17_star"
+    },
+    {
+      "name": "The Moon",
+      "type": "major",
+      "number": 18,
+      "suit": null,
+      "element": "Water",
+      "zodiac": "Pisces",
+      "upright_keywords": [
+        "illusion",
+        "intuition",
+        "dreams",
+        "subconscious",
+        "fear",
+        "deception",
+        "mystery"
+      ],
+      "reversed_keywords": [
+        "clarity",
+        "truth revealed",
+        "overcoming fear",
+        "intuition trusted"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic illusions or confusing relationship situation. Love anxiety and fear. Hidden romantic aspects need illumination.",
+          "reversed": "Relationship clarity and overcoming love fears. Truth revealed in romance. Trusting romantic intuition and inner wisdom.",
+          "category": "love"
+        },
+        {
+          "upright": "Career confusion or workplace illusions. Professional anxiety and uncertainty. Hidden work aspects creating confusion.",
+          "reversed": "Career clarity and overcoming work fears. Professional truth revealed. Trusting work intuition and inner guidance.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial confusion or money illusions. Economic anxiety and uncertainty. Hidden financial aspects creating confusion.",
+          "reversed": "Financial clarity and overcoming money fears. Economic truth revealed. Trusting financial intuition and inner wisdom.",
+          "category": "money"
+        },
+        {
+          "upright": "Health confusion or wellness illusions. Medical anxiety and psychosomatic issues. Hidden health aspects need attention.",
+          "reversed": "Health clarity and overcoming medical fears. Wellness truth revealed. Trusting body intuition and healing wisdom.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Moon represents illusion and intuition. Focus on navigating confusion and trusting inner wisdom.",
+      "id": "18_moon"
+    },
+    {
+      "name": "The Sun",
+      "type": "major",
+      "number": 19,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Sun",
+      "upright_keywords": [
+        "joy",
+        "success",
+        "vitality",
+        "positivity",
+        "achievement",
+        "celebration",
+        "enlightenment"
+      ],
+      "reversed_keywords": [
+        "temporary setbacks",
+        "lack of enthusiasm",
+        "delayed success",
+        "inner happiness"
+      ],
+      "meanings": [
+        {
+          "upright": "Joyful relationships and successful romance. Celebratory love energy. Positive partnership with abundant happiness and vitality.",
+          "reversed": "Temporary romantic setbacks or lack of relationship enthusiasm. Need to find inner love joy before sharing with others.",
+          "category": "love"
+        },
+        {
+          "upright": "Career success and joyful work experience. Professional celebration and achievement. Positive workplace energy and vitality.",
+          "reversed": "Temporary career setbacks or lack of work enthusiasm. Need to find inner professional joy and motivation.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial success and abundant prosperity. Money celebration and achievement. Positive economic energy and wealth vitality.",
+          "reversed": "Temporary financial setbacks or lack of money enthusiasm. Need to find inner abundance mindset and gratitude.",
+          "category": "money"
+        },
+        {
+          "upright": "Vibrant physical health and successful healing. Wellness celebration and achievement. Positive body energy and vital life force.",
+          "reversed": "Temporary health setbacks or lack of wellness enthusiasm. Need to find inner healing joy and body appreciation.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The Sun represents joy and success. Focus on positivity, achievement, and the celebration of life's blessings.",
+      "id": "19_sun"
+    },
+    {
+      "name": "Judgement",
+      "type": "major",
+      "number": 20,
+      "suit": null,
+      "element": "Fire",
+      "zodiac": "Pluto",
+      "upright_keywords": [
+        "rebirth",
+        "inner calling",
+        "absolution",
+        "awakening",
+        "second chances",
+        "forgiveness"
+      ],
+      "reversed_keywords": [
+        "self-doubt",
+        "harsh judgment",
+        "lack of forgiveness",
+        "missing the call"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship rebirth and romantic calling. Love forgiveness and second chances. Spiritual awakening through partnership.",
+          "reversed": "Romantic self-doubt or harsh relationship judgment. Missing love calling. Lack of forgiveness in romantic matters.",
+          "category": "love"
+        },
+        {
+          "upright": "Career rebirth and professional calling. Work forgiveness and second chances. Spiritual awakening through vocation.",
+          "reversed": "Professional self-doubt or harsh career judgment. Missing work calling. Lack of forgiveness in professional matters.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial rebirth and money calling. Economic forgiveness and second chances. Spiritual awakening through abundance.",
+          "reversed": "Financial self-doubt or harsh money judgment. Missing wealth calling. Lack of forgiveness in economic matters.",
+          "category": "money"
+        },
+        {
+          "upright": "Health rebirth and wellness calling. Physical forgiveness and second chances. Spiritual awakening through healing.",
+          "reversed": "Health self-doubt or harsh body judgment. Missing wellness calling. Lack of forgiveness in physical matters.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Judgement represents rebirth and spiritual calling. Focus on forgiveness, second chances, and answering your higher purpose.",
+      "id": "20_judgement"
+    },
+    {
+      "name": "The World",
+      "type": "major",
+      "number": 21,
+      "suit": null,
+      "element": "Earth",
+      "zodiac": "Saturn",
+      "upright_keywords": [
+        "completion",
+        "accomplishment",
+        "fulfillment",
+        "success",
+        "wholeness",
+        "integration"
+      ],
+      "reversed_keywords": [
+        "incomplete",
+        "lack of closure",
+        "stagnation",
+        "unfulfilled goals"
+      ],
+      "meanings": [
+        {
+          "upright": "Love completion and romantic fulfillment. Relationship success and partnership wholeness. Achievement of romantic dreams.",
+          "reversed": "Incomplete romantic fulfillment or relationship stagnation. Lack of love closure. Unfulfilled partnership goals.",
+          "category": "love"
+        },
+        {
+          "upright": "Career completion and professional fulfillment. Work success and vocational wholeness. Achievement of professional dreams.",
+          "reversed": "Incomplete career fulfillment or professional stagnation. Lack of work closure. Unfulfilled professional goals.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial completion and economic fulfillment. Money success and wealth wholeness. Achievement of abundance dreams.",
+          "reversed": "Incomplete financial fulfillment or economic stagnation. Lack of money closure. Unfulfilled wealth goals.",
+          "category": "money"
+        },
+        {
+          "upright": "Health completion and wellness fulfillment. Physical success and body wholeness. Achievement of healing dreams.",
+          "reversed": "Incomplete health fulfillment or wellness stagnation. Lack of healing closure. Unfulfilled recovery goals.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "The World represents completion and fulfillment. Focus on success, wholeness, and the achievement of long-term goals.",
+      "id": "21_world"
+    },
+    {
+      "name": "Ace of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 1,
+      "element": "Fire",
+      "zodiac": "Fire signs",
+      "upright_keywords": [
+        "inspiration",
+        "creative spark",
+        "new opportunity",
+        "potential",
+        "energy",
+        "passion"
+      ],
+      "reversed_keywords": [
+        "creative blocks",
+        "lack of energy",
+        "delays",
+        "misdirected energy"
+      ],
+      "meanings": [
+        {
+          "upright": "New romantic spark and passionate beginning. Creative love expression. Inspired relationship start with abundant energy.",
+          "reversed": "Lack of romantic spark or creative blocks in love. Delayed romantic opportunities. Misdirected passion energy.",
+          "category": "love"
+        },
+        {
+          "upright": "New job opportunity or creative career start. Professional inspiration and business venture potential. Abundant work energy.",
+          "reversed": "Career delays or lack of work inspiration. Missed professional opportunities. Creative blocks at work.",
+          "category": "career"
+        },
+        {
+          "upright": "New financial opportunity or creative income source. Money-making potential. Economic inspiration and abundant energy.",
+          "reversed": "Financial delays or lack of money opportunities. Misdirected economic energy. Creative blocks affecting income.",
+          "category": "money"
+        },
+        {
+          "upright": "New health start or energy boost. Inspired wellness routine. Vital life force and physical renewal.",
+          "reversed": "Low energy or health delays. Lack of wellness inspiration. Blocked life force and vitality.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ace of Wands represents new creative beginnings. Focus on inspiration, potential, and taking the first step.",
+      "id": "ace_wands"
+    },
+    {
+      "name": "Two of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 2,
+      "element": "Fire",
+      "zodiac": "Mars in Aries",
+      "upright_keywords": [
+        "planning",
+        "making decisions",
+        "leaving comfort zone",
+        "personal power",
+        "control"
+      ],
+      "reversed_keywords": [
+        "fear of unknown",
+        "lack of planning",
+        "bad decisions",
+        "staying in comfort zone"
+      ],
+      "meanings": [
+        {
+          "upright": "Planning romantic future together. Making important relationship decisions. Taking control of love life and destiny.",
+          "reversed": "Fear of romantic commitment or relationship planning. Poor love decisions. Staying in comfort zone avoiding relationship growth.",
+          "category": "love"
+        },
+        {
+          "upright": "Career planning and professional decision-making. Expanding work horizons. Taking control of professional destiny.",
+          "reversed": "Fear of career change or lack of professional planning. Poor work decisions. Staying in comfortable but limiting job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial planning and investment decisions. Expanding wealth strategies. Taking control of economic destiny.",
+          "reversed": "Fear of financial risk or lack of money planning. Poor investment choices. Staying in safe but limiting financial situation.",
+          "category": "money"
+        },
+        {
+          "upright": "Health planning and wellness decision-making. Expanding fitness horizons. Taking control of physical destiny.",
+          "reversed": "Fear of health changes or lack of wellness planning. Poor health decisions. Staying in comfortable but limiting health routine.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Two of Wands represents planning and personal power. Focus on making important decisions and expanding horizons.",
+      "id": "two_wands"
+    },
+    {
+      "name": "Three of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 3,
+      "element": "Fire",
+      "zodiac": "Sun in Aries",
+      "upright_keywords": [
+        "expansion",
+        "foresight",
+        "overseas opportunities",
+        "leadership",
+        "planning"
+      ],
+      "reversed_keywords": [
+        "lack of foresight",
+        "delays",
+        "lack of planning",
+        "playing small"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship expansion and growth. Looking ahead in love. Long-distance romance or international connection. Leadership in partnership.",
+          "reversed": "Relationship delays or lack of romantic foresight. Playing small in love. Unexpected romantic obstacles or setbacks.",
+          "category": "love"
+        },
+        {
+          "upright": "Career expansion and business growth. Overseas work opportunities. Professional leadership and foresight. Long-term success planning.",
+          "reversed": "Career delays or lack of professional foresight. Missing business opportunities. Playing small in professional ambitions.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial expansion and wealth growth. Overseas investments or international business. Economic leadership and long-term planning.",
+          "reversed": "Financial delays or lack of money foresight. Missing investment opportunities. Playing small with wealth building.",
+          "category": "money"
+        },
+        {
+          "upright": "Health expansion and wellness growth. Looking ahead for long-term physical well-being. Leadership in health community.",
+          "reversed": "Health delays or lack of wellness foresight. Missing health opportunities. Playing small with fitness goals.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Three of Wands represents expansion and foresight. Focus on growth, planning ahead, and expanding horizons.",
+      "id": "three_wands"
+    },
+    {
+      "name": "Four of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 4,
+      "element": "Fire",
+      "zodiac": "Venus in Aries",
+      "upright_keywords": [
+        "celebration",
+        "harmony",
+        "homecoming",
+        "stability",
+        "achievement",
+        "community"
+      ],
+      "reversed_keywords": [
+        "instability",
+        "lack of support",
+        "broken relationships",
+        "cancelled celebrations"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship celebration and romantic harmony. Engagement or wedding planning. Family support for partnership. Love homecoming.",
+          "reversed": "Relationship instability or lack of family support. Cancelled romantic celebrations. Broken harmony in love.",
+          "category": "love"
+        },
+        {
+          "upright": "Work celebration and team harmony. Career milestone or achievement. Workplace stability and community support.",
+          "reversed": "Workplace instability or lack of team support. Cancelled work celebrations. Broken professional harmony.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial celebration and money stability. Achieving economic goals. Community support for wealth building.",
+          "reversed": "Financial instability or lack of economic support. Cancelled financial plans. Broken money harmony.",
+          "category": "money"
+        },
+        {
+          "upright": "Health celebration and wellness stability. Achieving fitness goals. Community support for healthy lifestyle.",
+          "reversed": "Health instability or lack of wellness support. Cancelled health plans. Broken physical harmony.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Four of Wands represents celebration and stability. Focus on harmony, achievement, and community support.",
+      "id": "four_wands"
+    },
+    {
+      "name": "Five of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 5,
+      "element": "Fire",
+      "zodiac": "Saturn in Leo",
+      "upright_keywords": [
+        "competition",
+        "conflict",
+        "rivalry",
+        "disagreement",
+        "struggle",
+        "tension"
+      ],
+      "reversed_keywords": [
+        "avoiding conflict",
+        "inner conflict",
+        "agreement",
+        "peaceful resolution"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic competition or relationship rivalry. Disagreements with partner. Struggling for love attention or fighting for relationship.",
+          "reversed": "Avoiding relationship conflict or inner romantic turmoil. Making peace in love. Resolving partnership disagreements.",
+          "category": "love"
+        },
+        {
+          "upright": "Workplace competition or professional rivalry. Team disagreements. Struggling for career advancement or fighting for position.",
+          "reversed": "Avoiding work conflict or inner professional struggle. Finding workplace agreement. Resolving team disagreements.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial competition or money disagreements. Competing interests for resources. Struggling for economic advantage.",
+          "reversed": "Avoiding financial conflict or inner money struggle. Finding economic agreement. Resolving wealth disagreements.",
+          "category": "money"
+        },
+        {
+          "upright": "Health competition or conflicting wellness advice. Struggling with fitness goals. Fighting against physical limitations.",
+          "reversed": "Avoiding health conflict or inner wellness struggle. Finding physical balance. Resolving body disagreements.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Five of Wands represents competition and conflict. Focus on healthy rivalry, creative tension, and resolving disagreements.",
+      "id": "five_wands"
+    },
+    {
+      "name": "Six of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 6,
+      "element": "Fire",
+      "zodiac": "Jupiter in Leo",
+      "upright_keywords": [
+        "victory",
+        "public recognition",
+        "success",
+        "achievement",
+        "leadership",
+        "confidence"
+      ],
+      "reversed_keywords": [
+        "lack of recognition",
+        "failure",
+        "losing",
+        "arrogance",
+        "fall from grace"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic victory and love success. Public recognition of relationship. Successful courtship or partnership achievement.",
+          "reversed": "Lack of romantic recognition or relationship failure. Love disappointment. Arrogance affecting partnership success.",
+          "category": "love"
+        },
+        {
+          "upright": "Career victory and professional success. Public work recognition. Promotion or professional achievement and leadership.",
+          "reversed": "Lack of professional recognition or career failure. Work disappointment. Arrogance affecting career success.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial victory and money success. Public wealth recognition. Profitable achievements and economic leadership.",
+          "reversed": "Lack of financial recognition or money failure. Investment disappointment. Arrogance affecting wealth success.",
+          "category": "money"
+        },
+        {
+          "upright": "Health victory and wellness success. Public fitness recognition. Overcoming illness or physical achievement.",
+          "reversed": "Lack of health recognition or wellness failure. Fitness disappointment. Arrogance affecting healing success.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Six of Wands represents victory and recognition. Focus on success, achievement, and positive acknowledgment.",
+      "id": "six_wands"
+    },
+    {
+      "name": "Seven of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 7,
+      "element": "Fire",
+      "zodiac": "Mars in Leo",
+      "upright_keywords": [
+        "challenge",
+        "competition",
+        "perseverance",
+        "defensive",
+        "standing ground"
+      ],
+      "reversed_keywords": [
+        "giving up",
+        "overwhelmed",
+        "lack of courage",
+        "defeated"
+      ],
+      "meanings": [
+        {
+          "upright": "Defending relationship against challenges. Fighting for love. Persevering through romantic difficulties. Standing ground in partnership.",
+          "reversed": "Giving up on relationship or overwhelmed by love challenges. Feeling defeated in romance. Lack of courage in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Defending work position against challenges. Fighting for career advancement. Persevering through professional difficulties.",
+          "reversed": "Giving up on career or overwhelmed by work challenges. Feeling defeated professionally. Lack of courage at work.",
+          "category": "career"
+        },
+        {
+          "upright": "Defending financial position against challenges. Fighting for economic security. Persevering through money difficulties.",
+          "reversed": "Giving up on financial goals or overwhelmed by money challenges. Feeling defeated economically. Lack of courage with wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Defending health against challenges. Fighting illness. Persevering through physical difficulties. Standing ground with wellness.",
+          "reversed": "Giving up on health or overwhelmed by wellness challenges. Feeling defeated physically. Lack of courage with healing.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Seven of Wands represents defending your position. Focus on perseverance, courage, and standing your ground.",
+      "id": "seven_wands"
+    },
+    {
+      "name": "Eight of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 8,
+      "element": "Fire",
+      "zodiac": "Mercury in Sagittarius",
+      "upright_keywords": [
+        "speed",
+        "action",
+        "movement",
+        "quick results",
+        "communication",
+        "travel"
+      ],
+      "reversed_keywords": [
+        "delays",
+        "frustration",
+        "resisting change",
+        "internal conflict"
+      ],
+      "meanings": [
+        {
+          "upright": "Fast-moving romance and quick relationship developments. Love messages and communication. Rapid romantic progress and travel for love.",
+          "reversed": "Romantic delays or frustrated with relationship pace. Resisting love changes. Internal conflict about romance speed.",
+          "category": "love"
+        },
+        {
+          "upright": "Rapid career progress and quick job developments. Business communications and travel. Fast professional movement and results.",
+          "reversed": "Career delays or frustrated with work pace. Resisting professional changes. Internal conflict about job speed.",
+          "category": "career"
+        },
+        {
+          "upright": "Fast financial results and quick money movements. Rapid investments and economic communications. Speed in wealth building.",
+          "reversed": "Financial delays or frustrated with money pace. Resisting economic changes. Internal conflict about wealth speed.",
+          "category": "money"
+        },
+        {
+          "upright": "Quick health results and rapid recovery. Fast wellness improvements and physical progress. Speed in healing process.",
+          "reversed": "Health delays or frustrated with recovery pace. Resisting wellness changes. Internal conflict about healing speed.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Eight of Wands represents speed and rapid movement. Focus on quick progress, communication, and swift action.",
+      "id": "eight_wands"
+    },
+    {
+      "name": "Nine of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 9,
+      "element": "Fire",
+      "zodiac": "Moon in Sagittarius",
+      "upright_keywords": [
+        "persistence",
+        "test of faith",
+        "resilience",
+        "boundaries",
+        "last stand"
+      ],
+      "reversed_keywords": [
+        "exhaustion",
+        "giving up",
+        "lack of persistence",
+        "paranoia"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship persistence and testing romantic faith. Love resilience and boundaries. Final stand for partnership. Nearly there in love.",
+          "reversed": "Romantic exhaustion or giving up on love. Lack of relationship persistence. Paranoid about partner intentions.",
+          "category": "love"
+        },
+        {
+          "upright": "Career persistence and testing professional faith. Work resilience and boundaries. Final push for success. Nearly there professionally.",
+          "reversed": "Career exhaustion or giving up on work goals. Lack of professional persistence. Paranoid about workplace situations.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial persistence and testing money faith. Economic resilience and boundaries. Final push for wealth. Nearly there financially.",
+          "reversed": "Financial exhaustion or giving up on money goals. Lack of economic persistence. Paranoid about financial security.",
+          "category": "money"
+        },
+        {
+          "upright": "Health persistence and testing wellness faith. Physical resilience and boundaries. Final push for recovery. Nearly there with healing.",
+          "reversed": "Health exhaustion or giving up on wellness goals. Lack of physical persistence. Paranoid about health conditions.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Nine of Wands represents persistence near the end. Focus on resilience, boundaries, and the final push to success.",
+      "id": "nine_wands"
+    },
+    {
+      "name": "Ten of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 10,
+      "element": "Fire",
+      "zodiac": "Saturn in Sagittarius",
+      "upright_keywords": [
+        "burden",
+        "responsibility",
+        "hard work",
+        "completion",
+        "accomplishment"
+      ],
+      "reversed_keywords": [
+        "release",
+        "delegate",
+        "burden sharing",
+        "collapse from overwork"
+      ],
+      "meanings": [
+        {
+          "upright": "Relationship burdens and romantic responsibilities. Working hard for love. Accomplishment through effort in partnership.",
+          "reversed": "Releasing romantic burdens or sharing relationship responsibilities. Delegating love tasks. Relationship burnout from overwork.",
+          "category": "love"
+        },
+        {
+          "upright": "Work burdens and professional responsibilities. Career accomplishment through hard work. Completion of major projects.",
+          "reversed": "Releasing work burdens or delegating professional responsibilities. Career burnout. Collapsing from overwork.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial burdens and money responsibilities. Wealth through hard work. Economic accomplishment through effort.",
+          "reversed": "Releasing financial burdens or sharing money responsibilities. Economic burnout. Collapsing from financial overwork.",
+          "category": "money"
+        },
+        {
+          "upright": "Health burdens and wellness responsibilities. Fitness through hard work. Physical accomplishment through effort.",
+          "reversed": "Releasing health burdens or sharing wellness responsibilities. Physical burnout. Collapsing from health overwork.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ten of Wands represents burdens and responsibilities. Focus on hard work leading to accomplishment or the need to delegate.",
+      "id": "ten_wands"
+    },
+    {
+      "name": "Page of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 11,
+      "element": "Fire",
+      "zodiac": "Earth of Fire",
+      "upright_keywords": [
+        "enthusiasm",
+        "exploration",
+        "discovery",
+        "free spirit",
+        "good news"
+      ],
+      "reversed_keywords": [
+        "lack of direction",
+        "procrastination",
+        "lack of commitment",
+        "bad news"
+      ],
+      "meanings": [
+        {
+          "upright": "Enthusiastic about love and exploring romance. Discovering new romantic possibilities. Free-spirited approach to relationships. Good love news.",
+          "reversed": "Lack of romantic direction or procrastinating in love. Commitment issues in relationships. Bad news about romance.",
+          "category": "love"
+        },
+        {
+          "upright": "Enthusiastic about work and exploring career options. Discovering professional opportunities. Free-spirited approach to job. Good career news.",
+          "reversed": "Lack of career direction or procrastinating at work. Job commitment issues. Bad news about professional opportunities.",
+          "category": "career"
+        },
+        {
+          "upright": "Enthusiastic about money and exploring financial options. Discovering wealth opportunities. Free-spirited approach to economics. Good financial news.",
+          "reversed": "Lack of financial direction or procrastinating with money. Wealth commitment issues. Bad news about economic opportunities.",
+          "category": "money"
+        },
+        {
+          "upright": "Enthusiastic about health and exploring wellness options. Discovering fitness opportunities. Free-spirited approach to physical well-being. Good health news.",
+          "reversed": "Lack of health direction or procrastinating with wellness. Fitness commitment issues. Bad news about health opportunities.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Page of Wands represents youthful enthusiasm and exploration. Focus on new beginnings and discovering possibilities.",
+      "id": "page_wands"
+    },
+    {
+      "name": "Knight of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 12,
+      "element": "Fire",
+      "zodiac": "Air of Fire",
+      "upright_keywords": [
+        "adventure",
+        "impulsiveness",
+        "action",
+        "passion",
+        "recklessness"
+      ],
+      "reversed_keywords": [
+        "recklessness",
+        "impatience",
+        "lack of planning",
+        "passive"
+      ],
+      "meanings": [
+        {
+          "upright": "Adventurous romance and impulsive love actions. Passionate relationship pursuit. Reckless but exciting romantic energy.",
+          "reversed": "Reckless romantic behavior or impatient in love. Lack of relationship planning. Passive approach to romance.",
+          "category": "love"
+        },
+        {
+          "upright": "Adventurous career moves and impulsive work actions. Passionate professional pursuit. Reckless but exciting career energy.",
+          "reversed": "Reckless career behavior or impatient at work. Lack of professional planning. Passive approach to job advancement.",
+          "category": "career"
+        },
+        {
+          "upright": "Adventurous financial moves and impulsive money actions. Passionate wealth pursuit. Reckless but exciting economic energy.",
+          "reversed": "Reckless financial behavior or impatient with money. Lack of wealth planning. Passive approach to economic growth.",
+          "category": "money"
+        },
+        {
+          "upright": "Adventurous health approach and impulsive wellness actions. Passionate fitness pursuit. Reckless but exciting physical energy.",
+          "reversed": "Reckless health behavior or impatient with wellness. Lack of fitness planning. Passive approach to physical improvement.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Knight of Wands represents impulsive action and adventure. Focus on passionate pursuit while warning about recklessness.",
+      "id": "knight_wands"
+    },
+    {
+      "name": "Queen of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 13,
+      "element": "Fire",
+      "zodiac": "Water of Fire",
+      "upright_keywords": [
+        "confidence",
+        "independence",
+        "social butterfly",
+        "determination",
+        "warmth"
+      ],
+      "reversed_keywords": [
+        "selfishness",
+        "jealousy",
+        "insecurity",
+        "demanding",
+        "low confidence"
+      ],
+      "meanings": [
+        {
+          "upright": "Confident in love and independent romantic spirit. Warm relationship energy. Social butterfly attracting many admirers. Determined in partnership.",
+          "reversed": "Selfish in love or romantic jealousy. Relationship insecurity. Demanding partner behavior. Low confidence in romance.",
+          "category": "love"
+        },
+        {
+          "upright": "Confident at work and independent professional spirit. Warm leadership energy. Social networking for career advancement. Determined in job.",
+          "reversed": "Selfish at work or professional jealousy. Career insecurity. Demanding colleague behavior. Low confidence in abilities.",
+          "category": "career"
+        },
+        {
+          "upright": "Confident with money and independent financial spirit. Warm wealth energy. Social networking for economic opportunities. Determined in finances.",
+          "reversed": "Selfish with money or financial jealousy. Wealth insecurity. Demanding about finances. Low confidence in economic abilities.",
+          "category": "money"
+        },
+        {
+          "upright": "Confident about health and independent wellness spirit. Warm healing energy. Social fitness activities. Determined in physical goals.",
+          "reversed": "Selfish about health or wellness jealousy. Fitness insecurity. Demanding about body needs. Low confidence in physical abilities.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Queen of Wands represents confident feminine fire energy. Focus on independence, warmth, and social leadership.",
+      "id": "queen_wands"
+    },
+    {
+      "name": "King of Wands",
+      "type": "minor",
+      "suit": "wands",
+      "number": 14,
+      "element": "Fire",
+      "zodiac": "Fire of Fire",
+      "upright_keywords": [
+        "natural leader",
+        "vision",
+        "entrepreneur",
+        "honor",
+        "big picture thinking"
+      ],
+      "reversed_keywords": [
+        "impulsiveness",
+        "haste",
+        "ruthless",
+        "high expectations",
+        "forceful"
+      ],
+      "meanings": [
+        {
+          "upright": "Leading in relationships with romantic vision. Entrepreneurial love approach. Honorable partnership with big picture thinking about future.",
+          "reversed": "Impulsive in love or hasty romantic decisions. Ruthless relationship expectations. Forceful approach to partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Natural work leader with professional vision. Entrepreneurial career approach. Honorable business dealings with big picture thinking.",
+          "reversed": "Impulsive at work or hasty professional decisions. Ruthless career expectations. Forceful approach to business dealings.",
+          "category": "career"
+        },
+        {
+          "upright": "Natural financial leader with money vision. Entrepreneurial wealth approach. Honorable economic dealings with big picture thinking.",
+          "reversed": "Impulsive with money or hasty financial decisions. Ruthless wealth expectations. Forceful approach to economic dealings.",
+          "category": "money"
+        },
+        {
+          "upright": "Natural health leader with wellness vision. Entrepreneurial fitness approach. Honorable healing practices with big picture thinking.",
+          "reversed": "Impulsive about health or hasty wellness decisions. Ruthless fitness expectations. Forceful approach to physical goals.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "King of Wands represents mature masculine fire energy. Focus on visionary leadership and entrepreneurial spirit.",
+      "id": "king_wands"
+    },
+    {
+      "name": "Ace of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 1,
+      "element": "Water",
+      "zodiac": "Water signs",
+      "upright_keywords": [
+        "new love",
+        "emotional beginning",
+        "spiritual awakening",
+        "intuition",
+        "compassion"
+      ],
+      "reversed_keywords": [
+        "emotional blocks",
+        "lack of love",
+        "emptiness",
+        "repressed feelings"
+      ],
+      "meanings": [
+        {
+          "upright": "New love beginning or deep emotional connection. Romantic awakening and overflowing love. Spiritual bond with partner.",
+          "reversed": "Blocked romantic feelings or emotional emptiness in love. Love loss or repressed romantic emotions.",
+          "category": "love"
+        },
+        {
+          "upright": "Creative work inspiration or emotionally fulfilling job opportunity. Spiritual approach to career. Compassionate professional path.",
+          "reversed": "Lack of creative inspiration at work. Emotionally unfulfilling career. Blocked passion for professional path.",
+          "category": "career"
+        },
+        {
+          "upright": "Emotional satisfaction with finances. Generous money flow and abundance feelings. Spiritual approach to wealth.",
+          "reversed": "Emotional money blocks or lack of financial satisfaction. Scarcity feelings and repressed abundance beliefs.",
+          "category": "money"
+        },
+        {
+          "upright": "Emotional healing and wellness from within. Spiritual health approach. Compassionate self-care and body love.",
+          "reversed": "Blocked emotional healing or wellness emptiness. Lack of self-compassion. Repressed health emotions.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ace of Cups represents new emotional beginnings. Focus on love, compassion, and spiritual awakening.",
+      "id": "ace_cups"
+    },
+    {
+      "name": "Two of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 2,
+      "element": "Water",
+      "zodiac": "Venus in Cancer",
+      "upright_keywords": [
+        "partnership",
+        "mutual attraction",
+        "unity",
+        "connection",
+        "balanced relationship"
+      ],
+      "reversed_keywords": [
+        "imbalance",
+        "broken relationship",
+        "lack of harmony",
+        "disconnection"
+      ],
+      "meanings": [
+        {
+          "upright": "Mutual romantic attraction and balanced partnership. Unity in love and deep connection. Equal give and take in relationship.",
+          "reversed": "Romantic imbalance or broken relationship harmony. Disconnection from partner. Unequal love dynamics.",
+          "category": "love"
+        },
+        {
+          "upright": "Work partnership and professional mutual attraction. Unity in team projects. Balanced collaboration and connection at work.",
+          "reversed": "Work imbalance or broken professional harmony. Disconnection from colleagues. Unequal workplace dynamics.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial partnership and mutual economic attraction. Unity in money goals. Balanced wealth sharing and connection.",
+          "reversed": "Financial imbalance or broken economic harmony. Disconnection from money partners. Unequal wealth dynamics.",
+          "category": "money"
+        },
+        {
+          "upright": "Health partnership and mutual wellness attraction. Unity in fitness goals. Balanced healing and body connection.",
+          "reversed": "Health imbalance or broken wellness harmony. Disconnection from body needs. Unequal physical dynamics.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Two of Cups represents partnership and mutual attraction. Focus on connection, balance, and harmony.",
+      "id": "two_cups"
+    },
+    {
+      "name": "Three of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 3,
+      "element": "Water",
+      "zodiac": "Mercury in Cancer",
+      "upright_keywords": [
+        "friendship",
+        "celebration",
+        "community",
+        "creativity",
+        "collaboration"
+      ],
+      "reversed_keywords": [
+        "gossip",
+        "isolation",
+        "broken friendships",
+        "creative blocks"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic celebration and love friendships. Community support for relationship. Creative collaboration in partnership.",
+          "reversed": "Romantic gossip or isolation from love community. Broken relationship friendships. Creative blocks in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Work celebration and professional friendships. Community support for career. Creative collaboration at workplace.",
+          "reversed": "Workplace gossip or isolation from professional community. Broken work friendships. Creative blocks in career.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial celebration and money friendships. Community support for wealth. Creative collaboration in economics.",
+          "reversed": "Financial gossip or isolation from economic community. Broken money friendships. Creative blocks in wealth building.",
+          "category": "money"
+        },
+        {
+          "upright": "Health celebration and wellness friendships. Community support for fitness. Creative collaboration in healing.",
+          "reversed": "Health gossip or isolation from wellness community. Broken fitness friendships. Creative blocks in healing.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Three of Cups represents celebration and community. Focus on friendship, creativity, and group support.",
+      "id": "three_cups"
+    },
+    {
+      "name": "Four of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 4,
+      "element": "Water",
+      "zodiac": "Moon in Cancer",
+      "upright_keywords": [
+        "apathy",
+        "boredom",
+        "missed opportunities",
+        "introspection",
+        "meditation"
+      ],
+      "reversed_keywords": [
+        "awareness",
+        "accepting opportunities",
+        "renewed interest",
+        "motivation"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic apathy or boredom in relationship. Missing love opportunities. Introspection about partnership needs.",
+          "reversed": "Romantic awareness or accepting new love opportunities. Renewed relationship interest. Motivation in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Work apathy or boredom in job. Missing professional opportunities. Introspection about career needs.",
+          "reversed": "Career awareness or accepting new work opportunities. Renewed professional interest. Motivation at job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial apathy or boredom with wealth. Missing money opportunities. Introspection about economic needs.",
+          "reversed": "Financial awareness or accepting new money opportunities. Renewed wealth interest. Motivation in economics.",
+          "category": "money"
+        },
+        {
+          "upright": "Health apathy or boredom with wellness. Missing fitness opportunities. Introspection about physical needs.",
+          "reversed": "Health awareness or accepting new wellness opportunities. Renewed fitness interest. Motivation in healing.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Four of Cups represents apathy and missed opportunities. Focus on awareness and accepting new possibilities.",
+      "id": "four_cups"
+    },
+    {
+      "name": "Five of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 5,
+      "element": "Water",
+      "zodiac": "Mars in Scorpio",
+      "upright_keywords": [
+        "disappointment",
+        "loss",
+        "grief",
+        "regret",
+        "emotional pain"
+      ],
+      "reversed_keywords": [
+        "recovery",
+        "forgiveness",
+        "moving on",
+        "acceptance",
+        "healing"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic disappointment and love loss. Grief over relationship ending. Regret about partnership decisions.",
+          "reversed": "Recovery from romantic loss. Forgiveness in love. Moving on from relationship disappointment. Healing broken heart.",
+          "category": "love"
+        },
+        {
+          "upright": "Work disappointment and professional loss. Grief over career setback. Regret about job decisions.",
+          "reversed": "Recovery from career loss. Forgiveness at work. Moving on from professional disappointment. Healing work wounds.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial disappointment and money loss. Grief over economic setback. Regret about wealth decisions.",
+          "reversed": "Recovery from financial loss. Forgiveness with money. Moving on from economic disappointment. Healing money wounds.",
+          "category": "money"
+        },
+        {
+          "upright": "Health disappointment and wellness loss. Grief over physical setback. Regret about healing decisions.",
+          "reversed": "Recovery from health loss. Forgiveness with body. Moving on from wellness disappointment. Healing physical wounds.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Five of Cups represents loss and disappointment. When reversed, focus on recovery and moving forward.",
+      "id": "five_cups"
+    },
+    {
+      "name": "Six of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 6,
+      "element": "Water",
+      "zodiac": "Sun in Scorpio",
+      "upright_keywords": [
+        "nostalgia",
+        "childhood memories",
+        "innocence",
+        "reunion",
+        "past connections"
+      ],
+      "reversed_keywords": [
+        "living in past",
+        "unrealistic expectations",
+        "lack of progress"
+      ],
+      "meanings": [
+        {
+          "upright": "Nostalgic romance and childhood love memories. Innocent relationship approach. Reunion with past romantic connection.",
+          "reversed": "Living in romantic past or unrealistic love expectations. Lack of relationship progress. Stuck in old love patterns.",
+          "category": "love"
+        },
+        {
+          "upright": "Nostalgic work memories and innocent professional approach. Reunion with past career connections. Childhood dreams about job.",
+          "reversed": "Living in career past or unrealistic work expectations. Lack of professional progress. Stuck in old job patterns.",
+          "category": "career"
+        },
+        {
+          "upright": "Nostalgic money memories and innocent financial approach. Reunion with past economic connections. Childhood dreams about wealth.",
+          "reversed": "Living in financial past or unrealistic money expectations. Lack of economic progress. Stuck in old wealth patterns.",
+          "category": "money"
+        },
+        {
+          "upright": "Nostalgic health memories and innocent wellness approach. Reunion with past fitness connections. Childhood body memories.",
+          "reversed": "Living in health past or unrealistic wellness expectations. Lack of physical progress. Stuck in old healing patterns.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Six of Cups represents nostalgia and innocence. Focus on past connections while encouraging forward movement.",
+      "id": "six_cups"
+    },
+    {
+      "name": "Seven of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 7,
+      "element": "Water",
+      "zodiac": "Venus in Scorpio",
+      "upright_keywords": [
+        "illusion",
+        "choices",
+        "wishful thinking",
+        "unrealistic",
+        "fantasy"
+      ],
+      "reversed_keywords": [
+        "clarity",
+        "making decisions",
+        "reality check",
+        "focus"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic illusions and unrealistic love choices. Wishful thinking about relationship. Fantasy versus reality in partnership.",
+          "reversed": "Romantic clarity and making love decisions. Reality check about relationship. Focus on realistic partnership goals.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional illusions and unrealistic work choices. Wishful thinking about career. Fantasy versus reality in job.",
+          "reversed": "Career clarity and making work decisions. Reality check about profession. Focus on realistic job goals.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial illusions and unrealistic money choices. Wishful thinking about wealth. Fantasy versus reality in economics.",
+          "reversed": "Financial clarity and making money decisions. Reality check about wealth. Focus on realistic economic goals.",
+          "category": "money"
+        },
+        {
+          "upright": "Health illusions and unrealistic wellness choices. Wishful thinking about fitness. Fantasy versus reality in healing.",
+          "reversed": "Health clarity and making wellness decisions. Reality check about physical needs. Focus on realistic healing goals.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Seven of Cups represents illusion and too many choices. Focus on clarity and realistic decision-making.",
+      "id": "seven_cups"
+    },
+    {
+      "name": "Eight of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 8,
+      "element": "Water",
+      "zodiac": "Saturn in Pisces",
+      "upright_keywords": [
+        "walking away",
+        "seeking meaning",
+        "spiritual journey",
+        "abandonment",
+        "moving on"
+      ],
+      "reversed_keywords": [
+        "avoiding problems",
+        "fear of commitment",
+        "stagnation",
+        "staying stuck"
+      ],
+      "meanings": [
+        {
+          "upright": "Walking away from unfulfilling relationship. Seeking deeper romantic meaning. Spiritual journey away from partnership.",
+          "reversed": "Avoiding relationship problems or fear of love commitment. Romantic stagnation. Staying stuck in unfulfilling partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Walking away from unfulfilling job. Seeking deeper professional meaning. Spiritual journey away from career.",
+          "reversed": "Avoiding work problems or fear of career commitment. Professional stagnation. Staying stuck in unfulfilling job.",
+          "category": "career"
+        },
+        {
+          "upright": "Walking away from unfulfilling wealth pursuit. Seeking deeper financial meaning. Spiritual journey away from materialism.",
+          "reversed": "Avoiding money problems or fear of financial commitment. Economic stagnation. Staying stuck in unfulfilling wealth pursuit.",
+          "category": "money"
+        },
+        {
+          "upright": "Walking away from unfulfilling wellness approach. Seeking deeper healing meaning. Spiritual journey toward true health.",
+          "reversed": "Avoiding health problems or fear of wellness commitment. Physical stagnation. Staying stuck in unfulfilling healing approach.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Eight of Cups represents walking away to find deeper meaning. Focus on spiritual growth and moving beyond the superficial.",
+      "id": "eight_cups"
+    },
+    {
+      "name": "Nine of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 9,
+      "element": "Water",
+      "zodiac": "Jupiter in Pisces",
+      "upright_keywords": [
+        "satisfaction",
+        "contentment",
+        "emotional fulfillment",
+        "wishes granted",
+        "luxury"
+      ],
+      "reversed_keywords": [
+        "greed",
+        "dissatisfaction",
+        "smugness",
+        "materialism",
+        "unfulfilled wishes"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic satisfaction and emotional fulfillment in love. Relationship wishes granted. Luxury and contentment in partnership.",
+          "reversed": "Romantic greed or dissatisfaction in love. Smugness about relationship. Materialism affecting partnership. Unfulfilled love wishes.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional satisfaction and emotional fulfillment at work. Career wishes granted. Luxury and contentment in job.",
+          "reversed": "Career greed or dissatisfaction at work. Smugness about profession. Materialism affecting job. Unfulfilled professional wishes.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial satisfaction and emotional fulfillment with wealth. Money wishes granted. Luxury and contentment in economics.",
+          "reversed": "Financial greed or dissatisfaction with money. Smugness about wealth. Excessive materialism. Unfulfilled economic wishes.",
+          "category": "money"
+        },
+        {
+          "upright": "Health satisfaction and emotional fulfillment with wellness. Fitness wishes granted. Luxury and contentment in healing.",
+          "reversed": "Health greed or dissatisfaction with wellness. Smugness about fitness. Materialism affecting healing. Unfulfilled physical wishes.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Nine of Cups represents emotional fulfillment and satisfaction. Focus on gratitude while warning against smugness.",
+      "id": "nine_cups"
+    },
+    {
+      "name": "Ten of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 10,
+      "element": "Water",
+      "zodiac": "Mars in Pisces",
+      "upright_keywords": [
+        "emotional fulfillment",
+        "happiness",
+        "harmony",
+        "family",
+        "blessed"
+      ],
+      "reversed_keywords": [
+        "broken family",
+        "disharmony",
+        "disconnection",
+        "unfulfilled"
+      ],
+      "meanings": [
+        {
+          "upright": "Complete romantic fulfillment and relationship happiness. Family harmony and blessed partnership. Emotional completion in love.",
+          "reversed": "Broken relationship family or romantic disharmony. Disconnection from love happiness. Unfulfilled partnership completion.",
+          "category": "love"
+        },
+        {
+          "upright": "Complete professional fulfillment and work happiness. Team harmony and blessed career. Emotional completion at job.",
+          "reversed": "Broken work family or professional disharmony. Disconnection from career happiness. Unfulfilled job completion.",
+          "category": "career"
+        },
+        {
+          "upright": "Complete financial fulfillment and money happiness. Economic harmony and blessed wealth. Emotional completion in finances.",
+          "reversed": "Broken financial family or economic disharmony. Disconnection from money happiness. Unfulfilled wealth completion.",
+          "category": "money"
+        },
+        {
+          "upright": "Complete health fulfillment and wellness happiness. Physical harmony and blessed healing. Emotional completion in body.",
+          "reversed": "Broken health family or wellness disharmony. Disconnection from physical happiness. Unfulfilled healing completion.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ten of Cups represents complete emotional fulfillment. Focus on happiness, harmony, and family connections.",
+      "id": "ten_cups"
+    },
+    {
+      "name": "Page of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 11,
+      "element": "Water",
+      "zodiac": "Earth of Water",
+      "upright_keywords": [
+        "emotional messenger",
+        "intuitive",
+        "artistic",
+        "sensitive",
+        "dreamy"
+      ],
+      "reversed_keywords": [
+        "emotional immaturity",
+        "moodiness",
+        "escapism",
+        "unrealistic"
+      ],
+      "meanings": [
+        {
+          "upright": "Emotional love messenger and intuitive romantic approach. Artistic expression in relationship. Sensitive and dreamy partnership.",
+          "reversed": "Romantic emotional immaturity or moody love behavior. Escapism from relationship reality. Unrealistic romantic expectations.",
+          "category": "love"
+        },
+        {
+          "upright": "Emotional work messenger and intuitive professional approach. Artistic expression in career. Sensitive and dreamy job environment.",
+          "reversed": "Career emotional immaturity or moody work behavior. Escapism from professional reality. Unrealistic job expectations.",
+          "category": "career"
+        },
+        {
+          "upright": "Emotional financial messenger and intuitive money approach. Artistic expression in wealth. Sensitive and dreamy economic perspective.",
+          "reversed": "Financial emotional immaturity or moody money behavior. Escapism from economic reality. Unrealistic wealth expectations.",
+          "category": "money"
+        },
+        {
+          "upright": "Emotional health messenger and intuitive wellness approach. Artistic expression in healing. Sensitive and dreamy physical perspective.",
+          "reversed": "Health emotional immaturity or moody wellness behavior. Escapism from physical reality. Unrealistic healing expectations.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Page of Cups represents emotional sensitivity and intuition. Focus on artistic expression while encouraging emotional maturity.",
+      "id": "page_cups"
+    },
+    {
+      "name": "Knight of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 12,
+      "element": "Water",
+      "zodiac": "Air of Water",
+      "upright_keywords": [
+        "romance",
+        "charm",
+        "idealism",
+        "following heart",
+        "proposals"
+      ],
+      "reversed_keywords": [
+        "unrealistic",
+        "jealousy",
+        "moodiness",
+        "disappointment"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic charm and idealistic love approach. Following heart in relationship. Romantic proposals and courtship.",
+          "reversed": "Unrealistic romantic expectations or love jealousy. Moody relationship behavior. Romantic disappointment and broken promises.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional charm and idealistic work approach. Following heart in career. Charming business proposals and networking.",
+          "reversed": "Unrealistic career expectations or professional jealousy. Moody work behavior. Career disappointment and broken promises.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial charm and idealistic money approach. Following heart in wealth decisions. Charming economic proposals and investments.",
+          "reversed": "Unrealistic financial expectations or money jealousy. Moody economic behavior. Financial disappointment and broken promises.",
+          "category": "money"
+        },
+        {
+          "upright": "Health charm and idealistic wellness approach. Following heart in healing decisions. Charming fitness proposals and routines.",
+          "reversed": "Unrealistic health expectations or wellness jealousy. Moody physical behavior. Health disappointment and broken promises.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Knight of Cups represents romantic idealism and following the heart. Focus on charm while warning about unrealistic expectations.",
+      "id": "knight_cups"
+    },
+    {
+      "name": "Queen of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 13,
+      "element": "Water",
+      "zodiac": "Water of Water",
+      "upright_keywords": [
+        "emotional security",
+        "intuitive",
+        "compassionate",
+        "calm",
+        "comfort"
+      ],
+      "reversed_keywords": [
+        "insecurity",
+        "giving too much",
+        "martyrdom",
+        "co-dependency"
+      ],
+      "meanings": [
+        {
+          "upright": "Emotional security in love and intuitive romantic understanding. Compassionate partnership with calm relationship energy. Comfort in love.",
+          "reversed": "Romantic insecurity or giving too much in love. Martyrdom in relationship. Codependent partnership patterns.",
+          "category": "love"
+        },
+        {
+          "upright": "Emotional security at work and intuitive professional understanding. Compassionate leadership with calm career energy. Comfort in job.",
+          "reversed": "Career insecurity or giving too much at work. Martyrdom in profession. Codependent workplace patterns.",
+          "category": "career"
+        },
+        {
+          "upright": "Emotional security with money and intuitive financial understanding. Compassionate wealth sharing with calm economic energy. Comfort in finances.",
+          "reversed": "Financial insecurity or giving too much money. Martyrdom with wealth. Codependent economic patterns.",
+          "category": "money"
+        },
+        {
+          "upright": "Emotional security with health and intuitive wellness understanding. Compassionate healing with calm physical energy. Comfort in body.",
+          "reversed": "Health insecurity or giving too much to wellness. Martyrdom with healing. Codependent physical patterns.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Queen of Cups represents emotional mastery and compassion. Focus on intuitive wisdom while warning about codependency.",
+      "id": "queen_cups"
+    },
+    {
+      "name": "King of Cups",
+      "type": "minor",
+      "suit": "cups",
+      "number": 14,
+      "element": "Water",
+      "zodiac": "Fire of Water",
+      "upright_keywords": [
+        "emotional balance",
+        "wisdom",
+        "diplomacy",
+        "compassion",
+        "control"
+      ],
+      "reversed_keywords": [
+        "emotional manipulation",
+        "moodiness",
+        "volatility",
+        "suppression"
+      ],
+      "meanings": [
+        {
+          "upright": "Emotional balance in love and romantic wisdom. Diplomatic partnership approach with compassionate control. Wise relationship decisions.",
+          "reversed": "Romantic emotional manipulation or moody love behavior. Volatile relationship dynamics. Suppressing partnership emotions.",
+          "category": "love"
+        },
+        {
+          "upright": "Emotional balance at work and professional wisdom. Diplomatic career approach with compassionate control. Wise job decisions.",
+          "reversed": "Career emotional manipulation or moody work behavior. Volatile professional dynamics. Suppressing job emotions.",
+          "category": "career"
+        },
+        {
+          "upright": "Emotional balance with money and financial wisdom. Diplomatic wealth approach with compassionate control. Wise economic decisions.",
+          "reversed": "Financial emotional manipulation or moody money behavior. Volatile economic dynamics. Suppressing wealth emotions.",
+          "category": "money"
+        },
+        {
+          "upright": "Emotional balance with health and wellness wisdom. Diplomatic healing approach with compassionate control. Wise physical decisions.",
+          "reversed": "Health emotional manipulation or moody wellness behavior. Volatile physical dynamics. Suppressing healing emotions.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "King of Cups represents emotional mastery and wise compassion. Focus on balanced leadership while warning about manipulation.",
+      "id": "king_cups"
+    },
+    {
+      "name": "Ace of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 1,
+      "element": "Air",
+      "zodiac": "Air signs",
+      "upright_keywords": [
+        "breakthrough",
+        "clarity",
+        "new ideas",
+        "mental power",
+        "truth",
+        "communication"
+      ],
+      "reversed_keywords": [
+        "confusion",
+        "miscommunication",
+        "lack of clarity",
+        "mental blocks"
+      ],
+      "meanings": [
+        {
+          "upright": "Clear romantic communication and relationship breakthrough. New understanding in love. Truth revealed in partnership.",
+          "reversed": "Romantic confusion or miscommunication with partner. Lack of relationship clarity. Mental blocks affecting love.",
+          "category": "love"
+        },
+        {
+          "upright": "New work ideas or professional breakthrough. Mental clarity in career decisions. Clear communication at workplace.",
+          "reversed": "Work confusion or professional miscommunication. Lack of career clarity. Mental blocks affecting job performance.",
+          "category": "career"
+        },
+        {
+          "upright": "Clear financial thinking or breakthrough in money understanding. New economic ideas. Truth revealed about wealth.",
+          "reversed": "Financial confusion or money miscommunication. Lack of economic clarity. Mental blocks affecting financial decisions.",
+          "category": "money"
+        },
+        {
+          "upright": "Mental health breakthrough or clear health communication. New wellness understanding. Truth revealed about physical needs.",
+          "reversed": "Health confusion or medical miscommunication. Lack of wellness clarity. Mental blocks affecting healing.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ace of Swords represents mental breakthroughs. Focus on clarity, truth, and the power of clear communication.",
+      "id": "ace_swords"
+    },
+    {
+      "name": "Two of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 2,
+      "element": "Air",
+      "zodiac": "Moon in Libra",
+      "upright_keywords": [
+        "indecision",
+        "stalemate",
+        "avoiding truth",
+        "difficult choice",
+        "blocked"
+      ],
+      "reversed_keywords": [
+        "clarity",
+        "making decisions",
+        "truth revealed",
+        "movement forward"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic indecision and relationship stalemate. Avoiding love truth. Difficult choice between partners or staying single.",
+          "reversed": "Romantic clarity and making love decisions. Truth revealed in relationship. Movement forward in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional indecision and work stalemate. Avoiding career truth. Difficult choice between jobs or staying current.",
+          "reversed": "Career clarity and making work decisions. Truth revealed in profession. Movement forward in job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial indecision and money stalemate. Avoiding wealth truth. Difficult choice between investments or staying safe.",
+          "reversed": "Financial clarity and making money decisions. Truth revealed in economics. Movement forward in wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Health indecision and wellness stalemate. Avoiding physical truth. Difficult choice between treatments or staying current.",
+          "reversed": "Health clarity and making wellness decisions. Truth revealed in healing. Movement forward in physical care.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Two of Swords represents difficult decisions and mental blocks. Focus on finding clarity and making necessary choices.",
+      "id": "two_swords"
+    },
+    {
+      "name": "Three of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 3,
+      "element": "Air",
+      "zodiac": "Saturn in Libra",
+      "upright_keywords": [
+        "heartbreak",
+        "betrayal",
+        "grief",
+        "sorrow",
+        "emotional pain"
+      ],
+      "reversed_keywords": [
+        "healing",
+        "forgiveness",
+        "recovery",
+        "moving on",
+        "release"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic heartbreak and love betrayal. Grief over relationship ending. Deep emotional pain from partnership loss.",
+          "reversed": "Healing from romantic heartbreak. Forgiveness in love. Recovery from relationship betrayal. Moving on from love loss.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional heartbreak and work betrayal. Grief over career ending. Deep emotional pain from job loss.",
+          "reversed": "Healing from career heartbreak. Forgiveness at work. Recovery from professional betrayal. Moving on from job loss.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial heartbreak and money betrayal. Grief over wealth loss. Deep emotional pain from economic setback.",
+          "reversed": "Healing from financial heartbreak. Forgiveness with money. Recovery from economic betrayal. Moving on from wealth loss.",
+          "category": "money"
+        },
+        {
+          "upright": "Health heartbreak and wellness betrayal. Grief over physical loss. Deep emotional pain from healing setback.",
+          "reversed": "Healing from health heartbreak. Forgiveness with body. Recovery from wellness betrayal. Moving on from physical loss.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Three of Swords represents heartbreak and emotional pain. When reversed, focus on healing and forgiveness.",
+      "id": "three_swords"
+    },
+    {
+      "name": "Four of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 4,
+      "element": "Air",
+      "zodiac": "Jupiter in Libra",
+      "upright_keywords": [
+        "rest",
+        "recovery",
+        "meditation",
+        "peace",
+        "mental break"
+      ],
+      "reversed_keywords": [
+        "restlessness",
+        "burnout",
+        "lack of progress",
+        "avoiding rest"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic rest and relationship recovery. Meditation on love needs. Peace in partnership through mental break.",
+          "reversed": "Romantic restlessness or relationship burnout. Lack of love progress. Avoiding necessary romantic rest.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional rest and work recovery. Meditation on career needs. Peace at job through mental break.",
+          "reversed": "Career restlessness or professional burnout. Lack of work progress. Avoiding necessary job rest.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial rest and money recovery. Meditation on wealth needs. Peace in economics through mental break.",
+          "reversed": "Financial restlessness or economic burnout. Lack of money progress. Avoiding necessary financial rest.",
+          "category": "money"
+        },
+        {
+          "upright": "Physical rest and wellness recovery. Meditation on healing needs. Peace in body through mental break.",
+          "reversed": "Health restlessness or wellness burnout. Lack of physical progress. Avoiding necessary healing rest.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Four of Swords represents rest and recovery. Focus on the need for mental breaks and peaceful reflection.",
+      "id": "four_swords"
+    },
+    {
+      "name": "Five of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 5,
+      "element": "Air",
+      "zodiac": "Venus in Aquarius",
+      "upright_keywords": [
+        "conflict",
+        "defeat",
+        "betrayal",
+        "winning at all costs",
+        "hostility"
+      ],
+      "reversed_keywords": [
+        "reconciliation",
+        "making amends",
+        "forgiveness",
+        "moving on"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic conflict and love defeat. Betrayal in relationship. Winning at all costs affecting partnership. Hostility with partner.",
+          "reversed": "Romantic reconciliation and making love amends. Forgiveness in relationship. Moving on from partnership conflict.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional conflict and work defeat. Betrayal at job. Winning at all costs affecting career. Hostility with colleagues.",
+          "reversed": "Career reconciliation and making work amends. Forgiveness in profession. Moving on from workplace conflict.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial conflict and money defeat. Betrayal in wealth matters. Winning at all costs affecting economics. Hostility over finances.",
+          "reversed": "Financial reconciliation and making money amends. Forgiveness in wealth matters. Moving on from economic conflict.",
+          "category": "money"
+        },
+        {
+          "upright": "Health conflict and wellness defeat. Betrayal of body needs. Winning at all costs affecting healing. Hostility toward physical self.",
+          "reversed": "Health reconciliation and making wellness amends. Forgiveness with body. Moving on from physical conflict.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Five of Swords represents conflict and hollow victory. Focus on the cost of winning and the value of reconciliation.",
+      "id": "five_swords"
+    },
+    {
+      "name": "Six of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 6,
+      "element": "Air",
+      "zodiac": "Mercury in Aquarius",
+      "upright_keywords": [
+        "transition",
+        "moving forward",
+        "leaving behind",
+        "journey",
+        "progress"
+      ],
+      "reversed_keywords": [
+        "stuck in past",
+        "resistance to change",
+        "rough waters",
+        "delay"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic transition and moving forward from love troubles. Leaving behind relationship problems. Journey toward better partnership.",
+          "reversed": "Stuck in romantic past or resisting love change. Rough relationship waters. Delayed progress in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional transition and moving forward from work troubles. Leaving behind career problems. Journey toward better job.",
+          "reversed": "Stuck in career past or resisting professional change. Rough work waters. Delayed progress in job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial transition and moving forward from money troubles. Leaving behind economic problems. Journey toward better wealth.",
+          "reversed": "Stuck in financial past or resisting economic change. Rough money waters. Delayed progress in wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Health transition and moving forward from wellness troubles. Leaving behind physical problems. Journey toward better healing.",
+          "reversed": "Stuck in health past or resisting wellness change. Rough healing waters. Delayed progress in physical recovery.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Six of Swords represents transition and moving forward. Focus on leaving troubles behind and making progress.",
+      "id": "six_swords"
+    },
+    {
+      "name": "Seven of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 7,
+      "element": "Air",
+      "zodiac": "Moon in Aquarius",
+      "upright_keywords": [
+        "deception",
+        "strategy",
+        "getting away with something",
+        "stealth",
+        "theft"
+      ],
+      "reversed_keywords": [
+        "confession",
+        "coming clean",
+        "honesty",
+        "getting caught"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic deception and love strategy. Getting away with relationship secrets. Stealth behavior in partnership.",
+          "reversed": "Romantic confession and coming clean in love. Honesty in relationship. Getting caught in partnership deception.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional deception and work strategy. Getting away with job secrets. Stealth behavior at workplace.",
+          "reversed": "Career confession and coming clean at work. Honesty in profession. Getting caught in workplace deception.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial deception and money strategy. Getting away with wealth secrets. Stealth behavior in economics.",
+          "reversed": "Financial confession and coming clean with money. Honesty in wealth matters. Getting caught in economic deception.",
+          "category": "money"
+        },
+        {
+          "upright": "Health deception and wellness strategy. Getting away with physical secrets. Stealth behavior with healing.",
+          "reversed": "Health confession and coming clean with wellness. Honesty about physical needs. Getting caught in healing deception.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Seven of Swords represents deception and strategy. Focus on hidden agendas and the consequences of dishonesty.",
+      "id": "seven_swords"
+    },
+    {
+      "name": "Eight of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 8,
+      "element": "Air",
+      "zodiac": "Jupiter in Gemini",
+      "upright_keywords": [
+        "restriction",
+        "limitation",
+        "trapped",
+        "victim mentality",
+        "helplessness"
+      ],
+      "reversed_keywords": [
+        "freedom",
+        "empowerment",
+        "breaking free",
+        "self-liberation"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic restriction and feeling trapped in relationship. Victim mentality in love. Helplessness in partnership situation.",
+          "reversed": "Romantic freedom and breaking free from love restrictions. Self-liberation in relationship. Empowerment in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional restriction and feeling trapped at work. Victim mentality in career. Helplessness in job situation.",
+          "reversed": "Career freedom and breaking free from work restrictions. Self-liberation in profession. Empowerment at job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial restriction and feeling trapped in economic situation. Victim mentality with money. Helplessness in wealth building.",
+          "reversed": "Financial freedom and breaking free from money restrictions. Self-liberation in economics. Empowerment with wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Health restriction and feeling trapped in wellness situation. Victim mentality with healing. Helplessness in physical recovery.",
+          "reversed": "Health freedom and breaking free from wellness restrictions. Self-liberation in healing. Empowerment with physical recovery.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Eight of Swords represents feeling trapped by limiting beliefs. Focus on self-liberation and recognizing personal power.",
+      "id": "eight_swords"
+    },
+    {
+      "name": "Nine of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 9,
+      "element": "Air",
+      "zodiac": "Mars in Gemini",
+      "upright_keywords": [
+        "anxiety",
+        "worry",
+        "nightmares",
+        "mental anguish",
+        "guilt"
+      ],
+      "reversed_keywords": [
+        "recovery",
+        "overcoming fear",
+        "healing",
+        "hope",
+        "releasing worry"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic anxiety and love worry. Nightmares about relationship. Mental anguish over partnership. Guilt in love.",
+          "reversed": "Recovery from romantic anxiety. Overcoming love fears. Healing relationship worry. Hope returning to partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional anxiety and work worry. Nightmares about career. Mental anguish over job. Guilt about professional decisions.",
+          "reversed": "Recovery from career anxiety. Overcoming work fears. Healing professional worry. Hope returning to job.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial anxiety and money worry. Nightmares about wealth. Mental anguish over economics. Guilt about financial decisions.",
+          "reversed": "Recovery from financial anxiety. Overcoming money fears. Healing economic worry. Hope returning to wealth building.",
+          "category": "money"
+        },
+        {
+          "upright": "Health anxiety and wellness worry. Nightmares about physical condition. Mental anguish over healing. Guilt about body care.",
+          "reversed": "Recovery from health anxiety. Overcoming wellness fears. Healing physical worry. Hope returning to body recovery.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Nine of Swords represents anxiety and mental anguish. Focus on addressing fears and finding hope in difficult times.",
+      "id": "nine_swords"
+    },
+    {
+      "name": "Ten of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 10,
+      "element": "Air",
+      "zodiac": "Sun in Gemini",
+      "upright_keywords": [
+        "betrayal",
+        "backstabbing",
+        "defeat",
+        "rock bottom",
+        "ending"
+      ],
+      "reversed_keywords": [
+        "recovery",
+        "regeneration",
+        "resisting ending",
+        "surviving disaster"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic betrayal and love backstabbing. Complete relationship defeat. Rock bottom in partnership. Love ending painfully.",
+          "reversed": "Recovery from romantic betrayal. Regenerating from love defeat. Surviving relationship disaster. Resisting partnership ending.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional betrayal and work backstabbing. Complete career defeat. Rock bottom in job. Professional ending painfully.",
+          "reversed": "Recovery from career betrayal. Regenerating from work defeat. Surviving professional disaster. Resisting job ending.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial betrayal and money backstabbing. Complete economic defeat. Rock bottom in wealth. Financial ending painfully.",
+          "reversed": "Recovery from financial betrayal. Regenerating from economic defeat. Surviving money disaster. Resisting wealth ending.",
+          "category": "money"
+        },
+        {
+          "upright": "Health betrayal and wellness backstabbing. Complete physical defeat. Rock bottom in healing. Health crisis ending painfully.",
+          "reversed": "Recovery from health betrayal. Regenerating from wellness defeat. Surviving physical disaster. Resisting healing ending.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ten of Swords represents rock bottom and painful endings. When reversed, focus on recovery and the dawn of new beginnings.",
+      "id": "ten_swords"
+    },
+    {
+      "name": "Page of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 11,
+      "element": "Air",
+      "zodiac": "Earth of Air",
+      "upright_keywords": [
+        "curiosity",
+        "restless energy",
+        "communication",
+        "learning",
+        "spying"
+      ],
+      "reversed_keywords": [
+        "haste",
+        "unfocused energy",
+        "all talk no action",
+        "defensiveness"
+      ],
+      "meanings": [
+        {
+          "upright": "Curious about love and restless romantic energy. Communication focus in relationship. Learning about partnership dynamics.",
+          "reversed": "Hasty romantic decisions or unfocused love energy. All talk no action in relationship. Defensiveness in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Curious about work and restless professional energy. Communication focus in career. Learning about job dynamics.",
+          "reversed": "Hasty career decisions or unfocused work energy. All talk no action in profession. Defensiveness at workplace.",
+          "category": "career"
+        },
+        {
+          "upright": "Curious about money and restless financial energy. Communication focus in wealth matters. Learning about economic dynamics.",
+          "reversed": "Hasty financial decisions or unfocused money energy. All talk no action in economics. Defensiveness about wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Curious about health and restless wellness energy. Communication focus in healing matters. Learning about physical dynamics.",
+          "reversed": "Hasty health decisions or unfocused wellness energy. All talk no action in healing. Defensiveness about physical needs.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Page of Swords represents youthful curiosity and communication. Focus on learning while encouraging focused action.",
+      "id": "page_swords"
+    },
+    {
+      "name": "Knight of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 12,
+      "element": "Air",
+      "zodiac": "Air of Air",
+      "upright_keywords": [
+        "action",
+        "impulsiveness",
+        "rushed decisions",
+        "brave",
+        "direct"
+      ],
+      "reversed_keywords": [
+        "reckless",
+        "unfocused",
+        "lack of planning",
+        "aggressive"
+      ],
+      "meanings": [
+        {
+          "upright": "Action-oriented romance and impulsive love decisions. Rushed relationship moves. Brave and direct approach to partnership.",
+          "reversed": "Reckless romantic behavior or unfocused love energy. Lack of relationship planning. Aggressive approach to partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Action-oriented work and impulsive professional decisions. Rushed career moves. Brave and direct approach to job.",
+          "reversed": "Reckless career behavior or unfocused work energy. Lack of professional planning. Aggressive approach to workplace.",
+          "category": "career"
+        },
+        {
+          "upright": "Action-oriented finances and impulsive money decisions. Rushed economic moves. Brave and direct approach to wealth.",
+          "reversed": "Reckless financial behavior or unfocused money energy. Lack of economic planning. Aggressive approach to wealth building.",
+          "category": "money"
+        },
+        {
+          "upright": "Action-oriented wellness and impulsive health decisions. Rushed physical moves. Brave and direct approach to healing.",
+          "reversed": "Reckless health behavior or unfocused wellness energy. Lack of healing planning. Aggressive approach to physical recovery.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Knight of Swords represents impulsive action and directness. Focus on courage while warning about recklessness.",
+      "id": "knight_swords"
+    },
+    {
+      "name": "Queen of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 13,
+      "element": "Air",
+      "zodiac": "Water of Air",
+      "upright_keywords": [
+        "independent",
+        "direct communication",
+        "honest",
+        "perceptive",
+        "witty"
+      ],
+      "reversed_keywords": ["harsh", "bitter", "cold", "cruel", "cutting"],
+      "meanings": [
+        {
+          "upright": "Independent in love and direct romantic communication. Honest relationship approach. Perceptive and witty in partnership.",
+          "reversed": "Harsh in love or bitter romantic attitude. Cold relationship approach. Cruel and cutting words in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Independent at work and direct professional communication. Honest career approach. Perceptive and witty in job situations.",
+          "reversed": "Harsh at work or bitter professional attitude. Cold career approach. Cruel and cutting words in workplace.",
+          "category": "career"
+        },
+        {
+          "upright": "Independent with money and direct financial communication. Honest wealth approach. Perceptive and witty in economic matters.",
+          "reversed": "Harsh with money or bitter financial attitude. Cold wealth approach. Cruel and cutting words about economics.",
+          "category": "money"
+        },
+        {
+          "upright": "Independent with health and direct wellness communication. Honest healing approach. Perceptive and witty about physical needs.",
+          "reversed": "Harsh with health or bitter wellness attitude. Cold healing approach. Cruel and cutting words about physical condition.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Queen of Swords represents independent thinking and clear communication. Focus on honesty while avoiding harshness.",
+      "id": "queen_swords"
+    },
+    {
+      "name": "King of Swords",
+      "type": "minor",
+      "suit": "swords",
+      "number": 14,
+      "element": "Air",
+      "zodiac": "Fire of Air",
+      "upright_keywords": [
+        "intellectual",
+        "analytical",
+        "ethical",
+        "truth",
+        "authority"
+      ],
+      "reversed_keywords": [
+        "manipulative",
+        "tyrannical",
+        "abusive",
+        "ruthless",
+        "controlling"
+      ],
+      "meanings": [
+        {
+          "upright": "Intellectual love approach and analytical relationship thinking. Ethical partnership decisions. Truth and authority in romance.",
+          "reversed": "Manipulative romantic behavior or tyrannical love control. Abusive relationship dynamics. Ruthless and controlling in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Intellectual work approach and analytical professional thinking. Ethical career decisions. Truth and authority in job.",
+          "reversed": "Manipulative career behavior or tyrannical work control. Abusive professional dynamics. Ruthless and controlling at workplace.",
+          "category": "career"
+        },
+        {
+          "upright": "Intellectual money approach and analytical financial thinking. Ethical wealth decisions. Truth and authority in economics.",
+          "reversed": "Manipulative financial behavior or tyrannical money control. Abusive economic dynamics. Ruthless and controlling with wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Intellectual health approach and analytical wellness thinking. Ethical healing decisions. Truth and authority in physical care.",
+          "reversed": "Manipulative health behavior or tyrannical wellness control. Abusive physical dynamics. Ruthless and controlling with body.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "King of Swords represents intellectual authority and ethical leadership. Focus on truth and justice while avoiding tyranny.",
+      "id": "king_swords"
+    },
+    {
+      "name": "Ace of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 1,
+      "element": "Earth",
+      "zodiac": "Earth signs",
+      "upright_keywords": [
+        "new financial opportunity",
+        "manifestation",
+        "abundance",
+        "material beginning",
+        "prosperity"
+      ],
+      "reversed_keywords": [
+        "missed opportunity",
+        "financial delays",
+        "scarcity mindset",
+        "material blocks"
+      ],
+      "meanings": [
+        {
+          "upright": "New financial opportunity in romance or material stability in relationship. Manifesting abundance in love. Prosperity and material beginnings in partnership.",
+          "reversed": "Missing romantic opportunities or relationship financial delays. Scarcity mindset in love. Material blocks to partnership abundance.",
+          "category": "love"
+        },
+        {
+          "upright": "New job opportunity or material beginning in profession. Manifesting career abundance. Professional prosperity and financial stability.",
+          "reversed": "Missing career opportunities or work financial delays. Scarcity mindset in profession. Material blocks to job abundance.",
+          "category": "career"
+        },
+        {
+          "upright": "New financial opportunity and wealth manifestation. Material abundance and economic prosperity. Money stability and beginning of investment opportunities.",
+          "reversed": "Missing financial opportunities or money delays. Scarcity mindset in economics. Material blocks to wealth manifestation.",
+          "category": "money"
+        },
+        {
+          "upright": "New health opportunity or material beginning in wellness. Manifesting physical abundance. Fitness prosperity and healing stability.",
+          "reversed": "Missing health opportunities or wellness delays. Scarcity mindset in physical care. Material blocks to healing abundance.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ace of Pentacles represents new material opportunities and the beginning of abundance. Focus on manifestation, prosperity, and practical beginnings.",
+      "id": "ace_pentacles"
+    },
+    {
+      "name": "Two of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 2,
+      "element": "Earth",
+      "zodiac": "Jupiter in Capricorn",
+      "upright_keywords": [
+        "balance",
+        "adaptability",
+        "juggling priorities",
+        "flexibility",
+        "multitasking"
+      ],
+      "reversed_keywords": [
+        "imbalance",
+        "overwhelmed",
+        "disorganized",
+        "poor time management"
+      ],
+      "meanings": [
+        {
+          "upright": "Balancing love with other priorities. Adaptable relationship approach. Juggling romance with work and family responsibilities.",
+          "reversed": "Romantic imbalance or overwhelmed by love demands. Disorganized relationship approach. Poor time management in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Balancing work with other priorities. Adaptable professional approach. Juggling multiple job responsibilities and projects.",
+          "reversed": "Career imbalance or overwhelmed by work demands. Disorganized professional approach. Poor time management at job.",
+          "category": "career"
+        },
+        {
+          "upright": "Balancing finances with other priorities. Adaptable economic approach. Juggling multiple income sources and expenses.",
+          "reversed": "Financial imbalance or overwhelmed by money demands. Disorganized economic approach. Poor financial management.",
+          "category": "money"
+        },
+        {
+          "upright": "Balancing health with other priorities. Adaptable wellness approach. Juggling multiple fitness goals and self-care needs.",
+          "reversed": "Health imbalance or overwhelmed by wellness demands. Disorganized healing approach. Poor self-care management.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Two of Pentacles represents balance and adaptability. Focus on managing multiple priorities while maintaining flexibility.",
+      "id": "two_pentacles"
+    },
+    {
+      "name": "Three of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 3,
+      "element": "Earth",
+      "zodiac": "Mars in Capricorn",
+      "upright_keywords": [
+        "teamwork",
+        "collaboration",
+        "skill building",
+        "learning",
+        "community"
+      ],
+      "reversed_keywords": [
+        "lack of teamwork",
+        "disharmony",
+        "working alone",
+        "lack of skill"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic teamwork and relationship collaboration. Building love skills together. Community support for partnership.",
+          "reversed": "Lack of romantic teamwork or relationship disharmony. Working alone in love. Lack of partnership skills.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional teamwork and work collaboration. Building career skills. Community support for job advancement.",
+          "reversed": "Lack of workplace teamwork or professional disharmony. Working alone at job. Lack of career skills.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial teamwork and economic collaboration. Building wealth skills. Community support for money goals.",
+          "reversed": "Lack of financial teamwork or economic disharmony. Working alone with money. Lack of wealth building skills.",
+          "category": "money"
+        },
+        {
+          "upright": "Health teamwork and wellness collaboration. Building fitness skills. Community support for healing goals.",
+          "reversed": "Lack of health teamwork or wellness disharmony. Working alone with healing. Lack of fitness skills.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Three of Pentacles represents teamwork and skill building. Focus on collaboration and learning from others.",
+      "id": "three_pentacles"
+    },
+    {
+      "name": "Four of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 4,
+      "element": "Earth",
+      "zodiac": "Sun in Capricorn",
+      "upright_keywords": [
+        "security",
+        "control",
+        "conservatism",
+        "hoarding",
+        "possessiveness"
+      ],
+      "reversed_keywords": [
+        "generosity",
+        "sharing",
+        "letting go",
+        "openness",
+        "spending"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic security and relationship control. Conservative love approach. Possessiveness in partnership.",
+          "reversed": "Romantic generosity and sharing love openly. Letting go of relationship control. Openness in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional security and work control. Conservative career approach. Possessiveness about job position.",
+          "reversed": "Career generosity and sharing professional knowledge. Letting go of work control. Openness to new job opportunities.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial security and money control. Conservative economic approach. Hoarding wealth and possessiveness about finances.",
+          "reversed": "Financial generosity and sharing wealth openly. Letting go of money control. Openness to economic spending and investment.",
+          "category": "money"
+        },
+        {
+          "upright": "Health security and wellness control. Conservative healing approach. Possessiveness about physical routines.",
+          "reversed": "Health generosity and sharing wellness knowledge. Letting go of healing control. Openness to new physical approaches.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Four of Pentacles represents security and control. Focus on finding balance between saving and sharing.",
+      "id": "four_pentacles"
+    },
+    {
+      "name": "Five of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 5,
+      "element": "Earth",
+      "zodiac": "Mercury in Taurus",
+      "upright_keywords": [
+        "financial loss",
+        "poverty",
+        "hardship",
+        "isolation",
+        "insecurity"
+      ],
+      "reversed_keywords": [
+        "recovery",
+        "charity",
+        "improvement",
+        "spiritual wealth",
+        "help"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic hardship and love insecurity. Feeling isolated in relationship. Emotional poverty in partnership.",
+          "reversed": "Recovery from romantic hardship. Receiving love charity and help. Improvement in relationship security.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional hardship and work insecurity. Feeling isolated at job. Career poverty and lack of opportunities.",
+          "reversed": "Recovery from career hardship. Receiving professional charity and help. Improvement in work security.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial hardship and money insecurity. Economic poverty and material lack. Isolation from wealth opportunities.",
+          "reversed": "Recovery from financial hardship. Receiving economic charity and help. Improvement in money security.",
+          "category": "money"
+        },
+        {
+          "upright": "Health hardship and wellness insecurity. Physical poverty and lack of energy. Isolation from healing opportunities.",
+          "reversed": "Recovery from health hardship. Receiving wellness charity and help. Improvement in physical security.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Five of Pentacles represents hardship and lack. When reversed, focus on recovery and accepting help.",
+      "id": "five_pentacles"
+    },
+    {
+      "name": "Six of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 6,
+      "element": "Earth",
+      "zodiac": "Moon in Taurus",
+      "upright_keywords": [
+        "charity",
+        "generosity",
+        "sharing",
+        "fairness",
+        "reciprocity"
+      ],
+      "reversed_keywords": [
+        "strings attached",
+        "inequality",
+        "debt",
+        "selfishness"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic charity and generous love sharing. Fairness in relationship. Reciprocity in partnership giving and receiving.",
+          "reversed": "Love with strings attached or romantic inequality. Relationship debt. Selfishness in partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional charity and generous work sharing. Fairness in career. Reciprocity in workplace giving and receiving.",
+          "reversed": "Work with strings attached or professional inequality. Career debt. Selfishness in workplace.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial charity and generous wealth sharing. Fairness in economics. Reciprocity in money giving and receiving.",
+          "reversed": "Money with strings attached or financial inequality. Economic debt. Selfishness with wealth.",
+          "category": "money"
+        },
+        {
+          "upright": "Health charity and generous wellness sharing. Fairness in healing. Reciprocity in fitness giving and receiving.",
+          "reversed": "Health with strings attached or wellness inequality. Physical debt. Selfishness with body care.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Six of Pentacles represents charity and fair exchange. Focus on balanced giving and receiving.",
+      "id": "six_pentacles"
+    },
+    {
+      "name": "Seven of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 7,
+      "element": "Earth",
+      "zodiac": "Saturn in Taurus",
+      "upright_keywords": [
+        "investment",
+        "patience",
+        "long-term view",
+        "perseverance",
+        "assessment"
+      ],
+      "reversed_keywords": [
+        "impatience",
+        "lack of reward",
+        "poor investment",
+        "giving up"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic investment and patient love approach. Long-term relationship view. Perseverance in partnership. Assessing love progress.",
+          "reversed": "Romantic impatience or lack of relationship reward. Poor love investment. Giving up on partnership too easily.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional investment and patient work approach. Long-term career view. Perseverance in job. Assessing professional progress.",
+          "reversed": "Career impatience or lack of work reward. Poor professional investment. Giving up on job too easily.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial investment and patient money approach. Long-term wealth view. Perseverance in economics. Assessing financial progress.",
+          "reversed": "Financial impatience or lack of money reward. Poor economic investment. Giving up on wealth building too easily.",
+          "category": "money"
+        },
+        {
+          "upright": "Health investment and patient wellness approach. Long-term healing view. Perseverance in fitness. Assessing physical progress.",
+          "reversed": "Health impatience or lack of wellness reward. Poor physical investment. Giving up on healing too easily.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Seven of Pentacles represents patience and long-term investment. Focus on assessing progress and persevering.",
+      "id": "seven_pentacles"
+    },
+    {
+      "name": "Eight of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 8,
+      "element": "Earth",
+      "zodiac": "Sun in Virgo",
+      "upright_keywords": [
+        "mastery",
+        "skill development",
+        "hard work",
+        "dedication",
+        "craftsmanship"
+      ],
+      "reversed_keywords": [
+        "lack of focus",
+        "mediocrity",
+        "laziness",
+        "shortcuts"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic mastery and love skill development. Hard work on relationship. Dedication to partnership craftsmanship.",
+          "reversed": "Lack of romantic focus or love mediocrity. Laziness in relationship. Taking shortcuts in partnership development.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional mastery and work skill development. Hard work on career. Dedication to job craftsmanship.",
+          "reversed": "Lack of career focus or professional mediocrity. Laziness at work. Taking shortcuts in skill development.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial mastery and money skill development. Hard work on wealth. Dedication to economic craftsmanship.",
+          "reversed": "Lack of financial focus or money mediocrity. Laziness with wealth building. Taking shortcuts in economic development.",
+          "category": "money"
+        },
+        {
+          "upright": "Health mastery and wellness skill development. Hard work on fitness. Dedication to healing craftsmanship.",
+          "reversed": "Lack of health focus or wellness mediocrity. Laziness with physical care. Taking shortcuts in healing development.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Eight of Pentacles represents mastery through dedicated practice. Focus on skill development and craftsmanship.",
+      "id": "eight_pentacles"
+    },
+    {
+      "name": "Nine of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 9,
+      "element": "Earth",
+      "zodiac": "Venus in Virgo",
+      "upright_keywords": [
+        "independence",
+        "luxury",
+        "self-reliance",
+        "financial security",
+        "discipline"
+      ],
+      "reversed_keywords": [
+        "financial dependence",
+        "materialism",
+        "work-life imbalance",
+        "lack of discipline"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic independence and luxurious love experience. Self-reliant in relationship. Emotional security in partnership.",
+          "reversed": "Romantic dependence or materialistic love approach. Work-life imbalance affecting relationship. Lack of emotional discipline.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional independence and luxurious work experience. Self-reliant in career. Financial security from job.",
+          "reversed": "Career dependence or materialistic work approach. Work-life imbalance. Lack of professional discipline.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial independence and luxurious wealth experience. Self-reliant economically. Complete money security through discipline.",
+          "reversed": "Financial dependence or excessive materialism. Money-life imbalance. Lack of economic discipline.",
+          "category": "money"
+        },
+        {
+          "upright": "Health independence and luxurious wellness experience. Self-reliant physically. Complete healing security through discipline.",
+          "reversed": "Health dependence or materialistic wellness approach. Health-life imbalance. Lack of physical discipline.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Nine of Pentacles represents independence and self-reliance. Focus on enjoying the fruits of disciplined effort.",
+      "id": "nine_pentacles"
+    },
+    {
+      "name": "Ten of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 10,
+      "element": "Earth",
+      "zodiac": "Mercury in Virgo",
+      "upright_keywords": [
+        "legacy",
+        "inheritance",
+        "family wealth",
+        "tradition",
+        "long-term success"
+      ],
+      "reversed_keywords": [
+        "family disputes",
+        "lack of stability",
+        "short-term thinking",
+        "financial loss"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic legacy and love inheritance. Family wealth in relationship. Traditional partnership with long-term success.",
+          "reversed": "Romantic family disputes or lack of relationship stability. Short-term love thinking. Loss of partnership legacy.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional legacy and career inheritance. Family business wealth. Traditional work with long-term success.",
+          "reversed": "Career family disputes or lack of professional stability. Short-term job thinking. Loss of work legacy.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial legacy and wealth inheritance. Family money traditions. Long-term economic success and generational wealth.",
+          "reversed": "Financial family disputes or lack of money stability. Short-term economic thinking. Loss of wealth legacy.",
+          "category": "money"
+        },
+        {
+          "upright": "Health legacy and wellness inheritance. Family healing traditions. Long-term physical success and generational fitness.",
+          "reversed": "Health family disputes or lack of wellness stability. Short-term healing thinking. Loss of physical legacy.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Ten of Pentacles represents legacy and generational wealth. Focus on long-term success and family traditions.",
+      "id": "ten_pentacles"
+    },
+    {
+      "name": "Page of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 11,
+      "element": "Earth",
+      "zodiac": "Earth of Earth",
+      "upright_keywords": [
+        "manifestation",
+        "new opportunities",
+        "skill development",
+        "ambition",
+        "study"
+      ],
+      "reversed_keywords": [
+        "lack of commitment",
+        "procrastination",
+        "laziness",
+        "lack of progress"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic manifestation and new love opportunities. Developing relationship skills. Ambitious about partnership. Studying love.",
+          "reversed": "Lack of romantic commitment or love procrastination. Lazy about relationship development. Lack of partnership progress.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional manifestation and new career opportunities. Developing work skills. Ambitious about job. Studying profession.",
+          "reversed": "Lack of career commitment or professional procrastination. Lazy about work development. Lack of job progress.",
+          "category": "career"
+        },
+        {
+          "upright": "Financial manifestation and new money opportunities. Developing wealth skills. Ambitious about economics. Studying finances.",
+          "reversed": "Lack of financial commitment or money procrastination. Lazy about wealth development. Lack of economic progress.",
+          "category": "money"
+        },
+        {
+          "upright": "Health manifestation and new wellness opportunities. Developing fitness skills. Ambitious about healing. Studying physical care.",
+          "reversed": "Lack of health commitment or wellness procrastination. Lazy about physical development. Lack of healing progress.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Page of Pentacles represents new opportunities and skill development. Focus on practical learning and steady progress.",
+      "id": "page_pentacles"
+    },
+    {
+      "name": "Knight of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 12,
+      "element": "Earth",
+      "zodiac": "Air of Earth",
+      "upright_keywords": [
+        "reliability",
+        "responsibility",
+        "hard work",
+        "routine",
+        "methodical"
+      ],
+      "reversed_keywords": [
+        "stubbornness",
+        "laziness",
+        "obsessiveness",
+        "workaholic",
+        "boring"
+      ],
+      "meanings": [
+        {
+          "upright": "Reliable romance and responsible love approach. Hard work on relationship. Methodical partnership development.",
+          "reversed": "Stubborn romantic behavior or lazy love approach. Obsessive about relationship. Workaholic affecting partnership.",
+          "category": "love"
+        },
+        {
+          "upright": "Reliable work performance and responsible professional approach. Hard work ethic. Methodical career development.",
+          "reversed": "Stubborn career behavior or lazy work approach. Obsessive about job. Workaholic lifestyle becoming boring.",
+          "category": "career"
+        },
+        {
+          "upright": "Reliable financial management and responsible money approach. Hard work for wealth. Methodical economic development.",
+          "reversed": "Stubborn financial behavior or lazy money approach. Obsessive about wealth. Workaholic for economics becoming boring.",
+          "category": "money"
+        },
+        {
+          "upright": "Reliable wellness routine and responsible health approach. Hard work for fitness. Methodical healing development.",
+          "reversed": "Stubborn health behavior or lazy wellness approach. Obsessive about physical care. Workaholic fitness becoming boring.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Knight of Pentacles represents reliability and methodical progress. Focus on steady effort while avoiding stubbornness.",
+      "id": "knight_pentacles"
+    },
+    {
+      "name": "Queen of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 13,
+      "element": "Earth",
+      "zodiac": "Water of Earth",
+      "upright_keywords": [
+        "nurturing",
+        "practical",
+        "down-to-earth",
+        "security",
+        "abundance"
+      ],
+      "reversed_keywords": [
+        "self-centeredness",
+        "jealousy",
+        "materialistic",
+        "neglecting self-care"
+      ],
+      "meanings": [
+        {
+          "upright": "Nurturing romance and practical love approach. Down-to-earth relationship. Security and abundance in partnership.",
+          "reversed": "Self-centered romantic behavior or materialistic love approach. Jealous in relationship. Neglecting romantic self-care.",
+          "category": "love"
+        },
+        {
+          "upright": "Nurturing work environment and practical professional approach. Down-to-earth career. Security and abundance at job.",
+          "reversed": "Self-centered career behavior or materialistic work approach. Jealous professionally. Neglecting professional self-care.",
+          "category": "career"
+        },
+        {
+          "upright": "Nurturing wealth approach and practical financial management. Down-to-earth economics. Complete money security and abundance.",
+          "reversed": "Self-centered financial behavior or excessive materialism. Jealous about wealth. Neglecting economic self-care.",
+          "category": "money"
+        },
+        {
+          "upright": "Nurturing wellness approach and practical health management. Down-to-earth healing. Physical security and abundant vitality.",
+          "reversed": "Self-centered health behavior or materialistic wellness approach. Jealous about fitness. Neglecting physical self-care.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "Queen of Pentacles represents nurturing abundance and practical wisdom. Focus on caring for others while maintaining balance.",
+      "id": "queen_pentacles"
+    },
+    {
+      "name": "King of Pentacles",
+      "type": "minor",
+      "suit": "pentacles",
+      "number": 14,
+      "element": "Earth",
+      "zodiac": "Fire of Earth",
+      "upright_keywords": [
+        "financial success",
+        "leadership",
+        "security",
+        "generosity",
+        "business acumen"
+      ],
+      "reversed_keywords": [
+        "greed",
+        "materialism",
+        "financial instability",
+        "stubbornness",
+        "corruption"
+      ],
+      "meanings": [
+        {
+          "upright": "Romantic success and love leadership. Security in relationship. Generous partnership with emotional business acumen.",
+          "reversed": "Greedy romantic behavior or materialistic love approach. Relationship instability. Stubborn partnership with emotional corruption.",
+          "category": "love"
+        },
+        {
+          "upright": "Professional success and work leadership. Career security. Generous workplace approach with excellent business acumen.",
+          "reversed": "Greedy career behavior or materialistic work approach. Professional instability. Stubborn job approach with workplace corruption.",
+          "category": "career"
+        },
+        {
+          "upright": "Complete financial success and wealth leadership. Economic security. Generous money approach with excellent business acumen.",
+          "reversed": "Excessive greed or financial materialism. Money instability. Stubborn wealth approach with economic corruption.",
+          "category": "money"
+        },
+        {
+          "upright": "Health success and wellness leadership. Physical security. Generous healing approach with excellent body management acumen.",
+          "reversed": "Greedy health behavior or materialistic wellness approach. Physical instability. Stubborn healing approach with body corruption.",
+          "category": "health"
+        }
+      ],
+      "prompt_context": "King of Pentacles represents material mastery and generous leadership. Focus on success while avoiding greed and materialism.",
+      "id": "king_pentacles"
+    }
+  ]
+}

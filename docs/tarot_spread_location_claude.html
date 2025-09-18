@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔮 22種類タロットスプレッド完全配置図</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #2c3e50;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        text-align: center;
+        padding: 40px 20px;
+      }
+
+      .header h1 {
+        font-size: 3em;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.2em;
+        opacity: 0.9;
+      }
+
+      .main-content {
+        padding: 40px;
+      }
+
+      .level-section {
+        margin-bottom: 50px;
+      }
+
+      .level-header {
+        background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+        font-size: 1.5em;
+        font-weight: bold;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .level-beginner .level-header {
+        background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+      }
+
+      .level-intermediate .level-header {
+        background: linear-gradient(45deg, #3498db 0%, #74b9ff 100%);
+      }
+
+      .level-advanced .level-header {
+        background: linear-gradient(45deg, #fd7e14 0%, #fdcb6e 100%);
+      }
+
+      .level-master .level-header {
+        background: linear-gradient(45deg, #6c5ce7 0%, #a29bfe 100%);
+      }
+
+      .spreads-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+        gap: 30px;
+      }
+
+      .spread-card {
+        background: white;
+        border-radius: 15px;
+        border: 3px solid #e1e8ed;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .spread-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .spread-header {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 1.1em;
+      }
+
+      .spread-visual {
+        padding: 30px;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #fafbfc;
+        position: relative;
+      }
+
+      .spread-layout {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .card {
+        width: 35px;
+        height: 55px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: 2px solid #2d3436;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        position: absolute;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+      }
+
+      .card:hover {
+        transform: scale(1.1);
+        z-index: 10;
+      }
+
+      .card-meaning {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 10px;
+        color: #2c3e50;
+        position: absolute;
+        white-space: nowrap;
+        z-index: 5;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .spread-description {
+        padding: 20px;
+        border-top: 2px solid #e1e8ed;
+        background: white;
+      }
+
+      .spread-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9em;
+      }
+
+      .info-label {
+        font-weight: bold;
+        margin-right: 8px;
+        color: #667eea;
+      }
+
+      .spread-usage {
+        font-size: 0.9em;
+        color: #636e72;
+        line-height: 1.4;
+      }
+
+      /* 特定のスプレッド配置スタイル */
+
+      /* ワンカード */
+      .one-card .card:nth-child(1) {
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      /* 3枚引き（横一列） */
+      .three-horizontal .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .three-horizontal .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .three-horizontal .card:nth-child(3) {
+        top: 0;
+        left: 100px;
+      }
+
+      /* 恋愛三角 */
+      .love-triangle .card:nth-child(1) {
+        top: 40px;
+        left: 25px;
+      }
+      .love-triangle .card:nth-child(2) {
+        top: 40px;
+        left: 75px;
+      }
+      .love-triangle .card:nth-child(3) {
+        top: 0;
+        left: 50px;
+      }
+
+      /* 面接スプレッド */
+      .interview .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .interview .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .interview .card:nth-child(3) {
+        top: 0;
+        left: 100px;
+      }
+
+      /* 健康チェック（2×2） */
+      .health-check .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .health-check .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .health-check .card:nth-child(3) {
+        top: 70px;
+        left: 0;
+      }
+      .health-check .card:nth-child(4) {
+        top: 70px;
+        left: 50px;
+      }
+
+      /* 5枚十字 */
+      .five-cross .card:nth-child(1) {
+        top: 35px;
+        left: 50px;
+      }
+      .five-cross .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .five-cross .card:nth-child(3) {
+        top: 35px;
+        left: 15px;
+      }
+      .five-cross .card:nth-child(4) {
+        top: 70px;
+        left: 50px;
+      }
+      .five-cross .card:nth-child(5) {
+        top: 35px;
+        left: 85px;
+      }
+
+      /* 復縁スプレッド */
+      .reunion .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .reunion .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .reunion .card:nth-child(3) {
+        top: 70px;
+        left: 0;
+      }
+      .reunion .card:nth-child(4) {
+        top: 70px;
+        left: 50px;
+      }
+
+      /* 金運予測（2×3） */
+      .money-fortune .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .money-fortune .card:nth-child(2) {
+        top: 0;
+        left: 40px;
+      }
+      .money-fortune .card:nth-child(3) {
+        top: 0;
+        left: 80px;
+      }
+      .money-fortune .card:nth-child(4) {
+        top: 70px;
+        left: 0;
+      }
+      .money-fortune .card:nth-child(5) {
+        top: 70px;
+        left: 40px;
+      }
+      .money-fortune .card:nth-child(6) {
+        top: 70px;
+        left: 80px;
+      }
+
+      /* ソウルメイト */
+      .soulmate .card:nth-child(1) {
+        top: 35px;
+        left: 25px;
+      }
+      .soulmate .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .soulmate .card:nth-child(3) {
+        top: 70px;
+        left: 75px;
+      }
+      .soulmate .card:nth-child(4) {
+        top: 0;
+        left: 100px;
+      }
+      .soulmate .card:nth-child(5) {
+        top: 35px;
+        left: 125px;
+      }
+
+      /* キャリアパス */
+      .career-path .card:nth-child(1) {
+        top: 35px;
+        left: 0;
+      }
+      .career-path .card:nth-child(2) {
+        top: 35px;
+        left: 25px;
+      }
+      .career-path .card:nth-child(3) {
+        top: 35px;
+        left: 50px;
+      }
+      .career-path .card:nth-child(4) {
+        top: 0;
+        left: 75px;
+      }
+      .career-path .card:nth-child(5) {
+        top: 35px;
+        left: 100px;
+      }
+      .career-path .card:nth-child(6) {
+        top: 35px;
+        left: 125px;
+      }
+      .career-path .card:nth-child(7) {
+        top: 35px;
+        left: 150px;
+      }
+
+      /* 関係性ヘルスチェック */
+      .relationship-health .card:nth-child(1) {
+        top: 0;
+        left: 15px;
+      }
+      .relationship-health .card:nth-child(2) {
+        top: 0;
+        left: 85px;
+      }
+      .relationship-health .card:nth-child(3) {
+        top: 40px;
+        left: 15px;
+      }
+      .relationship-health .card:nth-child(4) {
+        top: 40px;
+        left: 85px;
+      }
+      .relationship-health .card:nth-child(5) {
+        top: 80px;
+        left: 15px;
+      }
+      .relationship-health .card:nth-child(6) {
+        top: 80px;
+        left: 85px;
+      }
+
+      /* ヒーリングジャーニー */
+      .healing-journey .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .healing-journey .card:nth-child(2) {
+        top: 0;
+        left: 40px;
+      }
+      .healing-journey .card:nth-child(3) {
+        top: 0;
+        left: 80px;
+      }
+      .healing-journey .card:nth-child(4) {
+        top: 70px;
+        left: 0;
+      }
+      .healing-journey .card:nth-child(5) {
+        top: 70px;
+        left: 40px;
+      }
+      .healing-journey .card:nth-child(6) {
+        top: 70px;
+        left: 80px;
+      }
+
+      /* エナジーバランス */
+      .energy-balance .card:nth-child(1) {
+        top: 35px;
+        left: 0;
+      }
+      .energy-balance .card:nth-child(2) {
+        top: 0;
+        left: 25px;
+      }
+      .energy-balance .card:nth-child(3) {
+        top: 70px;
+        left: 25px;
+      }
+      .energy-balance .card:nth-child(4) {
+        top: 35px;
+        left: 75px;
+      }
+      .energy-balance .card:nth-child(5) {
+        top: 70px;
+        left: 100px;
+      }
+      .energy-balance .card:nth-child(6) {
+        top: 70px;
+        left: 125px;
+      }
+      .energy-balance .card:nth-child(7) {
+        top: 35px;
+        left: 150px;
+      }
+
+      /* 投資スプレッド */
+      .investment .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .investment .card:nth-child(2) {
+        top: 0;
+        left: 50px;
+      }
+      .investment .card:nth-child(3) {
+        top: 70px;
+        left: 0;
+      }
+      .investment .card:nth-child(4) {
+        top: 70px;
+        left: 50px;
+      }
+
+      /* ホースシュー（馬蹄形） */
+      .horseshoe .card:nth-child(1) {
+        top: 0;
+        left: 0;
+      }
+      .horseshoe .card:nth-child(2) {
+        top: 20px;
+        left: 25px;
+      }
+      .horseshoe .card:nth-child(3) {
+        top: 50px;
+        left: 40px;
+      }
+      .horseshoe .card:nth-child(4) {
+        top: 70px;
+        left: 50px;
+      }
+      .horseshoe .card:nth-child(5) {
+        top: 50px;
+        left: 75px;
+      }
+      .horseshoe .card:nth-child(6) {
+        top: 20px;
+        left: 100px;
+      }
+      .horseshoe .card:nth-child(7) {
+        top: 0;
+        left: 125px;
+      }
+
+      /* ケルト十字 */
+      .celtic-cross .card:nth-child(1) {
+        top: 35px;
+        left: 50px;
+      }
+      .celtic-cross .card:nth-child(2) {
+        top: 35px;
+        left: 50px;
+        transform: rotate(90deg);
+        background: linear-gradient(45deg, #fd79a8, #e84393);
+      }
+      .celtic-cross .card:nth-child(3) {
+        top: 35px;
+        left: 10px;
+      }
+      .celtic-cross .card:nth-child(4) {
+        top: 70px;
+        left: 50px;
+      }
+      .celtic-cross .card:nth-child(5) {
+        top: 0;
+        left: 50px;
+      }
+      .celtic-cross .card:nth-child(6) {
+        top: 35px;
+        left: 90px;
+      }
+      .celtic-cross .card:nth-child(7) {
+        top: 0;
+        left: 140px;
+      }
+      .celtic-cross .card:nth-child(8) {
+        top: 20px;
+        left: 140px;
+      }
+      .celtic-cross .card:nth-child(9) {
+        top: 40px;
+        left: 140px;
+      }
+      .celtic-cross .card:nth-child(10) {
+        top: 60px;
+        left: 140px;
+      }
+
+      /* カード意味の配置 */
+      .card:nth-child(1) .card-meaning {
+        top: -20px;
+        left: -10px;
+      }
+      .card:nth-child(2) .card-meaning {
+        top: -20px;
+        left: -15px;
+      }
+      .card:nth-child(3) .card-meaning {
+        top: -20px;
+        left: -15px;
+      }
+      .card:nth-child(4) .card-meaning {
+        bottom: -20px;
+        left: -10px;
+      }
+      .card:nth-child(5) .card-meaning {
+        bottom: -20px;
+        left: -15px;
+      }
+      .card:nth-child(6) .card-meaning {
+        bottom: -20px;
+        left: -15px;
+      }
+      .card:nth-child(7) .card-meaning {
+        top: -20px;
+        right: -10px;
+      }
+      .card:nth-child(8) .card-meaning {
+        top: -20px;
+        right: -15px;
+      }
+      .card:nth-child(9) .card-meaning {
+        bottom: -20px;
+        right: -10px;
+      }
+      .card:nth-child(10) .card-meaning {
+        bottom: -20px;
+        right: -15px;
+      }
+
+      .toc {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 40px;
+      }
+
+      .toc h2 {
+        color: #667eea;
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 1.5em;
+      }
+
+      .toc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .toc-level {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        border-left: 4px solid;
+      }
+
+      .toc-level.beginner {
+        border-left-color: #56ab2f;
+      }
+      .toc-level.intermediate {
+        border-left-color: #3498db;
+      }
+      .toc-level.advanced {
+        border-left-color: #fd7e14;
+      }
+      .toc-level.master {
+        border-left-color: #6c5ce7;
+      }
+
+      .toc-level h3 {
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+
+      .toc-level ul {
+        list-style: none;
+        font-size: 0.9em;
+        color: #636e72;
+      }
+
+      .toc-level li {
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔮 22種類タロットスプレッド完全配置図</h1>
+        <p>正式な配置方法と意味を視覚的に表現した完全ガイド</p>
+      </div>
+
+      <div class="main-content">
+        <!-- 目次 -->
+        <div class="toc">
+          <h2>📊 スプレッド一覧表</h2>
+          <div class="toc-grid">
+            <div class="toc-level beginner">
+              <h3>🌱 初心者レベル（1-4番）</h3>
+              <ul>
+                <li>1. ワンカード（1枚）</li>
+                <li>2. 3枚引き-時系列（3枚）</li>
+                <li>3. 3枚引き-状況分析（3枚）</li>
+                <li>4. 面接スプレッド（3枚）</li>
+              </ul>
+            </div>
+            <div class="toc-level intermediate">
+              <h3>⭐ 中級レベル（5-14番）</h3>
+              <ul>
+                <li>5-6. 心身霊・恋愛三角（3枚）</li>
+                <li>7-8. 健康・5枚十字（4-5枚）</li>
+                <li>9-12. 復縁・金運・ソウルメイト（4-6枚）</li>
+                <li>13-14. キャリア・バランス（5-7枚）</li>
+              </ul>
+            </div>
+            <div class="toc-level advanced">
+              <h3>🔥 上級レベル（15-20番）</h3>
+              <ul>
+                <li>15-16. 関係性分析（3-6枚）</li>
+                <li>17-18. ブロック解除・癒し（5-6枚）</li>
+                <li>19-20. エナジー・投資（4-7枚）</li>
+              </ul>
+            </div>
+            <div class="toc-level master">
+              <h3>👑 最上級レベル（21-22番）</h3>
+              <ul>
+                <li>21. ホースシュー（7枚）</li>
+                <li>22. ケルト十字（10枚）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 初心者レベル -->
+        <div class="level-section level-beginner">
+          <div class="level-header">🌱 初心者レベル（1-4番）</div>
+          <div class="spreads-grid">
+            <div class="spread-card">
+              <div class="spread-header">1. ワンカード</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout one-card"
+                  style="width: 120px; height: 80px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">今日のメッセージ</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 1枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 2-3分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 初級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 不要
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  最もシンプルな占い方法。今日のメッセージや瞑想テーマ、Yes/No質問に適している。初心者でも使いやすく、即座に答えが得られる。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">2. 3枚引き（Past/Present/Future）</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout three-horizontal"
+                  style="width: 150px; height: 80px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">過去</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">現在</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">未来</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 3枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 5-10分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 初級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 不要
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  時間軸に沿った流れを読み解く基本的な方法。左から過去→現在→未来の順で配置。状況の変化や発展を理解したい時に最適。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">
+                3. 3枚引き（Situation/Action/Outcome）
+              </div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout three-horizontal"
+                  style="width: 150px; height: 80px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">状況</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">行動</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">結果</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 3枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 5-10分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 初級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 不要
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  問題解決型の3枚引き。現在の状況を把握し、取るべき行動と結果を示す。実践的なアドバイスが欲しい時に有効。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">4. 面接スプレッド</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout interview"
+                  style="width: 150px; height: 80px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">あなたの強み</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">相手の印象</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">結果</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 3枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 5-10分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 初級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 不要
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  就職面接や試験などの特定シチュエーション向け。自分の強み、相手の印象、最終結果を読み解く実用的な占い方法。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中級レベル -->
+        <div class="level-section level-intermediate">
+          <div class="level-header">⭐ 中級レベル（5-14番）</div>
+          <div class="spreads-grid">
+            <div class="spread-card">
+              <div class="spread-header">5. 3枚引き（Mind/Body/Spirit）</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout three-horizontal"
+                  style="width: 150px; height: 80px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">心</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">体</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">魂</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 3枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 8-12分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  ホリスティックな健康観点から心・体・魂の状態を読み解く。健康やウェルネス、自己成長に関する質問に適している。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">6. 恋愛三角</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout love-triangle"
+                  style="width: 120px; height: 100px"
+                >
+                  <div class="card">
+                    3
+                    <div class="card-meaning">未来の愛</div>
+                  </div>
+                  <div class="card">
+                    1
+                    <div class="card-meaning">心の状態</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">現在の愛</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 3枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 8-12分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  恋愛専用スプレッド。三角形の配置で心の状態、現在の愛、未来の愛の流れを読み解く。恋愛相談に特化した方法。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">7. 健康チェック</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout health-check"
+                  style="width: 120px; height: 140px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">心の健康</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">体の健康</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">必要な行動</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">回復の兆し</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 4枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 10-15分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  健康状態の総合診断。心身の健康状態、必要な行動、回復の兆しを4枚で読み解く。予防や改善のアドバイスに適している。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">8. 5枚スプレッド（十字形）</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout five-cross"
+                  style="width: 140px; height: 110px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現在</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">課題</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">過去</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">未来</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">アドバイス</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 5枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 12-18分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  十字形配置で問題を多角的に分析。中心の現在から過去・未来・課題・アドバイスを読み解く。汎用性の高いスプレッド。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">9. 復縁スプレッド</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout reunion"
+                  style="width: 120px; height: 140px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">過去の関係</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">現在の状況</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">相手の気持ち</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">復縁可能性</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 4枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 10-15分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  復縁に特化したスプレッド。過去の関係性、現在の状況、相手の気持ち、復縁の可能性を総合的に判断する。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">10. 金運予測</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout money-fortune"
+                  style="width: 140px; height: 140px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現在の状況</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">収入</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">支出</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">投資運</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">節約法</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">金運</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 6枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 15-20分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  金銭面の総合診断。現在の財政状況から収入・支出・投資・節約・金運全般を6枚で詳細に分析する。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">11. ソウルメイト</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout soulmate"
+                  style="width: 180px; height: 110px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現状</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">準備度</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">出会い方</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">相手像</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">時期</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 5枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 12-18分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  運命の人との出会いを占う特殊スプレッド。現状、準備度、出会い方、相手像、時期を総合的に読み解く。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">12. マネーブロック解除</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout five-cross"
+                  style="width: 140px; height: 110px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現状</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">原因</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">ブロック</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">解決法</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">成功後</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 5枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 12-18分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  金銭的なメンタルブロックを解除するための特別スプレッド。問題の根本原因から解決までの道筋を示す。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">13. キャリアパス</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout career-path"
+                  style="width: 200px; height: 110px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現状</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">課題</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">強み</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">長期目標</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">行動</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">機会</div>
+                  </div>
+                  <div class="card">
+                    7
+                    <div class="card-meaning">結果</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 7枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 18-25分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  キャリア発展の包括的分析。現状から長期目標まで、キャリア構築に必要な全要素を7枚で詳細に読み解く。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">14. ワークライフバランス</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout five-cross"
+                  style="width: 140px; height: 110px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現状</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">仕事</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">バランス</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">プライベート</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">未来</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 5枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 12-18分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 中級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 即答＋対話
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  仕事と私生活の調和を分析。現状、仕事面、プライベート面、バランス、未来の展望を総合的に判断する。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 上級レベル -->
+        <div class="level-section level-advanced">
+          <div class="level-header">🔥 上級レベル（15-20番）</div>
+          <div class="spreads-grid">
+            <div class="spread-card">
+              <div class="spread-header">15. 関係性スプレッド</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout love-triangle"
+                  style="width: 120px; height: 100px"
+                >
+                  <div class="card">
+                    3
+                    <div class="card-meaning">関係性</div>
+                  </div>
+                  <div class="card">
+                    1
+                    <div class="card-meaning">あなた</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">相手</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 3枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 15-20分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  人間関係の深い分析。あなた・相手・関係性の三角関係を詳細に読み解く。対話が必須の高度なスプレッド。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">16. 関係性ヘルスチェック</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout relationship-health"
+                  style="width: 140px; height: 160px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">あなた</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">パートナー</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">強み</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">課題</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">アドバイス</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">未来</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 6枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 20-25分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  長期的関係性の健康診断。パートナーとの関係を多面的に分析し、改善点と発展可能性を探る包括的スプレッド。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">17. 心のブロック解除</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout five-cross"
+                  style="width: 140px; height: 110px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現状</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">原因</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">ブロック</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">解決法</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">成功後</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 5枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 20-25分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  心理的ブロックの解除に特化。トラウマや恐怖、制限的信念を根本から解決するための深層心理分析。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">18. ヒーリングジャーニー</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout healing-journey"
+                  style="width: 140px; height: 140px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現在の状態</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">根本原因</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">治療法</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">心の癒し</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">体の癒し</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">完全回復</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 6枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 20-25分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  総合的なヒーリングプロセスを示す。心身の癒しから完全回復まで、治癒の旅路を6段階で導く。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">19. エナジーバランス</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout energy-balance"
+                  style="width: 200px; height: 140px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現状</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">精神</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">肉体</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">行動</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">栄養</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">運動</div>
+                  </div>
+                  <div class="card">
+                    7
+                    <div class="card-meaning">バランス</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 7枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 25-30分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  エネルギーの調和診断。精神・肉体・行動・栄養・運動など、生命エネルギーの全要素をバランス良く分析。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">20. 投資スプレッド</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout investment"
+                  style="width: 120px; height: 140px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">リスク</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">リターン</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">タイミング</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">結果</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 4枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 15-20分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  投資判断の専門スプレッド。リスク・リターン・タイミング・結果を総合的に分析し、投資決定をサポート。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最上級レベル -->
+        <div class="level-section level-master">
+          <div class="level-header">👑 最上級レベル（21-22番）</div>
+          <div class="spreads-grid">
+            <div class="spread-card">
+              <div class="spread-header">21. ホースシュー（馬蹄形）</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout horseshoe"
+                  style="width: 180px; height: 120px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">過去</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">現在</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">未来</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">アプローチ</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">周囲</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">障害</div>
+                  </div>
+                  <div class="card">
+                    7
+                    <div class="card-meaning">結果</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 7枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 25-30分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 最上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  馬蹄形の幸運のシンボル。過去から未来への流れと解決策を7枚で総合分析。意識の変化を促す高度なスプレッド。
+                </div>
+              </div>
+            </div>
+
+            <div class="spread-card">
+              <div class="spread-header">22. ケルト十字</div>
+              <div class="spread-visual">
+                <div
+                  class="spread-layout celtic-cross"
+                  style="width: 220px; height: 120px"
+                >
+                  <div class="card">
+                    1
+                    <div class="card-meaning">現在</div>
+                  </div>
+                  <div class="card">
+                    2
+                    <div class="card-meaning">課題</div>
+                  </div>
+                  <div class="card">
+                    3
+                    <div class="card-meaning">遠い過去</div>
+                  </div>
+                  <div class="card">
+                    4
+                    <div class="card-meaning">近い過去</div>
+                  </div>
+                  <div class="card">
+                    5
+                    <div class="card-meaning">可能な未来</div>
+                  </div>
+                  <div class="card">
+                    6
+                    <div class="card-meaning">近い未来</div>
+                  </div>
+                  <div class="card">
+                    7
+                    <div class="card-meaning">アプローチ</div>
+                  </div>
+                  <div class="card">
+                    8
+                    <div class="card-meaning">周囲</div>
+                  </div>
+                  <div class="card">
+                    9
+                    <div class="card-meaning">内面</div>
+                  </div>
+                  <div class="card">
+                    10
+                    <div class="card-meaning">最終結果</div>
+                  </div>
+                </div>
+              </div>
+              <div class="spread-description">
+                <div class="spread-info">
+                  <div class="info-item">
+                    <span class="info-label">枚数:</span> 10枚
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">時間:</span> 30-45分
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">難易度:</span> 最上級
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">対話:</span> 必須
+                  </div>
+                </div>
+                <div class="spread-usage">
+                  タロット占いの王様。最も包括的で詳細な分析が可能。人生の重要な局面や複雑な問題に対する究極のスプレッド。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

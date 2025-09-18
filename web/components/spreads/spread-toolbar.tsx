@@ -1,5 +1,6 @@
 "use client";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -7,69 +8,74 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { SpreadMeta } from "@/lib/types";
+import { useMasterStore } from "@/lib/store/master-store";
+import type { Spread, SpreadToCategory } from "@/lib/types";
 
 export function SpreadToolbar({
-  meta,
-  onChangeMeta,
+  spread,
+  onChange,
 }: {
-  meta: SpreadMeta;
-  onChangeMeta: (m: SpreadMeta) => void;
+  spread: Spread;
+  onChange: (m: Spread) => void;
 }) {
+  const { plans, levels, categories, isLoading } = useMasterStore((state) => ({
+    plans: state.plans,
+    levels: state.levels,
+    categories: state.categories,
+    isLoading: state.isLoading,
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="py-2 text-sm text-muted-foreground">
+        マスターデータ読み込み中...
+      </div>
+    );
+  }
+
+  const selectedCategoryIds = spread.categories?.map((c) => c.categoryId) || [];
+
   return (
     <div className="grid gap-4 lg:grid-cols-4">
       <div className="grid gap-1">
         <label className="text-sm font-medium">📝 スプレッド名</label>
         <Input
-          value={meta.name}
-          onChange={(e) => onChangeMeta({ ...meta, name: e.target.value })}
+          value={spread.name}
+          onChange={(e) => onChange({ ...spread, name: e.target.value })}
           placeholder="スプレッド名"
         />
       </div>
       <div className="grid gap-1">
         <label className="text-sm font-medium">📂 カテゴリ</label>
-        <Select
-          value={meta.category}
-          onValueChange={(v) =>
-            onChangeMeta({ ...meta, category: v as SpreadMeta["category"] })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {[
-              "総合",
-              "恋愛",
-              "仕事",
-              "金運",
-              "健康",
-              "学業",
-              "人間関係",
-              "その他",
-            ].map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MultiSelect
+          options={categories.map((c) => ({ label: c.name, value: c.id }))}
+          selected={selectedCategoryIds}
+          onChange={(newCategoryIds) => {
+            const categoriIds = newCategoryIds.map(
+              (id) => ({ categoryId: id } as SpreadToCategory)
+            );
+
+            onChange({
+              ...spread,
+              categories: categoriIds,
+            });
+          }}
+          placeholder="カテゴリを選択"
+        />
       </div>
       <div className="grid gap-1">
         <label className="text-sm font-medium">⭐ 難易度</label>
         <Select
-          value={meta.level}
-          onValueChange={(v) =>
-            onChangeMeta({ ...meta, level: v as SpreadMeta["level"] })
-          }
+          value={spread.level?.name || ""}
+          onValueChange={(v) => onChange({ ...spread, levelId: v })}
         >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {["初心者", "中級者", "上級者", "最上級"].map((l) => (
-              <SelectItem key={l} value={l}>
-                {l}
+            {levels.map((l) => (
+              <SelectItem key={l.id} value={l.id}>
+                {l.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -78,18 +84,16 @@ export function SpreadToolbar({
       <div className="grid gap-1">
         <label className="text-sm font-medium">💎 必要プラン</label>
         <Select
-          value={meta.plan}
-          onValueChange={(v) =>
-            onChangeMeta({ ...meta, plan: v as SpreadMeta["plan"] })
-          }
+          value={spread.plan?.name}
+          onValueChange={(v) => onChange({ ...spread, planId: v })}
         >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {["フリー", "スタンダード", "コーチング"].map((p) => (
-              <SelectItem key={p} value={p}>
-                {p}
+            {plans.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
               </SelectItem>
             ))}
           </SelectContent>

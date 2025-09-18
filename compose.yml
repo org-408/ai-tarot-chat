@@ -1,0 +1,70 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # test_postgres:
+  #   container_name: test_postgres
+  #   image: postgres:latest
+  #   restart: always
+  #   ports:
+  #     - "${TEST_DB_PORT}:${DB_PORT}"
+  #   environment:
+  #     POSTGRES_USER: "${TEST_DB_USER}"
+  #     POSTGRES_PASSWORD: "${TEST_DB_PASSWORD}"
+  #     POSTGRES_DB: "${TEST_DB_NAME}"
+  #     POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+  #   volumes:
+  #     - test_postgres_data:/var/lib/postgresql/data
+  #     - ./test_postgresql.conf:/etc/postgresql/test_postgresql.conf
+  #   command: postgres -c config_file=/etc/postgresql/test_postgresql.conf
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${TEST_DB_USER} -d ${TEST_DB_NAME}"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+
+  # backend:
+  #   container_name: backend
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   ports:
+  #     - "${BACKEND_PORT:-8000}:8000"
+  #   env_file:
+  #     - ./backend/.env
+  #   # DATABASE_URLだけは明示的に設定（PostgreSQLコンテナへの接続用）
+  #   environment:
+  #     - DATABASE_URL="postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}"
+  #   volumes:
+  #     - ./backend:/app
+  #     - backend_uploads:/app/uploads
+
+volumes:
+  postgres_data:
+    driver: local
+  # test_postgres_data:
+  #   driver: local
+  # backend_uploads:
+  #   driver: local

@@ -7,16 +7,16 @@ import { MdDelete, MdUpdate } from "react-icons/md";
 
 export function SpreadSettings({
   selected,
-  cell,
+  cells,
   onUpsert,
   onRemove,
-  lastOrder,
+  onSave,
 }: {
   selected: { x: number; y: number } | null;
-  cell?: SpreadCell;
-  onUpsert: (c: SpreadCell) => void;
+  cells: SpreadCell[];
+  onUpsert: (cells: SpreadCell[]) => void;
   onRemove: (x: number, y: number) => void;
-  lastOrder: number;
+  onSave: () => void;
 }) {
   if (!selected) {
     return (
@@ -24,7 +24,16 @@ export function SpreadSettings({
     );
   }
   const { x, y } = selected;
-  const draft: SpreadCell = cell ?? { x, y };
+  const draftV:
+    | SpreadCell
+    | { x: number; y: number; vLabel?: string; vOrder?: number } = cells.find(
+    (c) => c.x === x && c.y === y && c.vLabel != null && c.vLabel != ""
+  ) ?? { x, y };
+  const draftH:
+    | SpreadCell
+    | { x: number; y: number; hLabel?: string; hOrder?: number } = cells.find(
+    (c) => c.x === x && c.y === y && c.hLabel != null && c.hLabel != ""
+  ) ?? { x, y };
 
   return (
     <div className="space-y-2">
@@ -35,24 +44,36 @@ export function SpreadSettings({
       <div className="grid gap-2">
         <div className="border gap-2 p-2 rounded-md">
           <label className="text-sm font-medium">縦カード 意味</label>
-          <Input
-            value={draft.vLabel ?? ""}
-            onChange={(e) => onUpsert({ ...draft, vLabel: e.target.value })}
-            placeholder="例：現在の状況"
-          />
+          <Input value={draftV.vLabel ?? ""} placeholder="例：現在の状況" />
           <label className="text-sm font-medium">縦カードの表示順</label>
-          <Input type="number" disabled value={draft.vOrder ?? ""} />
+          <Input type="number" disabled value={draftV.vOrder ?? ""} />
+        </div>
+        <div className="flex gap-2 justify-end">
+          <Button variant="destructive" onClick={() => onRemove(x, y)}>
+            <MdDelete className="inline mr-1" />
+            削除
+          </Button>
+          <Button onClick={() => onSave()}>
+            <MdUpdate className="inline mr-1" />
+            更新
+          </Button>{" "}
         </div>
 
         <div className="border gap-2 p-2 rounded-md">
           <label className="text-sm font-medium">横カード 意味</label>
-          <Input
-            value={draft.hLabel ?? ""}
-            onChange={(e) => onUpsert({ ...draft, hLabel: e.target.value })}
-            placeholder="例：課題・障害"
-          />
+          <Input value={draftH.hLabel ?? ""} placeholder="例：課題・障害" />
           <label className="text-sm font-medium">横カードの表示順</label>
-          <Input type="number" disabled value={draft.hOrder ?? ""} />
+          <Input type="number" disabled value={draftH.hOrder ?? ""} />
+        </div>
+        <div className="flex gap-2 justify-end">
+          <Button variant="destructive" onClick={() => onRemove(x, y)}>
+            <MdDelete className="inline mr-1" />
+            削除
+          </Button>
+          <Button onClick={() => onSave()}>
+            <MdUpdate className="inline mr-1" />
+            更新
+          </Button>{" "}
         </div>
       </div>
 
@@ -64,17 +85,6 @@ export function SpreadSettings({
           placeholder="読み方のポイントや注意点"
         />
       </div> */}
-
-      <div className="flex gap-2 justify-end">
-        <Button variant="destructive" onClick={() => onRemove(x, y)}>
-          <MdDelete className="inline mr-1" />
-          削除
-        </Button>
-        <Button onClick={() => onUpsert(draft)}>
-          <MdUpdate className="inline mr-1" />
-          更新
-        </Button>{" "}
-      </div>
     </div>
   );
 }
