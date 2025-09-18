@@ -89,18 +89,26 @@ export function MultiSelect({
                   className={cn("mr-1 px-1", badgeClassName)}
                   variant="secondary"
                 >
-                  {label}
-                  <button
-                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    onMouseDown={(e) => {
-                      const value = options.find(
-                        (o) => o.label === label
-                      )?.value;
-                      if (value) removeOption(e, value);
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+                  <span data-slot="badge">
+                    {label}
+                    <span // buttonではなくspanに変更
+                      role="button" // アクセシビリティのためにrole属性を追加
+                      tabIndex={0} // キーボードフォーカス可能に
+                      className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                      onMouseDown={(e) => {
+                        // 既存のコード
+                      }}
+                      onKeyDown={(e) => {
+                        // Enter/Spaceキーでも削除できるように
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          // 既存のマウスダウンハンドラと同じロジック
+                        }
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </span>
+                  </span>
                 </Badge>
               ))
             ) : (

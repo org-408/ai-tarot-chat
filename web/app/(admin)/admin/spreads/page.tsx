@@ -4,22 +4,12 @@ import { SpreadGrid } from "@/components/spreads/spread-grid";
 import { SpreadLegend } from "@/components/spreads/spread-legend";
 import { SpreadSettings } from "@/components/spreads/spread-settings";
 import { SpreadTable } from "@/components/spreads/spread-table";
-import { SpreadToolbar } from "@/components/spreads/spread-toolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSpreads } from "@/lib/hooks/use-spreads";
 import type { Spread, SpreadCell } from "@/lib/types";
 import { useState } from "react";
 import { MdAdd, MdContentCopy, MdSave } from "react-icons/md";
-
-type SpreadMeta = {
-  name: string;
-  category: string;
-  level: string;
-  plan: string;
-  guide?: string;
-  updatedAt?: string;
-};
 
 const GRID_SIZE = [10, 10];
 
@@ -183,7 +173,7 @@ export default function SpreadsPage() {
               <CardTitle>🧩 スプレッド編集（{selected.name}）</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <SpreadToolbar spread={selected} onChange={handleChange} />
+              {/* <SpreadToolbar spread={selected} onChange={handleChange} /> */}
               <SpreadLegend />
               <SpreadGrid
                 cols={GRID_SIZE[0]}

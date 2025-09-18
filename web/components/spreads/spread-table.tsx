@@ -28,7 +28,8 @@ export function SpreadTable({ items, selectedId, onSelect }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[34%]">名前</TableHead>
+                <TableHead className="w-[12%]">No.</TableHead>
+                <TableHead className="w-[22%]">名前</TableHead>
                 <TableHead className="w-[14%]">カテゴリ</TableHead>
                 <TableHead className="w-[14%]">難易度</TableHead>
                 <TableHead className="w-[14%]">プラン</TableHead>
@@ -38,10 +39,10 @@ export function SpreadTable({ items, selectedId, onSelect }: Props) {
             </TableHeader>
           </Table>
         </div>
-        <div className="overflow-y-auto max-h-[240px]">
+        <div className="overflow-y-auto max-h-[160px]">
           <Table>
             <TableBody>
-              {items.map((s) => (
+              {items.map((s, index) => (
                 <TableRow
                   key={s.id}
                   onClick={() => onSelect(s.id)}
@@ -52,20 +53,25 @@ export function SpreadTable({ items, selectedId, onSelect }: Props) {
                       : "hover:bg-zinc-50"
                   )}
                 >
-                  <TableCell className="font-medium">{s.name}</TableCell>
-                  <TableCell>{s.category}</TableCell>
-                  <TableCell>{s.level?.name}</TableCell>
-                  <TableCell>{s.plan?.name}</TableCell>
-                  <TableCell>{s.cells.length}枚</TableCell>
-                  <TableCell className="text-right">
-                    {new Date(s.updatedAt).toLocaleDateString("ja-JP")}
+                  <TableCell className="w-[12%] font-medium">
+                    {index + 1}
+                  </TableCell>
+                  <TableCell className="w-[22%] font-medium">
+                    {s.name}
+                  </TableCell>
+                  <TableCell className="w-[14%]">{s.category}</TableCell>
+                  <TableCell className="w-[14%]">{s.level?.name}</TableCell>
+                  <TableCell className="w-[14%]">{s.plan?.name}</TableCell>
+                  <TableCell className="w-[12%]">{s.cells.length}枚</TableCell>
+                  <TableCell className="w-[12%] text-right">
+                    {new Date(s.updatedAt).toLocaleString("ja-JP")}
                   </TableCell>
                 </TableRow>
               ))}
               {items.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center text-zinc-500 py-10"
                   >
                     スプレッドはまだありません。「新規作成」から追加してください。
