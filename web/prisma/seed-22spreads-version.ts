@@ -92,50 +92,50 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 1, y: 0, vLabel: "行動", vOrder: 2 },
   { x: 2, y: 0, vLabel: "結果", vOrder: 3 },
 
-  // 4. 3枚引き（Mind/Body/Spirit）(3枚)
-  { x: 0, y: 0, vLabel: "心", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "体", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "魂", vOrder: 3 },
+  // 4. デイリーガイダンス (3枚)
+  { x: 0, y: 0, vLabel: "朝のエネルギー", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "午後の課題", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "夜の学び", vOrder: 3 },
 
-  // 5. 恋愛三角 (3枚) - 三角形配置
-  { x: 1, y: 0, vLabel: "心の状態", vOrder: 1 },
-  { x: 0, y: 1, vLabel: "現在の愛", vOrder: 2 },
-  { x: 2, y: 1, vLabel: "未来の愛", vOrder: 3 },
+  // 5. 二択スプレッド (2枚)
+  { x: 0, y: 0, vLabel: "選択肢A", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "選択肢B", vOrder: 2 },
 
   // 6. 面接スプレッド (3枚)
   { x: 0, y: 0, vLabel: "あなたの強み", vOrder: 1 },
   { x: 1, y: 0, vLabel: "相手の印象", vOrder: 2 },
   { x: 2, y: 0, vLabel: "結果", vOrder: 3 },
 
-  // 7. 関係性スプレッド (3枚) - 三角形配置
-  { x: 1, y: 0, vLabel: "あなた", vOrder: 1 },
-  { x: 0, y: 1, vLabel: "相手", vOrder: 2 },
-  { x: 2, y: 1, vLabel: "関係性", vOrder: 3 },
+  // 7. 3枚引き（Mind/Body/Spirit）(3枚)
+  { x: 0, y: 0, vLabel: "心", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "体", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "魂", vOrder: 3 },
 
-  // 8. 復縁スプレッド (4枚)
+  // 8. 恋愛三角 (3枚) - 三角形配置
+  { x: 1, y: 0, vLabel: "心の状態", vOrder: 1 },
+  { x: 0, y: 1, vLabel: "現在の愛", vOrder: 2 },
+  { x: 2, y: 1, vLabel: "未来の愛", vOrder: 3 },
+
+  // 9. 復縁スプレッド (4枚)
   { x: 0, y: 0, vLabel: "過去の関係", vOrder: 1 },
   { x: 1, y: 0, vLabel: "現在の状況", vOrder: 2 },
   { x: 2, y: 0, vLabel: "相手の気持ち", vOrder: 3 },
   { x: 3, y: 0, vLabel: "復縁可能性", vOrder: 4 },
 
-  // 9. 健康チェック (4枚)
-  { x: 0, y: 0, vLabel: "心の健康", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "体の健康", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "必要な行動", vOrder: 3 },
-  { x: 3, y: 0, vLabel: "回復の兆し", vOrder: 4 },
-
-  // 10. 投資スプレッド (4枚)
-  { x: 0, y: 0, vLabel: "リスク", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "リターン", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "タイミング", vOrder: 3 },
-  { x: 3, y: 0, vLabel: "結果", vOrder: 4 },
-
-  // 11. 5枚スプレッド (5枚) - 十字配置
+  // 10. 5枚スプレッド (5枚) - 十字配置
   { x: 1, y: 0, vLabel: "現在", vOrder: 1 },
   { x: 1, y: 1, vLabel: "課題", vOrder: 2 },
   { x: 0, y: 1, vLabel: "過去", vOrder: 3 },
   { x: 2, y: 1, vLabel: "未来", vOrder: 4 },
   { x: 1, y: 2, vLabel: "アドバイス", vOrder: 5 },
+
+  // 11. 金運予測 (6枚)
+  { x: 0, y: 0, vLabel: "現在の状況", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "収入", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "支出", vOrder: 3 },
+  { x: 0, y: 1, vLabel: "投資運", vOrder: 4 },
+  { x: 1, y: 1, vLabel: "節約法", vOrder: 5 },
+  { x: 2, y: 1, vLabel: "金運", vOrder: 6 },
 
   // 12. ソウルメイト (5枚)
   { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
@@ -151,45 +151,7 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 3, y: 0, vLabel: "解決法", vOrder: 4 },
   { x: 4, y: 0, vLabel: "成功後", vOrder: 5 },
 
-  // 14. 心のブロック解除 (5枚)
-  { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "原因", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "ブロック", vOrder: 3 },
-  { x: 3, y: 0, vLabel: "解決法", vOrder: 4 },
-  { x: 4, y: 0, vLabel: "成功後", vOrder: 5 },
-
-  // 15. ワークライフバランス (5枚)
-  { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "仕事・学業", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "バランス", vOrder: 3 },
-  { x: 3, y: 0, vLabel: "プライベート", vOrder: 4 },
-  { x: 4, y: 0, vLabel: "未来", vOrder: 5 },
-
-  // 16. 金運予測 (6枚)
-  { x: 0, y: 0, vLabel: "現在の状況", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "収入", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "支出", vOrder: 3 },
-  { x: 0, y: 1, vLabel: "投資運", vOrder: 4 },
-  { x: 1, y: 1, vLabel: "節約法", vOrder: 5 },
-  { x: 2, y: 1, vLabel: "金運", vOrder: 6 },
-
-  // 17. 関係性ヘルスチェック (6枚)
-  { x: 0, y: 0, vLabel: "あなた", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "パートナー", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "強み", vOrder: 3 },
-  { x: 0, y: 1, vLabel: "課題", vOrder: 4 },
-  { x: 1, y: 1, vLabel: "アドバイス", vOrder: 5 },
-  { x: 2, y: 1, vLabel: "未来", vOrder: 6 },
-
-  // 18. ヒーリングジャーニー (6枚)
-  { x: 0, y: 0, vLabel: "現在の状態", vOrder: 1 },
-  { x: 1, y: 0, vLabel: "根本原因", vOrder: 2 },
-  { x: 2, y: 0, vLabel: "治療法", vOrder: 3 },
-  { x: 0, y: 1, vLabel: "心の癒し", vOrder: 4 },
-  { x: 1, y: 1, vLabel: "体の癒し", vOrder: 5 },
-  { x: 2, y: 1, vLabel: "完全回復", vOrder: 6 },
-
-  // 19. キャリアパス (7枚)
+  // 14. キャリアパス (7枚)
   { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
   { x: 1, y: 0, vLabel: "課題", vOrder: 2 },
   { x: 2, y: 0, vLabel: "強み", vOrder: 3 },
@@ -198,7 +160,48 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 1, y: 1, vLabel: "機会", vOrder: 6 },
   { x: 2, y: 1, vLabel: "結果", vOrder: 7 },
 
-  // 20. エナジーバランス (7枚)
+  // 15. ワークライフバランス (5枚)
+  { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "仕事・学業", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "バランス", vOrder: 3 },
+  { x: 3, y: 0, vLabel: "プライベート", vOrder: 4 },
+  { x: 4, y: 0, vLabel: "未来", vOrder: 5 },
+
+  // 16. 健康チェック (4枚)
+  { x: 0, y: 0, vLabel: "心の健康", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "体の健康", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "必要な行動", vOrder: 3 },
+  { x: 3, y: 0, vLabel: "回復の兆し", vOrder: 4 },
+
+  // 17. 関係性スプレッド (3枚) - 三角形配置
+  { x: 1, y: 0, vLabel: "あなた", vOrder: 1 },
+  { x: 0, y: 1, vLabel: "相手", vOrder: 2 },
+  { x: 2, y: 1, vLabel: "関係性", vOrder: 3 },
+
+  // 18. 関係性ヘルスチェック (6枚)
+  { x: 0, y: 0, vLabel: "あなた", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "パートナー", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "強み", vOrder: 3 },
+  { x: 0, y: 1, vLabel: "課題", vOrder: 4 },
+  { x: 1, y: 1, vLabel: "アドバイス", vOrder: 5 },
+  { x: 2, y: 1, vLabel: "未来", vOrder: 6 },
+
+  // 19. 心のブロック解除 (5枚)
+  { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "原因", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "ブロック", vOrder: 3 },
+  { x: 3, y: 0, vLabel: "解決法", vOrder: 4 },
+  { x: 4, y: 0, vLabel: "成功後", vOrder: 5 },
+
+  // 20. ヒーリングジャーニー (6枚)
+  { x: 0, y: 0, vLabel: "現在の状態", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "根本原因", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "治療法", vOrder: 3 },
+  { x: 0, y: 1, vLabel: "心の癒し", vOrder: 4 },
+  { x: 1, y: 1, vLabel: "体の癒し", vOrder: 5 },
+  { x: 2, y: 1, vLabel: "完全回復", vOrder: 6 },
+
+  // 21. エナジーバランス (7枚)
   { x: 0, y: 0, vLabel: "現状", vOrder: 1 },
   { x: 1, y: 0, vLabel: "精神", vOrder: 2 },
   { x: 2, y: 0, vLabel: "肉体", vOrder: 3 },
@@ -207,7 +210,13 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 1, y: 1, vLabel: "運動", vOrder: 6 },
   { x: 2, y: 1, vLabel: "バランス", vOrder: 7 },
 
-  // 21. ホースシュー (7枚) - 馬蹄形配置
+  // 22. 投資スプレッド (4枚)
+  { x: 0, y: 0, vLabel: "リスク", vOrder: 1 },
+  { x: 1, y: 0, vLabel: "リターン", vOrder: 2 },
+  { x: 2, y: 0, vLabel: "タイミング", vOrder: 3 },
+  { x: 3, y: 0, vLabel: "結果", vOrder: 4 },
+
+  // 23. ホースシュー (7枚) - 馬蹄形配置
   { x: 0, y: 0, vLabel: "過去", vOrder: 1 },
   { x: 1, y: 1, vLabel: "現在", vOrder: 2 },
   { x: 2, y: 2, vLabel: "未来", vOrder: 3 },
@@ -216,19 +225,19 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 5, y: 1, vLabel: "障害", vOrder: 6 },
   { x: 6, y: 0, vLabel: "結果", vOrder: 7 },
 
-  // 22. ケルト十字 (10枚) - 十字形＋縦列
+  // 24. ケルト十字 (10枚) - 十字形＋縦列
   { x: 1, y: 1, vLabel: "現在の状況", vOrder: 1 },
   { x: 1, y: 1, hLabel: "課題・障害", hOrder: 2 },
-  { x: 1, y: 0, vLabel: "遠い過去", vOrder: 3 },
-  { x: 1, y: 2, vLabel: "近い過去", vOrder: 4 },
-  { x: 2, y: 1, vLabel: "可能な未来", vOrder: 5 },
-  { x: 0, y: 1, vLabel: "近い未来", vOrder: 6 },
+  { x: 1, y: 2, vLabel: "遠い過去", vOrder: 3 },
+  { x: 0, y: 1, vLabel: "近い過去", vOrder: 4 },
+  { x: 1, y: 0, vLabel: "可能な未来", vOrder: 5 },
+  { x: 2, y: 1, vLabel: "近い未来", vOrder: 6 },
   { x: 4, y: 3, vLabel: "あなたのアプローチ", vOrder: 7 },
   { x: 4, y: 2, vLabel: "周囲の影響", vOrder: 8 },
   { x: 4, y: 1, vLabel: "内面・感情", vOrder: 9 },
   { x: 4, y: 0, vLabel: "最終結果", vOrder: 10 },
 
-  // 23. イヤースプレッド (12枚) - 円形配置（時計のように）
+  // 25. イヤースプレッド (12枚) - 円形配置（時計のように）
   { x: 2, y: 0, vLabel: "1月", vOrder: 1 },
   { x: 3, y: 0, vLabel: "2月", vOrder: 2 },
   { x: 4, y: 1, vLabel: "3月", vOrder: 3 },
@@ -242,7 +251,7 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 2, y: 1, vLabel: "11月", vOrder: 11 },
   { x: 2, y: 2, vLabel: "12月", vOrder: 12 },
 
-  // 24. アストロロジカルスプレッド (12枚) - 星座環配置
+  // 26. アストロロジカルスプレッド (12枚) - 星座環配置
   { x: 1, y: 0, vLabel: "自己", vOrder: 1 },
   { x: 2, y: 0, vLabel: "金銭", vOrder: 2 },
   { x: 3, y: 0, vLabel: "コミュニケーション", vOrder: 3 },
@@ -256,7 +265,7 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 0, y: 1, vLabel: "友人", vOrder: 11 },
   { x: 1, y: 1, vLabel: "精神", vOrder: 12 },
 
-  // 25. 生命の樹 (10枚) - カバラの生命の樹配置
+  // 27. 生命の樹 (10枚) - カバラの生命の樹配置
   { x: 1, y: 0, vLabel: "ケテル", vOrder: 1 },
   { x: 0, y: 1, vLabel: "コクマー", vOrder: 2 },
   { x: 2, y: 1, vLabel: "ビナー", vOrder: 3 },
@@ -268,7 +277,7 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 1, y: 5, vLabel: "イエソド", vOrder: 9 },
   { x: 1, y: 6, vLabel: "マルクト", vOrder: 10 },
 
-  // 26. グランドタブロー (36枚) - 6x6グリッド
+  // 28. グランドタブロー (36枚) - 6x6グリッド
   { x: 0, y: 0, vLabel: "位置1", vOrder: 1 },
   { x: 1, y: 0, vLabel: "位置2", vOrder: 2 },
   { x: 2, y: 0, vLabel: "位置3", vOrder: 3 },
@@ -308,18 +317,18 @@ const cells: Prisma.SpreadCellCreateInput[] = [
 ];
 
 // 優先度をABCDの文字列からPriorityタイプに変換する関数
-// function parsePriority(priority: string): string | null {
-//   const match = priority.match(/\*\*([A-D])\*\*/);
-//   return match ? match[1] : null;
-// }
+function parsePriority(priority: string): string | null {
+  const match = priority.match(/\*\*([A-D])\*\*/);
+  return match ? match[1] : null;
+}
 
 // 星評価を★の数から数値に変換する関数
-// function parseStarRating(stars: string): number | null {
-//   const fullStars = (stars.match(/★/g) || []).length;
-//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//   const halfStars = (stars.match(/☆/g) || []).length;
-//   return fullStars > 0 ? fullStars : null;
-// }
+function parseStarRating(stars: string): number | null {
+  const fullStars = (stars.match(/★/g) || []).length;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const halfStars = (stars.match(/☆/g) || []).length;
+  return fullStars > 0 ? fullStars : null;
+}
 
 // プラン名を正規化する関数
 function normalizePlan(plan: string): string {
@@ -353,12 +362,16 @@ function parseCategories(categoryString: string): string[] {
     .filter(Boolean);
 }
 
-// CSVのテーブルを解析してスプレッドデータを抽出する関数
+// マークダウンのテーブルを解析してスプレッドデータを抽出する関数
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function parseCsvTable(csvContent: string): Promise<any[]> {
-  const lines = csvContent.split("\n");
+async function parseMarkdownTable(mdContent: string): Promise<any[]> {
+  const lines = mdContent.split("\n");
+  const tableLines = lines.filter(
+    (line) => line.trim().startsWith("|") && !line.includes("---")
+  );
+
   // ヘッダー行を除外
-  const dataLines = lines.slice(1);
+  const dataLines = tableLines.slice(1);
 
   const spreads = [];
 
@@ -366,9 +379,10 @@ async function parseCsvTable(csvContent: string): Promise<any[]> {
 
   for (const line of dataLines) {
     const columns = line
-      .split(",")
+      .split("|")
       .map((col) => col.trim())
       .filter(Boolean);
+    if (columns.length < 12) continue;
 
     const [
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -380,11 +394,12 @@ async function parseCsvTable(csvContent: string): Promise<any[]> {
       level,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       meanings,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       popularity,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       practicality,
+      beginnerFriendly,
+      requiresDialog,
       plan,
+      priority,
       guide,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       comment,
@@ -401,6 +416,11 @@ async function parseCsvTable(csvContent: string): Promise<any[]> {
       level: normalizeLevel(level),
       plan: normalizePlan(plan),
       guide: guide,
+      requiresDialog: requiresDialog.includes("必須"),
+      popularity: parseStarRating(popularity),
+      practicality: parseStarRating(practicality),
+      beginnerFriendly: parseStarRating(beginnerFriendly),
+      priority: parsePriority(priority),
       cells: copyCells.splice(0, parseInt(cardCount, 10)),
     };
 
@@ -414,18 +434,18 @@ async function importSpreads() {
   try {
     console.log("🌱 スプレッドデータのインポートを開始します...");
 
-    // CSVファイルの読み込み
+    // マークダウンファイルの読み込み
     const mdPath = path.join(
       __dirname,
       "..",
       "..",
       "docs",
-      "tarot-spreads-matrix.csv"
+      "tarot_spread_matrix.md"
     );
-    const csvContent = fs.readFileSync(mdPath, "utf-8");
+    const mdContent = fs.readFileSync(mdPath, "utf-8");
 
-    // CSVを解析してスプレッドデータを抽出
-    const spreads = await parseCsvTable(csvContent);
+    // マークダウンを解析してスプレッドデータを抽出
+    const spreads = await parseMarkdownTable(mdContent);
 
     for (const spreadData of spreads) {
       const update = {
@@ -434,6 +454,11 @@ async function importSpreads() {
         level: { connect: { code: spreadData.level } },
         plan: { connect: { code: spreadData.plan } },
         guide: spreadData.guide,
+        // requiresDialog: spreadData.requiresDialog,
+        // popularity: spreadData.popularity,
+        // practicality: spreadData.practicality,
+        // beginnerFriendly: spreadData.beginnerFriendly,
+        // priority: spreadData.priority,
         // 新規作成時のカテゴリ関連
         categories: {
           create: spreadData.categories.map((cat: string) => ({

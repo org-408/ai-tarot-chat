@@ -33,7 +33,9 @@ model TarotDeck {
 
 // タロットカードモデル
 model TarotCard {
-  id                String        @id
+  id                String        @id @default(cuid())
+  no                Int           // カード番号 (1-78)
+  code              String        // "0_Fool", "1_Magician", "2_HighPriestess", ..., "77_KingOfPentacles"
   name              String
   type              String        // major, minor
   number            Int
