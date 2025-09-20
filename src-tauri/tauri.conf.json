@@ -12,7 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "ai-tarot-chat",
+        "label": "main",
+        "title": "AiTarotChat - AIタロット占い",
         "width": 800,
         "height": 600
       }

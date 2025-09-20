@@ -2,11 +2,14 @@ use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use tauri::State;
 
+// 認証モジュールを追加
+mod auth;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum UserPlan {
     Free,
     Standard,
-    Coaching,
+    Premium,
 }
 
 struct AppState {
@@ -50,12 +53,12 @@ fn get_plan_features(state: State<AppState>) -> PlanFeatures {
             plan_name: "スタンダードプラン".to_string(),
             free_count: 0,
         },
-        UserPlan::Coaching => PlanFeatures {
+        UserPlan::Premium => PlanFeatures {
             daily_limit: None,
             available_spreads: (1..=22).collect(),
             ai_chat: true,
             ads: false,
-            plan_name: "コーチングプラン".to_string(),
+            plan_name: "プレミアムプラン".to_string(),
             free_count: 0,
         },
     }
@@ -74,13 +77,18 @@ struct PlanFeatures {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init()) // 認証用プラグイン追加
         .manage(AppState {
-            current_plan: Mutex::new(UserPlan::Free), // 初期状態はフリープラン
+            current_plan: Mutex::new(UserPlan::Free),
         })
         .invoke_handler(tauri::generate_handler![
             get_current_plan,
             set_plan,
-            get_plan_features
+            get_plan_features,
+            // 認証関数を追加
+            auth::tauri_auth_login,
+            auth::get_stored_user,
+            auth::clear_auth_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -155,3 +155,24 @@ export type ReadingCategoryInput = Omit<
   ReadingCategory,
   "id" | "createdAt" | "updatedAt" | "spreads"
 >;
+
+// Userの型
+export type User = {
+  id: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+  planType: "FREE_UNREGISTERED" | "FREE_REGISTERED" | "STANDARD" | "PREMIUM";
+  subscriptionStatus: "ACTIVE" | "INACTIVE" | "CANCELED" | "EXPIRED" | null;
+  subscriptionStartDate: Date | null;
+  subscriptionEndDate: Date | null;
+  dailyReadingsCount: number;
+  lastReadingDate: Date | null;
+  dailyAiChatCount: number;
+  lastAiChatDate: Date | null;
+  deviceId: string | null;
+  isRegistered: boolean;
+};
+
+// 入力用の型
+export type UserInput = Omit<User, "id" | "createdAt" | "updatedAt">;

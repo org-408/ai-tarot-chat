@@ -4,7 +4,7 @@ export function Header() {
   return (
     <header className="bg-sky-600 text-white">
       <div className="mx-auto max-w-screen-2xl px-6 py-3 flex items-center justify-between">
-        <div className="font-semibold">🔮 タロットAI 管理システム</div>
+        <div className="font-semibold">🔮 AIタロット占い 管理システム</div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sky-800 bg-sky-100">
             admin@tarot-ai.com

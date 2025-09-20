@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { PlanFeatures, Spread, SpreadRecommendation, UserPlan } from "../types";
 
-interface CoachingPageProps {
+interface PremiumPageProps {
   features: PlanFeatures;
   onDowngrade: (plan: UserPlan) => void;
 }
 
-const CoachingPage: React.FC<CoachingPageProps> = ({
-  features,
-  onDowngrade,
-}) => {
+const PremiumPage: React.FC<PremiumPageProps> = ({ features, onDowngrade }) => {
   const [userInput, setUserInput] =
     useState<string>("転職すべきか悩んでいます");
   const [selectionMode, setSelectionMode] = useState<string>("ai-auto");
@@ -225,8 +222,8 @@ const CoachingPage: React.FC<CoachingPageProps> = ({
     }
   }, [userInput, candidateCount, selectionMode]);
 
-  const handleStartCoaching = () => {
-    // TODO: AIコーチング開始処理
+  const handleStartPremium = () => {
+    // TODO: AIプレミアム開始処理
     console.log(`開始: ${userInput} - ${selectedSpread}`);
   };
 
@@ -440,13 +437,13 @@ const CoachingPage: React.FC<CoachingPageProps> = ({
         </div>
       )}
 
-      {/* コーチング開始ボタン */}
+      {/* プレミアム開始ボタン */}
       <button
         className="primary-button"
-        onClick={handleStartCoaching}
+        onClick={handleStartPremium}
         disabled={!selectedSpread}
       >
-        🤖 コーチングを始める
+        🤖 プレミアムを始める
       </button>
 
       {/* プラン変更ボタン（簡潔版） */}
@@ -468,4 +465,4 @@ const CoachingPage: React.FC<CoachingPageProps> = ({
   );
 };
 
-export default CoachingPage;
+export default PremiumPage;

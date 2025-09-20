@@ -143,3 +143,55 @@ model SpreadToCategory {
   @@unique([spreadId, categoryId])
 }
 
+// ユーザー関連データモデル
+
+enum PlanType {
+  FREE_UNREGISTERED  // フリー（未登録）
+  FREE_REGISTERED    // フリー（登録済）
+  STANDARD          // スタンダード
+  PREMIUM           // プレミアム
+}
+
+enum SubscriptionStatus {
+  ACTIVE    // 有効
+  INACTIVE  // 無効
+  CANCELED  // キャンセル済
+  EXPIRED   // 期限切れ
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Google認証情報
+  name     String?  // Googleから取得した名前
+  image    String?  // Googleプロフィール画像URL
+  googleId String?  @unique @map("google_id") // Google User ID
+
+  // プラン情報
+  planType              PlanType            @default(FREE_UNREGISTERED) @map("plan_type")
+  subscriptionStatus    SubscriptionStatus? @map("subscription_status")
+  subscriptionStartDate DateTime?           @map("subscription_start_date")
+  subscriptionEndDate   DateTime?           @map("subscription_end_date")
+
+  // 利用状況
+  dailyReadingsCount Int      @default(0) @map("daily_readings_count")
+  lastReadingDate    DateTime? @map("last_reading_date")
+  dailyAiChatCount   Int      @default(0) @map("daily_ai_chat_count")
+  lastAiChatDate     DateTime? @map("last_ai_chat_date")
+
+  // デバイス情報
+  deviceId String? @unique @map("device_id")
+
+  // ユーザー状態
+  isRegistered Boolean  @default(false) @map("is_registered")
+  lastLoginAt  DateTime? @map("last_login_at") // 最終ログイン時刻
+
+  @@index([email])
+  @@index([googleId])
+  @@index([deviceId])
+  @@index([planType])
+  @@map("users")
+}

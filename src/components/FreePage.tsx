@@ -127,10 +127,10 @@ const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
           スタンダードプランにアップグレード (¥480/月)
         </button>
         <button
-          onClick={() => onUpgrade("Coaching")}
+          onClick={() => onUpgrade("Premium")}
           className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
         >
-          コーチングプランにアップグレード (¥980/月)
+          プレミアムプランにアップグレード (¥980/月)
         </button>
       </div>
     </div>

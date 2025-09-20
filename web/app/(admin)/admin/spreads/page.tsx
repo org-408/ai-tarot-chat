@@ -22,7 +22,7 @@ export default function SpreadsPage() {
   //       name: "ケルト十字",
   //       category: "総合",
   //       level: "最上級",
-  //       plan: "コーチング",
+  //       plan: "プレミアム",
   //       guide: "中央クロスから過去・未来・内外・結末へ広げて読む。",
   //       updatedAt: "2025-09-10",
   //       cells: [

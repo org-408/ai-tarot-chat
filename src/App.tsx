@@ -1,12 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import AdBanner from "./components/AdBanner";
-import CoachingPage from "./components/CoachingPage";
 import FreePage from "./components/FreePage";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
+import PremiumPage from "./components/PremiumPage";
 import StandardPage from "./components/StandardPage";
+import { useTauriAuth } from "./hooks/useTauriAuth";
 import { PageType, PlanFeatures, UserPlan } from "./types";
 
 function App() {
@@ -15,6 +16,16 @@ function App() {
   const [features, setFeatures] = useState<PlanFeatures | null>(null);
   const [loading, setLoading] = useState(true);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
+
+  // 認証機能追加
+  const {
+    user,
+    loading: authLoading,
+    error: authError,
+    signIn,
+    signOut,
+    isAuthenticated,
+  } = useTauriAuth();
 
   // アプリ起動時にプラン情報を取得
   useEffect(() => {
@@ -63,7 +74,8 @@ function App() {
     setPageType(page);
   };
 
-  if (loading) {
+  // 認証確認のローディング表示
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">読み込み中...</div>
@@ -79,6 +91,41 @@ function App() {
     );
   }
 
+  // 未認証時はログイン画面表示
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <div className="text-center mb-6">
+            <div className="text-6xl mb-4">🔮</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              AIタロット占い
+            </h1>
+            <p className="text-gray-600">AIと一緒に占いを楽しもう</p>
+          </div>
+
+          {authError && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+              {authError}
+            </div>
+          )}
+
+          <button
+            onClick={signIn}
+            disabled={authLoading}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50"
+          >
+            {authLoading ? "認証中..." : "Googleでログイン"}
+          </button>
+
+          <p className="text-xs text-gray-500 text-center mt-4">
+            ログインすることで、利用規約とプライバシーポリシーに同意したものとみなされます
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // プランに応じて表示するページを切り替え
   const renderPage = () => {
     switch (pageType) {
@@ -88,10 +135,8 @@ function App() {
             return <FreePage features={features} onUpgrade={changePlan} />;
           case "Standard":
             return <StandardPage features={features} onUpgrade={changePlan} />;
-          case "Coaching":
-            return (
-              <CoachingPage features={features} onDowngrade={changePlan} />
-            );
+          case "Premium":
+            return <PremiumPage features={features} onDowngrade={changePlan} />;
           default:
             return <FreePage features={features} onUpgrade={changePlan} />;
         }
@@ -122,6 +167,16 @@ function App() {
               <div className="text-6xl mb-4">🚧</div>
               <div className="text-lg font-bold mb-2">準備中</div>
               <div className="text-sm">設定機能を開発中です</div>
+
+              {/* ログアウトボタンを設定画面に追加 */}
+              <div className="mt-8">
+                <button
+                  onClick={signOut}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  ログアウト
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -181,17 +236,17 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  changePlan("Coaching");
+                  changePlan("Premium");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "Coaching"
+                  currentPlan === "Premium"
                     ? "bg-yellow-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
               >
-                👑 Coaching
+                👑 Premium
               </button>
               <button
                 onClick={() => {
@@ -206,10 +261,27 @@ function App() {
               >
                 💎 Plan
               </button>
+              <hr className="my-1 border-gray-300" />
+              <button
+                onClick={() => {
+                  signOut();
+                  setDevMenuOpen(false);
+                }}
+                className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
+              >
+                🚪 Logout
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* ユーザー情報表示（開発用） */}
+      {user && (
+        <div className="fixed top-2 left-2 z-40 bg-black bg-opacity-10 text-xs px-2 py-1 rounded opacity-30 hover:opacity-80 transition-all">
+          {user.email}
+        </div>
+      )}
 
       {/* メインコンテンツ */}
       {renderPage()}

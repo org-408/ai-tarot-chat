@@ -42,8 +42,8 @@ const PlansPage: React.FC<PlansPageProps> = ({
       color: "from-blue-400 to-blue-600",
       popular: true,
     },
-    Coaching: {
-      name: "👑 コーチングプラン",
+    Premium: {
+      name: "👑 プレミアムプラン",
       price: "¥980/月",
       description: "AIと対話しながら本格占い",
       features: [
@@ -143,7 +143,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
                       ? "フリープランに変更"
                       : currentPlan === "Free"
                       ? "アップグレード"
-                      : planKey === "Standard" && currentPlan === "Coaching"
+                      : planKey === "Standard" && currentPlan === "Premium"
                       ? "ダウングレード"
                       : "プラン変更"}
                   </button>

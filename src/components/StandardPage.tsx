@@ -234,15 +234,15 @@ const StandardPage: React.FC<StandardPageProps> = ({ features, onUpgrade }) => {
       </button>
 
       {/* アップグレードヒント */}
-      <div className="upgrade-hint">🤖 AIと対話しながら占うには→コーチング</div>
+      <div className="upgrade-hint">🤖 AIと対話しながら占うには→プレミアム</div>
 
       {/* プラン変更ボタン（簡潔版） */}
       <div className="mt-6 space-y-2">
         <button
-          onClick={() => onUpgrade("Coaching")}
+          onClick={() => onUpgrade("Premium")}
           className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
         >
-          コーチングプランにアップグレード (¥980/月)
+          プレミアムプランにアップグレード (¥980/月)
         </button>
         <button
           onClick={() => onUpgrade("Free")}

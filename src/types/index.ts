@@ -1,6 +1,6 @@
 // 共通型定義ファイル
 
-export type UserPlan = "Free" | "Standard" | "Coaching";
+export type UserPlan = "Free" | "Standard" | "Premium";
 
 export type PageType = "reading" | "plans" | "history" | "settings";
 

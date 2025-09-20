@@ -85,7 +85,7 @@ export function SpreadGrid({
                         className="max-w-[250px] p-3"
                       >
                         <div className="space-y-1">
-                          <p className="font-semibold text-sm">
+                          <p className="font-semibold text-sm text-blue-300/80">
                             {hasV.vLabel || `カード ${hasV.vOrder}`}
                           </p>
                         </div>
@@ -120,7 +120,7 @@ export function SpreadGrid({
                         className="max-w-[250px] p-3"
                       >
                         <div className="space-y-1">
-                          <p className="font-semibold text-sm">
+                          <p className="font-semibold text-sm text-pink-300/80">
                             {hasH.hLabel || `カード ${hasH.hOrder}`}
                           </p>
                         </div>
