@@ -1,12 +1,27 @@
 import { useState } from "react";
-import { Genre, PlanFeatures, UserPlan } from "../types";
+import { Genre, PlanFeatures, User, UserPlan } from "../types";
 
 interface FreePageProps {
   features: PlanFeatures;
   onUpgrade: (plan: UserPlan) => void;
+  onLogin: () => void;
+  isAuthenticated: boolean;
+  user: User | null;
+  isLoggingIn: boolean;
+  authError: string | null;
+  onClearError: () => void;
 }
 
-const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
+const FreePage: React.FC<FreePageProps> = ({
+  features,
+  onUpgrade,
+  onLogin,
+  isAuthenticated,
+  user,
+  isLoggingIn,
+  authError,
+  onClearError,
+}) => {
   const [selectedGenre, setSelectedGenre] = useState<string>("恋愛運");
   const [selectedSpread, setSelectedSpread] = useState<string>("ワンカード");
   const [remainingReads] = useState<number>(features.free_count); // TODO: 実際の残り回数を取得
@@ -43,11 +58,52 @@ const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
     console.log(`開始: ${selectedGenre} - ${selectedSpread}`);
   };
 
+  // エラー表示時の自動クリア
+  const handleErrorDismiss = () => {
+    onClearError();
+  };
+
   return (
     <div className="main-container">
-      {/* ヘッダー -> 共通化して省略 */}
+      {/* ユーザー状態表示 */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+        <div className="text-sm text-gray-600 text-center">
+          {isAuthenticated && user ? (
+            <div>
+              <div className="font-bold text-green-600">
+                ✅ ログイン済み: {user.email}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {user.is_registered ? "フリープラン登録済み" : "新規ユーザー"}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="font-bold text-blue-600">
+                🔓 フリープラン未登録
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                ログインで履歴保存・アップグレードが可能
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* プラン情報 -> 共通化して省略 */}
+      {/* 認証エラー表示 */}
+      {authError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex justify-between items-center">
+            <div className="text-red-600 text-sm">{authError}</div>
+            <button
+              onClick={handleErrorDismiss}
+              className="text-red-400 hover:text-red-600"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 残り回数表示 */}
       <div className="daily-limit mb-4">残り {remainingReads} 回</div>
@@ -117,6 +173,32 @@ const FreePage: React.FC<FreePageProps> = ({ features, onUpgrade }) => {
 
       {/* アップグレードヒント */}
       <div className="upgrade-hint">💎 もっと詳しく占うには→アップグレード</div>
+
+      {/* ログインセクション */}
+      {!isAuthenticated && (
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="text-center">
+            <div className="font-bold text-blue-800 mb-2">
+              🔑 アカウント作成
+            </div>
+            <div className="text-sm text-blue-600 mb-3">
+              ログインすることで：
+              <br />
+              • 占い履歴の保存
+              <br />
+              • 有料プランへのアップグレード
+              <br />• パーソナライズされた占い体験
+            </div>
+            <button
+              onClick={onLogin}
+              disabled={isLoggingIn}
+              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {isLoggingIn ? "認証中..." : "Googleでログイン"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* プラン変更ボタン（簡潔版） */}
       <div className="mt-6 space-y-2">

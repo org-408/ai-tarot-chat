@@ -163,9 +163,13 @@ const StandardPage: React.FC<StandardPageProps> = ({ features, onUpgrade }) => {
 
   return (
     <div className="main-container">
-      {/* ヘッダー -> 共通化して省略 */}
-
-      {/* プラン情報 -> 共通化して省略 */}
+      {/* 認証済みプラン表示 */}
+      <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-center">
+          <div className="font-bold text-blue-800">💎 スタンダードプラン</div>
+          <div className="text-sm text-blue-600">認証済み・無制限利用</div>
+        </div>
+      </div>
 
       {/* ジャンル選択 */}
       <div className="mb-6">

@@ -4,12 +4,18 @@ interface PlansPageProps {
   features: PlanFeatures;
   currentPlan: UserPlan;
   onChangePlan: (plan: UserPlan) => void;
+  isAuthenticated: boolean;
+  onLogin: () => void;
+  isLoggingIn: boolean;
 }
 
 const PlansPage: React.FC<PlansPageProps> = ({
   features,
   currentPlan,
   onChangePlan,
+  isAuthenticated,
+  onLogin,
+  isLoggingIn,
 }) => {
   const planData = {
     Free: {
@@ -25,6 +31,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       ],
       color: "from-green-400 to-green-600",
       popular: false,
+      requiresAuth: false,
     },
     Standard: {
       name: "💎 スタンダードプラン",
@@ -41,6 +48,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       ],
       color: "from-blue-400 to-blue-600",
       popular: true,
+      requiresAuth: true,
     },
     Premium: {
       name: "👑 プレミアムプラン",
@@ -58,7 +66,20 @@ const PlansPage: React.FC<PlansPageProps> = ({
       ],
       color: "from-yellow-400 to-orange-500",
       popular: false,
+      requiresAuth: true,
     },
+  };
+
+  const handlePlanChange = (planKey: UserPlan) => {
+    const plan = planData[planKey];
+
+    // 有料プランかつ未認証の場合はログインが必要
+    if (plan.requiresAuth && !isAuthenticated) {
+      onLogin();
+      return;
+    }
+
+    onChangePlan(planKey);
   };
 
   return (
@@ -66,13 +87,18 @@ const PlansPage: React.FC<PlansPageProps> = ({
       {/* ヘッダー */}
       <div className="page-title">💎 プラン選択</div>
 
-      {/* 現在のプラン表示 */}
+      {/* 認証状態表示 */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-        <div className="text-sm text-gray-600">現在のプラン</div>
+        <div className="text-sm text-gray-600">現在の状態</div>
         <div className="font-bold text-lg">{planData[currentPlan].name}</div>
         <div className="text-sm text-gray-500">
           {planData[currentPlan].price}
         </div>
+        {!isAuthenticated && (
+          <div className="text-xs text-orange-600 mt-1">
+            ⚠️ 未認証（有料プラン選択時に自動ログイン）
+          </div>
+        )}
       </div>
 
       {/* プラン比較カード */}
@@ -91,6 +117,13 @@ const PlansPage: React.FC<PlansPageProps> = ({
               {plan.popular && (
                 <div className="absolute -top-2 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
                   おすすめ
+                </div>
+              )}
+
+              {/* 認証必須バッジ */}
+              {plan.requiresAuth && (
+                <div className="absolute -top-2 right-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
+                  認証必須
                 </div>
               )}
 
@@ -136,10 +169,19 @@ const PlansPage: React.FC<PlansPageProps> = ({
                   </div>
                 ) : (
                   <button
-                    onClick={() => onChangePlan(planKey)}
-                    className={`w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-colors bg-gradient-to-r ${plan.color} hover:opacity-90`}
+                    onClick={() => handlePlanChange(planKey)}
+                    disabled={isLoggingIn}
+                    className={`w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-colors bg-gradient-to-r ${plan.color} hover:opacity-90 disabled:opacity-50`}
                   >
-                    {planKey === "Free"
+                    {isLoggingIn
+                      ? "認証中..."
+                      : plan.requiresAuth && !isAuthenticated
+                      ? `ログイン＆${
+                          planKey === "Standard"
+                            ? "アップグレード"
+                            : "プレミアム登録"
+                        }`
+                      : planKey === "Free"
                       ? "フリープランに変更"
                       : currentPlan === "Free"
                       ? "アップグレード"
@@ -149,6 +191,15 @@ const PlansPage: React.FC<PlansPageProps> = ({
                   </button>
                 )}
               </div>
+
+              {/* 認証必須の説明 */}
+              {plan.requiresAuth &&
+                !isAuthenticated &&
+                currentPlan !== planKey && (
+                  <div className="mt-2 text-xs text-orange-600 text-center">
+                    このプランを選択すると自動的にログイン画面に移動します
+                  </div>
+                )}
             </div>
           )
         )}
@@ -159,9 +210,10 @@ const PlansPage: React.FC<PlansPageProps> = ({
         <div className="text-xs text-yellow-800">
           <div className="font-bold mb-1">📝 プラン変更について</div>
           <ul className="space-y-1">
+            <li>• フリープランは認証なしで利用可能</li>
+            <li>• 有料プランはGoogleアカウント認証が必要</li>
             <li>• アップグレードは即座に反映されます</li>
             <li>• ダウングレードは次回更新日から適用</li>
-            <li>• フリープランはいつでも利用可能</li>
           </ul>
         </div>
       </div>

@@ -20,6 +20,7 @@ export const useTauriAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     checkAuthState();
@@ -31,15 +32,16 @@ export const useTauriAuth = () => {
       const savedUser = await invoke<User | null>("get_stored_user");
       setUser(savedUser);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Auth check failed");
+      // 認証エラーは重要ではない（フリープラン未登録で続行）
+      console.log("No stored user found, continuing as guest");
     } finally {
       setLoading(false);
     }
   };
 
-  const signIn = async (): Promise<void> => {
+  const signIn = async (): Promise<boolean> => {
     try {
-      setLoading(true);
+      setIsLoggingIn(true);
       setError(null);
 
       // Rust関数呼び出し：内部ブラウザでNext.js認証
@@ -47,13 +49,16 @@ export const useTauriAuth = () => {
 
       if (result.success) {
         setUser(result.user);
+        return true;
       } else {
         throw new Error("Authentication failed");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      setError(errorMessage);
+      return false;
     } finally {
-      setLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
@@ -70,8 +75,10 @@ export const useTauriAuth = () => {
     user,
     loading,
     error,
+    isLoggingIn,
     signIn,
     signOut,
     isAuthenticated: !!user,
+    clearError: () => setError(null),
   };
 };

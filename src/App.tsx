@@ -17,7 +17,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
 
-  // 認証機能追加
+  // 認証機能
   const {
     user,
     loading: authLoading,
@@ -25,12 +25,16 @@ function App() {
     signIn,
     signOut,
     isAuthenticated,
+    isLoggingIn,
+    clearError,
   } = useTauriAuth();
 
   // アプリ起動時にプラン情報を取得
   useEffect(() => {
-    loadPlanInfo();
-  }, []);
+    if (!authLoading) {
+      loadPlanInfo();
+    }
+  }, [authLoading, isAuthenticated]);
 
   // 広告表示スタイル関連
   useEffect(() => {
@@ -47,25 +51,77 @@ function App() {
 
   const loadPlanInfo = async () => {
     try {
-      const plan = await invoke<UserPlan>("get_current_plan");
+      setLoading(true);
+
+      // 認証済みの場合、サーバーからプラン情報を取得
+      // 未認証の場合、フリープラン未登録として扱う
+      let plan: UserPlan = "Free";
+
+      if (isAuthenticated && user) {
+        // 認証済みユーザーの場合、ユーザー情報からプラン判定
+        switch (user.plan_type) {
+          case "standard":
+            plan = "Standard";
+            break;
+          case "premium":
+            plan = "Premium";
+            break;
+          default:
+            plan = "Free";
+        }
+      }
+
       const planFeatures = await invoke<PlanFeatures>("get_plan_features");
+      await invoke("set_plan", { plan });
 
       setCurrentPlan(plan);
       setFeatures(planFeatures);
     } catch (error) {
       console.error("プラン情報の取得に失敗:", error);
+      // エラー時はフリープランにフォールバック
+      setCurrentPlan("Free");
+      try {
+        const fallbackFeatures = await invoke<PlanFeatures>(
+          "get_plan_features"
+        );
+        setFeatures(fallbackFeatures);
+      } catch (fallbackError) {
+        console.error("フォールバック失敗:", fallbackError);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // プラン変更（テスト用）
+  // プラン変更（テスト用 + 実際のアップグレード処理）
   const changePlan = async (newPlan: UserPlan) => {
     try {
+      // 有料プランへのアップグレード時は認証必須
+      if (
+        (newPlan === "Standard" || newPlan === "Premium") &&
+        !isAuthenticated
+      ) {
+        const loginSuccess = await signIn();
+        if (!loginSuccess) {
+          return; // ログイン失敗時は処理中止
+        }
+        // ログイン成功後、プラン情報を再読み込み
+        await loadPlanInfo();
+        return;
+      }
+
       await invoke("set_plan", { plan: newPlan });
       await loadPlanInfo(); // 再読み込み
     } catch (error) {
       console.error("プラン変更に失敗:", error);
+    }
+  };
+
+  // ログイン処理
+  const handleLogin = async () => {
+    const success = await signIn();
+    if (success) {
+      await loadPlanInfo(); // ログイン成功後、プラン情報を更新
     }
   };
 
@@ -74,7 +130,7 @@ function App() {
     setPageType(page);
   };
 
-  // 認証確認のローディング表示
+  // 初期ローディング表示
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -91,54 +147,41 @@ function App() {
     );
   }
 
-  // 未認証時はログイン画面表示
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">🔮</div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              AIタロット占い
-            </h1>
-            <p className="text-gray-600">AIと一緒に占いを楽しもう</p>
-          </div>
-
-          {authError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
-              {authError}
-            </div>
-          )}
-
-          <button
-            onClick={signIn}
-            disabled={authLoading}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all disabled:opacity-50"
-          >
-            {authLoading ? "認証中..." : "Googleでログイン"}
-          </button>
-
-          <p className="text-xs text-gray-500 text-center mt-4">
-            ログインすることで、利用規約とプライバシーポリシーに同意したものとみなされます
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // プランに応じて表示するページを切り替え
   const renderPage = () => {
     switch (pageType) {
       case "reading":
         switch (currentPlan) {
           case "Free":
-            return <FreePage features={features} onUpgrade={changePlan} />;
+            return (
+              <FreePage
+                features={features}
+                onUpgrade={changePlan}
+                onLogin={handleLogin}
+                isAuthenticated={isAuthenticated}
+                user={user}
+                isLoggingIn={isLoggingIn}
+                authError={authError}
+                onClearError={clearError}
+              />
+            );
           case "Standard":
             return <StandardPage features={features} onUpgrade={changePlan} />;
           case "Premium":
             return <PremiumPage features={features} onDowngrade={changePlan} />;
           default:
-            return <FreePage features={features} onUpgrade={changePlan} />;
+            return (
+              <FreePage
+                features={features}
+                onUpgrade={changePlan}
+                onLogin={handleLogin}
+                isAuthenticated={isAuthenticated}
+                user={user}
+                isLoggingIn={isLoggingIn}
+                authError={authError}
+                onClearError={clearError}
+              />
+            );
         }
       case "plans":
         return (
@@ -146,6 +189,9 @@ function App() {
             features={features}
             currentPlan={currentPlan}
             onChangePlan={changePlan}
+            isAuthenticated={isAuthenticated}
+            onLogin={handleLogin}
+            isLoggingIn={isLoggingIn}
           />
         );
       case "history":
@@ -169,19 +215,32 @@ function App() {
               <div className="text-sm">設定機能を開発中です</div>
 
               {/* ログアウトボタンを設定画面に追加 */}
-              <div className="mt-8">
-                <button
-                  onClick={signOut}
-                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                >
-                  ログアウト
-                </button>
-              </div>
+              {isAuthenticated && (
+                <div className="mt-8">
+                  <button
+                    onClick={signOut}
+                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    ログアウト
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         );
       default:
-        return <FreePage features={features} onUpgrade={changePlan} />;
+        return (
+          <FreePage
+            features={features}
+            onUpgrade={changePlan}
+            onLogin={handleLogin}
+            isAuthenticated={isAuthenticated}
+            user={user}
+            isLoggingIn={isLoggingIn}
+            authError={authError}
+            onClearError={clearError}
+          />
+        );
     }
   };
 
@@ -262,15 +321,27 @@ function App() {
                 💎 Plan
               </button>
               <hr className="my-1 border-gray-300" />
-              <button
-                onClick={() => {
-                  signOut();
-                  setDevMenuOpen(false);
-                }}
-                className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
-              >
-                🚪 Logout
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    signOut();
+                    setDevMenuOpen(false);
+                  }}
+                  className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
+                >
+                  🚪 Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleLogin();
+                    setDevMenuOpen(false);
+                  }}
+                  className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
+                >
+                  🔑 Login
+                </button>
+              )}
             </div>
           </div>
         )}

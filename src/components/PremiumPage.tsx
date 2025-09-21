@@ -238,9 +238,15 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ features, onDowngrade }) => {
 
   return (
     <div className="main-container">
-      {/* ヘッダー -> 共通化して省略 */}
-
-      {/* プラン情報 -> 共通化して省略 */}
+      {/* 認証済みプラン表示 */}
+      <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+        <div className="text-center">
+          <div className="font-bold text-yellow-800">👑 プレミアムプラン</div>
+          <div className="text-sm text-yellow-600">
+            認証済み・AI対話機能利用可能
+          </div>
+        </div>
+      </div>
 
       {/* ユーザー入力 */}
       <div className="mb-6">

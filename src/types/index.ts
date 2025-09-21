@@ -1,8 +1,21 @@
-// 共通型定義ファイル
-
 export type UserPlan = "Free" | "Standard" | "Premium";
-
 export type PageType = "reading" | "plans" | "history" | "settings";
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  image?: string;
+  plan_type: string;
+  is_registered: boolean;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+}
 
 export interface PlanFeatures {
   daily_limit: number | null;
@@ -11,20 +24,6 @@ export interface PlanFeatures {
   ads: boolean;
   plan_name: string;
   free_count: number;
-}
-
-export interface SpreadRecommendation {
-  id: string;
-  name: string;
-  description: string;
-  reason: string;
-}
-
-export interface Spread {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
 }
 
 export interface Genre {
@@ -38,4 +37,18 @@ export interface NavigationItem {
   label: string;
   icon: string;
   available: boolean;
+}
+
+export interface Spread {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+}
+
+export interface SpreadRecommendation {
+  id: string;
+  name: string;
+  description: string;
+  reason: string;
 }
