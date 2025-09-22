@@ -1,11 +1,11 @@
 "use client";
+import type { SpreadCell } from "@/../shared/lib/types";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { SpreadCell } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function SpreadGrid({

@@ -1,4 +1,4 @@
-import type { SpreadCell, SpreadInput } from "@/lib/types";
+import type { SpreadCell, SpreadInput } from "@/../shared/lib/types";
 import { prisma } from "@/prisma/prisma";
 
 // -------- Spread操作 --------

@@ -1,4 +1,4 @@
-import type { Plan, ReadingCategory, SpreadLevel } from "@/lib/types";
+import type { Plan, ReadingCategory, SpreadLevel } from "@/../shared/lib/types";
 import { prisma } from "@/prisma/prisma";
 
 // プラン一覧を取得

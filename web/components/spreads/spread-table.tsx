@@ -1,5 +1,6 @@
 "use client";
 
+import type { Spread } from "@/../shared/lib/types";
 import {
   Table,
   TableBody,
@@ -8,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Spread } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Props = {

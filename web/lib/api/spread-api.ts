@@ -1,4 +1,4 @@
-import type { Spread, SpreadCell, SpreadInput } from "@/lib/types";
+import type { Spread, SpreadCell, SpreadInput } from "@/../shared/lib/types";
 
 /**
  * スプレッド一覧を取得

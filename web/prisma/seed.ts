@@ -7,50 +7,92 @@ const prisma = new PrismaClient();
 // プランの作成
 const plans: Prisma.PlanCreateInput[] = [
   {
-    code: "FREE",
+    code: "FREE_UNREGISTERED",
     name: "フリー",
-    description: "基本的なタロットリーディングを無料で体験",
+    description: "簡単なタロットリーディングを無料で体験",
     price: 0,
-    features: ["基本スプレッド", "簡易解釈"],
+    features: [
+      "広告表示あり",
+      "基本スプレッド(3種類)",
+      "恋愛・仕事・今日の運勢",
+      "1日1回のみ利用可能",
+    ],
+    maxReadings: 1,
+    maxCeltics: 0,
+    maxPersonal: 0,
+    hasPersonal: false,
+  },
+  {
+    code: "FREE_REGISTERED",
+    name: "フリー(登録済み)",
+    description: "簡単なタロットリーディングを無料で体験",
+    price: 0,
+    features: [
+      "広告表示あり",
+      "基本スプレッド(3種類)",
+      "恋愛・仕事・今日の運勢",
+      "1日3回まで利用可能",
+      "履歴保存",
+    ],
     maxReadings: 3,
-    hasAICoach: false,
+    maxCeltics: 0,
+    maxPersonal: 0,
+    hasPersonal: false,
   },
   {
     code: "STANDARD",
     name: "スタンダード",
-    description: "詳細な解釈と多様なスプレッドを提供",
-    price: 980,
-    features: ["上級レベルまでのすべてのスプレッド", "詳細解釈", "履歴保存"],
+    description: "詳細な解説と多様なスプレッドを提供",
+    price: 480,
+    features: [
+      "広告表示なし",
+      "上級レベルまでのすべてのスプレッド",
+      "多彩な占いカテゴリ",
+      "1日3回7枚スプレッド、または、1日1回ケルト十字が利用可能",
+      "履歴保存",
+    ],
     maxReadings: 3,
-    hasAICoach: false,
+    maxCeltics: 1,
+    maxPersonal: 0,
+    hasPersonal: false,
   },
   {
     code: "PREMIUM",
     name: "プレミアム",
-    description: "AIによる詳細な解説とアドバイスを提供",
-    price: 1980,
+    description: "詳細な解説と全スプレッド、簡単な対話を提供",
+    price: 980,
     features: [
+      "広告表示なし",
       "上級レベルまでのすべてのスプレッド",
-      "AI対話",
-      "無制限履歴",
-      "高度な解釈",
+      "多彩な占いカテゴリ",
+      "1日3回まですべてのスプレッドが利用可能",
+      "1日1回パーソナル占い(簡単な対話つき)が利用可能",
+      "*パーソナル占いでは、占う内容の入力、結果への質問が可能",
+      "履歴保存",
     ],
-    maxReadings: null, // 無制限
-    hasAICoach: true,
+    maxReadings: 3,
+    maxCeltics: 3,
+    maxPersonal: 1,
+    hasPersonal: true,
   },
   {
     code: "MASTER",
     name: "マスター",
-    description: "AIによるプロレベルの詳細な解説とアドバイスを提供",
-    price: 2980,
+    description: "詳細な解説と全スプレッド、詳細な対話を提供",
+    price: 1980,
     features: [
-      "すべてのスプレッド",
-      "プロレベルのAIコーチング",
-      "無制限履歴",
-      "高度な解釈",
+      "広告表示なし",
+      "最上級レベルまでのすべてのスプレッド",
+      "多彩な占いカテゴリ",
+      "1日3回まですべてのスプレッドが利用可能",
+      "1日1回詳細パーソナル占いが利用可能(TBD)",
+      "*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能",
+      "履歴保存",
     ],
-    maxReadings: null, // 無制限
-    hasAICoach: true,
+    maxReadings: 3,
+    maxCeltics: 3,
+    maxPersonal: 1,
+    hasPersonal: true,
   },
 ];
 
@@ -132,8 +174,8 @@ const cells: Prisma.SpreadCellCreateInput[] = [
 
   // 11. 5枚スプレッド (5枚) - 十字配置
   { x: 1, y: 0, vLabel: "現在", vOrder: 1 },
-  { x: 1, y: 1, vLabel: "課題", vOrder: 2 },
-  { x: 0, y: 1, vLabel: "過去", vOrder: 3 },
+  { x: 0, y: 1, vLabel: "過去", vOrder: 2 },
+  { x: 1, y: 1, vLabel: "課題", vOrder: 3 },
   { x: 2, y: 1, vLabel: "未来", vOrder: 4 },
   { x: 1, y: 2, vLabel: "アドバイス", vOrder: 5 },
 
@@ -209,23 +251,23 @@ const cells: Prisma.SpreadCellCreateInput[] = [
 
   // 21. ホースシュー (7枚) - 馬蹄形配置
   { x: 0, y: 0, vLabel: "過去", vOrder: 1 },
-  { x: 1, y: 1, vLabel: "現在", vOrder: 2 },
-  { x: 2, y: 2, vLabel: "未来", vOrder: 3 },
-  { x: 3, y: 3, vLabel: "あなたのアプローチ", vOrder: 4 },
-  { x: 4, y: 2, vLabel: "周囲の影響", vOrder: 5 },
-  { x: 5, y: 1, vLabel: "障害", vOrder: 6 },
-  { x: 6, y: 0, vLabel: "結果", vOrder: 7 },
+  { x: 0, y: 1, vLabel: "現在", vOrder: 2 },
+  { x: 1, y: 2, vLabel: "隠れた影響", vOrder: 3 },
+  { x: 2, y: 3, vLabel: "あなたのアプローチ", vOrder: 4 },
+  { x: 3, y: 2, vLabel: "周囲の影響", vOrder: 5 },
+  { x: 4, y: 1, vLabel: "すべきこと", vOrder: 6 },
+  { x: 4, y: 0, vLabel: "結果", vOrder: 7 },
 
   // 22. ケルト十字 (10枚) - 十字形＋縦列
   { x: 1, y: 1, vLabel: "現在の状況", vOrder: 1 },
   { x: 1, y: 1, hLabel: "課題・障害", hOrder: 2 },
-  { x: 1, y: 0, vLabel: "遠い過去", vOrder: 3 },
-  { x: 1, y: 2, vLabel: "近い過去", vOrder: 4 },
-  { x: 2, y: 1, vLabel: "可能な未来", vOrder: 5 },
+  { x: 1, y: 0, vLabel: "理想・目標", vOrder: 3 },
+  { x: 1, y: 2, vLabel: "潜在意識", vOrder: 4 },
+  { x: 2, y: 1, vLabel: "過去の影響", vOrder: 5 },
   { x: 0, y: 1, vLabel: "近い未来", vOrder: 6 },
   { x: 4, y: 3, vLabel: "あなたのアプローチ", vOrder: 7 },
   { x: 4, y: 2, vLabel: "周囲の影響", vOrder: 8 },
-  { x: 4, y: 1, vLabel: "内面・感情", vOrder: 9 },
+  { x: 4, y: 1, vLabel: "希望・恐れ", vOrder: 9 },
   { x: 4, y: 0, vLabel: "最終結果", vOrder: 10 },
 
   // 23. イヤースプレッド (12枚) - 円形配置（時計のように）
@@ -324,12 +366,11 @@ const cells: Prisma.SpreadCellCreateInput[] = [
 // プラン名を正規化する関数
 function normalizePlan(plan: string): string {
   const planMap: Record<string, string> = {
-    Free: "FREE",
+    Free: "FREE_UNREGISTERED",
     Standard: "STANDARD",
-    Coach: "COACH",
     Master: "MASTER",
   };
-  return planMap[plan] || "FREE";
+  return planMap[plan] || "FREE_UNREGISTERED";
 }
 
 // レベル名を正規化する関数

@@ -1,4 +1,4 @@
-import type { User, UserInput } from "@/lib/types";
+import type { User, UserInput } from "@/../shared/lib/types";
 
 /**
  * ユーザー一覧を取得

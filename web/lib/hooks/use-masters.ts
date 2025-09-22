@@ -1,8 +1,8 @@
 "use client";
 
+import type { Plan, ReadingCategory, SpreadLevel } from "@/../shared/lib/types";
 import * as masterApi from "@/lib/api/master-api";
 import { useMasterStore } from "@/lib/store/master-store";
-import type { Plan, ReadingCategory, SpreadLevel } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 

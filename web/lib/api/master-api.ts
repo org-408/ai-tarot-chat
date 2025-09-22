@@ -1,4 +1,4 @@
-import type { Plan, ReadingCategory, SpreadLevel } from "@/lib/types";
+import type { Plan, ReadingCategory, SpreadLevel } from "@/../shared/lib/types";
 
 // プラン一覧を取得
 export async function fetchPlans(): Promise<Plan[]> {

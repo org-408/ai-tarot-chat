@@ -1,7 +1,7 @@
 "use client";
 
+import type { User, UserInput } from "@/../shared/lib/types";
 import * as userApi from "@/lib/api/user-api";
-import type { User, UserInput } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**

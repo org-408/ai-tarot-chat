@@ -66,22 +66,6 @@ model CardMeaning {
   @@unique([cardId, category])
 }
 
-// プランモデル
-model Plan {
-  id          String    @id @default(cuid())
-  code        String    @unique  // "FREE", "STANDARD", "COACH", 場合によっては, "MASTER"
-  name        String    // "フリー", "スタンダード", "コーチング", "マスター"
-  description String?   @db.Text
-  price       Int       @default(0)  // 月額価格または1回あたりの価格
-  isActive    Boolean   @default(true)
-  features    String[]  // 含まれる機能の配列
-  maxReadings Int?      // 1ヶ月の最大リーディング回数
-  hasAICoach  Boolean   @default(false)  // AIコーチング機能の有無
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  spreads     Spread[]  // このプランで利用可能なスプレッド
-}
-
 // スプレッドレベルマスター
 model SpreadLevel {
   id          String    @id @default(cuid())
@@ -106,8 +90,12 @@ model Spread {
   guide       String?      @db.Text
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
+  // 関連
   cells       SpreadCell[]
   categories  SpreadToCategory[]
+  readingHistories ReadingHistory[]
+  favoriteSpreads FavoriteSpread[]
 }
 // スプレッドのセルモデル
 model SpreadCell {
@@ -119,7 +107,7 @@ model SpreadCell {
   vOrder    Int?
   hOrder    Int?
   spread    Spread?   @relation(fields: [spreadId], references: [id])
-  spreadId  String?
+  spreadId  String
 }
 
 // カテゴリモデル
@@ -129,7 +117,10 @@ model ReadingCategory {
   description String?               // カテゴリの説明（オプション）
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
+
+  // 関連
   spreads     SpreadToCategory[]
+  readingHistories ReadingHistory[]
 }
 
 // スプレッドとカテゴリの中間テーブル
@@ -143,55 +134,112 @@ model SpreadToCategory {
   @@unique([spreadId, categoryId])
 }
 
-// ユーザー関連データモデル
+// プランモデル
+model Plan {
+  id          String    @id @default(cuid())
+  code        String    @unique  // "FREE_UNREGISTERED", "FREE_REGISTERED", "STANDARD", "PREMIUM", "MASTER"
+  name        String    // "フリー", "スタンダード", "プレミアム", "マスター"
+  description String?   @db.Text
+  price       Int       @default(0)  // 月額価格または1回あたりの価格
+  isActive    Boolean   @default(true)
+  features    String[]  // 含まれる機能の配列
+  maxReadings Int?      // 1ヶ月の最大リーディング回数
+  maxCeltics  Int?      // 1ヶ月の最大ケルト十字リーディング回数
+  maxPersonal Int? // 1ヶ月の最大パーソナル占い回数
+  hasPersonal Boolean   @default(false)  // パーソナル占い機能の有無
+  hasHistory  Boolean   @default(false)  // 履歴保存機能の有無
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-enum PlanType {
-  FREE_UNREGISTERED  // フリー（未登録）
-  FREE_REGISTERED    // フリー（登録済）
-  STANDARD          // スタンダード
-  PREMIUM           // プレミアム
+  // 関連
+  users       User[]
+  spreads     Spread[]  // このプランで利用可能なスプレッド
+  planChangeHistories PlanChangeHistory[] @relation("FromPlan")
 }
 
-enum SubscriptionStatus {
-  ACTIVE    // 有効
-  INACTIVE  // 無効
-  CANCELED  // キャンセル済
-  EXPIRED   // 期限切れ
-}
-
+// ユーザーモデル
 model User {
   id        String   @id @default(cuid())
   email     String?  @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Google認証情報
   name     String?  // Googleから取得した名前
   image    String?  // Googleプロフィール画像URL
-  googleId String?  @unique @map("google_id") // Google User ID
+  googleId String?  @unique // Google User ID
 
   // プラン情報
-  planType              PlanType            @default(FREE_UNREGISTERED) @map("plan_type")
-  subscriptionStatus    SubscriptionStatus? @map("subscription_status")
-  subscriptionStartDate DateTime?           @map("subscription_start_date")
-  subscriptionEndDate   DateTime?           @map("subscription_end_date")
+  planId               String
+  plan                 Plan     @relation(fields: [planId], references: [id])
 
   // 利用状況
-  dailyReadingsCount Int      @default(0) @map("daily_readings_count")
-  lastReadingDate    DateTime? @map("last_reading_date")
-  dailyAiChatCount   Int      @default(0) @map("daily_ai_chat_count")
-  lastAiChatDate     DateTime? @map("last_ai_chat_date")
+  dailyReadingsCount Int      @default(0)
+  lastReadingDate    DateTime?
+  dailyCelticsCount  Int      @default(0)
+  lastCelticReadingDate DateTime?
+  dailyPersonalCount   Int      @default(0)
+  lastPersonalReadingDate     DateTime?
 
   // デバイス情報
-  deviceId String? @unique @map("device_id")
+  deviceId String? @unique
 
   // ユーザー状態
-  isRegistered Boolean  @default(false) @map("is_registered")
-  lastLoginAt  DateTime? @map("last_login_at") // 最終ログイン時刻
+  isRegistered Boolean  @default(false)
+  lastLoginAt  DateTime? // 最終ログイン時刻
+
+  // お気に入りスプレッド
+  favoriteSpreads FavoriteSpread[]
+
+  // 関連
+  readingHistories ReadingHistory[]
+  planChangeHistories PlanChangeHistory[]
 
   @@index([email])
   @@index([googleId])
   @@index([deviceId])
-  @@index([planType])
-  @@map("users")
+  @@index([planId])
+}
+
+// プラン履歴モデル
+model PlanChangeHistory {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  planId  String
+  Plan    Plan      @relation("FromPlan", fields: [planId], references: [id])
+  changedAt   DateTime  @default(now())
+}
+
+// リーディング履歴モデル
+model ReadingHistory {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  spreadId      String
+  spread        Spread    @relation(fields: [spreadId], references: [id])
+  categoryId    String
+  category      ReadingCategory @relation(fields: [categoryId], references: [id])
+  cards         String[]  // 選択されたカードのコード配列
+  cardsReversed Boolean[] // 各カードが逆位置かどうかの配列
+  cardReadings  String[]  // 各カードの解釈の配列
+  finalReading  String   @db.Text // AI生成の解釈テキスト
+  // 以下、パーソナル占い用のフィールド
+  cardOccurs    String[]  // 各カードに対するユーザーの思い当たる事
+  cardReReadings String[]  // 各カードの再解釈の配列
+  userQuestions String[]  // ユーザーの質問内容の配列
+  aiResponses   String[]  // AIの応答内容の配列
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// お気に入りスプレッドモデル
+model FavoriteSpread {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  spreadId  String
+  spread    Spread   @relation(fields: [spreadId], references: [id])
+  createdAt DateTime @default(now())
+  @@unique([userId, spreadId])
 }

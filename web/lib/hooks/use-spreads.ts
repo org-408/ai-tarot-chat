@@ -1,7 +1,7 @@
 "use client";
 
+import type { Spread, SpreadCell, SpreadInput } from "@/../shared/lib/types";
 import * as spreadApi from "@/lib/api/spread-api";
-import type { Spread, SpreadCell, SpreadInput } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**

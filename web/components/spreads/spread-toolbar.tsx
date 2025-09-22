@@ -1,4 +1,5 @@
 "use client";
+import type { Spread, SpreadToCategory } from "@/../shared/lib/types";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import {
@@ -9,7 +10,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMasterStore } from "@/lib/store/master-store";
-import type { Spread, SpreadToCategory } from "@/lib/types";
 
 export function SpreadToolbar({
   spread,

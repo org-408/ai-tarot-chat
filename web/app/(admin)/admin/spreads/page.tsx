@@ -1,5 +1,6 @@
 "use client";
 
+import type { Spread, SpreadCell } from "@/../shared/lib/types";
 import { SpreadGrid } from "@/components/spreads/spread-grid";
 import { SpreadLegend } from "@/components/spreads/spread-legend";
 import { SpreadSettings } from "@/components/spreads/spread-settings";
@@ -7,7 +8,6 @@ import { SpreadTable } from "@/components/spreads/spread-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSpreads } from "@/lib/hooks/use-spreads";
-import type { Spread, SpreadCell } from "@/lib/types";
 import { useState } from "react";
 import { MdAdd, MdContentCopy, MdSave } from "react-icons/md";
 
@@ -62,7 +62,8 @@ export default function SpreadsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 編集対象（選択時のみ下のエディタを表示）
-  const selected = spreads.find((r) => r.id === selectedId) || null;
+  const selected: Spread | null =
+    spreads.find((r) => r.id === selectedId) || null;
 
   const [gridSelected, setGridSelected] = useState<{
     x: number;
@@ -85,8 +86,16 @@ export default function SpreadsPage() {
     // 表示順の最大値を計算（新規セル追加時のデフォルト値に使う）
     const cells = s?.cells || [];
     const _lastOrder = cells.reduce(
-      (max, cell) =>
-        Math.max(max, cell.vOrder ?? -Infinity, cell.hOrder ?? -Infinity),
+      (max: number, cell: SpreadCell) =>
+        Math.max(
+          max,
+          cell.vOrder !== undefined && cell.vOrder !== null
+            ? cell.vOrder
+            : -Infinity,
+          cell.hOrder !== undefined && cell.hOrder !== null
+            ? cell.hOrder
+            : -Infinity
+        ),
       -Infinity
     );
     setLastOrder(

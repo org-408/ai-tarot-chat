@@ -1,4 +1,4 @@
-import type { UserInput } from "@/lib/types";
+import type { UserInput } from "@/../shared/lib/types";
 import { prisma } from "@/prisma/prisma";
 
 // -------- Google認証用の型定義 --------

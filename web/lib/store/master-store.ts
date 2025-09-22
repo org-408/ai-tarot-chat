@@ -1,5 +1,5 @@
+import type { Plan, ReadingCategory, SpreadLevel } from "@/../shared/lib/types";
 import * as masterApi from "@/lib/api/master-api";
-import type { Plan, ReadingCategory, SpreadLevel } from "@/lib/types";
 import { create } from "zustand";
 
 type MasterState = {

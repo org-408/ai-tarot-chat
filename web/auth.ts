@@ -1,6 +1,7 @@
 import { createOrUpdateUserFromGoogle } from "@/lib/services/user-service";
 import NextAuth from "next-auth";
 import type { Provider } from "next-auth/providers";
+import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
@@ -39,6 +40,25 @@ const providers: Provider[] = [
   GitHub({
     clientId: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    authorization: {
+      params: {
+        scope: "user:email read:user",
+      },
+    },
+    async profile(profile, tokens) {
+      console.log("GitHub profile", profile);
+      console.log("GitHub tokens", tokens);
+      return {
+        id: profile.id.toString(),
+        name: profile.name,
+        email: profile.email,
+        image: profile.avatar_url,
+      };
+    },
+  }),
+  Apple({
+    clientId: process.env.APPLE_CLIENT_ID,
+    clientSecret: process.env.APPLE_CLIENT_SECRET,
     authorization: {
       params: {
         scope: "user:email read:user",

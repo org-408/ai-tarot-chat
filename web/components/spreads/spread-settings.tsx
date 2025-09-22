@@ -1,8 +1,8 @@
 // components/spreads/spread-settings.tsx
 "use client";
+import type { SpreadCell } from "@/../shared/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { SpreadCell } from "@/lib/types";
 import { MdDelete, MdUpdate } from "react-icons/md";
 
 export function SpreadSettings({
