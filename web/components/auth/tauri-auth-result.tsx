@@ -153,7 +153,7 @@ export function TauriAuthResult({
                 <p className="font-medium text-gray-900">{session.user.name}</p>
                 <p className="text-sm text-gray-500">{session.user.email}</p>
                 <p className="text-xs text-blue-600">
-                  {session.user.planType === "FREE_REGISTERED"
+                  {session.user.planType === "FREE"
                     ? "✨ フリープラン"
                     : session.user.planType}
                 </p>

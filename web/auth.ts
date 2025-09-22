@@ -1,194 +1,135 @@
-import { createOrUpdateUserFromGoogle } from "@/lib/services/user-service";
+import { migrateGuestUser } from "@/lib/services/user-service";
+import { prisma } from "@/prisma/prisma";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
-import type { Provider } from "next-auth/providers";
 import Apple from "next-auth/providers/apple";
-import Credentials from "next-auth/providers/credentials";
-import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-
-const providers: Provider[] = [
-  Credentials({
-    credentials: { password: { label: "Password", type: "password" } },
-    authorize(c) {
-      if (c.password !== "password") return null;
-      return {
-        id: "test",
-        name: "Test User",
-        email: "test@example.com",
-      };
-    },
-  }),
-  Google({
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    authorization: {
-      params: {
-        scope: "openid email profile",
-      },
-    },
-    async profile(profile, tokens) {
-      console.log("Google profile", profile);
-      console.log("Google tokens", tokens);
-      return {
-        id: profile.sub,
-        name: profile.name,
-        email: profile.email,
-        image: profile.picture,
-      };
-    },
-  }),
-  GitHub({
-    clientId: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    authorization: {
-      params: {
-        scope: "user:email read:user",
-      },
-    },
-    async profile(profile, tokens) {
-      console.log("GitHub profile", profile);
-      console.log("GitHub tokens", tokens);
-      return {
-        id: profile.id.toString(),
-        name: profile.name,
-        email: profile.email,
-        image: profile.avatar_url,
-      };
-    },
-  }),
-  Apple({
-    clientId: process.env.APPLE_CLIENT_ID,
-    clientSecret: process.env.APPLE_CLIENT_SECRET,
-    authorization: {
-      params: {
-        scope: "user:email read:user",
-      },
-    },
-    async profile(profile, tokens) {
-      console.log("GitHub profile", profile);
-      console.log("GitHub tokens", tokens);
-      return {
-        id: profile.id.toString(),
-        name: profile.name,
-        email: profile.email,
-        image: profile.avatar_url,
-      };
-    },
-  }),
-];
-
-export const providerMap = providers
-  .map((provider) => {
-    if (typeof provider === "function") {
-      const providerData = provider();
-      return { id: providerData.id, name: providerData.name };
-    } else {
-      return { id: provider.id, name: provider.name };
-    }
-  })
-  .filter((provider) => provider.id !== "credentials");
+import { cookies } from "next/headers";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // adapter: PrismaAdapter(prisma), //  ⨯ [Error [TypeError]: Cannot read properties of undefined (reading 'exec')]
-  session: {
-    strategy: "jwt",
-  },
-  providers,
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error", // Error code passed in query string as ?error=
-  },
-  secret: process.env.AUTH_SECRET,
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    Apple({
+      clientId: process.env.APPLE_CLIENT_ID!,
+      clientSecret: process.env.APPLE_CLIENT_SECRET!,
+    }),
+  ],
   callbacks: {
-    // 🎯 自動ユーザー登録
     async signIn({ user, account }) {
-      if (account?.provider === "google" && user.email) {
-        try {
-          const googleUserData = {
-            email: user.email,
-            name: user.name || "",
-            image: user.image || null, // null も明示的に処理
-            sub: account.providerAccountId,
-          };
+      console.log("🔐 OAuth認証:", {
+        provider: account?.provider,
+        email: user.email,
+      });
 
-          const dbUser = await createOrUpdateUserFromGoogle(googleUserData);
+      // Apple認証でメール取得失敗
+      if (account?.provider === "apple" && !user.email) {
+        console.error("Apple認証でメール取得失敗");
+        return "/auth/error?error=AppleEmailMissing";
+      }
 
-          // ユーザーオブジェクトにDB情報を追加
-          user.id = dbUser.id;
-          user.planType = dbUser.planType;
-          user.isRegistered = dbUser.isRegistered;
+      // メールアドレス必須チェック
+      if (!user.email) {
+        console.error("メールアドレス取得失敗");
+        return "/auth/error?error=NoEmail";
+      }
 
-          console.log(`✅ User auto-registered/updated: ${user.email}`);
-          return true;
-        } catch (error) {
-          console.error("❌ Auto user registration failed:", error);
-          return true; // 認証自体は成功させる
-        }
+      // Cookieからデバイス ID を取得
+      const cookieStore = cookies();
+      const deviceId = (await cookieStore).get("device_id")?.value || "";
+
+      // ゲストユーザー移行処理
+      try {
+        await migrateGuestUser({
+          deviceId,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        });
+        console.log("✅ ゲストユーザー移行完了");
+      } catch (error) {
+        console.error("❌ ゲストユーザー移行エラー:", error);
       }
 
       return true;
     },
 
-    async jwt({ token, user, account }) {
-      // 初回ログイン時にユーザー情報をトークンに保存
-      if (user) {
-        token.userId = user.id;
-        token.planType = user.planType;
-        token.isRegistered = user.isRegistered;
-      }
-
-      if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-      }
-
-      return token;
-    },
-
     async session({ session, token }) {
-      // セッションにユーザー情報を含める
       if (token && session.user) {
-        session.user.id = token.userId as string;
-        session.user.planType = token.planType as string;
-        session.user.isRegistered = token.isRegistered as boolean;
-        session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
-      }
+        const dbUser = await prisma.user.findUnique({
+          where: { email: session.user.email! },
+          include: {
+            plan: true,
+            devices: {
+              orderBy: { lastSeenAt: "desc" },
+              take: 1,
+            },
+          },
+        });
 
+        if (dbUser) {
+          session.user.id = dbUser.id;
+          session.user.planId = dbUser.planId;
+          session.user.isRegistered = dbUser.isRegistered;
+          session.user.planCode = dbUser.plan?.code;
+          session.user.planName = dbUser.plan?.name;
+          session.user.hasPersonal = dbUser.plan?.hasPersonal ?? false;
+          session.user.hasHistory = dbUser.plan?.hasHistory ?? false;
+          session.user.primaryDeviceId = dbUser.devices?.[0]?.deviceId;
+          session.user.dailyReadingsCount = dbUser.dailyReadingsCount;
+          session.user.dailyCelticsCount = dbUser.dailyCelticsCount;
+          session.user.dailyPersonalCount = dbUser.dailyPersonalCount;
+
+          // 最終ログイン時刻更新
+          prisma.user
+            .update({
+              where: { id: dbUser.id },
+              data: { lastLoginAt: new Date() },
+            })
+            .catch(console.error);
+        }
+      }
       return session;
     },
 
-    async redirect({ url, baseUrl }) {
-      if (url.includes("/auth/tauri-callback")) {
-        return url;
-      }
+    async jwt({ token, user }) {
+      if (user) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+          include: {
+            plan: true,
+            devices: {
+              orderBy: { lastSeenAt: "desc" },
+              take: 1,
+            },
+          },
+        });
 
-      if (url.startsWith("/")) {
-        return `${baseUrl}${url}`;
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.planId = dbUser.planId;
+          token.isRegistered = dbUser.isRegistered;
+          token.planCode = dbUser.plan?.code;
+          token.planName = dbUser.plan?.name;
+          token.hasPersonal = dbUser.plan?.hasPersonal ?? false;
+          token.hasHistory = dbUser.plan?.hasHistory ?? false;
+          token.primaryDeviceId = dbUser.devices?.[0]?.deviceId;
+          token.dailyReadingsCount = dbUser.dailyReadingsCount;
+          token.dailyCelticsCount = dbUser.dailyCelticsCount;
+          token.dailyPersonalCount = dbUser.dailyPersonalCount;
+        }
       }
-
-      if (new URL(url).origin === baseUrl) {
-        return url;
-      }
-
-      return baseUrl;
+      return token;
     },
   },
-  events: {
-    async signIn({ user, isNewUser }) {
-      console.log(
-        `🎉 User signed in: ${user.email}${
-          isNewUser ? " (New User)" : " (Returning User)"
-        }`
-      );
-
-      if (isNewUser) {
-        console.log("📝 New user onboarding triggered");
-      }
-    },
-
-    async signOut() {
-      console.log("👋 User signed out");
-    },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30日
+  },
+  pages: {
+    error: "/auth/error",
   },
 });

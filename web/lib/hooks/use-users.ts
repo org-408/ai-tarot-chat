@@ -209,7 +209,7 @@ export function useUpdateUserPlan() {
       subscriptionEndDate,
     }: {
       id: string;
-      planType: "FREE_REGISTERED" | "STANDARD" | "PREMIUM";
+      planType: "FREE" | "STANDARD" | "PREMIUM";
       subscriptionStatus: "ACTIVE" | "INACTIVE" | "CANCELED" | "EXPIRED";
       subscriptionEndDate?: Date;
     }) =>
@@ -260,13 +260,13 @@ export function useIncrementReadingCount() {
 }
 
 /**
- * AIチャットカウントを増加させるフック
+ * セルティックスプレッドカウントを増加させるフック
  */
-export function useIncrementAiChatCount() {
+export function useIncrementCelticCount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: userApi.incrementAiChatCount,
+    mutationFn: userApi.incrementCelticCount,
     onSuccess: (result) => {
       // 現在のユーザーを取得
       const currentUser = queryClient.getQueryData<User>(["currentUser"]);
@@ -275,8 +275,35 @@ export function useIncrementAiChatCount() {
         // 現在のユーザーのカウンターを更新
         queryClient.setQueryData<User>(["currentUser"], {
           ...currentUser,
-          dailyAiChatCount: result.dailyAiChatCount,
-          lastAiChatDate: result.lastAiChatDate,
+          dailyCelticsCount: result.dailyCelticsCount,
+          lastCelticReadingDate: result.lastCelticReadingDate,
+        });
+      }
+
+      // 個別のユーザーのキャッシュも更新
+      queryClient.invalidateQueries({ queryKey: ["user", result.id] });
+    },
+  });
+}
+
+/**
+ * パーソナルリーディングカウントを増加させるフック
+ */
+export function useIncrementPersonalCount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: userApi.incrementPersonalCount,
+    onSuccess: (result) => {
+      // 現在のユーザーを取得
+      const currentUser = queryClient.getQueryData<User>(["currentUser"]);
+
+      if (currentUser && currentUser.id === result.id) {
+        // 現在のユーザーのカウンターを更新
+        queryClient.setQueryData<User>(["currentUser"], {
+          ...currentUser,
+          dailyPersonalCount: result.dailyPersonalCount,
+          lastPersonalReadingDate: result.lastPersonalReadingDate,
         });
       }
 
@@ -298,12 +325,23 @@ export function useCheckReadingLimit(userId: string | null) {
 }
 
 /**
- * AIチャット利用制限をチェックするフック
+ * セルティックスプレッド利用制限をチェックするフック
  */
-export function useCheckAiChatLimit(userId: string | null) {
+export function useCheckCelticLimit(userId: string | null) {
   return useQuery({
-    queryKey: ["user", userId, "aiChatLimit"],
-    queryFn: () => userApi.checkAiChatLimit(userId!),
+    queryKey: ["user", userId, "celticLimit"],
+    queryFn: () => userApi.checkCelticLimit(userId!),
+    enabled: !!userId, // userIdがある場合のみクエリを実行
+  });
+}
+
+/**
+ * パーソナルリーディング利用制限をチェックするフック
+ */
+export function useCheckPersonalLimit(userId: string | null) {
+  return useQuery({
+    queryKey: ["user", userId, "personalLimit"],
+    queryFn: () => userApi.checkPersonalLimit(userId!),
     enabled: !!userId, // userIdがある場合のみクエリを実行
   });
 }

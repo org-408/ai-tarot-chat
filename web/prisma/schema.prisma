@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
@@ -14,7 +11,113 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// Auth.js 5.0 標準モデル
+// ==========================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id         String   @id @default(cuid())
+  deviceId   String   @unique           // アプリ初回起動で生成したUUIDを保存
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform   String?
+  appVersion String?
+  osVersion  String?
+  pushToken  String?
+
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([lastSeenAt])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // ソフトデリート
+  deletedAt     DateTime?
+
+  // プラン情報
+  planId               String
+  plan                 Plan     @relation(fields: [planId], references: [id])
+
+  // 利用状況
+  dailyReadingsCount Int      @default(0)
+  lastReadingDate    DateTime?
+  dailyCelticsCount  Int      @default(0)
+  lastCelticReadingDate DateTime?
+  dailyPersonalCount   Int      @default(0)
+  lastPersonalReadingDate     DateTime?
+
+  // デバイス情報（ゲストユーザー用）
+  devices Device[]
+
+  // ユーザー状態
+  isRegistered Boolean  @default(false)
+  lastLoginAt  DateTime?
+
+  // Auth.js 5.0 関連
+  accounts Account[]
+  sessions Session[]
+
+  // お気に入りスプレッド
+  favoriteSpreads FavoriteSpread[]
+
+  // 関連
+  readingHistories ReadingHistory[]
+  planChangeHistories PlanChangeHistory[]
+
+  @@index([email])
+  @@index([planId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
 // タロットデッキモデル
+// ==========================================
+
 model TarotDeck {
   id          String      @id @default(cuid())
   name        String
@@ -66,12 +169,16 @@ model CardMeaning {
   @@unique([cardId, category])
 }
 
+// ==========================================
+// スプレッド関連モデル
+// ==========================================
+
 // スプレッドレベルマスター
 model SpreadLevel {
   id          String    @id @default(cuid())
   code        String    @unique  // "BEGINNER", "MEDIUM", "ADVANCED", "EXPERT"
   name        String    // "初心者", "中級者", "上級者", "最上級"
-  description String?   @db.Text
+  description String    @db.Text
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   spreads     Spread[]
@@ -97,6 +204,7 @@ model Spread {
   readingHistories ReadingHistory[]
   favoriteSpreads FavoriteSpread[]
 }
+
 // スプレッドのセルモデル
 model SpreadCell {
   id        String   @id @default(cuid())
@@ -114,7 +222,7 @@ model SpreadCell {
 model ReadingCategory {
   id          String                @id @default(cuid())
   name        String                @unique // 表示名: 総合、恋愛、仕事など
-  description String?               // カテゴリの説明（オプション）
+  description String                // カテゴリの説明（オプション）
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
 
@@ -134,18 +242,22 @@ model SpreadToCategory {
   @@unique([spreadId, categoryId])
 }
 
+// ==========================================
+// プラン関連モデル
+// ==========================================
+
 // プランモデル
 model Plan {
   id          String    @id @default(cuid())
-  code        String    @unique  // "FREE_UNREGISTERED", "FREE_REGISTERED", "STANDARD", "PREMIUM", "MASTER"
-  name        String    // "フリー", "スタンダード", "プレミアム", "マスター"
-  description String?   @db.Text
+  code        String    @unique  // "GUEST", "FREE", "STANDARD", "PREMIUM"
+  name        String    // "ゲスト", "フリー", "スタンダード", "プレミアム"
+  description String   @db.Text
   price       Int       @default(0)  // 月額価格または1回あたりの価格
   isActive    Boolean   @default(true)
   features    String[]  // 含まれる機能の配列
-  maxReadings Int?      // 1ヶ月の最大リーディング回数
-  maxCeltics  Int?      // 1ヶ月の最大ケルト十字リーディング回数
-  maxPersonal Int? // 1ヶ月の最大パーソナル占い回数
+  maxReadings Int       @default(0) // 1ヶ月の最大リーディング回数
+  maxCeltics  Int       @default(0) // 1ヶ月の最大ケルト十字リーディング回数
+  maxPersonal Int       @default(0) // 1ヶ月の最大パーソナル占い回数
   hasPersonal Boolean   @default(false)  // パーソナル占い機能の有無
   hasHistory  Boolean   @default(false)  // 履歴保存機能の有無
   createdAt   DateTime  @default(now())
@@ -157,49 +269,9 @@ model Plan {
   planChangeHistories PlanChangeHistory[] @relation("FromPlan")
 }
 
-// ユーザーモデル
-model User {
-  id        String   @id @default(cuid())
-  email     String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Google認証情報
-  name     String?  // Googleから取得した名前
-  image    String?  // Googleプロフィール画像URL
-  googleId String?  @unique // Google User ID
-
-  // プラン情報
-  planId               String
-  plan                 Plan     @relation(fields: [planId], references: [id])
-
-  // 利用状況
-  dailyReadingsCount Int      @default(0)
-  lastReadingDate    DateTime?
-  dailyCelticsCount  Int      @default(0)
-  lastCelticReadingDate DateTime?
-  dailyPersonalCount   Int      @default(0)
-  lastPersonalReadingDate     DateTime?
-
-  // デバイス情報
-  deviceId String? @unique
-
-  // ユーザー状態
-  isRegistered Boolean  @default(false)
-  lastLoginAt  DateTime? // 最終ログイン時刻
-
-  // お気に入りスプレッド
-  favoriteSpreads FavoriteSpread[]
-
-  // 関連
-  readingHistories ReadingHistory[]
-  planChangeHistories PlanChangeHistory[]
-
-  @@index([email])
-  @@index([googleId])
-  @@index([deviceId])
-  @@index([planId])
-}
+// ==========================================
+// 履歴・お気に入り関連モデル
+// ==========================================
 
 // プラン履歴モデル
 model PlanChangeHistory {
@@ -207,7 +279,7 @@ model PlanChangeHistory {
   userId      String
   user        User      @relation(fields: [userId], references: [id])
   planId  String
-  Plan    Plan      @relation("FromPlan", fields: [planId], references: [id])
+  plan    Plan      @relation("FromPlan", fields: [planId], references: [id])
   changedAt   DateTime  @default(now())
 }
 

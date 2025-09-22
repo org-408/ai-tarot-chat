@@ -1,32 +1,62 @@
-import "next-auth";
+// next-auth.d.ts
+import { DefaultSession, DefaultUser } from "next-auth";
+import "next-auth/jwt";
 
 declare module "next-auth" {
+  /**
+   * Returned by `auth()`, `useSession()`, `getSession()` and received as a prop on the `SessionProvider` React Context
+   */
   interface Session {
     user: {
+      // タロットアプリ固有のユーザー情報
       id: string;
-      email: string;
-      name?: string | null;
-      image?: string | null;
-      planType: string;
+      planId: string;
       isRegistered: boolean;
-    };
-    accessToken?: string;
-    refreshToken?: string;
+      planCode?: string;
+      planName?: string;
+      hasPersonal?: boolean;
+      hasHistory?: boolean;
+      primaryDeviceId?: string;
+
+      // 使用状況情報
+      dailyReadingsCount: number;
+      dailyCelticsCount: number;
+      dailyPersonalCount: number;
+    } & DefaultSession["user"];
   }
 
-  interface User {
+  /**
+   * The shape of the user object returned in the OAuth providers' `profile` callback,
+   * or the second parameter of the `session` callback, when using a database.
+   */
+  interface User extends DefaultUser {
     id: string;
-    planType?: string;
+    planId?: string;
     isRegistered?: boolean;
+    planCode?: string;
+    planName?: string;
+    hasPersonal?: boolean;
+    hasHistory?: boolean;
+    primaryDeviceId?: string;
+    dailyReadingsCount?: number;
+    dailyCelticsCount?: number;
+    dailyPersonalCount?: number;
   }
 }
 
 declare module "next-auth/jwt" {
+  /** Returned by the `jwt` callback and `getToken()`, when using JWT sessions */
   interface JWT {
-    userId?: string;
-    planType?: string;
+    id?: string;
+    planId?: string;
     isRegistered?: boolean;
-    accessToken?: string;
-    refreshToken?: string;
+    planCode?: string;
+    planName?: string;
+    hasPersonal?: boolean;
+    hasHistory?: boolean;
+    primaryDeviceId?: string;
+    dailyReadingsCount?: number;
+    dailyCelticsCount?: number;
+    dailyPersonalCount?: number;
   }
 }

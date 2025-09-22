@@ -1,3 +1,105 @@
+// ==========================================
+// Auth.js 5.0 関連型定義
+// ==========================================
+
+export type Account = {
+  id: string;
+  userId: string;
+  type: string;
+  provider: string;
+  providerAccountId: string;
+  refresh_token?: string | null;
+  access_token?: string | null;
+  expires_at?: number | null;
+  token_type?: string | null;
+  scope?: string | null;
+  id_token?: string | null;
+  session_state?: string | null;
+  user?: User;
+};
+
+export type Session = {
+  id: string;
+  sessionToken: string;
+  userId: string;
+  expires: Date;
+  user?: User;
+};
+
+export type VerificationToken = {
+  identifier: string;
+  token: string;
+  expires: Date;
+};
+
+// ==========================================
+// ユーザー関連型定義
+// ==========================================
+
+// Device 型
+export type Device = {
+  id: string;
+  deviceId: string;
+  userId: string;
+
+  platform?: string | null;
+  appVersion?: string | null;
+  osVersion?: string | null;
+  pushToken?: string | null;
+
+  lastSeenAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: User;
+};
+
+export type User = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  emailVerified?: Date | null;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // ソフトデリート
+  deletedAt?: Date | null;
+
+  // プラン情報
+  planId: string;
+  plan?: Plan;
+
+  // 利用状況
+  dailyReadingsCount: number;
+  lastReadingDate?: Date | null;
+  dailyCelticsCount: number;
+  lastCelticReadingDate?: Date | null;
+  dailyPersonalCount: number;
+  lastPersonalReadingDate?: Date | null;
+
+  // デバイス情報
+  devices?: Device[];
+
+  // ユーザー状態
+  isRegistered: boolean;
+  lastLoginAt?: Date | null;
+
+  // Auth.js 5.0 関連
+  accounts?: Account[];
+  sessions?: Session[];
+
+  // お気に入りスプレッド
+  favoriteSpreads?: FavoriteSpread[];
+
+  // 関連
+  readingHistories?: ReadingHistory[];
+  planChangeHistories?: PlanChangeHistory[];
+};
+
+// ==========================================
+// タロット関連型定義
+// ==========================================
+
 // タロットデッキの型
 export type TarotDeck = {
   id: string;
@@ -48,12 +150,16 @@ export type CardMeaning = {
   updatedAt: Date;
 };
 
+// ==========================================
+// スプレッド関連型定義
+// ==========================================
+
 // スプレッドレベルの型
 export type SpreadLevel = {
   id: string;
   code: string;
   name: string;
-  description?: string | null;
+  description: string;
   createdAt: Date;
   updatedAt: Date;
   spreads?: Spread[];
@@ -72,8 +178,8 @@ export type Spread = {
   guide?: string | null;
   createdAt: Date;
   updatedAt: Date;
-  cells: SpreadCell[];
-  categories: SpreadToCategory[];
+  cells?: SpreadCell[];
+  categories?: SpreadToCategory[];
   readingHistories?: ReadingHistory[];
   favoriteSpreads?: FavoriteSpread[];
 };
@@ -95,7 +201,7 @@ export type SpreadCell = {
 export type ReadingCategory = {
   id: string;
   name: string;
-  description?: string | null;
+  description: string;
   createdAt: Date;
   updatedAt: Date;
   spreads?: SpreadToCategory[];
@@ -111,18 +217,22 @@ export type SpreadToCategory = {
   category?: ReadingCategory;
 };
 
+// ==========================================
+// プラン関連型定義
+// ==========================================
+
 // プランモデル
 export type Plan = {
   id: string;
   code: string;
   name: string;
-  description?: string | null;
+  description: string;
   price: number;
   isActive: boolean;
   features: string[];
-  maxReadings?: number | null;
-  maxCeltics?: number | null;
-  maxPersonal?: number | null;
+  maxReadings: number;
+  maxCeltics: number;
+  maxPersonal: number;
   hasPersonal: boolean;
   hasHistory: boolean;
   createdAt: Date;
@@ -132,40 +242,19 @@ export type Plan = {
   planChangeHistories?: PlanChangeHistory[];
 };
 
-// ユーザーモデル
-export type User = {
-  id: string;
-  email?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  name?: string | null;
-  image?: string | null;
-  googleId?: string | null;
-  planId: string;
-  plan?: Plan;
-  dailyReadingsCount: number;
-  lastReadingDate?: Date | null;
-  dailyCelticsCount: number;
-  lastCelticReadingDate?: Date | null;
-  dailyPersonalCount: number;
-  lastPersonalReadingDate?: Date | null;
-  deviceId?: string | null;
-  isRegistered: boolean;
-  lastLoginAt?: Date | null;
-  favoriteSpreads?: FavoriteSpread[];
-  readingHistories?: ReadingHistory[];
-  planChangeHistories?: PlanChangeHistory[];
-};
-
 // プラン履歴モデル
 export type PlanChangeHistory = {
   id: string;
   userId: string;
   user?: User;
   planId: string;
-  Plan?: Plan;
+  plan?: Plan;
   changedAt: Date;
 };
+
+// ==========================================
+// 履歴・お気に入り関連型定義
+// ==========================================
 
 // リーディング履歴モデル
 export type ReadingHistory = {
@@ -198,7 +287,29 @@ export type FavoriteSpread = {
   createdAt: Date;
 };
 
+// ==========================================
 // 入力用の型（作成/更新時に使用）
+// ==========================================
+
+// Auth.js 5.0 関連
+export type AccountInput = Omit<Account, "id" | "user">;
+export type SessionInput = Omit<Session, "id" | "user">;
+export type VerificationTokenInput = VerificationToken;
+
+// ユーザー関連
+export type UserInput = Omit<
+  User,
+  | "id"
+  | "createdAt"
+  | "updatedAt"
+  | "accounts"
+  | "sessions"
+  | "favoriteSpreads"
+  | "readingHistories"
+  | "planChangeHistories"
+>;
+
+// タロット関連
 export type TarotDeckInput = Omit<
   TarotDeck,
   "id" | "createdAt" | "updatedAt" | "cards"
@@ -211,10 +322,8 @@ export type CardMeaningInput = Omit<
   CardMeaning,
   "id" | "createdAt" | "updatedAt" | "card"
 >;
-export type PlanInput = Omit<
-  Plan,
-  "id" | "createdAt" | "updatedAt" | "users" | "spreads" | "planChangeHistories"
->;
+
+// スプレッド関連
 export type SpreadLevelInput = Omit<
   SpreadLevel,
   "id" | "createdAt" | "updatedAt" | "spreads"
@@ -237,19 +346,18 @@ export type ReadingCategoryInput = Omit<
   ReadingCategory,
   "id" | "createdAt" | "updatedAt" | "spreads" | "readingHistories"
 >;
-export type UserInput = Omit<
-  User,
-  | "id"
-  | "createdAt"
-  | "updatedAt"
-  | "favoriteSpreads"
-  | "readingHistories"
-  | "planChangeHistories"
+
+// プラン関連
+export type PlanInput = Omit<
+  Plan,
+  "id" | "createdAt" | "updatedAt" | "users" | "spreads" | "planChangeHistories"
 >;
 export type PlanChangeHistoryInput = Omit<
   PlanChangeHistory,
   "id" | "changedAt" | "user" | "Plan"
 >;
+
+// 履歴・お気に入り関連
 export type ReadingHistoryInput = Omit<
   ReadingHistory,
   "id" | "createdAt" | "updatedAt" | "user" | "spread" | "category"

@@ -7,73 +7,69 @@ const prisma = new PrismaClient();
 // プランの作成
 const plans: Prisma.PlanCreateInput[] = [
   {
-    code: "FREE_UNREGISTERED",
-    name: "フリー",
+    code: "GUEST",
+    name: "ゲスト",
     description: "簡単なタロットリーディングを無料で体験",
     price: 0,
     features: [
-      "広告表示あり",
+      "ユーザー登録なしでお気軽に体験",
+      "1日1回のみ利用可能",
       "基本スプレッド(3種類)",
       "恋愛・仕事・今日の運勢",
-      "1日1回のみ利用可能",
+      "広告表示あり",
     ],
     maxReadings: 1,
-    maxCeltics: 0,
-    maxPersonal: 0,
-    hasPersonal: false,
   },
   {
-    code: "FREE_REGISTERED",
-    name: "フリー(登録済み)",
-    description: "簡単なタロットリーディングを無料で体験",
+    code: "FREE",
+    name: "フリー",
+    description: "占い回数が少し増え、占った履歴も残せます",
     price: 0,
     features: [
-      "広告表示あり",
+      "ユーザー登録でさらに楽しめます",
+      "1日3回まで利用可能",
+      "占い履歴を保存可能",
       "基本スプレッド(3種類)",
       "恋愛・仕事・今日の運勢",
-      "1日3回まで利用可能",
-      "履歴保存",
+      "広告表示あり",
     ],
     maxReadings: 3,
-    maxCeltics: 0,
-    maxPersonal: 0,
-    hasPersonal: false,
+    hasHistory: true,
   },
   {
     code: "STANDARD",
     name: "スタンダード",
-    description: "詳細な解説と多様なスプレッドを提供",
+    description: "多彩な占いカテゴリとスプレッドを体験。広告なしで快適に",
     price: 480,
     features: [
-      "広告表示なし",
-      "上級レベルまでのすべてのスプレッド",
       "多彩な占いカテゴリ",
-      "1日3回7枚スプレッド、または、1日1回ケルト十字が利用可能",
-      "履歴保存",
+      "1日3回7枚以内スプレッドが利用可能",
+      "または、1日1回ケルト十字が利用可能",
+      "占い履歴を保存可能",
+      "広告表示なし",
     ],
     maxReadings: 3,
     maxCeltics: 1,
-    maxPersonal: 0,
-    hasPersonal: false,
+    hasHistory: true,
   },
   {
     code: "PREMIUM",
     name: "プレミアム",
-    description: "詳細な解説と全スプレッド、簡単な対話を提供",
+    description: "占う内容の入力と詳細な解説、簡単な対話を提供",
     price: 980,
     features: [
-      "広告表示なし",
-      "上級レベルまでのすべてのスプレッド",
       "多彩な占いカテゴリ",
       "1日3回まですべてのスプレッドが利用可能",
-      "1日1回パーソナル占い(簡単な対話つき)が利用可能",
+      "1日1回パーソナル占いが利用可能",
       "*パーソナル占いでは、占う内容の入力、結果への質問が可能",
-      "履歴保存",
+      "占い履歴を保存可能",
+      "広告表示なし",
     ],
     maxReadings: 3,
     maxCeltics: 3,
     maxPersonal: 1,
     hasPersonal: true,
+    hasHistory: true,
   },
   {
     code: "MASTER",
@@ -81,18 +77,19 @@ const plans: Prisma.PlanCreateInput[] = [
     description: "詳細な解説と全スプレッド、詳細な対話を提供",
     price: 1980,
     features: [
-      "広告表示なし",
       "最上級レベルまでのすべてのスプレッド",
       "多彩な占いカテゴリ",
       "1日3回まですべてのスプレッドが利用可能",
       "1日1回詳細パーソナル占いが利用可能(TBD)",
       "*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能",
-      "履歴保存",
+      "占い履歴を保存可能",
+      "広告表示なし",
     ],
     maxReadings: 3,
     maxCeltics: 3,
     maxPersonal: 1,
     hasPersonal: true,
+    hasHistory: true,
   },
 ];
 
@@ -366,11 +363,11 @@ const cells: Prisma.SpreadCellCreateInput[] = [
 // プラン名を正規化する関数
 function normalizePlan(plan: string): string {
   const planMap: Record<string, string> = {
-    Free: "FREE_UNREGISTERED",
+    Free: "GUEST",
     Standard: "STANDARD",
     Master: "MASTER",
   };
-  return planMap[plan] || "FREE_UNREGISTERED";
+  return planMap[plan] || "GUEST";
 }
 
 // レベル名を正規化する関数

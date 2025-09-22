@@ -1,14 +1,17 @@
-import * as userService from "@/lib/services/user-service";
+import { getUserByDeviceId } from "@/lib/services/user-service";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET /api/users/device/:deviceId - デバイスIDでユーザーを取得
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { deviceId: string } }
-) {
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+// GET /api/users/device/:id - デバイスIDでユーザーを取得
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
   try {
-    const decodedDeviceId = decodeURIComponent(params.deviceId);
-    const user = await userService.getUserByDeviceId(decodedDeviceId);
+    const user = await getUserByDeviceId(id);
     if (!user) {
       return NextResponse.json(
         { error: "ユーザーが見つかりません" },

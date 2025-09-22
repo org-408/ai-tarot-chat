@@ -125,7 +125,7 @@ export async function upgradeToRegisteredUser(
  */
 export async function updateUserPlan(
   id: string,
-  planType: "FREE_REGISTERED" | "STANDARD" | "PREMIUM",
+  planType: "FREE" | "STANDARD" | "PREMIUM",
   subscriptionStatus: "ACTIVE" | "INACTIVE" | "CANCELED" | "EXPIRED",
   subscriptionEndDate?: Date
 ): Promise<User> {
