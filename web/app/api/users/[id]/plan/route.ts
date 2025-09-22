@@ -1,11 +1,15 @@
 import * as userService from "@/lib/services/user-service";
 import { NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
 // PUT /api/users/:id/plan - ユーザープランを更新
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
   try {
     const { planType, subscriptionStatus, subscriptionEndDate } =
       await request.json();
@@ -18,7 +22,7 @@ export async function PUT(
 
     // ユーザープランを更新
     const user = await userService.updateUserPlan(
-      params.id,
+      id,
       planType,
       subscriptionStatus,
       subscriptionEndDate ? new Date(subscriptionEndDate) : undefined

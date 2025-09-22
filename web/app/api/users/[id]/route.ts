@@ -1,13 +1,17 @@
 import * as userService from "@/lib/services/user-service";
 import { NextRequest, NextResponse } from "next/server";
 
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
 // GET /api/users/:id - 特定のユーザーを取得
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
   try {
-    const user = await userService.getUserById(params.id);
+    const user = await userService.getUserById(id);
     if (!user) {
       return NextResponse.json(
         { error: "ユーザーが見つかりません" },
@@ -25,13 +29,11 @@ export async function GET(
 }
 
 // PUT /api/users/:id - ユーザー情報を更新
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
   try {
     const userData = await request.json();
-    const user = await userService.updateUserById(params.id, userData);
+    const user = await userService.updateUserById(id, userData);
     return NextResponse.json(user);
   } catch (error) {
     console.error("ユーザー更新エラー:", error);
@@ -43,12 +45,10 @@ export async function PUT(
 }
 
 // DELETE /api/users/:id - ユーザーを削除
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
   try {
-    await userService.deleteUserById(params.id);
+    await userService.deleteUserById(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("ユーザー削除エラー:", error);
