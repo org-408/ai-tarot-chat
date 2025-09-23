@@ -74,23 +74,32 @@ export async function updateUserById(
   });
 }
 
-export async function createUser(user: Prisma.UserCreateInput) {
-  return await prisma.user.create({
+export async function createUser(
+  user: Prisma.UserCreateInput,
+  tx?: Prisma.TransactionClient
+) {
+  const prismaTx = tx || prisma;
+  return await prismaTx.user.create({
     data: user,
     include: { plan: true, accounts: true },
   });
 }
 
-export async function deleteUserById(id: string, soft: boolean = true) {
+export async function deleteUserById(
+  id: string,
+  tx?: Prisma.TransactionClient,
+  soft: boolean = true
+): Promise<void> {
+  const prismaTx = tx || prisma;
   if (soft) {
     // ソフトデリート
-    await prisma.user.update({
+    await prismaTx.user.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
   } else {
     // 完全削除
-    await prisma.user.delete({ where: { id } });
+    await prismaTx.user.delete({ where: { id } });
   }
 }
 
@@ -272,8 +281,8 @@ export async function migrateGuestUser({
         include,
       });
 
-      // ゲストを削除（運用でソフトデリートにしたいなら deletedAt を設定）
-      await tx.user.delete({ where: { id: guest.id } });
+      // ゲストを削除（ソフトデリート）
+      await deleteUserById(guest.id, tx);
 
       return merged;
     }
@@ -539,9 +548,4 @@ export async function updateLastLoginAt(id: string): Promise<void> {
     where: { id },
     data: { lastLoginAt: new Date() },
   });
-}
-
-// ユーザーを削除
-export async function deleteUser(id: string): Promise<void> {
-  await prisma.user.delete({ where: { id } });
 }
