@@ -2,6 +2,8 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
+import { ChatRole, ChatType } from "@/lib/generated/prisma";
+
 export type Account = {
   id: string;
   userId: string;
@@ -41,6 +43,7 @@ export type Device = {
   id: string;
   deviceId: string;
   userId: string;
+  user?: User;
 
   platform?: string | null;
   appVersion?: string | null;
@@ -50,7 +53,9 @@ export type Device = {
   lastSeenAt: Date;
   createdAt: Date;
   updatedAt: Date;
-  user?: User;
+
+  readings: Reading[];
+  chatMessages: ChatMessage[];
 };
 
 export type User = {
@@ -92,7 +97,7 @@ export type User = {
   favoriteSpreads?: FavoriteSpread[];
 
   // 関連
-  readingHistories?: ReadingHistory[];
+  readings?: Reading[];
   planChangeHistories?: PlanChangeHistory[];
 };
 
@@ -180,7 +185,7 @@ export type Spread = {
   updatedAt: Date;
   cells?: SpreadCell[];
   categories?: SpreadToCategory[];
-  readingHistories?: ReadingHistory[];
+  reading?: Reading[];
   favoriteSpreads?: FavoriteSpread[];
 };
 
@@ -205,7 +210,7 @@ export type ReadingCategory = {
   createdAt: Date;
   updatedAt: Date;
   spreads?: SpreadToCategory[];
-  readingHistories?: ReadingHistory[];
+  reading?: Reading[];
 };
 
 // スプレッドとカテゴリの中間テーブル
@@ -252,29 +257,69 @@ export type PlanChangeHistory = {
   changedAt: Date;
 };
 
-// ==========================================
-// 履歴・お気に入り関連型定義
-// ==========================================
+// タロット占い師モデル
+export type Tarotist = {
+  id: string;
+  name: string;
+  bio: string;
+  avatarUrl?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+
+  readings?: Reading[];
+  chatMessages?: ChatMessage[];
+};
 
 // リーディング履歴モデル
-export type ReadingHistory = {
+export type Reading = {
   id: string;
-  userId: string;
+  userId?: string;
   user?: User;
+  deviceId: string;
+  device?: Device;
+  tarotistId: string;
+  tarotist?: Tarotist;
   spreadId: string;
   spread?: Spread;
   categoryId: string;
   category?: ReadingCategory;
-  cards: string[];
-  cardsReversed: boolean[];
-  cardReadings: string[];
-  finalReading: string;
-  cardOccurs: string[];
-  cardReReadings: string[];
-  userQuestions: string[];
-  aiResponses: string[];
+  cards: DrawCard[];
   createdAt: Date;
   updatedAt: Date;
+
+  chatMessages?: ChatMessage[];
+};
+
+// リーディングで引いたカードの型
+export type DrawCard = {
+  id: string;
+  readingId: string;
+  reading?: Reading;
+  cardId: string;
+  card?: TarotCard;
+  positionX: number;
+  positionY: number;
+  isReversed: boolean;
+  order: number;
+  createdAt: Date;
+};
+
+// チャットメッセージモデル - カード解釈・質問応答の履歴
+export type ChatMessage = {
+  id: string;
+  userId: string;
+  user?: User;
+  deviceId: string;
+  device?: Device;
+  tarotistId: string;
+  tarotist?: Tarotist;
+  chatType: ChatType;
+  readingId: string;
+  reading?: Reading;
+  role: ChatRole; // "user" or "tarotist"
+  message: string;
+  createdAt: Date;
 };
 
 // お気に入りスプレッドモデル
@@ -305,7 +350,7 @@ export type UserInput = Omit<
   | "accounts"
   | "sessions"
   | "favoriteSpreads"
-  | "readingHistories"
+  | "reading"
   | "planChangeHistories"
 >;
 
@@ -335,7 +380,7 @@ export type SpreadInput = Omit<
   | "updatedAt"
   | "cells"
   | "categories"
-  | "readingHistories"
+  | "reading"
   | "favoriteSpreads"
 > & {
   cells: SpreadCellInput[];
@@ -344,7 +389,7 @@ export type SpreadInput = Omit<
 export type SpreadCellInput = Omit<SpreadCell, "id" | "spread">;
 export type ReadingCategoryInput = Omit<
   ReadingCategory,
-  "id" | "createdAt" | "updatedAt" | "spreads" | "readingHistories"
+  "id" | "createdAt" | "updatedAt" | "spreads" | "reading"
 >;
 
 // プラン関連
@@ -358,9 +403,21 @@ export type PlanChangeHistoryInput = Omit<
 >;
 
 // 履歴・お気に入り関連
-export type ReadingHistoryInput = Omit<
-  ReadingHistory,
+export type TarotistInput = Omit<
+  Tarotist,
+  "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages"
+>;
+export type ReadingInput = Omit<
+  Reading,
   "id" | "createdAt" | "updatedAt" | "user" | "spread" | "category"
+>;
+export type DrawCardInput = Omit<
+  DrawCard,
+  "id" | "createdAt" | "reading" | "card"
+>;
+export type ChatMessageInput = Omit<
+  ChatMessage,
+  "id" | "createdAt" | "user" | "device" | "tarotist" | "reading"
 >;
 export type FavoriteSpreadInput = Omit<
   FavoriteSpread,

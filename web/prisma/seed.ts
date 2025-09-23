@@ -346,19 +346,13 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 5, y: 5, vLabel: "位置36", vOrder: 36 },
 ];
 
-// 優先度をABCDの文字列からPriorityタイプに変換する関数
-// function parsePriority(priority: string): string | null {
-//   const match = priority.match(/\*\*([A-D])\*\*/);
-//   return match ? match[1] : null;
-// }
-
-// 星評価を★の数から数値に変換する関数
-// function parseStarRating(stars: string): number | null {
-//   const fullStars = (stars.match(/★/g) || []).length;
-//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//   const halfStars = (stars.match(/☆/g) || []).length;
-//   return fullStars > 0 ? fullStars : null;
-// }
+const tarotists: Prisma.TarotistCreateInput[] = [
+  {
+    name: "Ariadne",
+    bio: "経験豊富なタロットリーダーで、深い洞察力を持つ",
+    avatarUrl: "/images/ariadne.webp",
+  },
+];
 
 // プラン名を正規化する関数
 function normalizePlan(plan: string): string {
@@ -614,6 +608,11 @@ export async function main() {
       update: {},
       create: level,
     });
+  }
+
+  // tarotists
+  for (const tarotist of tarotists) {
+    await prisma.tarotist.create({ data: tarotist });
   }
 
   await importSpreads();

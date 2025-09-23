@@ -1,7 +1,14 @@
 import { listUserDevices } from "@/lib/services/user-service";
 import { NextResponse } from "next/server";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const devices = await listUserDevices(params.id);
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(_: Request, { params }: RouteParams) {
+  const { id } = await params;
+  const devices = await listUserDevices(id);
   return NextResponse.json(devices);
 }

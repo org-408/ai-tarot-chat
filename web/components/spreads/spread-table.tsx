@@ -62,7 +62,7 @@ export function SpreadTable({ items, selectedId, onSelect }: Props) {
                   <TableCell className="w-[14%]">{s.category}</TableCell>
                   <TableCell className="w-[14%]">{s.level?.name}</TableCell>
                   <TableCell className="w-[14%]">{s.plan?.name}</TableCell>
-                  <TableCell className="w-[12%]">{s.cells.length}枚</TableCell>
+                  <TableCell className="w-[12%]">{s.cells?.length}枚</TableCell>
                   <TableCell className="w-[12%] text-right">
                     {new Date(s.updatedAt).toLocaleString("ja-JP")}
                   </TableCell>

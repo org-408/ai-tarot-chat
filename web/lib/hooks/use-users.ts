@@ -262,86 +262,86 @@ export function useIncrementReadingCount() {
 /**
  * セルティックスプレッドカウントを増加させるフック
  */
-export function useIncrementCelticCount() {
-  const queryClient = useQueryClient();
+// export function useIncrementCelticCount() {
+//   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: userApi.incrementCelticCount,
-    onSuccess: (result) => {
-      // 現在のユーザーを取得
-      const currentUser = queryClient.getQueryData<User>(["currentUser"]);
+//   return useMutation({
+//     mutationFn: userApi.incrementCelticCount,
+//     onSuccess: (result) => {
+//       // 現在のユーザーを取得
+//       const currentUser = queryClient.getQueryData<User>(["currentUser"]);
 
-      if (currentUser && currentUser.id === result.id) {
-        // 現在のユーザーのカウンターを更新
-        queryClient.setQueryData<User>(["currentUser"], {
-          ...currentUser,
-          dailyCelticsCount: result.dailyCelticsCount,
-          lastCelticReadingDate: result.lastCelticReadingDate,
-        });
-      }
+//       if (currentUser && currentUser.id === result.id) {
+//         // 現在のユーザーのカウンターを更新
+//         queryClient.setQueryData<User>(["currentUser"], {
+//           ...currentUser,
+//           dailyCelticsCount: result.dailyCelticsCount,
+//           lastCelticReadingDate: result.lastCelticReadingDate,
+//         });
+//       }
 
-      // 個別のユーザーのキャッシュも更新
-      queryClient.invalidateQueries({ queryKey: ["user", result.id] });
-    },
-  });
-}
+//       // 個別のユーザーのキャッシュも更新
+//       queryClient.invalidateQueries({ queryKey: ["user", result.id] });
+//     },
+//   });
+// }
 
 /**
  * パーソナルリーディングカウントを増加させるフック
  */
-export function useIncrementPersonalCount() {
-  const queryClient = useQueryClient();
+// export function useIncrementPersonalCount() {
+//   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: userApi.incrementPersonalCount,
-    onSuccess: (result) => {
-      // 現在のユーザーを取得
-      const currentUser = queryClient.getQueryData<User>(["currentUser"]);
+//   return useMutation({
+//     mutationFn: userApi.incrementPersonalCount,
+//     onSuccess: (result) => {
+//       // 現在のユーザーを取得
+//       const currentUser = queryClient.getQueryData<User>(["currentUser"]);
 
-      if (currentUser && currentUser.id === result.id) {
-        // 現在のユーザーのカウンターを更新
-        queryClient.setQueryData<User>(["currentUser"], {
-          ...currentUser,
-          dailyPersonalCount: result.dailyPersonalCount,
-          lastPersonalReadingDate: result.lastPersonalReadingDate,
-        });
-      }
+//       if (currentUser && currentUser.id === result.id) {
+//         // 現在のユーザーのカウンターを更新
+//         queryClient.setQueryData<User>(["currentUser"], {
+//           ...currentUser,
+//           dailyPersonalCount: result.dailyPersonalCount,
+//           lastPersonalReadingDate: result.lastPersonalReadingDate,
+//         });
+//       }
 
-      // 個別のユーザーのキャッシュも更新
-      queryClient.invalidateQueries({ queryKey: ["user", result.id] });
-    },
-  });
-}
+//       // 個別のユーザーのキャッシュも更新
+//       queryClient.invalidateQueries({ queryKey: ["user", result.id] });
+//     },
+//   });
+// }
 
 /**
  * リーディング利用制限をチェックするフック
  */
-export function useCheckReadingLimit(userId: string | null) {
-  return useQuery({
-    queryKey: ["user", userId, "readingLimit"],
-    queryFn: () => userApi.checkReadingLimit(userId!),
-    enabled: !!userId, // userIdがある場合のみクエリを実行
-  });
-}
+// export function useCheckReadingLimit(userId: string | null) {
+//   return useQuery({
+//     queryKey: ["user", userId, "readingLimit"],
+//     queryFn: () => userApi.checkReadingLimit(userId!),
+//     enabled: !!userId, // userIdがある場合のみクエリを実行
+//   });
+// }
 
 /**
  * セルティックスプレッド利用制限をチェックするフック
  */
-export function useCheckCelticLimit(userId: string | null) {
-  return useQuery({
-    queryKey: ["user", userId, "celticLimit"],
-    queryFn: () => userApi.checkCelticLimit(userId!),
-    enabled: !!userId, // userIdがある場合のみクエリを実行
-  });
-}
+// export function useCheckCelticLimit(userId: string | null) {
+//   return useQuery({
+//     queryKey: ["user", userId, "celticLimit"],
+//     queryFn: () => userApi.checkCelticLimit(userId!),
+//     enabled: !!userId, // userIdがある場合のみクエリを実行
+//   });
+// }
 
 /**
  * パーソナルリーディング利用制限をチェックするフック
  */
-export function useCheckPersonalLimit(userId: string | null) {
-  return useQuery({
-    queryKey: ["user", userId, "personalLimit"],
-    queryFn: () => userApi.checkPersonalLimit(userId!),
-    enabled: !!userId, // userIdがある場合のみクエリを実行
-  });
-}
+// export function useCheckPersonalLimit(userId: string | null) {
+//   return useQuery({
+//     queryKey: ["user", userId, "personalLimit"],
+//     queryFn: () => userApi.checkPersonalLimit(userId!),
+//     enabled: !!userId, // userIdがある場合のみクエリを実行
+//   });
+// }

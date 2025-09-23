@@ -41,11 +41,19 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model Device {
   id         String   @id @default(cuid())
   deviceId   String   @unique           // アプリ初回起動で生成したUUIDを保存
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   platform   String?
   appVersion String?
@@ -55,6 +63,10 @@ model Device {
   lastSeenAt DateTime @default(now())
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // 関連
+  readings   Reading[]
+  chatMessages ChatMessage[]
 
   @@index([userId])
   @@index([lastSeenAt])
@@ -99,19 +111,12 @@ model User {
   favoriteSpreads FavoriteSpread[]
 
   // 関連
-  readingHistories ReadingHistory[]
+  reading Reading[]
   planChangeHistories PlanChangeHistory[]
+  chatMessages ChatMessage[]
 
   @@index([email])
   @@index([planId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
 }
 
 // ==========================================
@@ -153,6 +158,9 @@ model TarotCard {
   meanings          CardMeaning[]
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+
+  // 関連
+  readings         DrawnCard[]
 }
 
 // カードの意味モデル
@@ -201,7 +209,7 @@ model Spread {
   // 関連
   cells       SpreadCell[]
   categories  SpreadToCategory[]
-  readingHistories ReadingHistory[]
+  reading Reading[]
   favoriteSpreads FavoriteSpread[]
 }
 
@@ -228,7 +236,7 @@ model ReadingCategory {
 
   // 関連
   spreads     SpreadToCategory[]
-  readingHistories ReadingHistory[]
+  reading Reading[]
 }
 
 // スプレッドとカテゴリの中間テーブル
@@ -283,26 +291,86 @@ model PlanChangeHistory {
   changedAt   DateTime  @default(now())
 }
 
-// リーディング履歴モデル
-model ReadingHistory {
+// タロット占い師モデル
+model Tarotist {
+  id          String    @id @default(cuid())
+  name        String    // 占い師の名前 default: Ariadne
+  bio         String    @db.Text
+  avatarUrl   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // 関連
+  readings    Reading[]
+  chatMessages ChatMessage[]
+}
+
+// リーディングモデル
+model Reading {
   id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  deviceId      String
+  device        Device    @relation(fields: [deviceId], references: [id])
+  tarotistId    String
+  tarotist      Tarotist  @relation(fields: [tarotistId], references: [id])
   spreadId      String
   spread        Spread    @relation(fields: [spreadId], references: [id])
   categoryId    String
   category      ReadingCategory @relation(fields: [categoryId], references: [id])
-  cards         String[]  // 選択されたカードのコード配列
-  cardsReversed Boolean[] // 各カードが逆位置かどうかの配列
-  cardReadings  String[]  // 各カードの解釈の配列
-  finalReading  String   @db.Text // AI生成の解釈テキスト
-  // 以下、パーソナル占い用のフィールド
-  cardOccurs    String[]  // 各カードに対するユーザーの思い当たる事
-  cardReReadings String[]  // 各カードの再解釈の配列
-  userQuestions String[]  // ユーザーの質問内容の配列
-  aiResponses   String[]  // AIの応答内容の配列
+  cards         DrawnCard[]  // 選択されたカード配列
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // 関連
+  chatMessages  ChatMessage[]
+}
+
+// リーディングで引いたカードモデル
+model DrawnCard {
+  id        String   @id @default(cuid())
+  readingId String
+  reading   Reading  @relation(fields: [readingId], references: [id])
+  cardId    String
+  card      TarotCard @relation(fields: [cardId], references: [id])
+  positionX Int
+  positionY Int
+  isReversed Boolean
+  order     Int      // 引いた順番
+  createdAt DateTime @default(now())
+}
+
+// チャットタイプ
+enum ChatType {
+  CARD_INTERPRETATION
+  USER_RESPONSE
+  FINAL_READING
+  USER_QUESTION
+  TAROTIST_ANSWER
+}
+
+// チャットロール
+enum ChatRole {
+  USER
+  TAROTIST
+}
+
+// チャットメッセージモデル - カード解釈・質問応答の履歴
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+  tarotistId String
+  tarotist   Tarotist @relation(fields: [tarotistId], references: [id])
+  chatType   ChatType
+  readingId  String
+  reading    Reading  @relation(fields: [readingId], references: [id])
+  role       ChatRole   // "user" or "tarotist""
+  message    String   @db.Text
+  createdAt  DateTime @default(now())
 }
 
 // お気に入りスプレッドモデル

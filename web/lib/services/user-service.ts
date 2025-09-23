@@ -6,17 +6,33 @@ import { prisma } from "@/prisma/prisma";
 // 基本的なユーザー取得・作成・更新
 // ==========================================
 
+// ユーザー一覧を取得
+export async function getUsers(
+  take: number = 10,
+  skip: number = 0,
+  soft: boolean = true
+): Promise<User[]> {
+  return await prisma.user.findMany({
+    where: soft ? { deletedAt: null } : undefined,
+    orderBy: { createdAt: "asc" },
+    include: { plan: true, accounts: true },
+    take, // ← ここで件数制限
+    skip,
+  });
+}
+
 // ユーザーをIDで取得（関連データを含む）
 export async function getUserById(
   id: string,
-  take: number = 10
+  take: number = 10,
+  soft: boolean = true
 ): Promise<User | null> {
   return await prisma.user.findUnique({
-    where: { id },
+    where: soft ? { id, deletedAt: null } : { id },
     include: {
       plan: true,
       accounts: true,
-      readingHistories: {
+      reading: {
         take,
         orderBy: { createdAt: "desc" },
         include: { spread: true, category: true },
@@ -31,36 +47,43 @@ export async function getUserById(
 }
 
 // ユーザーをメールアドレスで取得
-export async function getUserByEmail(email: string): Promise<User | null> {
+export async function getUserByEmail(
+  email: string,
+  soft: boolean = true
+): Promise<User | null> {
   return await prisma.user.findUnique({
-    where: { email },
+    where: soft ? { email, deletedAt: null } : { email },
     include: { plan: true, accounts: true },
   });
 }
 
 // ユーザーをデバイスIDで取得（ゲストユーザー用）
 export async function getUserByDeviceId(
-  deviceId: string
+  deviceId: string,
+  soft: boolean = true
 ): Promise<User | null> {
   const device = await prisma.device.findUnique({
     where: { deviceId },
     include: { user: { include: { plan: true } } },
   });
-  return device?.user ?? null;
+  if (!device?.user) return null;
+  if (soft && device.user.deletedAt) return null;
+  return device.user;
 }
 
 export async function updateUserById(
   id: string,
   user: Prisma.UserUpdateInput,
-  take: number = 10
+  take: number = 10,
+  soft: boolean = true
 ) {
   return await prisma.user.update({
-    where: { id },
+    where: soft ? { id, deletedAt: null } : { id },
     data: user,
     include: {
       plan: true,
       accounts: true,
-      readingHistories: {
+      reading: {
         take,
         orderBy: { createdAt: "desc" },
         include: { spread: true, category: true },
@@ -188,7 +211,7 @@ export async function migrateGuestUser({
       plan: true,
       devices: true,
       favoriteSpreads: true,
-      readingHistories: true,
+      reading: true,
     };
 
     const guest = await tx.user.findFirst({
@@ -233,7 +256,7 @@ export async function migrateGuestUser({
     // 2) guestあり & existingあり → マージ（移管＋guest削除 or ソフトデリート）
     if (guest && existing) {
       // 履歴・お気に入り・デバイスの移管
-      await tx.readingHistory.updateMany({
+      await tx.reading.updateMany({
         where: { userId: guest.id },
         data: { userId: existing.id },
       });

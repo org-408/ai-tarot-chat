@@ -12,21 +12,22 @@ interface SearchParams {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
   const session = await auth();
+  const params = await searchParams;
 
   // 既にログイン済みの場合
   if (session) {
     // Tauriからのアクセスの場合は特別処理
-    if (searchParams.isTauri) {
+    if (params.isTauri) {
       return redirect(
         `/auth/tauri-callback?success=true&user=${encodeURIComponent(
           JSON.stringify(session.user)
         )}`
       );
     }
-    return redirect(searchParams.callbackUrl || "/dashboard");
+    return redirect(params.callbackUrl || "/dashboard");
   }
 
   return (
@@ -42,10 +43,7 @@ export default async function SignInPage({
           </div>
 
           <Suspense fallback={<div>Loading...</div>}>
-            <SignInForm
-              error={searchParams.error}
-              isTauri={!!searchParams.isTauri}
-            />
+            <SignInForm error={params.error} isTauri={!!params.isTauri} />
           </Suspense>
         </div>
       </div>
