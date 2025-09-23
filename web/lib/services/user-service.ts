@@ -1,6 +1,6 @@
 import type { User } from "@/../shared/lib/types";
-import { Prisma } from "@/lib/generated/prisma";
 import { prisma } from "@/prisma/prisma";
+import { Prisma } from "@prisma/client";
 
 // ==========================================
 // 基本的なユーザー取得・作成・更新

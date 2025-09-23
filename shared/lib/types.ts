@@ -2,7 +2,7 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
-import { ChatRole, ChatType } from "@/lib/generated/prisma";
+import { ChatRole, ChatType } from "../../web/node_modules/@prisma/client";
 
 export type Account = {
   id: string;
