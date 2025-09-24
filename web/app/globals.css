@@ -139,3 +139,90 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 公式OAuth認証ボタン用CSS（globals.css または専用ファイルに追加） */
+
+/* Google Sign-In ボタンのベーススタイル */
+.google-signin-btn {
+  @apply w-full h-12 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg 
+         flex items-center justify-center gap-3 transition-all duration-200 
+         shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/20;
+}
+
+.google-signin-btn:disabled {
+  @apply bg-gray-100 cursor-not-allowed shadow-none;
+}
+
+.google-signin-btn:active {
+  @apply scale-[0.98] shadow-inner;
+}
+
+/* Apple Sign-In ボタンのベーススタイル */
+.apple-signin-btn {
+  @apply w-full h-12 bg-black hover:bg-gray-800 text-white rounded-lg 
+         flex items-center justify-center gap-3 transition-all duration-200 
+         shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400/20;
+}
+
+.apple-signin-btn:disabled {
+  @apply bg-gray-700 cursor-not-allowed shadow-none;
+}
+
+.apple-signin-btn:active {
+  @apply scale-[0.98] shadow-inner;
+}
+
+/* ローディング状態のアニメーション */
+@keyframes signin-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.signin-loading {
+  animation: signin-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .google-signin-btn,
+  .apple-signin-btn {
+    @apply h-11 text-sm;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .google-signin-btn {
+    @apply bg-gray-800 hover:bg-gray-700 border-gray-600 text-white;
+  }
+}
+
+/* モバイルアプリ用のタップフィードバック */
+@media (hover: none) {
+  .google-signin-btn:active,
+  .apple-signin-btn:active {
+    @apply scale-95 transition-transform duration-75;
+  }
+}
+
+/* アクセシビリティ向上 */
+.google-signin-btn:focus-visible,
+.apple-signin-btn:focus-visible {
+  @apply outline-2 outline-offset-2 outline-blue-500;
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  .google-signin-btn {
+    @apply border-2 border-gray-800;
+  }
+
+  .apple-signin-btn {
+    @apply border-2 border-white;
+  }
+}
