@@ -6,16 +6,7 @@ import Google from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    Apple({
-      clientId: process.env.APPLE_CLIENT_ID!,
-      clientSecret: process.env.APPLE_CLIENT_SECRET!,
-    }),
-  ],
+  providers: [Google, Apple],
   callbacks: {
     async signIn({ user, account }) {
       console.log("🔐 OAuth認証:", {
@@ -56,6 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
+      console.log("💼 セッションコールバック:", { session, token });
       if (token && session.user) {
         //   const dbUser = await prisma.user.findUnique({
         //     where: { email: session.user.email! },
@@ -92,6 +84,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async jwt({ token, user }) {
+      console.log("🧾 JWTコールバック:", { token, user });
       if (user) {
         // const dbUser = await prisma.user.findUnique({
         //   where: { email: user.email! },
@@ -123,8 +116,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30日
-  },
-  pages: {
-    error: "/auth/error",
   },
 });
