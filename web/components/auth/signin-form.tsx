@@ -71,8 +71,8 @@ const GoogleSignInButton = ({
   >
     {isLoading ? (
       <>
-        <Loader2 className="h-5 w-5 animate-spin text-gray-600" />
-        <span className="text-gray-600 font-medium">認証中...</span>
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <span className="text-muted-foreground font-medium">認証中...</span>
       </>
     ) : (
       <>
@@ -94,7 +94,7 @@ const GoogleSignInButton = ({
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        <span className="text-gray-700 font-medium">Googleでサインイン</span>
+        <span className="text-foreground font-medium">Googleでサインイン</span>
       </>
     )}
   </button>
@@ -156,8 +156,8 @@ const PlatformInfo = ({
   if (!isTauri && !isMobile) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 text-white/70 text-sm">
-      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+    <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+      <div className="w-2 h-2 bg-chart-1 rounded-full animate-pulse"></div>
       {isTauri ? (
         <>
           <Smartphone className="h-4 w-4" />
@@ -205,9 +205,9 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
   return (
     <>
       {error && (
-        <Alert className="mb-6 border-red-200 bg-red-50/90 backdrop-blur-sm">
-          <Shield className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
+        <Alert className="mb-6 border-destructive/50 bg-destructive/10 backdrop-blur-sm">
+          <Shield className="h-4 w-4 text-destructive" />
+          <AlertDescription className="text-destructive">
             {errorMessages[error as keyof typeof errorMessages] ||
               errorMessages.default}
           </AlertDescription>
@@ -229,13 +229,13 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
       </div>
 
       {/* セキュリティ表示 */}
-      <div className="mt-6 flex items-center justify-center gap-6 text-white/50 text-sm">
+      <div className="mt-6 flex items-center justify-center gap-6 text-muted-foreground text-sm">
         <div className="flex items-center gap-2">
-          <Shield className="w-3 h-3 text-green-400" />
+          <Shield className="w-3 h-3 text-chart-1" />
           <span>安全な認証</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+          <div className="w-3 h-3 bg-chart-2 rounded-full"></div>
           <span>データ保護</span>
         </div>
       </div>
@@ -244,11 +244,11 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
       <div className="mt-8 space-y-3 text-center">
         <PlatformInfo isTauri={!!isTauri} isMobile={isMobile} />
 
-        <p className="text-xs text-white/60 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           サインインすることで、
           <a
             href="/terms"
-            className="text-sky-300 hover:text-sky-200 underline underline-offset-2 transition-colors"
+            className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -257,7 +257,7 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
           および
           <a
             href="/privacy"
-            className="text-sky-300 hover:text-sky-200 underline underline-offset-2 transition-colors"
+            className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
