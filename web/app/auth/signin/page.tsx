@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import { SignInForm } from "@/components/auth/signin-form";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 interface SearchParams {
@@ -15,20 +14,22 @@ export default async function SignInPage({
   searchParams: Promise<SearchParams>;
 }) {
   const session = await auth();
+  console.log("Current session:", session);
   const params = await searchParams;
+  console.log("Search Params:", params);
 
   // 既にログイン済みの場合
-  if (session) {
-    // Tauriからのアクセスの場合は特別処理
-    if (params.isTauri) {
-      return redirect(
-        `/auth/tauri-callback?success=true&user=${encodeURIComponent(
-          JSON.stringify(session.user)
-        )}`
-      );
-    }
-    return redirect(params.callbackUrl || "/dashboard");
-  }
+  // if (session) {
+  //   // Tauriからのアクセスの場合は特別処理
+  //   if (params.isTauri) {
+  //     return redirect(
+  //       `/auth/tauri-callback?success=true&user=${encodeURIComponent(
+  //         JSON.stringify(session.user)
+  //       )}`
+  //     );
+  //   }
+  //   return redirect(params.callbackUrl || "/dashboard");
+  // }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">

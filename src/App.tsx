@@ -123,6 +123,7 @@ function App() {
     if (success) {
       await loadPlanInfo(); // ログイン成功後、プラン情報を更新
     }
+    // await startOAuth();
   };
 
   // ナビゲーション用ページ変更関数
