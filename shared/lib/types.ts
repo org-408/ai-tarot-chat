@@ -42,7 +42,7 @@ export type VerificationToken = {
 export type Device = {
   id: string;
   deviceId: string;
-  userId: string;
+  userId?: string | null;
   user?: User;
 
   platform?: string | null;
@@ -54,8 +54,8 @@ export type Device = {
   createdAt: Date;
   updatedAt: Date;
 
-  readings: Reading[];
-  chatMessages: ChatMessage[];
+  readings?: Reading[];
+  chatMessages?: ChatMessage[];
 };
 
 export type User = {
@@ -274,17 +274,17 @@ export type Tarotist = {
 // リーディング履歴モデル
 export type Reading = {
   id: string;
-  userId?: string;
-  user?: User;
+  userId?: string | null;
+  user?: User | null;
   deviceId: string;
-  device?: Device;
+  device?: Device | null;
   tarotistId: string;
   tarotist?: Tarotist;
   spreadId: string;
   spread?: Spread;
   categoryId: string;
   category?: ReadingCategory;
-  cards: DrawCard[];
+  cards?: DrawnCard[];
   createdAt: Date;
   updatedAt: Date;
 
@@ -292,14 +292,14 @@ export type Reading = {
 };
 
 // リーディングで引いたカードの型
-export type DrawCard = {
+export type DrawnCard = {
   id: string;
   readingId: string;
   reading?: Reading;
   cardId: string;
   card?: TarotCard;
-  positionX: number;
-  positionY: number;
+  x: number;
+  y: number;
   isReversed: boolean;
   order: number;
   createdAt: Date;
@@ -308,8 +308,8 @@ export type DrawCard = {
 // チャットメッセージモデル - カード解釈・質問応答の履歴
 export type ChatMessage = {
   id: string;
-  userId: string;
-  user?: User;
+  userId?: string | null;
+  user?: User | null;
   deviceId: string;
   device?: Device;
   tarotistId: string;
@@ -411,8 +411,8 @@ export type ReadingInput = Omit<
   Reading,
   "id" | "createdAt" | "updatedAt" | "user" | "spread" | "category"
 >;
-export type DrawCardInput = Omit<
-  DrawCard,
+export type DrawnCardInput = Omit<
+  DrawnCard,
   "id" | "createdAt" | "reading" | "card"
 >;
 export type ChatMessageInput = Omit<
