@@ -334,8 +334,8 @@ model DrawnCard {
   reading   Reading  @relation(fields: [readingId], references: [id])
   cardId    String
   card      TarotCard @relation(fields: [cardId], references: [id])
-  positionX Int
-  positionY Int
+  x Int
+  y Int
   isReversed Boolean
   order     Int      // 引いた順番
   createdAt DateTime @default(now())

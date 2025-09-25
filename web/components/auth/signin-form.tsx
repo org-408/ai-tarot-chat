@@ -156,7 +156,7 @@ const PlatformInfo = ({
   if (!isTauri && !isMobile) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 text-white/70 text-sm">
+    <div className="flex items-center justify-center gap-2 text-white/80 text-sm">
       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
       {isTauri ? (
         <>
@@ -229,7 +229,7 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
       </div>
 
       {/* セキュリティ表示 */}
-      <div className="mt-6 flex items-center justify-center gap-6 text-white/50 text-sm">
+      <div className="mt-6 flex items-center justify-center gap-6 text-white/60 text-sm">
         <div className="flex items-center gap-2">
           <Shield className="w-3 h-3 text-green-400" />
           <span>安全な認証</span>
@@ -244,11 +244,11 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
       <div className="mt-8 space-y-3 text-center">
         <PlatformInfo isTauri={!!isTauri} isMobile={isMobile} />
 
-        <p className="text-xs text-white/60 leading-relaxed">
+        <p className="text-xs text-white/70 leading-relaxed">
           サインインすることで、
           <a
             href="/terms"
-            className="text-sky-300 hover:text-sky-200 underline underline-offset-2 transition-colors"
+            className="text-sky-200 hover:text-sky-100 underline underline-offset-2 transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -257,7 +257,7 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
           および
           <a
             href="/privacy"
-            className="text-sky-300 hover:text-sky-200 underline underline-offset-2 transition-colors"
+            className="text-sky-200 hover:text-sky-100 underline underline-offset-2 transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
