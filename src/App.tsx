@@ -8,6 +8,7 @@ import PlansPage from "./components/PlansPage";
 import PremiumPage from "./components/PremiumPage";
 import StandardPage from "./components/StandardPage";
 import { useTauriAuth } from "./hooks/useTauriAuth";
+import { initializeApp } from "./lib/init";
 import { PageType, PlanFeatures, UserPlan } from "./types";
 
 function App() {
@@ -28,6 +29,8 @@ function App() {
     isLoggingIn,
     clearError,
   } = useTauriAuth();
+
+  initializeApp(); // アプリ初期化
 
   // アプリ起動時にプラン情報を取得
   useEffect(() => {
@@ -120,9 +123,10 @@ function App() {
   // ログイン処理
   const handleLogin = async () => {
     const success = await signIn();
-    if (success) {
-      await loadPlanInfo(); // ログイン成功後、プラン情報を更新
-    }
+    console.log("ログイン結果:", success);
+    // if (success) {
+    //   await loadPlanInfo(); // ログイン成功後、プラン情報を更新
+    // }
     // await startOAuth();
   };
 

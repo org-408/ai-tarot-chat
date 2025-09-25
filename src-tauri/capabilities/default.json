@@ -3,16 +3,5 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "opener:default",
-    {
-      "identifier": "opener:allow-open-url",
-      "allow": [
-        { "url": "http://localhost:3000/**" },
-        { "url": "https://*.your-domain.example/**" },
-        { "url": "myapp:*" }
-      ]
-    }
-  ]
+  "permissions": ["core:default", "store:default", "web-auth:default"]
 }

@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use tauri::State;
-
-// 認証モジュールを追加
-mod auth;
+use tauri::{command, State};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum UserPlan {
@@ -17,14 +14,14 @@ struct AppState {
 }
 
 // ユーザーの現在のプランを取得
-#[tauri::command]
+#[command]
 fn get_current_plan(state: State<AppState>) -> UserPlan {
     let plan = state.current_plan.lock().unwrap();
     plan.clone()
 }
 
 // プランを変更（テスト用）
-#[tauri::command]
+#[command]
 fn set_plan(plan: UserPlan, state: State<AppState>) -> Result<(), String> {
     let mut current_plan = state.current_plan.lock().unwrap();
     *current_plan = plan;
@@ -32,7 +29,7 @@ fn set_plan(plan: UserPlan, state: State<AppState>) -> Result<(), String> {
 }
 
 // プランに応じた利用可能機能を取得
-#[tauri::command]
+#[command]
 fn get_plan_features(state: State<AppState>) -> PlanFeatures {
     let plan = state.current_plan.lock().unwrap();
 
@@ -77,7 +74,8 @@ struct PlanFeatures {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init()) // 認証用プラグイン追加
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_web_auth::init())
         .manage(AppState {
             current_plan: Mutex::new(UserPlan::Free),
         })
@@ -85,10 +83,6 @@ pub fn run() {
             get_current_plan,
             set_plan,
             get_plan_features,
-            // 認証関数を追加
-            auth::tauri_auth_login,
-            auth::get_stored_user,
-            auth::clear_auth_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

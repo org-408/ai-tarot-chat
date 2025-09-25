@@ -1,4 +1,4 @@
-import type { ChatMessage } from "@/../../shared/lib/types";
+import type { ChatMessage } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class ChatRepository extends BaseRepository {

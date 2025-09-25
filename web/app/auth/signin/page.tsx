@@ -94,10 +94,10 @@ export default async function SignInPage({
           <div className="text-center mb-8">
             <div className="text-7xl mb-6 filter drop-shadow-lg">🔮</div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-3">
-              AIタロット占い
+              Ai Tarot Chat
             </h1>
             <p className="text-white/80 text-lg font-medium">
-              AIが導く、あなたの未来への扉
+              AIと対話するタロット占い
             </p>
 
             {/* 装飾的な区切り線 */}

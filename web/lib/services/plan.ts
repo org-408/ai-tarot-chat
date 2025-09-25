@@ -1,6 +1,6 @@
 // services/plan.service.ts
 
-import type { User } from "@/../../shared/lib/types";
+import type { User } from "@/../shared/lib/types";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
 import { userRepository } from "@/lib/repositories/user";

@@ -1,8 +1,4 @@
-import type {
-  CardMeaning,
-  TarotCard,
-  TarotDeck,
-} from "@/../../shared/lib/types";
+import type { CardMeaning, TarotCard, TarotDeck } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class TarotRepository extends BaseRepository {

@@ -1,4 +1,4 @@
-import type { DrawnCard, Reading } from "@/../../shared/lib/types";
+import type { DrawnCard, Reading } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class ReadingRepository extends BaseRepository {

@@ -2,7 +2,7 @@ import type {
   Account,
   Session,
   VerificationToken,
-} from "@/../../shared/lib/types";
+} from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class AuthRepository extends BaseRepository {

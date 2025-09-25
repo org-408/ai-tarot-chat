@@ -1,4 +1,4 @@
-import type { FavoriteSpread } from "@/../../shared/lib/types";
+import type { FavoriteSpread } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class FavoriteRepository extends BaseRepository {

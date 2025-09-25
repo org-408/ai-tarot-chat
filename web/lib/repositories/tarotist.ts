@@ -1,4 +1,4 @@
-import type { Tarotist } from "@/../../shared/lib/types";
+import type { Tarotist } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class TarotistRepository extends BaseRepository {

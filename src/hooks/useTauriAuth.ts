@@ -40,12 +40,15 @@ export const useTauriAuth = () => {
   };
 
   const signIn = async (): Promise<boolean> => {
+    const url =
+      import.meta.env.VITE_OAUTH_URL || "http://localhost:3000/auth/signin";
+    console.log("Starting sign-in with URL:", url);
     try {
       setIsLoggingIn(true);
       setError(null);
 
       // Rust関数呼び出し：内部ブラウザでNext.js認証
-      const result = await invoke<AuthResult>("tauri_auth_login");
+      const result = await invoke<AuthResult>("auth_login", { url });
 
       if (result.success) {
         setUser(result.user);

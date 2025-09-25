@@ -1,4 +1,4 @@
-import type { Reading, Spread, TarotCard } from "@/../../shared/lib/types";
+import type { Reading, Spread, TarotCard } from "@/../shared/lib/types";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
 import { readingRepository } from "@/lib/repositories/reading";

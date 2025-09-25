@@ -3,7 +3,7 @@ import type {
   Spread,
   SpreadCell,
   SpreadLevel,
-} from "@/../../shared/lib/types";
+} from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class SpreadRepository extends BaseRepository {

@@ -1,4 +1,4 @@
-import type { Device, User } from "@/../../shared/lib/types";
+import type { Device, User } from "@/../shared/lib/types";
 import { Prisma } from "@prisma/client";
 import { BaseRepository } from "./base";
 

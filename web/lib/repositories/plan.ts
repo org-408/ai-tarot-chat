@@ -1,4 +1,4 @@
-import type { Plan, PlanChangeHistory } from "@/../../shared/lib/types";
+import type { Plan, PlanChangeHistory } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class PlanRepository extends BaseRepository {

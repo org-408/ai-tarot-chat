@@ -194,7 +194,7 @@ const FreePage: React.FC<FreePageProps> = ({
               disabled={isLoggingIn}
               className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
             >
-              {isLoggingIn ? "認証中..." : "Googleでログイン"}
+              {isLoggingIn ? "認証中..." : "ユーザー登録してもっと楽しむ"}
             </button>
           </div>
         </div>
