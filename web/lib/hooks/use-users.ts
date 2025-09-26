@@ -1,13 +1,13 @@
 "use client";
 
-import type { User, UserInput } from "@/../shared/lib/types";
-import * as userApi from "@/lib/api/user-api";
+import type { Client, ClientInput } from "@/../shared/lib/types";
+import * as userApi from "@/lib/api/client-api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * ユーザー一覧を取得・操作するフック
  */
-export function useUsers() {
+export function useClients() {
   const queryClient = useQueryClient();
 
   // ユーザー一覧を取得するクエリ
@@ -18,41 +18,43 @@ export function useUsers() {
     refetch,
   } = useQuery({
     queryKey: ["users"],
-    queryFn: userApi.fetchUsers,
+    queryFn: userApi.fetchClients,
   });
 
   // ユーザー作成のミューテーション
   const createMutation = useMutation({
-    mutationFn: userApi.createUser,
-    onSuccess: (newUser) => {
+    mutationFn: userApi.createClient,
+    onSuccess: (newClient) => {
       // キャッシュを更新
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) => [
+      queryClient.setQueryData<Client[]>(["users"], (oldData = []) => [
         ...oldData,
-        newUser,
+        newClient,
       ]);
     },
   });
 
   // ユーザー更新のミューテーション
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<UserInput> }) =>
-      userApi.updateUser(id, data),
-    onSuccess: (updatedUser) => {
+    mutationFn: ({ id, data }: { id: string; data: Partial<ClientInput> }) =>
+      userApi.updateClient(id, data),
+    onSuccess: (updatedClient) => {
       // キャッシュを更新
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
-        oldData.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      queryClient.setQueryData<Client[]>(["users"], (oldData = []) =>
+        oldData.map((user) =>
+          user.id === updatedClient.id ? updatedClient : user
+        )
       );
       // 個別のユーザーのキャッシュも更新
-      queryClient.setQueryData(["user", updatedUser.id], updatedUser);
+      queryClient.setQueryData(["user", updatedClient.id], updatedClient);
     },
   });
 
   // ユーザー削除のミューテーション
   const deleteMutation = useMutation({
-    mutationFn: userApi.deleteUser,
+    mutationFn: userApi.deleteClient,
     onSuccess: (_, id) => {
       // キャッシュを更新
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
+      queryClient.setQueryData<Client[]>(["users"], (oldData = []) =>
         oldData.filter((user) => user.id !== id)
       );
       // 削除されたユーザーのキャッシュを削除
@@ -81,8 +83,8 @@ export function useUsers() {
       updateMutation.isPending ||
       deleteMutation.isPending,
     error,
-    fetchUsers: () => refetch(),
-    createUser: async (data: UserInput) => {
+    fetchClients: () => refetch(),
+    createClient: async (data: ClientInput) => {
       try {
         return await createMutation.mutateAsync(data);
       } catch (err) {
@@ -90,7 +92,7 @@ export function useUsers() {
         return null;
       }
     },
-    updateUser: async (id: string, data: Partial<UserInput>) => {
+    updateClient: async (id: string, data: Partial<ClientInput>) => {
       try {
         return await updateMutation.mutateAsync({ id, data });
       } catch (err) {
@@ -98,7 +100,7 @@ export function useUsers() {
         return null;
       }
     },
-    deleteUser: async (id: string) => {
+    deleteClient: async (id: string) => {
       try {
         await deleteMutation.mutateAsync(id);
         return true;
@@ -113,10 +115,10 @@ export function useUsers() {
 /**
  * 特定のユーザーを取得するフック
  */
-export function useUser(id: string) {
+export function useClient(id: string) {
   return useQuery({
     queryKey: ["user", id],
-    queryFn: () => userApi.fetchUserById(id),
+    queryFn: () => userApi.fetchClientById(id),
     enabled: !!id, // idがある場合のみクエリを実行
   });
 }
@@ -124,10 +126,10 @@ export function useUser(id: string) {
 /**
  * メールアドレスでユーザーを取得するフック
  */
-export function useUserByEmail(email: string | null) {
+export function useClientByEmail(email: string | null) {
   return useQuery({
     queryKey: ["user", "email", email],
-    queryFn: () => userApi.fetchUserByEmail(email!),
+    queryFn: () => userApi.fetchClientByEmail(email!),
     enabled: !!email, // emailがある場合のみクエリを実行
   });
 }
@@ -135,10 +137,10 @@ export function useUserByEmail(email: string | null) {
 /**
  * デバイスIDでユーザーを取得するフック
  */
-export function useUserByDeviceId(deviceId: string | null) {
+export function useClientByDeviceId(deviceId: string | null) {
   return useQuery({
     queryKey: ["user", "device", deviceId],
-    queryFn: () => userApi.fetchUserByDeviceId(deviceId!),
+    queryFn: () => userApi.fetchClientByDeviceId(deviceId!),
     enabled: !!deviceId, // deviceIdがある場合のみクエリを実行
   });
 }
@@ -146,29 +148,29 @@ export function useUserByDeviceId(deviceId: string | null) {
 /**
  * 現在のログインユーザーを取得するフック
  */
-export function useCurrentUser() {
+export function useCurrentClient() {
   return useQuery({
-    queryKey: ["currentUser"],
-    queryFn: userApi.fetchCurrentUser,
+    queryKey: ["currentClient"],
+    queryFn: userApi.fetchCurrentClient,
   });
 }
 
 /**
  * 匿名ユーザーを作成するフック
  */
-export function useCreateAnonymousUser() {
+export function useCreateAnonymousClient() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: userApi.createAnonymousUser,
-    onSuccess: (newUser) => {
+    mutationFn: userApi.createAnonymousClient,
+    onSuccess: (newClient) => {
       // キャッシュを更新
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) => [
+      queryClient.setQueryData<Client[]>(["users"], (oldData = []) => [
         ...oldData,
-        newUser,
+        newClient,
       ]);
       // 現在のユーザーをこの匿名ユーザーに設定
-      queryClient.setQueryData(["currentUser"], newUser);
+      queryClient.setQueryData(["currentClient"], newClient);
     },
   });
 }
@@ -176,21 +178,23 @@ export function useCreateAnonymousUser() {
 /**
  * ユーザーを登録ユーザーにアップグレードするフック
  */
-export function useUpgradeToRegisteredUser() {
+export function useUpgradeToRegisteredClient() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, email }: { id: string; email: string }) =>
-      userApi.upgradeToRegisteredUser(id, email),
-    onSuccess: (updatedUser) => {
+      userApi.upgradeToRegisteredClient(id, email),
+    onSuccess: (updatedClient) => {
       // キャッシュを更新
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
-        oldData.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      queryClient.setQueryData<Client[]>(["users"], (oldData = []) =>
+        oldData.map((user) =>
+          user.id === updatedClient.id ? updatedClient : user
+        )
       );
       // 個別のユーザーのキャッシュも更新
-      queryClient.setQueryData(["user", updatedUser.id], updatedUser);
+      queryClient.setQueryData(["user", updatedClient.id], updatedClient);
       // 現在のユーザーも更新
-      queryClient.setQueryData(["currentUser"], updatedUser);
+      queryClient.setQueryData(["currentClient"], updatedClient);
     },
   });
 }
@@ -198,7 +202,7 @@ export function useUpgradeToRegisteredUser() {
 /**
  * ユーザープランを更新するフック
  */
-export function useUpdateUserPlan() {
+export function useUpdateClientPlan() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -213,21 +217,23 @@ export function useUpdateUserPlan() {
       subscriptionStatus: "ACTIVE" | "INACTIVE" | "CANCELED" | "EXPIRED";
       subscriptionEndDate?: Date;
     }) =>
-      userApi.updateUserPlan(
+      userApi.updateClientPlan(
         id,
         planType,
         subscriptionStatus,
         subscriptionEndDate
       ),
-    onSuccess: (updatedUser) => {
+    onSuccess: (updatedClient) => {
       // キャッシュを更新
-      queryClient.setQueryData<User[]>(["users"], (oldData = []) =>
-        oldData.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      queryClient.setQueryData<Client[]>(["users"], (oldData = []) =>
+        oldData.map((user) =>
+          user.id === updatedClient.id ? updatedClient : user
+        )
       );
       // 個別のユーザーのキャッシュも更新
-      queryClient.setQueryData(["user", updatedUser.id], updatedUser);
+      queryClient.setQueryData(["user", updatedClient.id], updatedClient);
       // 現在のユーザーも更新
-      queryClient.setQueryData(["currentUser"], updatedUser);
+      queryClient.setQueryData(["currentClient"], updatedClient);
     },
   });
 }
@@ -242,12 +248,12 @@ export function useIncrementReadingCount() {
     mutationFn: userApi.incrementReadingCount,
     onSuccess: (result) => {
       // 現在のユーザーを取得
-      const currentUser = queryClient.getQueryData<User>(["currentUser"]);
+      const currentClient = queryClient.getQueryData<Client>(["currentClient"]);
 
-      if (currentUser && currentUser.id === result.id) {
+      if (currentClient && currentClient.id === result.id) {
         // 現在のユーザーのカウンターを更新
-        queryClient.setQueryData<User>(["currentUser"], {
-          ...currentUser,
+        queryClient.setQueryData<Client>(["currentClient"], {
+          ...currentClient,
           dailyReadingsCount: result.dailyReadingsCount,
           lastReadingDate: result.lastReadingDate,
         });
@@ -269,12 +275,12 @@ export function useIncrementReadingCount() {
 //     mutationFn: userApi.incrementCelticCount,
 //     onSuccess: (result) => {
 //       // 現在のユーザーを取得
-//       const currentUser = queryClient.getQueryData<User>(["currentUser"]);
+//       const currentClient = queryClient.getQueryData<Client>(["currentClient"]);
 
-//       if (currentUser && currentUser.id === result.id) {
+//       if (currentClient && currentClient.id === result.id) {
 //         // 現在のユーザーのカウンターを更新
-//         queryClient.setQueryData<User>(["currentUser"], {
-//           ...currentUser,
+//         queryClient.setQueryData<Client>(["currentClient"], {
+//           ...currentClient,
 //           dailyCelticsCount: result.dailyCelticsCount,
 //           lastCelticReadingDate: result.lastCelticReadingDate,
 //         });
@@ -296,12 +302,12 @@ export function useIncrementReadingCount() {
 //     mutationFn: userApi.incrementPersonalCount,
 //     onSuccess: (result) => {
 //       // 現在のユーザーを取得
-//       const currentUser = queryClient.getQueryData<User>(["currentUser"]);
+//       const currentClient = queryClient.getQueryData<Client>(["currentClient"]);
 
-//       if (currentUser && currentUser.id === result.id) {
+//       if (currentClient && currentClient.id === result.id) {
 //         // 現在のユーザーのカウンターを更新
-//         queryClient.setQueryData<User>(["currentUser"], {
-//           ...currentUser,
+//         queryClient.setQueryData<Client>(["currentClient"], {
+//           ...currentClient,
 //           dailyPersonalCount: result.dailyPersonalCount,
 //           lastPersonalReadingDate: result.lastPersonalReadingDate,
 //         });

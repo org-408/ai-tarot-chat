@@ -28,6 +28,19 @@ export type Session = {
   user?: User;
 };
 
+export type User = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  emailVerified?: Date | null;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  accounts?: Account[];
+  sessions?: Session[];
+  clients?: Client[];
+};
+
 export type VerificationToken = {
   identifier: string;
   token: string;
@@ -42,8 +55,8 @@ export type VerificationToken = {
 export type Device = {
   id: string;
   deviceId: string;
-  userId?: string | null;
-  user?: User;
+  clientId?: string | null;
+  client?: Client | null;
 
   platform?: string | null;
   appVersion?: string | null;
@@ -58,12 +71,11 @@ export type Device = {
   chatMessages?: ChatMessage[];
 };
 
-export type User = {
+export type Client = {
   id: string;
+  userId?: string | null;
+  user?: User;
   name?: string | null;
-  email?: string | null;
-  emailVerified?: Date | null;
-  image?: string | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -88,10 +100,6 @@ export type User = {
   // ユーザー状態
   isRegistered: boolean;
   lastLoginAt?: Date | null;
-
-  // Auth.js 5.0 関連
-  accounts?: Account[];
-  sessions?: Session[];
 
   // お気に入りスプレッド
   favoriteSpreads?: FavoriteSpread[];
@@ -242,7 +250,7 @@ export type Plan = {
   hasHistory: boolean;
   createdAt: Date;
   updatedAt: Date;
-  users?: User[];
+  clients?: Client[];
   spreads?: Spread[];
   planChangeHistories?: PlanChangeHistory[];
 };
@@ -250,8 +258,8 @@ export type Plan = {
 // プラン履歴モデル
 export type PlanChangeHistory = {
   id: string;
-  userId: string;
-  user?: User;
+  clientId: string;
+  client?: Client;
   planId: string;
   plan?: Plan;
   changedAt: Date;
@@ -274,8 +282,8 @@ export type Tarotist = {
 // リーディング履歴モデル
 export type Reading = {
   id: string;
-  userId?: string | null;
-  user?: User | null;
+  clientId?: string | null;
+  client?: Client | null;
   deviceId: string;
   device?: Device | null;
   tarotistId: string;
@@ -308,8 +316,8 @@ export type DrawnCard = {
 // チャットメッセージモデル - カード解釈・質問応答の履歴
 export type ChatMessage = {
   id: string;
-  userId?: string | null;
-  user?: User | null;
+  clientId?: string | null;
+  client?: Client | null;
   deviceId: string;
   device?: Device;
   tarotistId: string;
@@ -317,7 +325,7 @@ export type ChatMessage = {
   chatType: ChatType;
   readingId: string;
   reading?: Reading;
-  role: ChatRole; // "user" or "tarotist"
+  role: ChatRole; // "client" or "tarotist"
   message: string;
   createdAt: Date;
 };
@@ -325,8 +333,8 @@ export type ChatMessage = {
 // お気に入りスプレッドモデル
 export type FavoriteSpread = {
   id: string;
-  userId: string;
-  user?: User;
+  clientId: string;
+  client?: Client;
   spreadId: string;
   spread?: Spread;
   createdAt: Date;
@@ -342,13 +350,11 @@ export type SessionInput = Omit<Session, "id" | "user">;
 export type VerificationTokenInput = VerificationToken;
 
 // ユーザー関連
-export type UserInput = Omit<
-  User,
+export type ClientInput = Omit<
+  Client,
   | "id"
   | "createdAt"
   | "updatedAt"
-  | "accounts"
-  | "sessions"
   | "favoriteSpreads"
   | "reading"
   | "planChangeHistories"
@@ -395,11 +401,16 @@ export type ReadingCategoryInput = Omit<
 // プラン関連
 export type PlanInput = Omit<
   Plan,
-  "id" | "createdAt" | "updatedAt" | "users" | "spreads" | "planChangeHistories"
+  | "id"
+  | "createdAt"
+  | "updatedAt"
+  | "clients"
+  | "spreads"
+  | "planChangeHistories"
 >;
 export type PlanChangeHistoryInput = Omit<
   PlanChangeHistory,
-  "id" | "changedAt" | "user" | "Plan"
+  "id" | "changedAt" | "client" | "Plan"
 >;
 
 // 履歴・お気に入り関連
@@ -409,7 +420,7 @@ export type TarotistInput = Omit<
 >;
 export type ReadingInput = Omit<
   Reading,
-  "id" | "createdAt" | "updatedAt" | "user" | "spread" | "category"
+  "id" | "createdAt" | "updatedAt" | "client" | "spread" | "category"
 >;
 export type DrawnCardInput = Omit<
   DrawnCard,
@@ -417,9 +428,9 @@ export type DrawnCardInput = Omit<
 >;
 export type ChatMessageInput = Omit<
   ChatMessage,
-  "id" | "createdAt" | "user" | "device" | "tarotist" | "reading"
+  "id" | "createdAt" | "client" | "device" | "tarotist" | "reading"
 >;
 export type FavoriteSpreadInput = Omit<
   FavoriteSpread,
-  "id" | "createdAt" | "user" | "spread"
+  "id" | "createdAt" | "client" | "spread"
 >;

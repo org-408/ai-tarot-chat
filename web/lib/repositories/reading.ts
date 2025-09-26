@@ -9,7 +9,7 @@ export class ReadingRepository extends BaseRepository {
       | "id"
       | "createdAt"
       | "updatedAt"
-      | "user"
+      | "client"
       | "device"
       | "tarotist"
       | "spread"
@@ -19,7 +19,7 @@ export class ReadingRepository extends BaseRepository {
   ): Promise<string> {
     const created = await this.db.reading.create({
       data: {
-        userId: reading.userId,
+        clientId: reading.clientId,
         deviceId: reading.deviceId,
         tarotistId: reading.tarotistId,
         spreadId: reading.spreadId,
@@ -46,7 +46,7 @@ export class ReadingRepository extends BaseRepository {
     return await this.db.reading.findUnique({
       where: { id },
       include: {
-        user: true,
+        client: true,
         device: true,
         tarotist: true,
         spread: true,
@@ -56,13 +56,13 @@ export class ReadingRepository extends BaseRepository {
     });
   }
 
-  async getReadingsByUserId(
-    userId: string,
+  async getReadingsByClientId(
+    clientId: string,
     limit = 20,
     offset = 0
   ): Promise<Reading[]> {
     return await this.db.reading.findMany({
-      where: { userId },
+      where: { clientId },
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,

@@ -9,7 +9,7 @@ export class PlanRepository extends BaseRepository {
       | "id"
       | "createdAt"
       | "updatedAt"
-      | "users"
+      | "clients"
       | "spreads"
       | "planChangeHistories"
     >
@@ -66,7 +66,7 @@ export class PlanRepository extends BaseRepository {
         | "id"
         | "createdAt"
         | "updatedAt"
-        | "users"
+        | "clients"
         | "spreads"
         | "planChangeHistories"
       >
@@ -80,11 +80,11 @@ export class PlanRepository extends BaseRepository {
 
   // ==================== PlanChangeHistory ====================
   async createPlanChangeHistory(
-    history: Omit<PlanChangeHistory, "id" | "changedAt" | "user" | "plan">
+    history: Omit<PlanChangeHistory, "id" | "changedAt" | "client" | "plan">
   ): Promise<string> {
     const created = await this.db.planChangeHistory.create({
       data: {
-        userId: history.userId,
+        clientId: history.clientId,
         planId: history.planId,
       },
     });
@@ -92,9 +92,9 @@ export class PlanRepository extends BaseRepository {
     return created.id;
   }
 
-  async getHistoryByUserId(userId: string): Promise<PlanChangeHistory[]> {
+  async getHistoryByClientId(clientId: string): Promise<PlanChangeHistory[]> {
     return await this.db.planChangeHistory.findMany({
-      where: { userId },
+      where: { clientId },
       orderBy: { changedAt: "desc" },
       include: { plan: true },
     });

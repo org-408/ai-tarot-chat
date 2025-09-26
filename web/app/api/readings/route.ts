@@ -15,11 +15,14 @@ export async function POST(req: NextRequest) {
     }
 
     // デバイス連携（必要に応じてユーザー取得/作成）
-    const { user } = await authService.linkDevice(body.deviceId, body.userId);
+    const { client } = await authService.linkDevice(
+      body.deviceId,
+      body.clientId
+    );
 
     // ビジネスロジックはServiceに委譲
     const reading = await readingService.executeReading({
-      userId: user.id,
+      clientId: client.id,
       deviceId: body.deviceId,
       spreadId: body.spreadId,
       categoryId: body.categoryId,
@@ -42,13 +45,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.nextUrl.searchParams.get("userId");
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    const clientId = req.nextUrl.searchParams.get("clientId");
+    if (!clientId) {
+      return NextResponse.json({ error: "Missing clientId" }, { status: 400 });
     }
 
     // ビジネスロジックはServiceに委譲
-    const readings = await readingService.getReadingHistory(userId);
+    const readings = await readingService.getReadingHistory(clientId);
 
     return NextResponse.json(readings);
   } catch (error: unknown) {

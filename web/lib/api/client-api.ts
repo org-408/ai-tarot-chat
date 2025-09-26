@@ -1,10 +1,10 @@
-import type { User, UserInput } from "@/../shared/lib/types";
+import type { Client, ClientInput } from "@/../shared/lib/types";
 
 /**
  * ユーザー一覧を取得
  */
-export async function fetchUsers(): Promise<User[]> {
-  const response = await fetch("/api/users");
+export async function fetchClients(): Promise<Client[]> {
+  const response = await fetch("/api/clients");
   if (!response.ok) {
     throw new Error("ユーザー一覧の取得に失敗しました");
   }
@@ -14,8 +14,8 @@ export async function fetchUsers(): Promise<User[]> {
 /**
  * 特定のユーザーをIDで取得
  */
-export async function fetchUserById(id: string): Promise<User> {
-  const response = await fetch(`/api/users/${id}`);
+export async function fetchClientById(id: string): Promise<Client> {
+  const response = await fetch(`/api/clients/${id}`);
   if (!response.ok) {
     throw new Error(`ユーザーID: ${id}の取得に失敗しました`);
   }
@@ -25,8 +25,12 @@ export async function fetchUserById(id: string): Promise<User> {
 /**
  * ユーザーをメールアドレスで取得
  */
-export async function fetchUserByEmail(email: string): Promise<User | null> {
-  const response = await fetch(`/api/users/email/${encodeURIComponent(email)}`);
+export async function fetchClientByEmail(
+  email: string
+): Promise<Client | null> {
+  const response = await fetch(
+    `/api/clients/email/${encodeURIComponent(email)}`
+  );
   if (response.status === 404) {
     return null;
   }
@@ -39,11 +43,11 @@ export async function fetchUserByEmail(email: string): Promise<User | null> {
 /**
  * ユーザーをデバイスIDで取得
  */
-export async function fetchUserByDeviceId(
+export async function fetchClientByDeviceId(
   deviceId: string
-): Promise<User | null> {
+): Promise<Client | null> {
   const response = await fetch(
-    `/api/users/device/${encodeURIComponent(deviceId)}`
+    `/api/clients/device/${encodeURIComponent(deviceId)}`
   );
   if (response.status === 404) {
     return null;
@@ -57,8 +61,8 @@ export async function fetchUserByDeviceId(
 /**
  * 新規ユーザーを作成
  */
-export async function createUser(data: UserInput): Promise<User> {
-  const response = await fetch("/api/users", {
+export async function createClient(data: ClientInput): Promise<Client> {
+  const response = await fetch("/api/clients", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -72,8 +76,8 @@ export async function createUser(data: UserInput): Promise<User> {
 /**
  * 匿名ユーザーを作成（初回アクセス時）
  */
-export async function createAnonymousUser(deviceId: string): Promise<User> {
-  const response = await fetch("/api/users/anonymous", {
+export async function createAnonymousClient(deviceId: string): Promise<Client> {
+  const response = await fetch("/api/clients/anonymous", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ deviceId }),
@@ -87,11 +91,11 @@ export async function createAnonymousUser(deviceId: string): Promise<User> {
 /**
  * ユーザー情報を更新
  */
-export async function updateUser(
+export async function updateClient(
   id: string,
-  data: Partial<UserInput>
-): Promise<User> {
-  const response = await fetch(`/api/users/${id}`, {
+  data: Partial<ClientInput>
+): Promise<Client> {
+  const response = await fetch(`/api/clients/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -105,11 +109,11 @@ export async function updateUser(
 /**
  * 匿名ユーザーから登録ユーザーへアップグレード
  */
-export async function upgradeToRegisteredUser(
+export async function upgradeToRegisteredClient(
   id: string,
   email: string
-): Promise<User> {
-  const response = await fetch(`/api/users/${id}/upgrade`, {
+): Promise<Client> {
+  const response = await fetch(`/api/clients/${id}/upgrade`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
@@ -123,13 +127,13 @@ export async function upgradeToRegisteredUser(
 /**
  * ユーザーのプラン変更
  */
-export async function updateUserPlan(
+export async function updateClientPlan(
   id: string,
   planType: "FREE" | "STANDARD" | "PREMIUM",
   subscriptionStatus: "ACTIVE" | "INACTIVE" | "CANCELED" | "EXPIRED",
   subscriptionEndDate?: Date
-): Promise<User> {
-  const response = await fetch(`/api/users/${id}/plan`, {
+): Promise<Client> {
+  const response = await fetch(`/api/clients/${id}/plan`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ planType, subscriptionStatus, subscriptionEndDate }),
@@ -143,8 +147,8 @@ export async function updateUserPlan(
 /**
  * ユーザーを削除
  */
-export async function deleteUser(id: string): Promise<{ success: boolean }> {
-  const response = await fetch(`/api/users/${id}`, {
+export async function deleteClient(id: string): Promise<{ success: boolean }> {
+  const response = await fetch(`/api/clients/${id}`, {
     method: "DELETE",
   });
   if (!response.ok) {
@@ -161,7 +165,7 @@ export async function incrementReadingCount(id: string): Promise<{
   dailyReadingsCount: number;
   lastReadingDate: Date;
 }> {
-  const response = await fetch(`/api/users/${id}/reading-count`, {
+  const response = await fetch(`/api/clients/${id}/reading-count`, {
     method: "POST",
   });
   if (!response.ok) {
@@ -178,7 +182,7 @@ export async function incrementAiChatCount(id: string): Promise<{
   dailyAiChatCount: number;
   lastAiChatDate: Date;
 }> {
-  const response = await fetch(`/api/users/${id}/ai-chat-count`, {
+  const response = await fetch(`/api/clients/${id}/ai-chat-count`, {
     method: "POST",
   });
   if (!response.ok) {
@@ -191,7 +195,7 @@ export async function incrementAiChatCount(id: string): Promise<{
  * リーディング利用制限チェック
  */
 export async function checkReadingLimit(id: string): Promise<boolean> {
-  const response = await fetch(`/api/users/${id}/reading-limit`);
+  const response = await fetch(`/api/clients/${id}/reading-limit`);
   if (!response.ok) {
     throw new Error(
       `ユーザーID: ${id}のリーディング制限チェックに失敗しました`
@@ -205,7 +209,7 @@ export async function checkReadingLimit(id: string): Promise<boolean> {
  * AIチャット利用制限チェック
  */
 export async function checkAiChatLimit(id: string): Promise<boolean> {
-  const response = await fetch(`/api/users/${id}/ai-chat-limit`);
+  const response = await fetch(`/api/clients/${id}/ai-chat-limit`);
   if (!response.ok) {
     throw new Error(`ユーザーID: ${id}のAIチャット制限チェックに失敗しました`);
   }
@@ -216,8 +220,8 @@ export async function checkAiChatLimit(id: string): Promise<boolean> {
 /**
  * 現在のユーザー情報を取得（認証済みセッションから）
  */
-export async function fetchCurrentUser(): Promise<User | null> {
-  const response = await fetch("/api/users/me");
+export async function fetchCurrentClient(): Promise<Client | null> {
+  const response = await fetch("/api/clients/me");
   if (response.status === 401) {
     return null; // 未認証
   }

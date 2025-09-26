@@ -3,11 +3,11 @@ import { BaseRepository } from "./base";
 
 export class FavoriteRepository extends BaseRepository {
   async createFavoriteSpread(
-    favorite: Omit<FavoriteSpread, "id" | "createdAt" | "user" | "spread">
+    favorite: Omit<FavoriteSpread, "id" | "createdAt" | "client" | "spread">
   ): Promise<string> {
     const created = await this.db.favoriteSpread.create({
       data: {
-        userId: favorite.userId,
+        clientId: favorite.clientId,
         spreadId: favorite.spreadId,
       },
     });
@@ -15,18 +15,18 @@ export class FavoriteRepository extends BaseRepository {
     return created.id;
   }
 
-  async getFavoritesByUserId(userId: string): Promise<FavoriteSpread[]> {
+  async getFavoritesByClientId(clientId: string): Promise<FavoriteSpread[]> {
     return await this.db.favoriteSpread.findMany({
-      where: { userId },
+      where: { clientId },
       orderBy: { createdAt: "desc" },
       include: { spread: true },
     });
   }
 
-  async isFavorite(userId: string, spreadId: string): Promise<boolean> {
+  async isFavorite(clientId: string, spreadId: string): Promise<boolean> {
     const favorite = await this.db.favoriteSpread.findFirst({
       where: {
-        userId,
+        clientId,
         spreadId,
       },
     });
@@ -34,18 +34,18 @@ export class FavoriteRepository extends BaseRepository {
     return favorite !== null;
   }
 
-  async deleteFavorite(userId: string, spreadId: string): Promise<void> {
+  async deleteFavorite(clientId: string, spreadId: string): Promise<void> {
     await this.db.favoriteSpread.deleteMany({
       where: {
-        userId,
+        clientId,
         spreadId,
       },
     });
   }
 
-  async deleteFavoritesByUserId(userId: string): Promise<void> {
+  async deleteFavoritesByClientId(clientId: string): Promise<void> {
     await this.db.favoriteSpread.deleteMany({
-      where: { userId },
+      where: { clientId },
     });
   }
 }

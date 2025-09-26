@@ -1,7 +1,7 @@
-import type { Device, User } from "@/../shared/lib/types";
+import type { Client, Device } from "@/../shared/lib/types";
+import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
-import { userRepository } from "@/lib/repositories/user";
 
 export class AuthService {
   /**
@@ -9,26 +9,26 @@ export class AuthService {
    */
   async linkDevice(
     deviceId: string,
-    userId?: string
+    clientId?: string
   ): Promise<{
-    user: User;
+    client: Client;
     device: Device;
   }> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return await prisma.$transaction(async (tx) => {
-      let user: User;
+      let client: Client;
 
-      if (userId) {
+      if (clientId) {
         // 既存ユーザー
-        const existing = await userRepository.getUserById(userId);
-        if (!existing) throw new Error("User not found");
-        user = existing;
+        const existing = await clientRepository.getClientById(clientId);
+        if (!existing) throw new Error("Client not found");
+        client = existing;
       } else {
         // 新規ユーザー（未登録）
         const freePlan = await planRepository.getPlanByCode("free");
         if (!freePlan) throw new Error("Free plan not found");
 
-        const userId = await userRepository.createUser({
+        const clientId = await clientRepository.createClient({
           planId: freePlan.id,
           isRegistered: false,
           dailyReadingsCount: 0,
@@ -36,32 +36,34 @@ export class AuthService {
           dailyPersonalCount: 0,
         });
 
-        const created = await userRepository.getUserById(userId);
-        if (!created) throw new Error("Failed to create user");
-        user = created;
+        const created = await clientRepository.getClientById(clientId);
+        if (!created) throw new Error("Failed to create client");
+        client = created;
       }
 
       // デバイス登録
-      const existingDevice = await userRepository.getDeviceByDeviceId(deviceId);
+      const existingDevice = await clientRepository.getDeviceByDeviceId(
+        deviceId
+      );
       if (existingDevice) {
         // 既存デバイスの更新
-        await userRepository.updateDevice(existingDevice.id, {
-          userId: user.id,
+        await clientRepository.updateDevice(existingDevice.id, {
+          clientId: client.id,
           lastSeenAt: new Date(),
         });
-        return { user, device: existingDevice };
+        return { client, device: existingDevice };
       } else {
         // 新規デバイス登録
-        const deviceDbId = await userRepository.createDevice({
+        const deviceDbId = await clientRepository.createDevice({
           deviceId,
-          userId: user.id,
+          clientId: client.id,
           lastSeenAt: new Date(),
         });
 
-        const device = await userRepository.getDeviceById(deviceDbId);
+        const device = await clientRepository.getDeviceById(deviceDbId);
         if (!device) throw new Error("Failed to create device");
 
-        return { user, device };
+        return { client, device };
       }
     });
   }
@@ -69,31 +71,31 @@ export class AuthService {
   /**
    * ユーザー登録（メールアドレス登録）
    */
-  async registerUser(params: {
+  async registerClient(params: {
     deviceId: string;
     email: string;
     name?: string;
-  }): Promise<User> {
-    const device = await userRepository.getDeviceByDeviceId(params.deviceId);
-    if (!device || !device.userId)
-      throw new Error("Device or userId not found");
+  }): Promise<Client> {
+    const device = await clientRepository.getDeviceByDeviceId(params.deviceId);
+    if (!device || !device.clientId)
+      throw new Error("Device or clientId not found");
 
-    const user = await userRepository.getUserById(device.userId);
-    if (!user) throw new Error("User not found");
+    const client = await clientRepository.getClientById(device.clientId);
+    if (!client) throw new Error("Client not found");
 
-    if (user.isRegistered) {
-      throw new Error("User already registered");
+    if (client.isRegistered) {
+      throw new Error("Client already registered");
     }
 
-    await userRepository.updateUser(user.id, {
+    await clientRepository.updateClient(client.id, {
       email: params.email,
       name: params.name,
       isRegistered: true,
       lastLoginAt: new Date(),
     });
 
-    const updated = await userRepository.getUserById(user.id);
-    if (!updated) throw new Error("Failed to update user");
+    const updated = await clientRepository.getClientById(client.id);
+    if (!updated) throw new Error("Failed to update client");
 
     return updated;
   }

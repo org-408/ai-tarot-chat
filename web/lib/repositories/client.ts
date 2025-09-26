@@ -1,65 +1,63 @@
-import type { Device, User } from "@/../shared/lib/types";
+import type { Client, Device } from "@/../shared/lib/types";
 import { Prisma } from "@prisma/client";
 import { BaseRepository } from "./base";
 
-export class UserRepository extends BaseRepository {
-  // ==================== User ====================
-  async createUser(
-    user: Omit<User, "id" | "createdAt" | "updatedAt">
+export class ClientRepository extends BaseRepository {
+  // ==================== Client ====================
+  async createClient(
+    client: Omit<Client, "id" | "createdAt" | "updatedAt">
   ): Promise<string> {
-    const created = await this.db.user.create({
+    const created = await this.db.client.create({
       data: {
-        name: user.name,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        image: user.image,
-        deletedAt: user.deletedAt,
-        planId: user.planId,
-        dailyReadingsCount: user.dailyReadingsCount,
-        lastReadingDate: user.lastReadingDate,
-        dailyCelticsCount: user.dailyCelticsCount,
-        lastCelticReadingDate: user.lastCelticReadingDate,
-        dailyPersonalCount: user.dailyPersonalCount,
-        lastPersonalReadingDate: user.lastPersonalReadingDate,
-        isRegistered: user.isRegistered,
-        lastLoginAt: user.lastLoginAt,
+        name: client.name,
+        userId: client.userId,
+        deletedAt: client.deletedAt,
+        planId: client.planId,
+        dailyReadingsCount: client.dailyReadingsCount,
+        lastReadingDate: client.lastReadingDate,
+        dailyCelticsCount: client.dailyCelticsCount,
+        lastCelticReadingDate: client.lastCelticReadingDate,
+        dailyPersonalCount: client.dailyPersonalCount,
+        lastPersonalReadingDate: client.lastPersonalReadingDate,
+        isRegistered: client.isRegistered,
+        lastLoginAt: client.lastLoginAt,
       },
     });
 
     return created.id;
   }
 
-  async getUserById(id: string): Promise<User | null> {
-    return await this.db.user.findUnique({
+  async getClientById(id: string): Promise<Client | null> {
+    return await this.db.client.findUnique({
       where: { id, deletedAt: null },
     });
   }
 
-  async getUserByEmail(email: string): Promise<User | null> {
-    return await this.db.user.findUnique({
+  async getClientByEmail(email: string): Promise<Client | null> {
+    return await this.db.client.findUnique({
       where: { email, deletedAt: null },
     });
   }
 
-  async updateUser(
+  async updateClient(
     id: string,
-    updates: Prisma.UserUncheckedUpdateInput
+    updates: Prisma.ClientUncheckedUpdateInput
   ): Promise<void> {
-    await this.db.user.update({
+    await this.db.client.update({
       where: { id },
       data: updates,
     });
   }
 
-  async softDeleteUser(id: string): Promise<void> {
-    await this.db.user.update({
+  async softDeleteClient(id: string): Promise<void> {
+    await this.db.client.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
   }
 
-  async hardDeleteUser(id: string): Promise<void> {
-    await this.db.user.delete({
+  async hardDeleteClient(id: string): Promise<void> {
+    await this.db.client.delete({
       where: { id },
     });
   }
@@ -74,7 +72,7 @@ export class UserRepository extends BaseRepository {
     const created = await this.db.device.create({
       data: {
         deviceId: device.deviceId,
-        userId: device.userId,
+        clientId: device.clientId,
         platform: device.platform,
         appVersion: device.appVersion,
         osVersion: device.osVersion,
@@ -98,9 +96,9 @@ export class UserRepository extends BaseRepository {
     });
   }
 
-  async getDevicesByUserId(userId: string): Promise<Device[]> {
+  async getDevicesByClientId(clientId: string): Promise<Device[]> {
     return await this.db.device.findMany({
-      where: { userId },
+      where: { clientId },
       orderBy: { lastSeenAt: "desc" },
     });
   }
@@ -122,4 +120,4 @@ export class UserRepository extends BaseRepository {
   }
 }
 
-export const userRepository = new UserRepository();
+export const clientRepository = new ClientRepository();

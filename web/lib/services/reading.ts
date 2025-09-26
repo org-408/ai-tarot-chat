@@ -1,40 +1,40 @@
 import type { Reading, Spread, TarotCard } from "@/../shared/lib/types";
+import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
 import { readingRepository } from "@/lib/repositories/reading";
 import { spreadRepository } from "@/lib/repositories/spread";
 import { tarotRepository } from "@/lib/repositories/tarot";
-import { userRepository } from "@/lib/repositories/user";
 
 export class ReadingService {
   /**
    * 占い実行（ビジネスロジック）
    */
   async executeReading(params: {
-    userId: string;
+    clientId: string;
     deviceId: string;
     spreadId: string;
     categoryId: string;
     tarotistId: string;
   }): Promise<Reading> {
     // 1) ユーザー情報取得
-    const user = await userRepository.getUserById(params.userId);
-    if (!user) throw new Error("User not found");
+    const client = await clientRepository.getClientById(params.clientId);
+    if (!client) throw new Error("Client not found");
 
     // 2) プラン情報取得
-    const plan = await planRepository.getPlanById(user.planId);
+    const plan = await planRepository.getPlanById(client.planId);
     if (!plan) throw new Error("Plan not found");
 
     // 3) 利用制限チェック（ビジネスルール）
     const today = new Date().toISOString().split("T")[0];
-    const lastReading = user.lastReadingDate?.toISOString().split("T")[0];
+    const lastReading = client.lastReadingDate?.toISOString().split("T")[0];
 
     if (lastReading !== today) {
       // 日付が変わったらリセット
-      user.dailyReadingsCount = 0;
+      client.dailyReadingsCount = 0;
     }
 
-    if (user.dailyReadingsCount >= plan.maxReadings) {
+    if (client.dailyReadingsCount >= plan.maxReadings) {
       throw new Error("Daily reading limit exceeded");
     }
 
@@ -42,7 +42,7 @@ export class ReadingService {
     const spread = await spreadRepository.getSpreadById(params.spreadId);
     if (!spread) throw new Error("Spread not found");
     if (spread.code === "celtic_cross") {
-      if (user.dailyCelticsCount >= plan.maxCeltics) {
+      if (client.dailyCelticsCount >= plan.maxCeltics) {
         throw new Error("Daily Celtic cross limit exceeded");
       }
     }
@@ -52,7 +52,7 @@ export class ReadingService {
     return await prisma.$transaction(async (tx) => {
       // 占い結果保存
       const readingId = await readingRepository.createReading({
-        userId: params.userId,
+        clientId: params.clientId,
         deviceId: params.deviceId,
         tarotistId: params.tarotistId,
         spreadId: params.spreadId,
@@ -67,11 +67,11 @@ export class ReadingService {
       await this.drawRandomCards(readingId, cards, spread);
 
       // ユーザーの利用状況更新
-      await userRepository.updateUser(params.userId, {
-        dailyReadingsCount: user.dailyReadingsCount + 1,
+      await clientRepository.updateClient(params.clientId, {
+        dailyReadingsCount: client.dailyReadingsCount + 1,
         lastReadingDate: new Date(),
         ...(spread?.code === "celtic_cross" && {
-          dailyCelticsCount: user.dailyCelticsCount + 1,
+          dailyCelticsCount: client.dailyCelticsCount + 1,
           lastCelticReadingDate: new Date(),
         }),
       });
@@ -87,11 +87,11 @@ export class ReadingService {
   /**
    * 占い履歴取得（ビジネスロジック）
    */
-  async getReadingHistory(userId: string, limit = 20): Promise<Reading[]> {
-    const user = await userRepository.getUserById(userId);
-    if (!user) throw new Error("User not found");
+  async getReadingHistory(clientId: string, limit = 20): Promise<Reading[]> {
+    const client = await clientRepository.getClientById(clientId);
+    if (!client) throw new Error("Client not found");
 
-    const plan = await planRepository.getPlanById(user.planId);
+    const plan = await planRepository.getPlanById(client.planId);
     if (!plan) throw new Error("Plan not found");
 
     // プランに履歴機能がない場合はエラー
@@ -99,30 +99,30 @@ export class ReadingService {
       throw new Error("History feature not available in current plan");
     }
 
-    return await readingRepository.getReadingsByUserId(userId, limit);
+    return await readingRepository.getReadingsByClientId(clientId, limit);
   }
 
   /**
    * 今日の残り回数取得
    */
-  async getRemainingReadings(userId: string): Promise<{
+  async getRemainingReadings(clientId: string): Promise<{
     remainingReadings: number;
     remainingCeltics: number;
     remainingPersonal: number;
   }> {
-    const user = await userRepository.getUserById(userId);
-    if (!user) throw new Error("User not found");
+    const client = await clientRepository.getClientById(clientId);
+    if (!client) throw new Error("Client not found");
 
-    const plan = await planRepository.getPlanById(user.planId);
+    const plan = await planRepository.getPlanById(client.planId);
     if (!plan) throw new Error("Plan not found");
 
     const today = new Date().toISOString().split("T")[0];
-    const lastReading = user.lastReadingDate?.toISOString().split("T")[0];
+    const lastReading = client.lastReadingDate?.toISOString().split("T")[0];
 
     // 日付が変わっていればリセット
-    const dailyCount = lastReading === today ? user.dailyReadingsCount : 0;
-    const celticCount = lastReading === today ? user.dailyCelticsCount : 0;
-    const personalCount = lastReading === today ? user.dailyPersonalCount : 0;
+    const dailyCount = lastReading === today ? client.dailyReadingsCount : 0;
+    const celticCount = lastReading === today ? client.dailyCelticsCount : 0;
+    const personalCount = lastReading === today ? client.dailyPersonalCount : 0;
 
     return {
       remainingReadings: Math.max(0, plan.maxReadings - dailyCount),

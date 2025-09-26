@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./base";
 export * from "./chat";
+export * from "./client";
 export * from "./database";
 export * from "./favorite";
 export * from "./plan";
@@ -8,4 +9,3 @@ export * from "./reading";
 export * from "./spread";
 export * from "./tarot";
 export * from "./tarotist";
-export * from "./user";

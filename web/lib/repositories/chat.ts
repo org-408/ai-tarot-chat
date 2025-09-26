@@ -5,12 +5,12 @@ export class ChatRepository extends BaseRepository {
   async createChatMessage(
     message: Omit<
       ChatMessage,
-      "id" | "createdAt" | "user" | "device" | "tarotist" | "reading"
+      "id" | "createdAt" | "client" | "device" | "tarotist" | "reading"
     >
   ): Promise<string> {
     const created = await this.db.chatMessage.create({
       data: {
-        userId: message.userId,
+        clientId: message.clientId,
         deviceId: message.deviceId,
         tarotistId: message.tarotistId,
         chatType: message.chatType,
@@ -28,18 +28,18 @@ export class ChatRepository extends BaseRepository {
       where: { readingId },
       orderBy: { createdAt: "asc" },
       include: {
-        user: true,
+        client: true,
         tarotist: true,
       },
     });
   }
 
-  async getMessagesByUserId(
-    userId: string,
+  async getMessagesByClientId(
+    clientId: string,
     limit = 100
   ): Promise<ChatMessage[]> {
     return await this.db.chatMessage.findMany({
-      where: { userId },
+      where: { clientId },
       orderBy: { createdAt: "desc" },
       take: limit,
     });
