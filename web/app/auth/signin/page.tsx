@@ -5,7 +5,7 @@ import { Suspense } from "react";
 interface SearchParams {
   callbackUrl?: string;
   error?: string;
-  isTauri?: string;
+  isMobile?: string;
 }
 
 // ローディング用のスケルトン
@@ -42,7 +42,7 @@ export default async function SignInPage({
 
   // 既にログイン済みの場合の処理
   // if (session) {
-  //   if (params.isTauri) {
+  //   if (params.isMobile) {
   //     return redirect(
   //       `/auth/tauri-callback?success=true&user=${encodeURIComponent(
   //         JSON.stringify(session.user)
@@ -110,7 +110,7 @@ export default async function SignInPage({
 
           {/* サインインフォーム */}
           <Suspense fallback={<LoadingSkeleton />}>
-            <SignInForm error={params.error} isTauri={!!params.isTauri} />
+            <SignInForm error={params.error} isMobileApp={!!params.isMobile} />
           </Suspense>
 
           {/* 信頼性の表示 */}

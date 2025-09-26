@@ -5,11 +5,6 @@ import { Loader2, Monitor, Shield, Smartphone } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-interface SignInFormProps {
-  error?: string;
-  isTauri?: boolean;
-}
-
 const errorMessages = {
   Signin: "サインインに失敗しました。もう一度お試しください。",
   OAuthSignin: "OAuth認証に失敗しました。",
@@ -147,18 +142,18 @@ const AppleSignInButton = ({
 
 // プラットフォーム情報表示
 const PlatformInfo = ({
-  isTauri,
+  isMobileApp,
   isMobile,
 }: {
-  isTauri: boolean;
+  isMobileApp: boolean;
   isMobile: boolean;
 }) => {
-  if (!isTauri && !isMobile) return null;
+  if (!isMobileApp && !isMobile) return null;
 
   return (
     <div className="flex items-center justify-center gap-2 text-white/80 text-sm">
       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-      {isTauri ? (
+      {isMobileApp ? (
         <>
           <Smartphone className="h-4 w-4" />
           <span>モバイルアプリ版</span>
@@ -178,7 +173,12 @@ const PlatformInfo = ({
   );
 };
 
-export function SignInForm({ error, isTauri }: SignInFormProps) {
+interface SignInFormProps {
+  error?: string;
+  isMobileApp?: boolean;
+}
+
+export function SignInForm({ error, isMobileApp }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const { isMobile } = useDeviceDetection();
@@ -190,10 +190,15 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
     setActiveProvider(provider);
 
     try {
-      await signIn(provider, {
-        callbackUrl: isTauri ? "/auth/tauri-callback" : "/dashboard",
-        redirect: true,
-      });
+      await signIn(
+        provider,
+        isMobileApp
+          ? {
+              callbackUrl: "/dashboard",
+              redirect: true,
+            }
+          : undefined
+      );
     } catch (error) {
       console.error("Sign in error:", error);
       // エラー時のみリセット
@@ -242,7 +247,7 @@ export function SignInForm({ error, isTauri }: SignInFormProps) {
 
       {/* フッター情報 */}
       <div className="mt-8 space-y-3 text-center">
-        <PlatformInfo isTauri={!!isTauri} isMobile={isMobile} />
+        <PlatformInfo isMobileApp={!!isMobileApp} isMobile={isMobile} />
 
         <p className="text-xs text-white/70 leading-relaxed">
           サインインすることで、
