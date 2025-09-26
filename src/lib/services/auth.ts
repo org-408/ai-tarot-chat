@@ -1,3 +1,4 @@
+import { authenticate } from "tauri-plugin-web-auth-api";
 import { storeRepository } from "../repositories/store";
 
 /**
@@ -11,6 +12,41 @@ export class AuthService {
     REFRESH_TOKEN: "refreshToken",
     USER_ID: "userId",
   } as const;
+
+  async signInWithWeb(
+    url: string = "http://localhost:3000",
+    callbackScheme: string = "aitarotchat"
+  ) {
+    const authUrl = new URL("/auth/signin?isMobile=true", url).toString();
+    console.log("Starting web authentication with URL:", authUrl);
+    try {
+      const result = await authenticate({
+        url: authUrl,
+        callbackScheme,
+      });
+
+      const callbackUrl = new URL(result.callbackUrl);
+      const jwt = callbackUrl.searchParams.get("token");
+      const userId = callbackUrl.searchParams.get("userId");
+
+      if (!jwt) {
+        throw new Error("認証トークンが取得できませんでした");
+      }
+
+      // JWTを保存
+      // await this.saveAuthToken(jwt);
+
+      // return {
+      //   jwt,
+      //   userId,
+      //   success: true,
+      // };
+      console.log("認証成功:", { jwt, userId });
+    } catch (error) {
+      console.error("Web認証エラー:", error);
+      throw error;
+    }
+  }
 
   /**
    * デバイスIDを取得（なければ生成）

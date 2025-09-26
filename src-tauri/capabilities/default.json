@@ -3,5 +3,10 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": ["main"],
-  "permissions": ["core:default", "store:default", "web-auth:default"]
+  "permissions": [
+    "core:default",
+    "store:default",
+    "web-auth:default",
+    "web-auth:allow-authenticate"
+  ]
 }

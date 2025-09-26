@@ -41,6 +41,16 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -52,8 +62,8 @@ model VerificationToken {
 model Device {
   id         String   @id @default(cuid())
   deviceId   String   @unique           // アプリ初回起動で生成したUUIDを保存
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId   String?
+  client     Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   platform   String?
   appVersion String?
@@ -68,11 +78,11 @@ model Device {
   readings   Reading[]
   chatMessages ChatMessage[]
 
-  @@index([userId])
+  @@index([clientId])
   @@index([lastSeenAt])
 }
 
-model User {
+model Client {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
@@ -102,10 +112,6 @@ model User {
   // ユーザー状態
   isRegistered Boolean  @default(false)
   lastLoginAt  DateTime?
-
-  // Auth.js 5.0 関連
-  accounts Account[]
-  sessions Session[]
 
   // お気に入りスプレッド
   favoriteSpreads FavoriteSpread[]
@@ -272,7 +278,7 @@ model Plan {
   updatedAt   DateTime  @updatedAt
 
   // 関連
-  users       User[]
+  clients     Client[]
   spreads     Spread[]  // このプランで利用可能なスプレッド
   planChangeHistories PlanChangeHistory[] @relation("FromPlan")
 }
@@ -284,8 +290,8 @@ model Plan {
 // プラン履歴モデル
 model PlanChangeHistory {
   id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  clientId    String
+  client      Client      @relation(fields: [clientId], references: [id])
   planId  String
   plan    Plan      @relation("FromPlan", fields: [planId], references: [id])
   changedAt   DateTime  @default(now())
@@ -309,8 +315,8 @@ model Tarotist {
 // リーディングモデル
 model Reading {
   id            String    @id @default(cuid())
-  userId        String?
-  user          User?     @relation(fields: [userId], references: [id])
+  clientId      String?
+  client        Client?     @relation(fields: [clientId], references: [id])
   deviceId      String
   device        Device    @relation(fields: [deviceId], references: [id])
   tarotistId    String
@@ -359,8 +365,8 @@ enum ChatRole {
 // チャットメッセージモデル - カード解釈・質問応答の履歴
 model ChatMessage {
   id        String   @id @default(cuid())
-  userId    String?
-  user      User?     @relation(fields: [userId], references: [id])
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id])
   deviceId  String
   device    Device   @relation(fields: [deviceId], references: [id])
   tarotistId String
@@ -376,10 +382,10 @@ model ChatMessage {
 // お気に入りスプレッドモデル
 model FavoriteSpread {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
   spreadId  String
   spread    Spread   @relation(fields: [spreadId], references: [id])
   createdAt DateTime @default(now())
-  @@unique([userId, spreadId])
+  @@unique([clientId, spreadId])
 }

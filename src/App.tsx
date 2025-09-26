@@ -9,6 +9,7 @@ import PremiumPage from "./components/PremiumPage";
 import StandardPage from "./components/StandardPage";
 import { useTauriAuth } from "./hooks/useTauriAuth";
 import { initializeApp } from "./lib/init";
+import { AuthService } from "./lib/services/auth";
 import { PageType, PlanFeatures, UserPlan } from "./types";
 
 function App() {
@@ -122,8 +123,16 @@ function App() {
 
   // ログイン処理
   const handleLogin = async () => {
-    const success = await signIn();
+    console.log("ログイン開始");
+    const authService = new AuthService();
+    const bffUrl = import.meta.env.VITE_BFF_URL;
+    const deepLinkScheme = import.meta.env.VITE_DEEP_LINK_SCHEME;
+    console.log("BFF URL:", bffUrl);
+    console.log("Deep Link Scheme:", deepLinkScheme);
+    const success = await authService.signInWithWeb(bffUrl, deepLinkScheme);
     console.log("ログイン結果:", success);
+    // const success = await signIn();
+    // console.log("ログイン結果:", success);
     // if (success) {
     //   await loadPlanInfo(); // ログイン成功後、プラン情報を更新
     // }

@@ -16,17 +16,6 @@
         "title": "AiTarotChat - AIタロット占い",
         "width": 800,
         "height": 600
-      },
-      {
-        "label": "splashscreen",
-        "title": "Loading...",
-        "url": "/splashscreen",
-        "width": 800,
-        "height": 600,
-        "transparent": true,
-        "decorations": false,
-        "alwaysOnTop": true,
-        "resizable": false
       }
     ],
     "security": {

@@ -190,15 +190,10 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
     setActiveProvider(provider);
 
     try {
-      await signIn(
-        provider,
-        isMobileApp
-          ? {
-              callbackUrl: "/dashboard",
-              redirect: true,
-            }
-          : undefined
-      );
+      await signIn(provider, {
+        callbackUrl: isMobileApp ? "/auth/mobile/callback" : "/dashboard",
+        redirect: true,
+      });
     } catch (error) {
       console.error("Sign in error:", error);
       // エラー時のみリセット
