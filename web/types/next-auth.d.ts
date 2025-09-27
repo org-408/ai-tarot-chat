@@ -8,6 +8,8 @@ declare module "next-auth" {
     user: {
       id: string;
     } & DefaultSession["user"];
+    // Apple用の追加情報
+    idToken?: string;
   }
 
   interface JWT {
