@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
 import { SignInForm } from "@/components/auth/signin-form";
+import { authService } from "@/lib/services/auth";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
@@ -9,7 +9,6 @@ interface SearchParams {
   isMobile?: string;
 }
 
-// ローディング用のスケルトン
 const LoadingSkeleton = () => (
   <div className="space-y-3">
     <div className="w-full h-12 bg-white/20 rounded-lg animate-pulse"></div>
@@ -17,7 +16,6 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-// 星の生成関数
 const generateStars = () => {
   return Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -33,21 +31,21 @@ export default async function SignInPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const session = await auth();
   const params = await searchParams;
-
-  console.log("Current session:", session);
-  console.log("Search Params:", params);
-
   const stars = generateStars();
 
   // 既にログイン済みの場合の処理
-  if (session) {
-    if (params.isMobile) {
+  const isAuthenticated = await authService.isStrictlyAuthenticated();
+  if (isAuthenticated) {
+    // isMobile="true" の場合のみモバイルコールバックへ
+    if (params.isMobile === "true") {
       return redirect("/auth/mobile/callback?success=true");
     }
     return redirect(params.callbackUrl || "/dashboard");
   }
+
+  // isMobileApp: モバイルアプリかどうか（内部的な変数名）
+  const isMobileApp = params.isMobile === "true";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4">
@@ -72,7 +70,6 @@ export default async function SignInPage({
         ))}
       </div>
 
-      {/* CSSアニメーション */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -85,9 +82,7 @@ export default async function SignInPage({
       />
 
       <div className="relative w-full max-w-md">
-        {/* メインカード */}
         <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30">
-          {/* ヘッダー */}
           <div className="text-center mb-8">
             <div className="text-7xl mb-6 filter drop-shadow-lg">🔮</div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-3">
@@ -97,7 +92,6 @@ export default async function SignInPage({
               AIと対話するタロット占い
             </p>
 
-            {/* 装飾的な区切り線 */}
             <div className="flex items-center justify-center gap-2 mt-6 mb-2">
               <div className="w-8 h-px bg-gradient-to-r from-transparent to-white/40"></div>
               <div className="w-2 h-2 bg-white/50 rounded-full"></div>
@@ -105,12 +99,10 @@ export default async function SignInPage({
             </div>
           </div>
 
-          {/* サインインフォーム */}
           <Suspense fallback={<LoadingSkeleton />}>
-            <SignInForm error={params.error} isMobileApp={!!params.isMobile} />
+            <SignInForm error={params.error} isMobileApp={isMobileApp} />
           </Suspense>
 
-          {/* 信頼性の表示 */}
           <div className="mt-8 flex items-center justify-center gap-6 text-white/60 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-400 rounded-full"></div>
@@ -123,7 +115,6 @@ export default async function SignInPage({
           </div>
         </div>
 
-        {/* サブテキスト */}
         <div className="text-center mt-6 text-white/50 text-sm">
           <p>数千年の叡智と最新AI技術の融合</p>
           <p className="mt-1">あなただけの運命を照らします</p>

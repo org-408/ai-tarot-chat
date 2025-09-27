@@ -26,10 +26,9 @@ export class AuthService {
       });
 
       const callbackUrl = new URL(result.callbackUrl);
-      const jwt = callbackUrl.searchParams.get("token");
-      const userId = callbackUrl.searchParams.get("userId");
+      const ticket = callbackUrl.searchParams.get("ticket");
 
-      if (!jwt) {
+      if (!ticket) {
         throw new Error("認証トークンが取得できませんでした");
       }
 
@@ -41,7 +40,7 @@ export class AuthService {
       //   userId,
       //   success: true,
       // };
-      console.log("認証成功:", { jwt, userId });
+      console.log("認証成功:", { ticket });
     } catch (error) {
       console.error("Web認証エラー:", error);
       throw error;

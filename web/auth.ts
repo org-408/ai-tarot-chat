@@ -9,22 +9,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Google, Apple],
   callbacks: {
     async jwt({ token, account, user }) {
-      // 必要なら provider の種別だけ覚えておく（任意）
-      if (account?.provider) token.provider = account.provider;
-      if (user?.id) token.uid = user.id; // Prisma Adapter 経由
+      // プロバイダー情報を保存
+      if (account?.provider) {
+        token.provider = account.provider;
+      }
+
+      // ユーザーIDを保存（初回ログイン時）
+      if (user?.id) {
+        token.id = user.id; // ← 統一: token.id
+      }
+
       return token;
     },
+
     async session({ session, token }) {
-      session.provider = token.provider as string;
-      session.userId = token.userId as string;
+      // プロバイダー情報をセッションに追加
+      if (token.provider) {
+        session.provider = token.provider as string;
+      }
+
+      // ユーザーIDをセッションに追加
+      if (token.id && session.user) {
+        session.user.id = token.id as string; // ← 統一: session.user.id
+      }
+
       return session;
     },
+
     async redirect({ url, baseUrl }) {
-      // 既存のフロー維持：/auth/mobile/callback 経由
+      // callbackUrl が指定されている場合はそれを優先
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
       if (url.startsWith(baseUrl)) return url;
-      return baseUrl;
+
+      // それ以外はデフォルト
+      return `${baseUrl}/dashboard`;
     },
   },
+
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30日

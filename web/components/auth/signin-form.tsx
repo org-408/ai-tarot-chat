@@ -18,7 +18,6 @@ const errorMessages = {
   default: "認証中にエラーが発生しました。",
 };
 
-// デバイス判定
 const useDeviceDetection = () => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -40,7 +39,6 @@ const useDeviceDetection = () => {
   return { isMobile };
 };
 
-// Google Sign-In 公式ボタン
 const GoogleSignInButton = ({
   isLoading,
   onClick,
@@ -95,7 +93,6 @@ const GoogleSignInButton = ({
   </button>
 );
 
-// Apple Sign-In 公式ボタン
 const AppleSignInButton = ({
   isLoading,
   onClick,
@@ -140,7 +137,6 @@ const AppleSignInButton = ({
   </button>
 );
 
-// プラットフォーム情報表示
 const PlatformInfo = ({
   isMobileApp,
   isMobile,
@@ -190,13 +186,15 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
     setActiveProvider(provider);
 
     try {
+      // パスで判別できるので、パラメータ不要
+      const callbackUrl = isMobileApp ? "/auth/mobile/callback" : "/dashboard";
+
       await signIn(provider, {
-        callbackUrl: isMobileApp ? "/auth/mobile/callback" : "/dashboard",
+        callbackUrl,
         redirect: true,
       });
     } catch (error) {
       console.error("Sign in error:", error);
-      // エラー時のみリセット
       setIsLoading(false);
       setActiveProvider(null);
     }
@@ -228,7 +226,6 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
         />
       </div>
 
-      {/* セキュリティ表示 */}
       <div className="mt-6 flex items-center justify-center gap-6 text-white/60 text-sm">
         <div className="flex items-center gap-2">
           <Shield className="w-3 h-3 text-green-400" />
@@ -240,7 +237,6 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
         </div>
       </div>
 
-      {/* フッター情報 */}
       <div className="mt-8 space-y-3 text-center">
         <PlatformInfo isMobileApp={!!isMobileApp} isMobile={isMobile} />
 

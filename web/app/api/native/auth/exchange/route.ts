@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const { ticket } = await req.json().catch(() => ({}));
   if (!ticket) return new Response("invalid", { status: 400 });
 
-  const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
+  const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
 
   try {
     const { payload } = await jwtVerify(ticket, secret, { algorithms: [ALG] });

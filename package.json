@@ -18,7 +18,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.13",
-    "tauri-plugin-web-auth-api": "^1.0.0"
+    "tauri-plugin-web-auth-api": "^1.0.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

@@ -1,9 +1,22 @@
 import type { Client, Device } from "@/../shared/lib/types";
+import { auth } from "@/auth";
+import { authRepository } from "@/lib/repositories/auth";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
 
 export class AuthService {
+  // 「厳密ログイン判定」：User.id があり、かつ Account が1件以上ある
+  async isStrictlyAuthenticated() {
+    const session = await auth();
+    const uid = session?.user?.id;
+    if (!uid) return false;
+
+    // まれに Cookie はあるが Account が切れているケースを除外
+    const accounts = await authRepository.getAccountsByUserId(uid);
+    return Boolean(accounts.length > 0);
+  }
+
   /**
    * デバイス連携（初回起動時）
    */
