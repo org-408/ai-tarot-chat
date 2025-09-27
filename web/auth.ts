@@ -8,38 +8,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [Google, Apple],
   callbacks: {
-    async jwt({ token, account, profile }) {
-      if (account) {
-        // 👇 重要！プロバイダーごとに異なるトークンを使う
-        if (account.provider === "apple") {
-          token.accessToken = account.id_token; // 👈 id_tokenを使う
-          token.appleIdToken = account.id_token;
-        } else {
-          token.accessToken = account.access_token;
-        }
-
-        token.provider = account.provider;
-        token.userId = account.providerAccountId;
-
-        // Apple: 初回のみユーザー情報が来る
-        if (account.provider === "apple" && profile) {
-          token.email = profile.email || token.email;
-          token.name = profile.name || token.name;
-        }
-      }
+    async jwt({ token, account, user }) {
+      // 必要なら provider の種別だけ覚えておく（任意）
+      if (account?.provider) token.provider = account.provider;
+      if (user?.id) token.uid = user.id; // Prisma Adapter 経由
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string;
       session.provider = token.provider as string;
       session.userId = token.userId as string;
-
-      // Apple用の追加情報
-      if (token.provider === "apple") {
-        session.idToken = token.appleIdToken as string;
-      }
-
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // 既存のフロー維持：/auth/mobile/callback 経由
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
     },
   },
   session: {

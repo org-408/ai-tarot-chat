@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { SignInForm } from "@/components/auth/signin-form";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 interface SearchParams {
@@ -41,16 +42,12 @@ export default async function SignInPage({
   const stars = generateStars();
 
   // 既にログイン済みの場合の処理
-  // if (session) {
-  //   if (params.isMobile) {
-  //     return redirect(
-  //       `/auth/tauri-callback?success=true&user=${encodeURIComponent(
-  //         JSON.stringify(session.user)
-  //       )}`
-  //     );
-  //   }
-  //   return redirect(params.callbackUrl || "/dashboard");
-  // }
+  if (session) {
+    if (params.isMobile) {
+      return redirect("/auth/mobile/callback?success=true");
+    }
+    return redirect(params.callbackUrl || "/dashboard");
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4">
