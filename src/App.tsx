@@ -123,22 +123,24 @@ function App() {
 
   // ログイン処理
   const handleLogin = async () => {
-    console.log("ログイン開始");
-    const authService = new AuthService();
-    const bffUrl = import.meta.env.VITE_BFF_URL;
-    const deepLinkScheme = import.meta.env.VITE_DEEP_LINK_SCHEME;
-    console.log("BFF URL:", bffUrl);
-    console.log("Deep Link Scheme:", deepLinkScheme);
-    const success = await authService.signInWithWeb(bffUrl, deepLinkScheme);
-    console.log("ログイン結果:", success);
-    // const success = await signIn();
-    // console.log("ログイン結果:", success);
-    // if (success) {
-    //   await loadPlanInfo(); // ログイン成功後、プラン情報を更新
-    // }
-    // await startOAuth();
-  };
+    try {
+      console.log("🔐 ログイン開始");
+      const authService = new AuthService();
+      const bffUrl = import.meta.env.VITE_BFF_URL;
+      const deepLinkScheme = import.meta.env.VITE_DEEP_LINK_SCHEME;
 
+      // Web認証 + JWT交換まで完了
+      const result = await authService.signInWithWeb(bffUrl, deepLinkScheme);
+      console.log("✅ ログイン成功:", result);
+
+      if (result.success) {
+        // ログイン成功後、プラン情報を再取得
+        await loadPlanInfo();
+      }
+    } catch (error) {
+      console.error("❌ ログイン失敗:", error);
+    }
+  };
   // ナビゲーション用ページ変更関数
   const handlePageChange = (page: PageType) => {
     setPageType(page);

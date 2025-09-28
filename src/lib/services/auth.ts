@@ -18,8 +18,10 @@ export class AuthService {
     callbackScheme: string = "aitarotchat"
   ) {
     const authUrl = new URL("/auth/signin?isMobile=true", url).toString();
-    console.log("Starting web authentication with URL:", authUrl);
+    console.log("🔐 Web認証開始:", authUrl);
+
     try {
+      // 1. Web認証でチケット取得
       const result = await authenticate({
         url: authUrl,
         callbackScheme,
@@ -32,17 +34,38 @@ export class AuthService {
         throw new Error("認証トークンが取得できませんでした");
       }
 
-      // JWTを保存
-      // await this.saveAuthToken(jwt);
+      console.log("🎫 チケット取得成功");
 
-      // return {
-      //   jwt,
-      //   userId,
-      //   success: true,
-      // };
-      console.log("認証成功:", { ticket });
+      // 2. チケットをJWTに交換
+      const exchangeUrl = new URL("/api/native/exchange", url).toString();
+      console.log("🔄 JWT交換リクエスト:", exchangeUrl);
+
+      const exchangeResponse = await fetch(exchangeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ticket }),
+      });
+
+      if (!exchangeResponse.ok) {
+        throw new Error(`JWT交換失敗: ${exchangeResponse.status}`);
+      }
+
+      const { token: jwt, userId } = await exchangeResponse.json();
+      console.log("✅ JWT取得成功 (userId:", userId, ")");
+
+      // 3. JWT と userId を保存
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, jwt);
+      await storeRepository.set(this.KEYS.USER_ID, userId);
+
+      return {
+        success: true,
+        jwt,
+        userId,
+      };
     } catch (error) {
-      console.error("Web認証エラー:", error);
+      console.error("❌ Web認証エラー:", error);
       throw error;
     }
   }
