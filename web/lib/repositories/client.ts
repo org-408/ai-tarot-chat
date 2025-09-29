@@ -33,10 +33,38 @@ export class ClientRepository extends BaseRepository {
     });
   }
 
+  async getClientWithPlan(id: string): Promise<Client | null> {
+    const result = await this.db.client.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        plan: true,
+        user: true,
+      },
+    });
+
+    if (!result) return null;
+
+    return {
+      ...result,
+      plan: result.plan,
+      user: result.user,
+    } as Client;
+  }
+
   async getClientByEmail(email: string): Promise<Client | null> {
     return await this.db.client.findUnique({
       where: { email, deletedAt: null },
     });
+  }
+
+  async getClientByUserId(userId: string): Promise<Client | null> {
+    return (await this.db.client.findFirst({
+      where: { userId, deletedAt: null },
+      include: {
+        plan: true,
+        user: true,
+      },
+    })) as Client | null;
   }
 
   async updateClient(

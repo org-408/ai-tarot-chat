@@ -110,8 +110,8 @@ export class ReadingRepository extends BaseRepository {
     });
   }
 
-  // ==================== DrawCard ====================
-  async createDrawCard(
+  // ==================== DrawnCard ====================
+  async createDrawnCard(
     drawnCard: Omit<DrawnCard, "id" | "createdAt" | "reading" | "card">
   ): Promise<string> {
     const created = await this.db.drawnCard.create({
@@ -128,7 +128,7 @@ export class ReadingRepository extends BaseRepository {
     return created.id;
   }
 
-  async getDrawCardsByReadingId(readingId: string): Promise<DrawnCard[]> {
+  async getDrawnCardsByReadingId(readingId: string): Promise<DrawnCard[]> {
     return await this.db.drawnCard.findMany({
       where: { readingId },
       orderBy: { order: "asc" },
@@ -136,7 +136,7 @@ export class ReadingRepository extends BaseRepository {
     });
   }
 
-  async deleteDrawCardsByReadingId(readingId: string): Promise<void> {
+  async deleteDrawnCardsByReadingId(readingId: string): Promise<void> {
     await this.db.drawnCard.deleteMany({
       where: { readingId },
     });

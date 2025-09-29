@@ -10,47 +10,47 @@ export class FavoriteRepository extends BaseRepository {
 
     await this.db.execute(
       `INSERT INTO favorite_spreads (id, user_id, spread_id, created_at) VALUES (?, ?, ?, ?)`,
-      [id, favorite.userId, favorite.spreadId, now]
+      [id, favorite.clientId, favorite.spreadId, now]
     );
 
     return id;
   }
 
-  async getFavoritesByUserId(userId: string): Promise<FavoriteSpread[]> {
+  async getFavoritesByUserId(clientId: string): Promise<FavoriteSpread[]> {
     const rows = await this.db.select<any[]>(
       `SELECT * FROM favorite_spreads WHERE user_id = ? ORDER BY created_at DESC`,
-      [userId]
+      [clientId]
     );
 
     return rows.map((row) => this.mapRowToFavoriteSpread(row));
   }
 
-  async isFavorite(userId: string, spreadId: string): Promise<boolean> {
+  async isFavorite(clientId: string, spreadId: string): Promise<boolean> {
     const rows = await this.db.select<any[]>(
       `SELECT id FROM favorite_spreads WHERE user_id = ? AND spread_id = ?`,
-      [userId, spreadId]
+      [clientId, spreadId]
     );
 
     return rows.length > 0;
   }
 
-  async deleteFavorite(userId: string, spreadId: string): Promise<void> {
+  async deleteFavorite(clientId: string, spreadId: string): Promise<void> {
     await this.db.execute(
       `DELETE FROM favorite_spreads WHERE user_id = ? AND spread_id = ?`,
-      [userId, spreadId]
+      [clientId, spreadId]
     );
   }
 
-  async deleteFavoritesByUserId(userId: string): Promise<void> {
+  async deleteFavoritesByUserId(clientId: string): Promise<void> {
     await this.db.execute(`DELETE FROM favorite_spreads WHERE user_id = ?`, [
-      userId,
+      clientId,
     ]);
   }
 
   private mapRowToFavoriteSpread(row: any): FavoriteSpread {
     return {
       id: row.id,
-      userId: row.user_id,
+      clientId: row.user_id,
       spreadId: row.spread_id,
       createdAt: this.fromTimestamp(row.created_at),
     };

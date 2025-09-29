@@ -1,35 +1,20 @@
-import { auth } from "@/auth";
-import { SignJWT } from "jose";
-
-const ALG = "HS256";
+import { authService } from "@/lib/services/auth";
 
 export async function GET() {
   console.log("📍 /api/native/auth/ticket - チケット発行リクエスト受信");
 
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    console.error("❌ 認証されていません");
-    return new Response("unauthorized", { status: 401 });
-  }
-
   try {
-    const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
+    // AuthService経由でチケット生成（既存パターンに合わせて）
+    const ticket = await authService.generateTicket();
 
-    // 30秒間有効なチケットを発行
-    const ticket = await new SignJWT({
-      t: "ticket",
-      sub: session.user.id,
-    })
-      .setProtectedHeader({ alg: ALG })
-      .setIssuedAt()
-      .setExpirationTime("30s")
-      .sign(secret);
-
-    console.log(`✅ チケット発行成功 (userId: ${session.user.id})`);
     return Response.json({ ticket });
   } catch (error) {
     console.error("❌ チケット発行エラー:", error);
-    return new Response("ticket generation failed", { status: 500 });
+
+    const errorMessage =
+      error instanceof Error ? error.message : "ticket generation failed";
+    const statusCode = errorMessage.includes("Not authenticated") ? 401 : 500;
+
+    return new Response(errorMessage, { status: statusCode });
   }
 }

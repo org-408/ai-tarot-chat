@@ -1,4 +1,4 @@
-import type { DrawCard, Reading } from "@/../shared/lib/types";
+import type { DrawnCard, Reading } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class ReadingRepository extends BaseRepository {
@@ -15,7 +15,7 @@ export class ReadingRepository extends BaseRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        reading.userId ?? null,
+        reading.clientId ?? null,
         reading.deviceId,
         reading.tarotistId,
         reading.spreadId,
@@ -40,13 +40,13 @@ export class ReadingRepository extends BaseRepository {
   }
 
   async getReadingsByUserId(
-    userId: string,
+    clientId: string,
     limit = 20,
     offset = 0
   ): Promise<Reading[]> {
     const rows = await this.db.select<any[]>(
       `SELECT * FROM readings WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [userId, limit, offset]
+      [clientId, limit, offset]
     );
 
     return rows.map((row) => this.mapRowToReading(row));
@@ -90,20 +90,20 @@ export class ReadingRepository extends BaseRepository {
   private mapRowToReading(row: any): Reading {
     return {
       id: row.id,
-      userId: row.user_id,
+      clientId: row.user_id,
       deviceId: row.device_id,
       tarotistId: row.tarotist_id,
       spreadId: row.spread_id,
       categoryId: row.category_id,
-      cards: this.parseJSON<DrawCard[]>(row.cards),
+      cards: this.parseJSON<DrawnCard[]>(row.cards),
       createdAt: this.fromTimestamp(row.created_at),
       updatedAt: this.fromTimestamp(row.updated_at),
     };
   }
 
-  // ==================== DrawCard ====================
-  async createDrawCard(
-    drawCard: Omit<DrawCard, "id" | "createdAt">
+  // ==================== DrawnCard ====================
+  async createDrawnCard(
+    DrawnCard: Omit<DrawnCard, "id" | "createdAt">
   ): Promise<string> {
     const id = crypto.randomUUID();
     const now = Date.now();
@@ -114,12 +114,12 @@ export class ReadingRepository extends BaseRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        drawCard.readingId,
-        drawCard.cardId,
-        drawCard.x,
-        drawCard.y,
-        this.boolToInt(drawCard.isReversed),
-        drawCard.order,
+        DrawnCard.readingId,
+        DrawnCard.cardId,
+        DrawnCard.x,
+        DrawnCard.y,
+        this.boolToInt(DrawnCard.isReversed),
+        DrawnCard.order,
         now,
       ]
     );
@@ -127,22 +127,22 @@ export class ReadingRepository extends BaseRepository {
     return id;
   }
 
-  async getDrawCardsByReadingId(readingId: string): Promise<DrawCard[]> {
+  async getDrawnCardsByReadingId(readingId: string): Promise<DrawnCard[]> {
     const rows = await this.db.select<any[]>(
       `SELECT * FROM draw_cards WHERE reading_id = ? ORDER BY "order" ASC`,
       [readingId]
     );
 
-    return rows.map((row) => this.mapRowToDrawCard(row));
+    return rows.map((row) => this.mapRowToDrawnCard(row));
   }
 
-  async deleteDrawCardsByReadingId(readingId: string): Promise<void> {
+  async deleteDrawnCardsByReadingId(readingId: string): Promise<void> {
     await this.db.execute(`DELETE FROM draw_cards WHERE reading_id = ?`, [
       readingId,
     ]);
   }
 
-  private mapRowToDrawCard(row: any): DrawCard {
+  private mapRowToDrawnCard(row: any): DrawnCard {
     return {
       id: row.id,
       readingId: row.reading_id,

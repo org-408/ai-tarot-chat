@@ -161,16 +161,16 @@ export class PlanRepository extends BaseRepository {
     await this.db.execute(
       `INSERT INTO plan_change_histories (id, user_id, plan_id, changed_at)
        VALUES (?, ?, ?, ?)`,
-      [id, history.userId, history.planId, now]
+      [id, history.clientId, history.planId, now]
     );
 
     return id;
   }
 
-  async getHistoryByUserId(userId: string): Promise<PlanChangeHistory[]> {
+  async getHistoryByUserId(clientId: string): Promise<PlanChangeHistory[]> {
     const rows = await this.db.select<any[]>(
       `SELECT * FROM plan_change_histories WHERE user_id = ? ORDER BY changed_at DESC`,
-      [userId]
+      [clientId]
     );
 
     return rows.map((row) => this.mapRowToPlanChangeHistory(row));
@@ -179,7 +179,7 @@ export class PlanRepository extends BaseRepository {
   private mapRowToPlanChangeHistory(row: any): PlanChangeHistory {
     return {
       id: row.id,
-      userId: row.user_id,
+      clientId: row.user_id,
       planId: row.plan_id,
       changedAt: this.fromTimestamp(row.changed_at),
     };

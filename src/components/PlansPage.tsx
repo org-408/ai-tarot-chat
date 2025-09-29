@@ -1,16 +1,12 @@
-import { PlanFeatures, UserPlan } from "../types";
-
 interface PlansPageProps {
-  features: PlanFeatures;
-  currentPlan: UserPlan;
-  onChangePlan: (plan: UserPlan) => void;
+  currentPlan: "free" | "standard" | "premium";
+  onChangePlan: (plan: "free" | "standard" | "premium") => void;
   isAuthenticated: boolean;
   onLogin: () => void;
   isLoggingIn: boolean;
 }
 
 const PlansPage: React.FC<PlansPageProps> = ({
-  features,
   currentPlan,
   onChangePlan,
   isAuthenticated,
@@ -18,7 +14,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
   isLoggingIn,
 }) => {
   const planData = {
-    Free: {
+    free: {
       name: "🆓 フリープラン",
       price: "¥0/月",
       description: "お試しで使いたい方に",
@@ -33,7 +29,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       popular: false,
       requiresAuth: false,
     },
-    Standard: {
+    standard: {
       name: "💎 スタンダードプラン",
       price: "¥480/月",
       description: "しっかり占いたい方に",
@@ -50,7 +46,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       popular: true,
       requiresAuth: true,
     },
-    Premium: {
+    premium: {
       name: "👑 プレミアムプラン",
       price: "¥980/月",
       description: "AIと対話しながら本格占い",
@@ -70,7 +66,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
     },
   };
 
-  const handlePlanChange = (planKey: UserPlan) => {
+  const handlePlanChange = (planKey: keyof typeof planData) => {
     const plan = planData[planKey];
 
     // 有料プランかつ未認証の場合はログインが必要
@@ -79,6 +75,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       return;
     }
 
+    // TODO: プラン変更処理
     onChangePlan(planKey);
   };
 
@@ -103,106 +100,105 @@ const PlansPage: React.FC<PlansPageProps> = ({
 
       {/* プラン比較カード */}
       <div className="space-y-4">
-        {(Object.entries(planData) as [UserPlan, typeof planData.Free][]).map(
-          ([planKey, plan]) => (
-            <div
-              key={planKey}
-              className={`relative p-4 rounded-lg border-2 transition-all ${
-                currentPlan === planKey
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              }`}
-            >
-              {/* 人気バッジ */}
-              {plan.popular && (
-                <div className="absolute -top-2 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                  おすすめ
-                </div>
-              )}
-
-              {/* 認証必須バッジ */}
-              {plan.requiresAuth && (
-                <div className="absolute -top-2 right-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
-                  認証必須
-                </div>
-              )}
-
-              {/* プランヘッダー */}
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <div className="font-bold text-lg">{plan.name}</div>
-                  <div className="text-sm text-gray-600">
-                    {plan.description}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-xl">{plan.price}</div>
-                  {currentPlan === planKey && (
-                    <div className="text-xs text-blue-600 font-bold">
-                      利用中
-                    </div>
-                  )}
-                </div>
+        {(
+          Object.entries(planData) as [
+            keyof typeof planData,
+            typeof planData.free
+          ][]
+        ).map(([planKey, plan]) => (
+          <div
+            key={planKey}
+            className={`relative p-4 rounded-lg border-2 transition-all ${
+              currentPlan === planKey
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200 bg-white hover:border-gray-300"
+            }`}
+          >
+            {/* 人気バッジ */}
+            {plan.popular && (
+              <div className="absolute -top-2 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                おすすめ
               </div>
+            )}
 
-              {/* 機能リスト */}
-              <div className="mb-4">
-                <div className="text-sm font-bold mb-2">主な機能</div>
-                <ul className="space-y-1">
-                  {plan.features.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="text-sm text-gray-700 flex items-center"
-                    >
-                      <span className="text-green-500 mr-2">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+            {/* 認証必須バッジ */}
+            {plan.requiresAuth && (
+              <div className="absolute -top-2 right-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
+                認証必須
               </div>
+            )}
 
-              {/* アクションボタン */}
-              <div className="flex gap-2">
-                {currentPlan === planKey ? (
-                  <div className="w-full py-2 px-4 bg-gray-200 text-gray-600 rounded-lg text-center text-sm">
-                    現在利用中
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handlePlanChange(planKey)}
-                    disabled={isLoggingIn}
-                    className={`w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-colors bg-gradient-to-r ${plan.color} hover:opacity-90 disabled:opacity-50`}
-                  >
-                    {isLoggingIn
-                      ? "認証中..."
-                      : plan.requiresAuth && !isAuthenticated
-                      ? `ログイン＆${
-                          planKey === "Standard"
-                            ? "アップグレード"
-                            : "プレミアム登録"
-                        }`
-                      : planKey === "Free"
-                      ? "フリープランに変更"
-                      : currentPlan === "Free"
-                      ? "アップグレード"
-                      : planKey === "Standard" && currentPlan === "Premium"
-                      ? "ダウングレード"
-                      : "プラン変更"}
-                  </button>
+            {/* プランヘッダー */}
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <div className="font-bold text-lg">{plan.name}</div>
+                <div className="text-sm text-gray-600">{plan.description}</div>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-xl">{plan.price}</div>
+                {currentPlan === planKey && (
+                  <div className="text-xs text-blue-600 font-bold">利用中</div>
                 )}
               </div>
-
-              {/* 認証必須の説明 */}
-              {plan.requiresAuth &&
-                !isAuthenticated &&
-                currentPlan !== planKey && (
-                  <div className="mt-2 text-xs text-orange-600 text-center">
-                    このプランを選択すると自動的にログイン画面に移動します
-                  </div>
-                )}
             </div>
-          )
-        )}
+
+            {/* 機能リスト */}
+            <div className="mb-4">
+              <div className="text-sm font-bold mb-2">主な機能</div>
+              <ul className="space-y-1">
+                {plan.features.map((feature, index) => (
+                  <li
+                    key={index}
+                    className="text-sm text-gray-700 flex items-center"
+                  >
+                    <span className="text-green-500 mr-2">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* アクションボタン */}
+            <div className="flex gap-2">
+              {currentPlan === planKey ? (
+                <div className="w-full py-2 px-4 bg-gray-200 text-gray-600 rounded-lg text-center text-sm">
+                  現在利用中
+                </div>
+              ) : (
+                <button
+                  onClick={() => handlePlanChange(planKey)}
+                  disabled={isLoggingIn}
+                  className={`w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-colors bg-gradient-to-r ${plan.color} hover:opacity-90 disabled:opacity-50`}
+                >
+                  {isLoggingIn
+                    ? "認証中..."
+                    : plan.requiresAuth && !isAuthenticated
+                    ? `ログイン＆${
+                        planKey === "standard"
+                          ? "アップグレード"
+                          : "プレミアム登録"
+                      }`
+                    : planKey === "free"
+                    ? "フリープランに変更"
+                    : currentPlan === "free"
+                    ? "アップグレード"
+                    : planKey === "standard" && currentPlan === "premium"
+                    ? "ダウングレード"
+                    : "プラン変更"}
+                </button>
+              )}
+            </div>
+
+            {/* 認証必須の説明 */}
+            {plan.requiresAuth &&
+              !isAuthenticated &&
+              currentPlan !== planKey && (
+                <div className="mt-2 text-xs text-orange-600 text-center">
+                  このプランを選択すると自動的にログイン画面に移動します
+                </div>
+              )}
+          </div>
+        ))}
       </div>
 
       {/* 注意事項 */}

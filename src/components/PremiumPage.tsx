@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { PlanFeatures, Spread, SpreadRecommendation, UserPlan } from "../types";
+import { Spread, SpreadRecommendation } from "../types";
 
 interface PremiumPageProps {
-  features: PlanFeatures;
-  onDowngrade: (plan: UserPlan) => void;
+  onDowngrade: (plan: "standard" | "free") => void;
 }
 
-const PremiumPage: React.FC<PremiumPageProps> = ({ features, onDowngrade }) => {
+const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
   const [userInput, setUserInput] =
     useState<string>("転職すべきか悩んでいます");
   const [selectionMode, setSelectionMode] = useState<string>("ai-auto");
@@ -231,11 +230,6 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ features, onDowngrade }) => {
     return allSpreads.find((s) => s.id === spreadId);
   };
 
-  const getFavoriteSpreadName = (spreadId: string): string => {
-    const spread = getFavoriteSpread(spreadId);
-    return spread ? spread.name : spreadId;
-  };
-
   return (
     <div className="main-container">
       {/* 認証済みプラン表示 */}
@@ -455,13 +449,13 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ features, onDowngrade }) => {
       {/* プラン変更ボタン（簡潔版） */}
       <div className="mt-6 space-y-2">
         <button
-          onClick={() => onDowngrade("Standard")}
+          onClick={() => onDowngrade("standard")}
           className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
         >
           スタンダードプランにダウングレード (¥480/月)
         </button>
         <button
-          onClick={() => onDowngrade("Free")}
+          onClick={() => onDowngrade("free")}
           className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
         >
           フリープランにダウングレード

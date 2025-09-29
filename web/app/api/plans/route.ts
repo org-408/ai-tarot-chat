@@ -1,4 +1,4 @@
-import { getPlans } from "@/lib/services/master-service";
+import { getPlans } from "@/lib/services/master";
 import { NextResponse } from "next/server";
 
 export async function GET() {

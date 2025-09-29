@@ -7,7 +7,7 @@ lib/repositories/
 ├── tarot.ts         # TarotDeck, TarotCard, CardMeaning
 ├── spread.ts        # Spread, SpreadCell, SpreadLevel, ReadingCategory
 ├── plan.ts          # Plan, PlanChangeHistory
-├── reading.ts       # Reading, DrawCard, Tarotist
+├── reading.ts       # Reading, DrawnCard, Tarotist
 ├── chat.ts          # ChatMessage
 └── favorite.ts      # FavoriteSpread
 ```

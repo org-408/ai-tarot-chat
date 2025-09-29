@@ -1,32 +1,54 @@
-import { jwtVerify, SignJWT } from "jose";
+import { authService } from "@/lib/services/auth";
+import { NextRequest } from "next/server";
 
-const ALG = "HS256";
-
-// 任意: アプリ用JWTの有効期限（例: 12h）
-const APP_JWT_TTL = process.env.APP_JWT_TTL ?? "12h";
-
-export async function POST(req: Request) {
-  const { ticket } = await req.json().catch(() => ({}));
-  if (!ticket) return new Response("invalid", { status: 400 });
-
-  const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
+export async function POST(request: NextRequest) {
+  console.log("📍 /api/native/auth/exchange - チケット交換リクエスト受信");
 
   try {
-    const { payload } = await jwtVerify(ticket, secret, { algorithms: [ALG] });
-    if (payload.t !== "ticket" || !payload.sub) throw new Error("bad-ticket");
+    const { ticket, deviceId } = await request.json().catch(() => ({}));
 
-    // ここで本来は「used ticket」を失効させるとより安全（Redis等）
-    // 最小構成では短寿命＋署名検証で割り切る
+    if (!ticket || !deviceId) {
+      console.error("❌ ticket または deviceId が不足");
+      return new Response("invalid request", { status: 400 });
+    }
 
-    // アプリ用JWT（ユーザーIDのみをsubに格納）
-    const appJwt = await new SignJWT({ t: "app", sub: String(payload.sub) })
-      .setProtectedHeader({ alg: ALG })
-      .setIssuedAt()
-      .setExpirationTime(APP_JWT_TTL)
-      .sign(secret);
+    console.log(`🔄 チケット交換処理開始 (deviceId: ${deviceId})`);
 
-    return Response.json({ token: appJwt, userId: payload.sub });
-  } catch {
-    return new Response("invalid", { status: 401 });
+    // AuthService経由でチケット交換・ユーザー紐付け（既存パターンに合わせて）
+    const result = await authService.exchangeTicket({
+      ticket,
+      deviceId,
+    });
+
+    console.log(`✅ チケット交換完了 (clientId: ${result.client.id})`);
+
+    // 既存パターンに合わせたレスポンス
+    return Response.json({
+      token: result.token,
+      userId: result.client.userId,
+      client: {
+        id: result.client.id,
+        userId: result.client.userId,
+        isRegistered: result.client.isRegistered,
+        plan: result.client.plan,
+        user: result.client.user,
+      },
+    });
+  } catch (error) {
+    console.error("❌ チケット交換エラー:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "exchange failed";
+
+    // 既存パターンに合わせたエラーハンドリング
+    if (
+      errorMessage.includes("Invalid ticket") ||
+      errorMessage.includes("not found") ||
+      errorMessage.includes("expired")
+    ) {
+      return new Response("invalid", { status: 401 });
+    }
+
+    return new Response("exchange failed", { status: 500 });
   }
 }

@@ -52,3 +52,40 @@ export interface SpreadRecommendation {
   description: string;
   reason: string;
 }
+
+export interface SessionData {
+  clientId: string;
+  plan: "free" | "standard" | "premium";
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+}
+
+export interface NavigationItem {
+  id: PageType;
+  label: string;
+  icon: string;
+  available: boolean;
+}
+
+export interface Genre {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface Spread {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+}
+
+export interface SpreadRecommendation {
+  id: string;
+  name: string;
+  description: string;
+  reason: string;
+}

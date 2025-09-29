@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import AdBanner from "./components/AdBanner";
 import FreePage from "./components/FreePage";
@@ -7,42 +6,29 @@ import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
 import PremiumPage from "./components/PremiumPage";
 import StandardPage from "./components/StandardPage";
-import { useTauriAuth } from "./hooks/useTauriAuth";
 import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
-import { PageType, PlanFeatures, UserPlan } from "./types";
+import { MasterData, syncService } from "./lib/services/sync";
+import { PageType, SessionData } from "./types";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("reading");
-  const [currentPlan, setCurrentPlan] = useState<UserPlan>("Free");
-  const [features, setFeatures] = useState<PlanFeatures | null>(null);
+  const [session, setSession] = useState<SessionData | null>(null);
+  const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
 
-  // 認証機能
-  const {
-    user,
-    loading: authLoading,
-    error: authError,
-    signIn,
-    signOut,
-    isAuthenticated,
-    isLoggingIn,
-    clearError,
-  } = useTauriAuth();
+  const authService = new AuthService();
 
-  initializeApp(); // アプリ初期化
-
-  // アプリ起動時にプラン情報を取得
+  // 起動時フロー
   useEffect(() => {
-    if (!authLoading) {
-      loadPlanInfo();
-    }
-  }, [authLoading, isAuthenticated]);
+    initializeSession();
+  }, []);
 
-  // 広告表示スタイル関連
+  // 広告表示スタイル
   useEffect(() => {
-    if (currentPlan === "Free") {
+    if (session?.plan === "free") {
       document.body.classList.add("with-ads");
     } else {
       document.body.classList.remove("with-ads");
@@ -51,103 +37,136 @@ function App() {
     return () => {
       document.body.classList.remove("with-ads");
     };
-  }, [currentPlan]);
+  }, [session?.plan]);
 
-  const loadPlanInfo = async () => {
+  /**
+   * セッション初期化
+   * 1. デバイス登録
+   * 2. セッション情報取得
+   */
+  const initializeSession = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      // 認証済みの場合、サーバーからプラン情報を取得
-      // 未認証の場合、フリープラン未登録として扱う
-      let plan: UserPlan = "Free";
+      console.log("アプリ起動 - セッション初期化開始");
+      // storeなど初期化
+      await initializeApp();
 
-      if (isAuthenticated && user) {
-        // 認証済みユーザーの場合、ユーザー情報からプラン判定
-        switch (user.plan_type) {
-          case "standard":
-            plan = "Standard";
-            break;
-          case "premium":
-            plan = "Premium";
-            break;
-          default:
-            plan = "Free";
-        }
-      }
+      // baseUrl 不要
+      const deviceData = await authService.registerDevice();
+      console.log("デバイス登録完了");
 
-      const planFeatures = await invoke<PlanFeatures>("get_plan_features");
-      await invoke("set_plan", { plan });
+      setSession({
+        clientId: deviceData.clientId,
+        plan: deviceData.plan as "free" | "standard" | "premium",
+        user: deviceData.user,
+      });
 
-      setCurrentPlan(plan);
-      setFeatures(planFeatures);
-    } catch (error) {
-      console.error("プラン情報の取得に失敗:", error);
-      // エラー時はフリープランにフォールバック
-      setCurrentPlan("Free");
-      try {
-        const fallbackFeatures = await invoke<PlanFeatures>(
-          "get_plan_features"
-        );
-        setFeatures(fallbackFeatures);
-      } catch (fallbackError) {
-        console.error("フォールバック失敗:", fallbackError);
-      }
+      // baseUrl 不要
+      const masters = await syncService.getMasterData();
+      setMasterData(masters);
+      console.log("マスターデータ同期完了", masterData);
+
+      console.log("セッション初期化完了");
+      setLoading(false);
+    } catch (err) {
+      // ...
+    }
+  };
+
+  /**
+   * ログイン処理
+   */
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      console.log("ログイン開始");
+
+      const result = await authService.signInWithWeb();
+      console.log("ログイン成功:", result);
+
+      // セッション更新
+      setSession({
+        clientId: session?.clientId || "",
+        plan: result.plan as "free" | "standard" | "premium",
+        user: result.user,
+      });
+    } catch (err) {
+      console.error("ログイン失敗:", err);
+      setError(err instanceof Error ? err.message : "ログインに失敗しました");
     } finally {
       setLoading(false);
     }
   };
 
-  // プラン変更（テスト用 + 実際のアップグレード処理）
-  const changePlan = async (newPlan: UserPlan) => {
+  /**
+   * ログアウト処理
+   */
+  const handleLogout = async () => {
     try {
-      // 有料プランへのアップグレード時は認証必須
-      if (
-        (newPlan === "Standard" || newPlan === "Premium") &&
-        !isAuthenticated
-      ) {
-        const loginSuccess = await signIn();
-        if (!loginSuccess) {
-          return; // ログイン失敗時は処理中止
-        }
-        // ログイン成功後、プラン情報を再読み込み
-        await loadPlanInfo();
-        return;
-      }
+      await authService.logout();
 
-      await invoke("set_plan", { plan: newPlan });
-      await loadPlanInfo(); // 再読み込み
-    } catch (error) {
-      console.error("プラン変更に失敗:", error);
+      // デバイス再登録
+      const deviceData = await authService.registerDevice();
+
+      setSession({
+        clientId: deviceData.clientId,
+        plan: deviceData.plan as "free" | "standard" | "premium",
+        user: undefined,
+      });
+    } catch (err) {
+      console.error("ログアウトエラー:", err);
     }
   };
 
-  // ログイン処理
-  const handleLogin = async () => {
-    try {
-      console.log("🔐 ログイン開始");
-      const authService = new AuthService();
-      const bffUrl = import.meta.env.VITE_BFF_URL;
-      const deepLinkScheme = import.meta.env.VITE_DEEP_LINK_SCHEME;
+  /**
+   * プラン変更（モック実装）
+   */
+  const handlePlanChange = (newPlan: "free" | "standard" | "premium") => {
+    console.log(`プラン変更リクエスト: ${session?.plan} → ${newPlan}`);
 
-      // Web認証 + JWT交換まで完了
-      const result = await authService.signInWithWeb(bffUrl, deepLinkScheme);
-      console.log("✅ ログイン成功:", result);
+    // 有料プランかつ未認証の場合はログインが必要
+    if ((newPlan === "standard" || newPlan === "premium") && !isAuthenticated) {
+      console.log("認証が必要です。ログインを開始します。");
+      handleLogin();
+      return;
+    }
 
-      if (result.success) {
-        // ログイン成功後、プラン情報を再取得
-        await loadPlanInfo();
-      }
-    } catch (error) {
-      console.error("❌ ログイン失敗:", error);
+    // TODO: サーバー側でプラン変更APIを実装
+    // 現状は一時的にローカル変更のみ
+    setSession((prev) => (prev ? { ...prev, plan: newPlan } : null));
+    alert(`プランを ${newPlan} に変更しました（モック）`);
+  };
+
+  /**
+   * アップグレード処理（モック実装）
+   */
+  const handleUpgrade = (targetPlan: "standard" | "premium") => {
+    console.log(`アップグレードリクエスト: ${targetPlan}`);
+    handlePlanChange(targetPlan);
+  };
+
+  /**
+   * ダウングレード処理（モック実装）
+   */
+  const handleDowngrade = (targetPlan: "free" | "standard") => {
+    console.log(`ダウングレードリクエスト: ${targetPlan}`);
+
+    if (confirm(`本当に ${targetPlan} プランにダウングレードしますか？`)) {
+      handlePlanChange(targetPlan);
     }
   };
-  // ナビゲーション用ページ変更関数
+
+  /**
+   * ページ変更
+   */
   const handlePageChange = (page: PageType) => {
     setPageType(page);
   };
 
-  // 初期ローディング表示
-  if (authLoading || loading) {
+  // ローディング表示
+  if (loading && !session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl">読み込み中...</div>
@@ -155,59 +174,71 @@ function App() {
     );
   }
 
-  if (!features) {
+  // エラー表示
+  if (error && !session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-500">エラーが発生しました</div>
+        <div className="text-xl text-red-500">{error}</div>
       </div>
     );
   }
 
-  // プランに応じて表示するページを切り替え
+  // セッションがない場合のフォールバック
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl text-red-500">
+          セッションの取得に失敗しました
+        </div>
+      </div>
+    );
+  }
+
+  const isAuthenticated = !!session.user;
+
+  // ページレンダリング
   const renderPage = () => {
     switch (pageType) {
       case "reading":
-        switch (currentPlan) {
-          case "Free":
+        switch (session.plan) {
+          case "free":
             return (
               <FreePage
-                features={features}
-                onUpgrade={changePlan}
                 onLogin={handleLogin}
+                onUpgrade={handleUpgrade}
                 isAuthenticated={isAuthenticated}
-                user={user}
-                isLoggingIn={isLoggingIn}
-                authError={authError}
-                onClearError={clearError}
+                user={session.user}
+                isLoggingIn={loading}
               />
             );
-          case "Standard":
-            return <StandardPage features={features} onUpgrade={changePlan} />;
-          case "Premium":
-            return <PremiumPage features={features} onDowngrade={changePlan} />;
+          case "standard":
+            return (
+              <StandardPage
+                onUpgrade={(plan) => handleUpgrade(plan)}
+                onDowngrade={(plan) => handleDowngrade(plan)}
+              />
+            );
+          case "premium":
+            return <PremiumPage onDowngrade={handleDowngrade} />;
           default:
             return (
               <FreePage
-                features={features}
-                onUpgrade={changePlan}
                 onLogin={handleLogin}
+                onUpgrade={handleUpgrade}
                 isAuthenticated={isAuthenticated}
-                user={user}
-                isLoggingIn={isLoggingIn}
-                authError={authError}
-                onClearError={clearError}
+                user={session.user}
+                isLoggingIn={loading}
               />
             );
         }
       case "plans":
         return (
           <PlansPage
-            features={features}
-            currentPlan={currentPlan}
-            onChangePlan={changePlan}
+            currentPlan={session.plan}
             isAuthenticated={isAuthenticated}
+            onChangePlan={handlePlanChange}
             onLogin={handleLogin}
-            isLoggingIn={isLoggingIn}
+            isLoggingIn={loading}
           />
         );
       case "history":
@@ -230,11 +261,10 @@ function App() {
               <div className="text-lg font-bold mb-2">準備中</div>
               <div className="text-sm">設定機能を開発中です</div>
 
-              {/* ログアウトボタンを設定画面に追加 */}
               {isAuthenticated && (
                 <div className="mt-8">
                   <button
-                    onClick={signOut}
+                    onClick={handleLogout}
                     className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >
                     ログアウト
@@ -247,14 +277,11 @@ function App() {
       default:
         return (
           <FreePage
-            features={features}
-            onUpgrade={changePlan}
             onLogin={handleLogin}
+            onUpgrade={handleUpgrade}
             isAuthenticated={isAuthenticated}
-            user={user}
-            isLoggingIn={isLoggingIn}
-            authError={authError}
-            onClearError={clearError}
+            user={session.user}
+            isLoggingIn={loading}
           />
         );
     }
@@ -262,12 +289,10 @@ function App() {
 
   return (
     <div className="bg-gray-100 w-full overflow-x-hidden">
-      {/* 固定ヘッダー */}
-      <Header currentPlan={currentPlan} currentPage={pageType} />
+      <Header currentPlan={session.plan} currentPage={pageType} />
 
-      {/* 開発用：超ミニマル切り替えボタン */}
+      {/* 開発メニュー */}
       <div className="fixed top-2 right-2 z-50">
-        {/* 小さな開発アイコン */}
         <button
           onClick={() => setDevMenuOpen(!devMenuOpen)}
           className="w-6 h-6 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full text-xs text-white flex items-center justify-center transition-all opacity-30 hover:opacity-80"
@@ -276,33 +301,32 @@ function App() {
           ⚙
         </button>
 
-        {/* 展開メニュー */}
         {devMenuOpen && (
           <div className="absolute top-8 right-0 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border">
-            <div className="text-xs mb-2 text-gray-600">プラン切り替え</div>
+            <div className="text-xs mb-2 text-gray-600">プラン切替</div>
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => {
-                  changePlan("Free");
+                  handlePlanChange("free");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "Free"
+                  session.plan === "free"
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
               >
-                🆓 Free
+                Free
               </button>
               <button
                 onClick={() => {
-                  changePlan("Standard");
+                  handlePlanChange("standard");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "Standard"
+                  session.plan === "standard"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -311,12 +335,12 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  changePlan("Premium");
+                  handlePlanChange("premium");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "Premium"
+                  session.plan === "premium"
                     ? "bg-yellow-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -340,7 +364,7 @@ function App() {
               {isAuthenticated ? (
                 <button
                   onClick={() => {
-                    signOut();
+                    handleLogout();
                     setDevMenuOpen(false);
                   }}
                   className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
@@ -363,20 +387,17 @@ function App() {
         )}
       </div>
 
-      {/* ユーザー情報表示（開発用） */}
-      {user && (
+      {/* ユーザー情報表示 */}
+      {session.user && (
         <div className="fixed top-2 left-2 z-40 bg-black bg-opacity-10 text-xs px-2 py-1 rounded opacity-30 hover:opacity-80 transition-all">
-          {user.email}
+          {session.user.email}
         </div>
       )}
 
-      {/* メインコンテンツ */}
       {renderPage()}
 
-      {/* 固定広告バナー（フリープランのみ） */}
-      <AdBanner currentPlan={currentPlan} />
+      <AdBanner currentPlan={session.plan} />
 
-      {/* ボトムナビゲーション */}
       <Navigation currentPage={pageType} onPageChange={handlePageChange} />
     </div>
   );

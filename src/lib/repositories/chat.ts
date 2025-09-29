@@ -14,7 +14,7 @@ export class ChatRepository extends BaseRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        message.userId,
+        message.clientId,
         message.deviceId,
         message.tarotistId,
         message.chatType,
@@ -38,12 +38,12 @@ export class ChatRepository extends BaseRepository {
   }
 
   async getMessagesByUserId(
-    userId: string,
+    clientId: string,
     limit = 100
   ): Promise<ChatMessage[]> {
     const rows = await this.db.select<any[]>(
       `SELECT * FROM chat_messages WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
-      [userId, limit]
+      [clientId, limit]
     );
 
     return rows.map((row) => this.mapRowToChatMessage(row));
@@ -70,7 +70,7 @@ export class ChatRepository extends BaseRepository {
   private mapRowToChatMessage(row: any): ChatMessage {
     return {
       id: row.id,
-      userId: row.user_id,
+      clientId: row.user_id,
       deviceId: row.device_id,
       tarotistId: row.tarotist_id,
       chatType: row.chat_type,

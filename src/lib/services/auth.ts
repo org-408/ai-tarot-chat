@@ -1,29 +1,66 @@
 import { authenticate } from "tauri-plugin-web-auth-api";
 import { storeRepository } from "../repositories/store";
+import { apiClient } from "../utils/apiClient";
 
-/**
- * 認証関連のビジネスロジック
- * DeviceID、JWT管理
- */
 export class AuthService {
   private readonly KEYS = {
     DEVICE_ID: "deviceId",
     ACCESS_TOKEN: "accessToken",
-    REFRESH_TOKEN: "refreshToken",
+    CLIENT_ID: "clientId",
     USER_ID: "userId",
   } as const;
 
-  async signInWithWeb(
-    url: string = "http://localhost:3000",
-    callbackScheme: string = "aitarotchat"
-  ) {
-    const authUrl = new URL("/auth/signin?isMobile=true", url).toString();
-    console.log("🔐 Web認証開始:", authUrl);
+  /**
+   * デバイス登録 - 起動時に必ず実行
+   */
+  async registerDevice() {
+    console.log("registerDevice:デバイス登録開始");
+
+    const deviceId = await this.ensureDeviceId();
+    console.log("デバイスID:", deviceId);
 
     try {
-      // 1. Web認証でチケット取得
+      const data = await apiClient.postWithoutAuth<{
+        accessToken: string;
+        clientId: string;
+        plan: string;
+        user?: { id: string; email: string };
+      }>("/api/native/device/register", { deviceId });
+
+      console.log("デバイス登録成功:", data);
+
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, data.accessToken);
+      await storeRepository.set(this.KEYS.CLIENT_ID, data.clientId);
+
+      if (data.user) {
+        await storeRepository.set(this.KEYS.USER_ID, data.user.id);
+      }
+
+      return {
+        accessToken: data.accessToken,
+        clientId: data.clientId,
+        plan: data.plan,
+        user: data.user,
+      };
+    } catch (error) {
+      console.error("デバイス登録エラー:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * OAuth認証 - ユーザーとデバイスを紐付け
+   */
+  async signInWithWeb() {
+    const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
+    const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
+    const callbackScheme =
+      import.meta.env.VITE_DEEP_LINK_SCHEME || "aitarotchat";
+    console.log("🔐 Web認証開始:", url, callbackScheme);
+
+    try {
       const result = await authenticate({
-        url: authUrl,
+        url,
         callbackScheme,
       });
 
@@ -36,33 +73,32 @@ export class AuthService {
 
       console.log("🎫 チケット取得成功");
 
-      // 2. チケットをJWTに交換
-      const exchangeUrl = new URL("/api/native/exchange", url).toString();
-      console.log("🔄 JWT交換リクエスト:", exchangeUrl);
+      const { token: jwt, userId } = await apiClient.postWithoutAuth<{
+        token: string;
+        userId: string;
+      }>("/api/native/exchange", { ticket });
 
-      const exchangeResponse = await fetch(exchangeUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ticket }),
-      });
-
-      if (!exchangeResponse.ok) {
-        throw new Error(`JWT交換失敗: ${exchangeResponse.status}`);
-      }
-
-      const { token: jwt, userId } = await exchangeResponse.json();
       console.log("✅ JWT取得成功 (userId:", userId, ")");
 
-      // 3. JWT と userId を保存
       await storeRepository.set(this.KEYS.ACCESS_TOKEN, jwt);
+
+      const deviceId = await this.getDeviceId();
+      const linkData = await apiClient.postWithoutAuth(
+        "/api/native/link-user",
+        { deviceId, userId }
+      );
+
+      console.log("ユーザー紐付け成功:", linkData);
+
       await storeRepository.set(this.KEYS.USER_ID, userId);
+
+      const deviceData = await this.registerDevice();
 
       return {
         success: true,
-        jwt,
         userId,
+        plan: deviceData.plan,
+        user: deviceData.user,
       };
     } catch (error) {
       console.error("❌ Web認証エラー:", error);
@@ -70,14 +106,22 @@ export class AuthService {
     }
   }
 
-  /**
-   * デバイスIDを取得（なければ生成）
-   */
-  async getDeviceId(): Promise<string> {
+  async getSession() {
+    const accessToken = await this.getAccessToken();
+    if (!accessToken) {
+      throw new Error("アクセストークンがありません");
+    }
+
+    return await apiClient.get("/api/native/session");
+  }
+
+  private async ensureDeviceId(): Promise<string> {
+    console.log("ensureDeviceId:デバイスID確認");
     let deviceId = await storeRepository.get<string>(this.KEYS.DEVICE_ID);
+    console.log("現在のデバイスID:", deviceId);
 
     if (!deviceId) {
-      // UUIDv4生成
+      console.log("デバイスIDが存在しないため新規作成");
       deviceId = crypto.randomUUID();
       await storeRepository.set(this.KEYS.DEVICE_ID, deviceId);
     }
@@ -85,75 +129,32 @@ export class AuthService {
     return deviceId;
   }
 
-  /**
-   * トークンペアを保存
-   */
-  async setTokens(accessToken: string, refreshToken: string): Promise<void> {
-    await storeRepository.setMany({
-      [this.KEYS.ACCESS_TOKEN]: accessToken,
-      [this.KEYS.REFRESH_TOKEN]: refreshToken,
-    });
+  async getDeviceId(): Promise<string | null> {
+    return await storeRepository.get<string>(this.KEYS.DEVICE_ID);
   }
 
-  /**
-   * アクセストークンを取得
-   */
   async getAccessToken(): Promise<string | null> {
     return await storeRepository.get<string>(this.KEYS.ACCESS_TOKEN);
   }
 
-  /**
-   * リフレッシュトークンを取得
-   */
-  async getRefreshToken(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.REFRESH_TOKEN);
+  async getClientId(): Promise<string | null> {
+    return await storeRepository.get<string>(this.KEYS.CLIENT_ID);
   }
 
-  /**
-   * ユーザーIDを保存
-   */
-  async setUserId(userId: string): Promise<void> {
-    await storeRepository.set(this.KEYS.USER_ID, userId);
-  }
-
-  /**
-   * ユーザーIDを取得
-   */
   async getUserId(): Promise<string | null> {
     return await storeRepository.get<string>(this.KEYS.USER_ID);
   }
 
-  /**
-   * ログアウト（全認証情報削除）
-   */
   async logout(): Promise<void> {
     await storeRepository.delete(this.KEYS.ACCESS_TOKEN);
-    await storeRepository.delete(this.KEYS.REFRESH_TOKEN);
+    await storeRepository.delete(this.KEYS.CLIENT_ID);
     await storeRepository.delete(this.KEYS.USER_ID);
-    // deviceIdは保持（デバイス識別用）
   }
 
-  /**
-   * 認証状態チェック
-   */
   async isAuthenticated(): Promise<boolean> {
-    const accessToken = await this.getAccessToken();
-    return accessToken !== null;
-  }
-
-  /**
-   * トークンリフレッシュが必要かチェック
-   * （簡易的な実装、本格的にはJWTデコードして有効期限確認）
-   */
-  async needsRefresh(): Promise<boolean> {
-    const accessToken = await this.getAccessToken();
-    if (!accessToken) return true;
-
-    // TODO: JWT デコードして exp 確認
-    // 仮実装：常にリフレッシュを試みる
-    return true;
+    const userId = await this.getUserId();
+    return userId !== null;
   }
 }
 
-// シングルトンインスタンス
 export const authService = new AuthService();

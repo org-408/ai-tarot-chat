@@ -1,4 +1,4 @@
-import { getSpreadLevels } from "@/lib/services/master-service";
+import { getSpreadLevels } from "@/lib/services/master";
 import { NextResponse } from "next/server";
 
 export async function GET() {
