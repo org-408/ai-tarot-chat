@@ -1,3 +1,6 @@
+// lib/services/auth.ts
+import { getVersion } from "@tauri-apps/api/app";
+import { version as osVersion, platform } from "@tauri-apps/plugin-os";
 import { authenticate } from "tauri-plugin-web-auth-api";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
@@ -19,28 +22,51 @@ export class AuthService {
     const deviceId = await this.ensureDeviceId();
     console.log("デバイスID:", deviceId);
 
+    // Tauriから情報取得
+    const [platformName, osVersionStr, appVersionStr] = await Promise.all([
+      platform(),
+      osVersion(),
+      getVersion(),
+    ]);
+
+    console.log(
+      `プラットフォーム: ${platformName}, OS: ${osVersionStr}, アプリ: ${appVersionStr}`
+    );
+
     try {
       const data = await apiClient.postWithoutAuth<{
-        accessToken: string;
-        clientId: string;
-        plan: string;
-        user?: { id: string; email: string };
-      }>("/api/native/device/register", { deviceId });
+        token: string;
+        userId: string | null;
+        client: {
+          id: string;
+          userId: string | null;
+          isRegistered: boolean;
+          plan: string;
+          user?: { id: string; email: string };
+        };
+      }>("/api/native/device/register", {
+        deviceId,
+        platform: platformName,
+        appVersion: appVersionStr,
+        osVersion: osVersionStr,
+        // pushToken は将来的に追加
+      });
 
       console.log("デバイス登録成功:", data);
 
-      await storeRepository.set(this.KEYS.ACCESS_TOKEN, data.accessToken);
-      await storeRepository.set(this.KEYS.CLIENT_ID, data.clientId);
+      // サーバーレスポンスに合わせて保存
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, data.token);
+      await storeRepository.set(this.KEYS.CLIENT_ID, data.client.id);
 
-      if (data.user) {
-        await storeRepository.set(this.KEYS.USER_ID, data.user.id);
+      if (data.client.userId) {
+        await storeRepository.set(this.KEYS.USER_ID, data.client.userId);
       }
 
       return {
-        accessToken: data.accessToken,
-        clientId: data.clientId,
-        plan: data.plan,
-        user: data.user,
+        accessToken: data.token,
+        clientId: data.client.id,
+        plan: data.client.plan,
+        user: data.client.user,
       };
     } catch (error) {
       console.error("デバイス登録エラー:", error);
@@ -92,6 +118,7 @@ export class AuthService {
 
       await storeRepository.set(this.KEYS.USER_ID, userId);
 
+      // デバイス情報を再取得
       const deviceData = await this.registerDevice();
 
       return {

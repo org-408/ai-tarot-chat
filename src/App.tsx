@@ -9,7 +9,7 @@ import StandardPage from "./components/StandardPage";
 import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
 import { MasterData, syncService } from "./lib/services/sync";
-import { PageType, SessionData } from "./types";
+import { PageType, SessionData, UserPlan } from "./types";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("reading");
@@ -28,7 +28,7 @@ function App() {
 
   // 広告表示スタイル
   useEffect(() => {
-    if (session?.plan === "free") {
+    if (session?.plan === "FREE") {
       document.body.classList.add("with-ads");
     } else {
       document.body.classList.remove("with-ads");
@@ -59,7 +59,7 @@ function App() {
 
       setSession({
         clientId: deviceData.clientId,
-        plan: deviceData.plan as "free" | "standard" | "premium",
+        plan: deviceData.plan as UserPlan,
         user: deviceData.user,
       });
 
@@ -89,7 +89,7 @@ function App() {
       // セッション更新
       setSession({
         clientId: session?.clientId || "",
-        plan: result.plan as "free" | "standard" | "premium",
+        plan: result.plan as UserPlan,
         user: result.user,
       });
     } catch (err) {
@@ -112,7 +112,7 @@ function App() {
 
       setSession({
         clientId: deviceData.clientId,
-        plan: deviceData.plan as "free" | "standard" | "premium",
+        plan: deviceData.plan as UserPlan,
         user: undefined,
       });
     } catch (err) {
@@ -123,11 +123,11 @@ function App() {
   /**
    * プラン変更（モック実装）
    */
-  const handlePlanChange = (newPlan: "free" | "standard" | "premium") => {
+  const handlePlanChange = (newPlan: UserPlan) => {
     console.log(`プラン変更リクエスト: ${session?.plan} → ${newPlan}`);
 
     // 有料プランかつ未認証の場合はログインが必要
-    if ((newPlan === "standard" || newPlan === "premium") && !isAuthenticated) {
+    if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
       console.log("認証が必要です。ログインを開始します。");
       handleLogin();
       return;
@@ -142,7 +142,7 @@ function App() {
   /**
    * アップグレード処理（モック実装）
    */
-  const handleUpgrade = (targetPlan: "standard" | "premium") => {
+  const handleUpgrade = (targetPlan: UserPlan) => {
     console.log(`アップグレードリクエスト: ${targetPlan}`);
     handlePlanChange(targetPlan);
   };
@@ -150,7 +150,7 @@ function App() {
   /**
    * ダウングレード処理（モック実装）
    */
-  const handleDowngrade = (targetPlan: "free" | "standard") => {
+  const handleDowngrade = (targetPlan: UserPlan) => {
     console.log(`ダウングレードリクエスト: ${targetPlan}`);
 
     if (confirm(`本当に ${targetPlan} プランにダウングレードしますか？`)) {
@@ -201,7 +201,8 @@ function App() {
     switch (pageType) {
       case "reading":
         switch (session.plan) {
-          case "free":
+          case "GUEST":
+          case "FREE":
             return (
               <FreePage
                 onLogin={handleLogin}
@@ -211,14 +212,14 @@ function App() {
                 isLoggingIn={loading}
               />
             );
-          case "standard":
+          case "STANDARD":
             return (
               <StandardPage
-                onUpgrade={(plan) => handleUpgrade(plan)}
-                onDowngrade={(plan) => handleDowngrade(plan)}
+                onUpgrade={handleUpgrade}
+                onDowngrade={handleDowngrade}
               />
             );
-          case "premium":
+          case "PREMIUM":
             return <PremiumPage onDowngrade={handleDowngrade} />;
           default:
             return (
@@ -307,12 +308,12 @@ function App() {
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => {
-                  handlePlanChange("free");
+                  handlePlanChange("FREE");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  session.plan === "free"
+                  session.plan === "FREE"
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -321,12 +322,12 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  handlePlanChange("standard");
+                  handlePlanChange("STANDARD");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  session.plan === "standard"
+                  session.plan === "STANDARD"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -335,12 +336,12 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  handlePlanChange("premium");
+                  handlePlanChange("PREMIUM");
                   setDevMenuOpen(false);
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  session.plan === "premium"
+                  session.plan === "PREMIUM"
                     ? "bg-yellow-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}

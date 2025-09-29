@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Genre } from "../types";
+import { Genre, UserPlan } from "../types";
 
 interface StandardPageProps {
-  onUpgrade: (plan: "premium") => void;
-  onDowngrade: (plan: "free") => void;
+  onUpgrade: (plan: UserPlan) => void;
+  onDowngrade: (plan: UserPlan) => void;
 }
 
 interface SpreadOption {
@@ -246,13 +246,13 @@ const StandardPage: React.FC<StandardPageProps> = ({
       {/* プラン変更ボタン（簡潔版） */}
       <div className="mt-6 space-y-2">
         <button
-          onClick={() => onUpgrade("premium")}
+          onClick={() => onUpgrade("PREMIUM")}
           className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
         >
           プレミアムプランにアップグレード (¥980/月)
         </button>
         <button
-          onClick={() => onDowngrade("free")}
+          onClick={() => onDowngrade("FREE")}
           className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
         >
           フリープランにダウングレード

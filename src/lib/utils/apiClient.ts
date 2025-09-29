@@ -1,10 +1,10 @@
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { authService } from "../services/auth";
 
 export class ApiClient {
   private baseUrl: string;
 
   constructor(baseUrl?: string) {
-    // デフォルトは環境変数から
     this.baseUrl =
       baseUrl || import.meta.env.VITE_BFF_URL || "http://localhost:3000";
   }
@@ -12,10 +12,10 @@ export class ApiClient {
   async get<T>(path: string): Promise<T> {
     const token = await authService.getAccessToken();
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const response = await tauriFetch(`${this.baseUrl}${path}`, {
       method: "GET",
       headers: {
-        Authorization: token ? `Bearer ${token}` : "",
+        ...(token && { Authorization: `Bearer ${token}` }),
         "Content-Type": "application/json",
       },
     });
@@ -26,10 +26,10 @@ export class ApiClient {
   async post<T>(path: string, body?: unknown): Promise<T> {
     const token = await authService.getAccessToken();
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const response = await tauriFetch(`${this.baseUrl}${path}`, {
       method: "POST",
       headers: {
-        Authorization: token ? `Bearer ${token}` : "",
+        ...(token && { Authorization: `Bearer ${token}` }),
         "Content-Type": "application/json",
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -39,7 +39,7 @@ export class ApiClient {
   }
 
   async postWithoutAuth<T>(path: string, body?: unknown): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const response = await tauriFetch(`${this.baseUrl}${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -60,5 +60,4 @@ export class ApiClient {
   }
 }
 
-// シングルトンインスタンス（デフォルト環境変数使用）
 export const apiClient = new ApiClient();

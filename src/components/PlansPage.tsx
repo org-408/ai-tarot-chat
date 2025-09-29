@@ -1,6 +1,8 @@
+import { UserPlan } from "@/types";
+
 interface PlansPageProps {
-  currentPlan: "free" | "standard" | "premium";
-  onChangePlan: (plan: "free" | "standard" | "premium") => void;
+  currentPlan: UserPlan;
+  onChangePlan: (plan: UserPlan) => void;
   isAuthenticated: boolean;
   onLogin: () => void;
   isLoggingIn: boolean;
@@ -14,10 +16,25 @@ const PlansPage: React.FC<PlansPageProps> = ({
   isLoggingIn,
 }) => {
   const planData = {
-    free: {
+    GUEST: {
+      name: "🆓 ゲストプラン",
+      price: "¥0/月",
+      description: "ユーザー登録なしでお気軽に体験",
+      features: [
+        "1日1回制限",
+        "広告表示あり",
+        "基本スプレッド（2種類）",
+        "恋愛・仕事・今日の運勢",
+        "即答型占い",
+      ],
+      color: "from-green-400 to-green-600",
+      popular: false,
+      requiresAuth: false,
+    },
+    FREE: {
       name: "🆓 フリープラン",
       price: "¥0/月",
-      description: "お試しで使いたい方に",
+      description: "もう少し占い方向けに",
       features: [
         "1日3回制限",
         "広告表示あり",
@@ -29,7 +46,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       popular: false,
       requiresAuth: false,
     },
-    standard: {
+    STANDARD: {
       name: "💎 スタンダードプラン",
       price: "¥480/月",
       description: "しっかり占いたい方に",
@@ -46,7 +63,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
       popular: true,
       requiresAuth: true,
     },
-    premium: {
+    PREMIUM: {
       name: "👑 プレミアムプラン",
       price: "¥980/月",
       description: "AIと対話しながら本格占い",
@@ -103,7 +120,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
         {(
           Object.entries(planData) as [
             keyof typeof planData,
-            typeof planData.free
+            typeof planData.FREE
           ][]
         ).map(([planKey, plan]) => (
           <div
@@ -174,15 +191,15 @@ const PlansPage: React.FC<PlansPageProps> = ({
                     ? "認証中..."
                     : plan.requiresAuth && !isAuthenticated
                     ? `ログイン＆${
-                        planKey === "standard"
+                        planKey === "STANDARD"
                           ? "アップグレード"
                           : "プレミアム登録"
                       }`
-                    : planKey === "free"
+                    : planKey === "FREE"
                     ? "フリープランに変更"
-                    : currentPlan === "free"
+                    : currentPlan === "FREE"
                     ? "アップグレード"
-                    : planKey === "standard" && currentPlan === "premium"
+                    : planKey === "STANDARD" && currentPlan === "PREMIUM"
                     ? "ダウングレード"
                     : "プラン変更"}
                 </button>

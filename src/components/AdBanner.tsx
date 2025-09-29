@@ -1,12 +1,12 @@
 // import { UserPlan } from "../types";
 
 interface AdBannerProps {
-  currentPlan: "free" | "standard" | "premium";
+  currentPlan: UserPlan;
 }
 
 const AdBanner: React.FC<AdBannerProps> = ({ currentPlan }) => {
   // フリープラン以外は広告を表示しない
-  if (currentPlan !== "free") {
+  if (currentPlan !== "FREE") {
     return null;
   }
 

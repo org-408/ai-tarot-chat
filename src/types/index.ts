@@ -1,4 +1,4 @@
-export type UserPlan = "Free" | "Standard" | "Premium";
+export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
 export type PageType = "reading" | "plans" | "history" | "settings";
 
 export interface User {
@@ -55,7 +55,7 @@ export interface SpreadRecommendation {
 
 export interface SessionData {
   clientId: string;
-  plan: "free" | "standard" | "premium";
+  plan: UserPlan;
   user?: {
     id: string;
     email: string;

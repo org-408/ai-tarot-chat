@@ -26,6 +26,8 @@ uuid = { version = "1", features = ["v4"] }
 dotenv = "0.15"
 tauri-plugin-store = "2"
 tauri-plugin-web-auth = "1.0.0"
+tauri-plugin-http = "2"
+tauri-plugin-os = "2"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

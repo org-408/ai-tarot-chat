@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`🔄 デバイス登録処理開始 (deviceId: ${deviceId})`);
+    console.log(
+      `プラットフォーム: ${platform}, アプリバージョン: ${appVersion}, OSバージョン: ${osVersion}`
+    );
+    console.log(`プッシュ通知トークン: ${pushToken ? "あり" : "なし"}`);
 
     // AuthService経由でデバイス登録・更新
     const result = await authService.registerOrUpdateDevice({

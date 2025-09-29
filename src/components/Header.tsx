@@ -1,7 +1,7 @@
 import { PageType } from "../types";
 
 interface HeaderProps {
-  currentPlan: "free" | "standard" | "premium";
+  currentPlan: UserPlan;
   currentPage: PageType;
 }
 
@@ -10,11 +10,11 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
     switch (currentPage) {
       case "reading":
         switch (currentPlan) {
-          case "free":
+          case "FREE":
             return "🔮 今日のタロット占い";
-          case "standard":
+          case "STANDARD":
             return "⭐ スタンダード占い";
-          case "premium":
+          case "PREMIUM":
             return "🤖 AIタロットプレミアム";
           default:
             return "🔮 タロット占い";
@@ -34,11 +34,11 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
     switch (currentPage) {
       case "reading":
         switch (currentPlan) {
-          case "free":
+          case "FREE":
             return "お気軽なタロット占い";
-          case "standard":
+          case "STANDARD":
             return "本格的なタロット占い";
-          case "premium":
+          case "PREMIUM":
             return "AIと対話しながら本格タロット占い";
           default:
             return "";

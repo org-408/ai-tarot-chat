@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Spread, SpreadRecommendation } from "../types";
+import { Spread, SpreadRecommendation, UserPlan } from "../types";
 
 interface PremiumPageProps {
-  onDowngrade: (plan: "standard" | "free") => void;
+  onDowngrade: (plan: UserPlan) => void;
 }
 
 const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
@@ -449,13 +449,13 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
       {/* プラン変更ボタン（簡潔版） */}
       <div className="mt-6 space-y-2">
         <button
-          onClick={() => onDowngrade("standard")}
+          onClick={() => onDowngrade("STANDARD")}
           className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
         >
           スタンダードプランにダウングレード (¥480/月)
         </button>
         <button
-          onClick={() => onDowngrade("free")}
+          onClick={() => onDowngrade("FREE")}
           className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
         >
           フリープランにダウングレード

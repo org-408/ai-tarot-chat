@@ -7,6 +7,23 @@
     "core:default",
     "store:default",
     "web-auth:default",
-    "web-auth:allow-authenticate"
+    "web-auth:allow-authenticate",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://ai-tarot-chat.onrender.com/*"
+        },
+        {
+          "url": "http://localhost:3000/*"
+        }
+      ]
+    },
+    "http:allow-fetch",
+    "http:allow-fetch-cancel",
+    "http:allow-fetch-send",
+    "os:default",
+    "os:allow-platform",
+    "os:allow-version"
   ]
 }

@@ -83,12 +83,12 @@ export class AuthService {
         device = await clientRepo.getDeviceById(device.id);
         if (!device) throw new Error("Failed to update device");
       } else {
-        // 新規デバイス - 新規クライアント作成
-        const freePlan = await planRepo.getPlanByCode("FREE");
-        if (!freePlan) throw new Error("Free plan not found");
+        // 新規デバイス - 新規クライアント作成 （未登録ユーザー）
+        const guest = await planRepo.getPlanByCode("GUEST");
+        if (!guest) throw new Error("Guest plan not found");
 
         const clientId = await clientRepo.createClient({
-          planId: freePlan.id,
+          planId: guest.id,
           isRegistered: false,
           dailyReadingsCount: 0,
           dailyCelticsCount: 0,

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Genre } from "../types";
+import { Genre, UserPlan } from "../types";
 
 interface FreePageProps {
   onLogin: () => void;
-  onUpgrade: (plan: "standard" | "premium") => void;
+  onUpgrade: (plan: UserPlan) => void;
   isAuthenticated: boolean;
   user?: {
     id: string;
@@ -181,13 +181,13 @@ const FreePage: React.FC<FreePageProps> = ({
       {/* プラン変更ボタン（簡潔版） */}
       <div className="mt-6 space-y-2">
         <button
-          onClick={() => onUpgrade("standard")}
+          onClick={() => onUpgrade("STANDARD")}
           className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
         >
           スタンダードプランにアップグレード (¥480/月)
         </button>
         <button
-          onClick={() => onUpgrade("premium")}
+          onClick={() => onUpgrade("PREMIUM")}
           className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
         >
           プレミアムプランにアップグレード (¥980/月)
