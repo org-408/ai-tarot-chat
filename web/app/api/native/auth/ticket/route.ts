@@ -6,6 +6,10 @@ export async function GET() {
   try {
     // AuthService経由でチケット生成（既存パターンに合わせて）
     const ticket = await authService.generateTicket();
+    if (!ticket) {
+      throw new Error("チケットが取得できませんでした");
+    }
+    console.log("✅ チケット発行成功: token", ticket);
 
     return Response.json({ ticket });
   } catch (error) {

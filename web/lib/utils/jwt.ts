@@ -31,8 +31,10 @@ export async function decodeJWT<T>(
       algorithms: [ALG],
     }
   );
-  if (payload.t !== "app" && payload.t !== "ticket")
+  if (payload.t !== "app" && payload.t !== "ticket") {
     // "app" または "ticket" 以外は不正
+    console.log("❌ Invalid token type:", payload.t);
     throw new Error("Invalid token type");
+  }
   return payload as unknown as T;
 }

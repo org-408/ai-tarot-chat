@@ -116,6 +116,7 @@ export class AuthService {
       const payload = await decodeJWT<TicketData>(params.ticket, JWT_SECRET);
 
       if (payload.t !== "ticket" || !payload.sub) {
+        console.log("❌ Invalid ticket type:", payload.t);
         throw new Error("Invalid ticket type");
       }
 
