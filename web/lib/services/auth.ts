@@ -1,4 +1,3 @@
-import { decodeJWT, generateJWT } from "@/../shared/lib/auth/jwt";
 import {
   JWTPayload,
   type Client,
@@ -8,6 +7,7 @@ import { auth } from "@/auth";
 import { authRepository } from "@/lib/repositories/auth";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
+import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.AUTH_SECRET;

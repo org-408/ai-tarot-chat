@@ -1,6 +1,6 @@
 // lib/services/auth.ts
-import { decodeJWT } from "@/../shared/lib/auth/jwt";
 import type { JWTPayload } from "@/../shared/lib/types";
+import { decodeJWT } from "@/lib/utils/jwt";
 import { getVersion } from "@tauri-apps/api/app";
 import { version as osVersion, platform } from "@tauri-apps/plugin-os";
 import { authenticate } from "tauri-plugin-web-auth-api";
