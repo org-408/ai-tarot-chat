@@ -1,10 +1,17 @@
-import type { Reading, Spread, TarotCard } from "@/../shared/lib/types";
+import type {
+  Client,
+  Reading,
+  RemainingReadings,
+  Spread,
+  TarotCard,
+} from "@/../shared/lib/types";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
 import { readingRepository } from "@/lib/repositories/reading";
 import { spreadRepository } from "@/lib/repositories/spread";
 import { tarotRepository } from "@/lib/repositories/tarot";
+import { isSameDayJST } from "../utils/date";
 
 export class ReadingService {
   /**
@@ -105,24 +112,23 @@ export class ReadingService {
   /**
    * 今日の残り回数取得
    */
-  async getRemainingReadings(clientId: string): Promise<{
-    remainingReadings: number;
-    remainingCeltics: number;
-    remainingPersonal: number;
-  }> {
-    const client = await clientRepository.getClientById(clientId);
+  async getRemainingReadings(client: Client): Promise<RemainingReadings> {
     if (!client) throw new Error("Client not found");
 
-    const plan = await planRepository.getPlanById(client.planId);
+    const plan =
+      client.plan ?? (await planRepository.getPlanById(client.planId));
     if (!plan) throw new Error("Plan not found");
 
-    const today = new Date().toISOString().split("T")[0];
-    const lastReading = client.lastReadingDate?.toISOString().split("T")[0];
+    console.log("Client last reading date:", client.lastReadingDate);
+    const lastReading = client.lastReadingDate;
 
     // 日付が変わっていればリセット
-    const dailyCount = lastReading === today ? client.dailyReadingsCount : 0;
-    const celticCount = lastReading === today ? client.dailyCelticsCount : 0;
-    const personalCount = lastReading === today ? client.dailyPersonalCount : 0;
+    const dailyCount =
+      lastReading && isSameDayJST(lastReading) ? client.dailyReadingsCount : 0;
+    const celticCount =
+      lastReading && isSameDayJST(lastReading) ? client.dailyCelticsCount : 0;
+    const personalCount =
+      lastReading && isSameDayJST(lastReading) ? client.dailyPersonalCount : 0;
 
     return {
       remainingReadings: Math.max(0, plan.maxReadings - dailyCount),

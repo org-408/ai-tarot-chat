@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { RemainingReadings } from "shared/lib/types";
 import AdBanner from "./components/AdBanner";
 import FreePage from "./components/FreePage";
 import Header from "./components/Header";
@@ -8,6 +9,7 @@ import PremiumPage from "./components/PremiumPage";
 import StandardPage from "./components/StandardPage";
 import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
+import { readingService } from "./lib/services/reading";
 import { MasterData, syncService } from "./lib/services/sync";
 import { PageType, SessionData, UserPlan } from "./types";
 
@@ -18,6 +20,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
+  const [remainingReadings, setRemainingReadings] =
+    useState<RemainingReadings>();
 
   const authService = new AuthService();
 
@@ -28,7 +32,7 @@ function App() {
 
   // 広告表示スタイル
   useEffect(() => {
-    if (session?.plan === "FREE") {
+    if (session?.plan === "FREE" || session?.plan === "GUEST") {
       document.body.classList.add("with-ads");
     } else {
       document.body.classList.remove("with-ads");
@@ -53,7 +57,7 @@ function App() {
       // storeなど初期化
       await initializeApp();
 
-      // baseUrl 不要
+      // デバイス登録
       const deviceData = await authService.registerDevice();
       console.log("デバイス登録完了");
 
@@ -63,10 +67,15 @@ function App() {
         user: deviceData.user,
       });
 
-      // baseUrl 不要
+      // マスターデータ取得
       const masters = await syncService.getMasterData();
       setMasterData(masters);
-      console.log("マスターデータ同期完了", masterData);
+      console.log("マスターデータ同期完了", masters);
+
+      // 占い残数の取得（毎回サーバーから取得）
+      const remaining = await readingService.getRemainingReadings();
+      setRemainingReadings(remaining);
+      console.log("占い残数取得完了", remaining);
 
       console.log("セッション初期化完了");
       setLoading(false);
@@ -74,6 +83,10 @@ function App() {
       // ...
     }
   };
+
+  useEffect(() => {
+    console.log("masterData 更新:", masterData);
+  }, [masterData]);
 
   /**
    * ログイン処理

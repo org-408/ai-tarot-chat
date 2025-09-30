@@ -1,4 +1,6 @@
+import { RemainingReadings } from "@/../shared/lib/types";
 import { databaseRepository } from "../repositories/database";
+import { apiClient } from "../utils/apiClient";
 import { authService } from "./auth";
 
 export interface Reading {
@@ -173,6 +175,17 @@ export class ReadingService {
     );
 
     return rows[0]?.count ?? 0;
+  }
+
+  /**
+   * 利用可能な残りの占い回数を取得
+   */
+  async getRemainingReadings(): Promise<RemainingReadings> {
+    const data = await apiClient.get<RemainingReadings>(
+      "/api/readings/remaining"
+    );
+    console.log("Remaining readings fetched:", data);
+    return data;
   }
 }
 

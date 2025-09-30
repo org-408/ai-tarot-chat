@@ -62,7 +62,8 @@ export class SyncService {
 
     const cached = await storeRepository.get<MasterData>(this.KEYS.MASTER_DATA);
 
-    if (!cached) {
+    // ✅ nullまたは空オブジェクトの場合は初回取得
+    if (!cached || !cached.plans || cached.plans.length === 0) {
       console.log("キャッシュなし - 初回取得");
       return await this.fetchAndSaveMasterData();
     }
@@ -75,14 +76,22 @@ export class SyncService {
         return await this.fetchAndSaveMasterData();
       }
 
-      console.log("マスターデータ（キャッシュ利用）");
+      console.log("マスターデータ（キャッシュ利用）", {
+        plans: cached.plans?.length,
+        categories: cached.categories?.length,
+        spreads: cached.spreads?.length,
+      });
       return cached;
     } catch (error) {
       console.warn("更新チェック失敗 - キャッシュを使用:", error);
+      // ✅ エラー時もキャッシュが有効か確認
+      if (!cached.plans || cached.plans.length === 0) {
+        console.log("キャッシュ無効 - 強制取得");
+        return await this.fetchAndSaveMasterData();
+      }
       return cached;
     }
   }
-
   private async checkMasterDataUpdates(): Promise<boolean> {
     const lastUpdatedAt = await storeRepository.get<string>(
       this.KEYS.MASTER_DATA_UPDATED_AT

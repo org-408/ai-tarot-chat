@@ -434,3 +434,13 @@ export type FavoriteSpreadInput = Omit<
   FavoriteSpread,
   "id" | "createdAt" | "client" | "spread"
 >;
+
+// ==========================================
+// その他の型定義
+// ==========================================
+
+export type RemainingReadings = {
+  remainingReadings: number;
+  remainingCeltics: number;
+  remainingPersonal: number;
+};
