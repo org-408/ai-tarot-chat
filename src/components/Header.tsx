@@ -1,4 +1,4 @@
-import { PageType } from "../types";
+import { PageType, UserPlan } from "../types";
 
 interface HeaderProps {
   currentPlan: UserPlan;

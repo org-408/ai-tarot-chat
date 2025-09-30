@@ -4,61 +4,50 @@ import { BaseRepository } from "./base";
 
 export class ClientRepository extends BaseRepository {
   // ==================== Client ====================
-  async createClient(
-    client: Omit<Client, "id" | "createdAt" | "updatedAt">
-  ): Promise<string> {
-    const created = await this.db.client.create({
-      data: {
-        name: client.name,
-        userId: client.userId,
-        deletedAt: client.deletedAt,
-        planId: client.planId,
-        dailyReadingsCount: client.dailyReadingsCount,
-        lastReadingDate: client.lastReadingDate,
-        dailyCelticsCount: client.dailyCelticsCount,
-        lastCelticReadingDate: client.lastCelticReadingDate,
-        dailyPersonalCount: client.dailyPersonalCount,
-        lastPersonalReadingDate: client.lastPersonalReadingDate,
-        isRegistered: client.isRegistered,
-        lastLoginAt: client.lastLoginAt,
-      },
-    });
-
-    return created.id;
+  async createClient(data: Prisma.ClientCreateInput): Promise<Client> {
+    return (await this.db.client.create({
+      data,
+      include: { plan: true, user: true },
+    })) as Client;
   }
 
   async getClientById(id: string): Promise<Client | null> {
-    return await this.db.client.findUnique({
-      where: { id, deletedAt: null },
-    });
-  }
-
-  async getClientWithPlan(id: string): Promise<Client | null> {
-    const result = await this.db.client.findUnique({
+    return (await this.db.client.findUnique({
       where: { id, deletedAt: null },
       include: {
         plan: true,
         user: true,
       },
-    });
+    })) as Client | null;
+  }
 
-    if (!result) return null;
-
-    return {
-      ...result,
-      plan: result.plan,
-      user: result.user,
-    } as Client;
+  async getClientWithAllRelations(id: string): Promise<Client | null> {
+    return (await this.db.client.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        plan: true,
+        user: true,
+        devices: true,
+        favoriteSpreads: true,
+        readings: true,
+        planChangeHistories: true,
+        chatMessages: true,
+      },
+    })) as Client | null;
   }
 
   async getClientByEmail(email: string): Promise<Client | null> {
-    return await this.db.client.findUnique({
+    return (await this.db.client.findUnique({
       where: { email, deletedAt: null },
-    });
+      include: {
+        plan: true,
+        user: true,
+      },
+    })) as Client | null;
   }
 
   async getClientByUserId(userId: string): Promise<Client | null> {
-    return (await this.db.client.findFirst({
+    return (await this.db.client.findUnique({
       where: { userId, deletedAt: null },
       include: {
         plan: true,
@@ -69,12 +58,13 @@ export class ClientRepository extends BaseRepository {
 
   async updateClient(
     id: string,
-    updates: Prisma.ClientUncheckedUpdateInput
-  ): Promise<void> {
-    await this.db.client.update({
+    data: Prisma.ClientUncheckedUpdateInput
+  ): Promise<Client> {
+    return (await this.db.client.update({
       where: { id },
-      data: updates,
-    });
+      data,
+      include: { plan: true, user: true },
+    })) as Client;
   }
 
   async softDeleteClient(id: string): Promise<void> {
@@ -91,53 +81,43 @@ export class ClientRepository extends BaseRepository {
   }
 
   // ==================== Device ====================
-  async createDevice(
-    device: Omit<
-      Device,
-      "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages"
-    >
-  ): Promise<string> {
-    const created = await this.db.device.create({
-      data: {
-        deviceId: device.deviceId,
-        clientId: device.clientId,
-        platform: device.platform,
-        appVersion: device.appVersion,
-        osVersion: device.osVersion,
-        pushToken: device.pushToken,
-        lastSeenAt: device.lastSeenAt,
-      },
+  async createDevice(data: Prisma.DeviceCreateInput): Promise<Device> {
+    return await this.db.device.create({
+      data,
+      include: { client: { include: { plan: true } } },
     });
-
-    return created.id;
   }
 
   async getDeviceById(id: string): Promise<Device | null> {
     return await this.db.device.findUnique({
       where: { id },
+      include: { client: { include: { plan: true } } },
     });
   }
 
   async getDeviceByDeviceId(deviceId: string): Promise<Device | null> {
     return await this.db.device.findUnique({
       where: { deviceId },
+      include: { client: { include: { plan: true } } },
     });
   }
 
   async getDevicesByClientId(clientId: string): Promise<Device[]> {
     return await this.db.device.findMany({
       where: { clientId },
+      include: { client: { include: { plan: true } } },
       orderBy: { lastSeenAt: "desc" },
     });
   }
 
   async updateDevice(
     id: string,
-    updates: Prisma.DeviceUncheckedUpdateInput
-  ): Promise<void> {
-    await this.db.device.update({
+    data: Prisma.DeviceUncheckedUpdateInput
+  ): Promise<Device> {
+    return await this.db.device.update({
       where: { id },
-      data: updates,
+      data,
+      include: { client: { include: { plan: true } } },
     });
   }
 

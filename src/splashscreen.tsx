@@ -1,4 +1,8 @@
-const TarotSplashScreen = () => {
+type TarotSplashScreenProps = {
+  message?: string;
+};
+
+const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
   // 星のランダム位置生成
   const stars = Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -66,6 +70,13 @@ const TarotSplashScreen = () => {
               <div className="w-2 h-2 bg-white/50 rounded-full"></div>
               <div className="w-12 h-px bg-gradient-to-l from-transparent to-white/40"></div>
             </div>
+
+            {/* メッセージ表示 */}
+            {message && (
+              <div className="mt-8 text-center text-white/90 text-lg font-semibold">
+                {message}
+              </div>
+            )}
           </div>
         </div>
 

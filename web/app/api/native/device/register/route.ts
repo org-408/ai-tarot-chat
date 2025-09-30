@@ -28,25 +28,10 @@ export async function POST(request: NextRequest) {
       pushToken,
     });
 
-    console.log(`✅ デバイス登録完了 (clientId: ${result.client.id})`);
+    console.log(`✅ デバイス登録完了 (result: ${result})`);
 
-    // 既存パターンに合わせたレスポンス
     return Response.json({
       token: result.token,
-      userId: result.client.userId,
-      client: {
-        id: result.client.id,
-        userId: result.client.userId,
-        isRegistered: result.client.isRegistered,
-        plan: result.client.plan,
-        user: result.client.user,
-        dailyReadingsCount: result.client.dailyReadingsCount,
-        lastReadingDate: result.client.lastReadingDate,
-        dailyCelticsCount: result.client.dailyCelticsCount,
-        lastCelticReadingDate: result.client.lastCelticReadingDate,
-        dailyPersonalCount: result.client.dailyPersonalCount,
-        lastPersonalReadingDate: result.client.lastPersonalReadingDate,
-      },
     });
   } catch (error) {
     console.error("❌ デバイス登録エラー:", error);

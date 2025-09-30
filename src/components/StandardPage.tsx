@@ -1,9 +1,18 @@
 import { useState } from "react";
+import { RemainingReadings } from "../../shared/lib/types";
 import { Genre, UserPlan } from "../types";
 
 interface StandardPageProps {
   onUpgrade: (plan: UserPlan) => void;
   onDowngrade: (plan: UserPlan) => void;
+  isAuthenticated: boolean;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+  isLoggingIn: boolean;
+  remainingReadings: RemainingReadings;
 }
 
 interface SpreadOption {
@@ -15,6 +24,10 @@ interface SpreadOption {
 const StandardPage: React.FC<StandardPageProps> = ({
   onUpgrade,
   onDowngrade,
+  isAuthenticated,
+  user,
+  isLoggingIn,
+  remainingReadings,
 }) => {
   const [selectedGenre, setSelectedGenre] = useState<string>("恋愛・人間関係");
   const [selectedSpread, setSelectedSpread] = useState<string>("恋愛三角");

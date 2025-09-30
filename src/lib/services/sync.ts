@@ -1,16 +1,9 @@
 // tauri/src/lib/services/sync.ts（シンプル化）
+import { MasterData } from "@/types";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { authService } from "./auth";
 import { readingService } from "./reading";
-
-export interface MasterData {
-  plans: any[];
-  levels: any[];
-  categories: any[];
-  spreads?: any[];
-  tarotists?: any[];
-}
 
 export class SyncService {
   private readonly KEYS = {

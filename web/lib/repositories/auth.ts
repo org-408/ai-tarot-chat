@@ -35,6 +35,7 @@ export class AuthRepository extends BaseRepository {
   async getUserById(id: string) {
     return await this.db.user.findUnique({
       where: { id },
+      include: { client: { include: { plan: true } } },
     });
   }
 

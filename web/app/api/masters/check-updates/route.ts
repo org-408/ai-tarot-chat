@@ -4,9 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // 認証チェック
-    const auth = await authService.verifyApiRequest(request);
-    if ("error" in auth) return auth.error;
+    // AuthService経由でセッション検証
+    const payload = await authService.verifyApiRequest(request);
+    if ("error" in payload || !payload)
+      return new Response("unauthorized", { status: 401 });
 
     // リクエストボディ取得
     const { lastUpdatedAt } = await request.json();

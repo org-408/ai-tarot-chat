@@ -1,5 +1,4 @@
 import type {
-  Client,
   Reading,
   RemainingReadings,
   Spread,
@@ -112,11 +111,11 @@ export class ReadingService {
   /**
    * 今日の残り回数取得
    */
-  async getRemainingReadings(client: Client): Promise<RemainingReadings> {
+  async getRemainingReadings(clientId: string): Promise<RemainingReadings> {
+    const client = await clientRepository.getClientById(clientId);
     if (!client) throw new Error("Client not found");
 
-    const plan =
-      client.plan ?? (await planRepository.getPlanById(client.planId));
+    const plan = client.plan;
     if (!plan) throw new Error("Plan not found");
 
     console.log("Client last reading date:", client.lastReadingDate);

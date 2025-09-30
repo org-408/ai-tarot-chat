@@ -1,4 +1,4 @@
-// import { UserPlan } from "../types";
+import { UserPlan } from "../types";
 
 interface AdBannerProps {
   currentPlan: UserPlan;

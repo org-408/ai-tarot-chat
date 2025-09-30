@@ -53,7 +53,7 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
-  clients       Client[]
+  client        Client?
 }
 
 model VerificationToken {
@@ -89,7 +89,7 @@ model Device {
 
 model Client {
   id            String    @id @default(cuid())
-  userId        String?
+  userId        String?   @unique
   user          User?     @relation(fields: [userId], references: [id])
   name          String?
   email         String?   @unique
@@ -123,7 +123,7 @@ model Client {
   favoriteSpreads FavoriteSpread[]
 
   // 関連
-  reading Reading[]
+  readings Reading[]
   planChangeHistories PlanChangeHistory[]
   chatMessages ChatMessage[]
 
@@ -269,6 +269,7 @@ model SpreadToCategory {
 // プランモデル
 model Plan {
   id          String    @id @default(cuid())
+  no          Int       @unique @default(autoincrement())  // 並び順
   code        String    @unique  // "GUEST", "FREE", "STANDARD", "PREMIUM"
   name        String    // "ゲスト", "フリー", "スタンダード", "プレミアム"
   description String   @db.Text
@@ -286,7 +287,8 @@ model Plan {
   // 関連
   clients     Client[]
   spreads     Spread[]  // このプランで利用可能なスプレッド
-  planChangeHistories PlanChangeHistory[] @relation("FromPlan")
+  fromPlanChangeHistories PlanChangeHistory[] @relation("FromPlan")
+  toPlanChangeHistories   PlanChangeHistory[] @relation("ToPlan")
 }
 
 // ==========================================
@@ -297,9 +299,13 @@ model Plan {
 model PlanChangeHistory {
   id          String    @id @default(cuid())
   clientId    String
-  client      Client      @relation(fields: [clientId], references: [id])
-  planId  String
-  plan    Plan      @relation("FromPlan", fields: [planId], references: [id])
+  client      Client    @relation(fields: [clientId], references: [id])
+  fromPlanId  String
+  fromPlan    Plan      @relation("FromPlan", fields: [fromPlanId], references: [id])
+  toPlanId    String
+  toPlan      Plan      @relation("ToPlan", fields: [toPlanId], references: [id])
+  reason      String?   // "UPGRADE", "DOWNGRADE", "EXPIRE", "CANCEL"など
+  note        String?   @db.Text
   changedAt   DateTime  @default(now())
 }
 

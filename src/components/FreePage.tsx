@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RemainingReadings } from "../../shared/lib/types";
 import { Genre, UserPlan } from "../types";
 
 interface FreePageProps {
@@ -11,6 +12,7 @@ interface FreePageProps {
     name?: string;
   };
   isLoggingIn: boolean;
+  remainingReadings: RemainingReadings;
 }
 
 const FreePage: React.FC<FreePageProps> = ({
@@ -19,10 +21,11 @@ const FreePage: React.FC<FreePageProps> = ({
   isAuthenticated,
   user,
   isLoggingIn,
+  remainingReadings,
 }) => {
   const [selectedGenre, setSelectedGenre] = useState<string>("恋愛運");
   const [selectedSpread, setSelectedSpread] = useState<string>("ワンカード");
-  const [remainingReads] = useState<number>(3); // TODO: 実際の残り回数をサーバーから取得
+  const remainingReads = remainingReadings.remainingReadings;
 
   const genres: Genre[] = [
     {
@@ -146,7 +149,9 @@ const FreePage: React.FC<FreePageProps> = ({
         onClick={handleStartReading}
         disabled={remainingReads <= 0}
       >
-        🔮 占いを始める
+        {remainingReads > 0
+          ? "🔮 占いを始める"
+          : "本日の占いは終了しました。明日またご利用ください"}
       </button>
 
       {/* アップグレードヒント */}

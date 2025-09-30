@@ -8,15 +8,15 @@ export async function GET(request: NextRequest) {
     console.log("🔄 セッション検証処理開始");
 
     // AuthService経由でセッション検証
-    const client = await authService.verifyApiRequest(request);
-    if ("error" in client || !client)
+    const payload = await authService.verifyApiRequest(request);
+    if ("error" in payload || !payload)
       return new Response("unauthorized", { status: 401 });
 
-    console.log(`✅ セッション検証完了 (client: ${client})`);
+    console.log(`✅ セッション検証完了 (payload: ${payload})`);
 
     // 既存パターンに合わせたレスポンス
     return Response.json({
-      client,
+      payload,
     });
   } catch (error) {
     console.error("❌ セッション検証エラー:", error);

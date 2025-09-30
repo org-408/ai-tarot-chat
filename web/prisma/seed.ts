@@ -357,7 +357,8 @@ const tarotists: Prisma.TarotistCreateInput[] = [
 // プラン名を正規化する関数
 function normalizePlan(plan: string): string {
   const planMap: Record<string, string> = {
-    Free: "GUEST",
+    Guest: "GUEST",
+    Free: "FREE",
     Standard: "STANDARD",
     Master: "MASTER",
   };

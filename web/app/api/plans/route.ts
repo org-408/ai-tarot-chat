@@ -7,11 +7,11 @@ export async function GET(request: NextRequest) {
     console.log("📍 /api/plans - プラン一覧取得リクエスト受信");
 
     // sessionチェック
-    const client = await authService.verifyApiRequest(request);
-    if ("error" in client || !client)
+    const payload = await authService.verifyApiRequest(request);
+    if ("error" in payload || !payload)
       return new Response("unauthorized", { status: 401 });
 
-    console.log(`✅ セッション検証完了 (client: ${client})`);
+    console.log(`✅ セッション検証完了 (payload: ${payload})`);
 
     // マスターデータからプラン一覧取得
     const plans = await getPlans();

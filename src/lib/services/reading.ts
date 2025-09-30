@@ -185,7 +185,25 @@ export class ReadingService {
       "/api/readings/remaining"
     );
     console.log("Remaining readings fetched:", data);
+    if (!data || "error" in data) {
+      throw new Error("Failed to fetch remaining readings");
+    }
     return data;
+  }
+
+  /**
+   * プランを変更する
+   */
+  async changePlan(newPlanCode: string): Promise<boolean> {
+    const success = await apiClient.post<{ success: boolean }>(
+      "/api/plans/change",
+      { code: newPlanCode }
+    );
+    console.log("Plan change response:", success);
+    if (!success || "error" in success) {
+      throw new Error("Failed to change plan");
+    }
+    return success.success;
   }
 }
 

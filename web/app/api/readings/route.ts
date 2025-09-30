@@ -2,9 +2,15 @@ import { authService } from "@/lib/services/auth";
 import { readingService } from "@/lib/services/reading";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    const payload = await authService.verifyApiRequest(request);
+    if ("error" in payload || !payload)
+      return new Response("unauthorized", { status: 401 });
+
+    console.log(`✅ セッション検証完了 (payload: ${payload.payload}`);
+
+    const body = await request.json();
 
     // バリデーション（Zodなど使用推奨）
     if (!body.deviceId || !body.spreadId || !body.categoryId) {
@@ -14,15 +20,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // デバイス連携（必要に応じてユーザー取得/作成）
-    const { client } = await authService.linkDevice(
-      body.deviceId,
-      body.clientId
-    );
-
     // ビジネスロジックはServiceに委譲
     const reading = await readingService.executeReading({
-      clientId: client.id,
+      clientId: payload.payload.clientId,
       deviceId: body.deviceId,
       spreadId: body.spreadId,
       categoryId: body.categoryId,

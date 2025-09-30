@@ -9,14 +9,16 @@ export async function GET(request: NextRequest) {
     );
 
     // sessionチェック
-    const client = await authService.verifyApiRequest(request);
-    if ("error" in client || !client)
+    const payload = await authService.verifyApiRequest(request);
+    if ("error" in payload || !payload)
       return new Response("unauthorized", { status: 401 });
 
-    console.log(`✅ セッション検証完了 (client: ${client.client}`);
+    console.log(`✅ セッション検証完了 (payload: ${payload.payload}`);
 
     // 占いの利用残数確認
-    const remaining = await readingService.getRemainingReadings(client.client);
+    const remaining = await readingService.getRemainingReadings(
+      payload.payload.clientId
+    );
     return NextResponse.json(remaining);
   } catch (error) {
     console.error("プラン一覧取得エラー:", error);

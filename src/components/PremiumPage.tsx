@@ -1,11 +1,26 @@
 import { useEffect, useState } from "react";
-import { Spread, SpreadRecommendation, UserPlan } from "../types";
+import { RemainingReadings, Spread } from "../../shared/lib/types";
+import { SpreadRecommendation, UserPlan } from "../types";
 
 interface PremiumPageProps {
   onDowngrade: (plan: UserPlan) => void;
+  isAuthenticated: boolean;
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+  isLoggingIn: boolean;
+  remainingReadings: RemainingReadings;
 }
 
-const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
+const PremiumPage: React.FC<PremiumPageProps> = ({
+  onDowngrade,
+  isAuthenticated,
+  user,
+  isLoggingIn,
+  remainingReadings,
+}) => {
   const [userInput, setUserInput] =
     useState<string>("転職すべきか悩んでいます");
   const [selectionMode, setSelectionMode] = useState<string>("ai-auto");
@@ -19,138 +34,138 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
     "love-triangle",
   ]);
 
-  const allSpreads: Spread[] = [
+  const allSpreads: Partial<Spread>[] = [
     {
       id: "one-card",
       name: "ワンカード",
       category: "初心者",
-      description: "今日のメッセージ・即答・瞑想テーマ",
+      guide: "今日のメッセージ・即答・瞑想テーマ",
     },
     {
       id: "three-card-ppf",
       name: "3枚引き（Past/Present/Future）",
       category: "初心者",
-      description: "過去・現在・未来",
+      guide: "過去・現在・未来",
     },
     {
       id: "three-card-sao",
       name: "3枚引き（Situation/Action/Outcome）",
       category: "初心者",
-      description: "状況・行動・結果",
+      guide: "状況・行動・結果",
     },
     {
       id: "interview",
       name: "面接スプレッド",
       category: "初心者",
-      description: "あなたの強み・相手の印象・結果",
+      guide: "あなたの強み・相手の印象・結果",
     },
     {
       id: "mind-body-spirit",
       name: "3枚引き（Mind/Body/Spirit）",
       category: "中級",
-      description: "心・体・魂",
+      guide: "心・体・魂",
     },
     {
       id: "love-triangle",
       name: "恋愛三角",
       category: "中級",
-      description: "心の状態・現在の愛・未来の愛",
+      guide: "心の状態・現在の愛・未来の愛",
     },
     {
       id: "health-check",
       name: "健康チェック",
       category: "中級",
-      description: "心の健康・体の健康・必要な行動・回復の兆し",
+      guide: "心の健康・体の健康・必要な行動・回復の兆し",
     },
     {
       id: "five-card",
       name: "5枚スプレッド",
       category: "中級",
-      description: "現在・課題・過去・未来・アドバイス",
+      guide: "現在・課題・過去・未来・アドバイス",
     },
     {
       id: "reconciliation",
       name: "復縁スプレッド",
       category: "中級",
-      description: "過去の関係・現在・相手の気持ち・復縁可能性",
+      guide: "過去の関係・現在・相手の気持ち・復縁可能性",
     },
     {
       id: "money-forecast",
       name: "金運予測",
       category: "中級",
-      description: "現状・収入・支出・投資運・節約法・金運",
+      guide: "現状・収入・支出・投資運・節約法・金運",
     },
     {
       id: "soulmate",
       name: "ソウルメイト",
       category: "中級",
-      description: "現状・準備度・出会い方・相手像・出会う時期",
+      guide: "現状・準備度・出会い方・相手像・出会う時期",
     },
     {
       id: "money-block",
       name: "マネーブロック解除",
       category: "中級",
-      description: "現状・原因・ブロック・解決法・成功後",
+      guide: "現状・原因・ブロック・解決法・成功後",
     },
     {
       id: "career-path",
       name: "キャリアパス",
       category: "中級",
-      description: "現状・課題・強み・長期目標・行動・機会・結果",
+      guide: "現状・課題・強み・長期目標・行動・機会・結果",
     },
     {
       id: "work-life-balance",
       name: "ワークライフバランス",
       category: "中級",
-      description: "現状・仕事・バランス・プライベート・未来",
+      guide: "現状・仕事・バランス・プライベート・未来",
     },
     {
       id: "relationship",
       name: "関係性スプレッド",
       category: "上級",
-      description: "あなた・相手・関係性",
+      guide: "あなた・相手・関係性",
     },
     {
       id: "relationship-health",
       name: "関係性ヘルスチェック",
       category: "上級",
-      description: "あなた・パートナー・強み・課題・アドバイス・未来",
+      guide: "あなた・パートナー・強み・課題・アドバイス・未来",
     },
     {
       id: "psychological-block",
       name: "心のブロック解除",
       category: "上級",
-      description: "現状・原因・ブロック・解決法・成功後",
+      guide: "現状・原因・ブロック・解決法・成功後",
     },
     {
       id: "healing-journey",
       name: "ヒーリングジャーニー",
       category: "上級",
-      description: "現状・原因・治療法・心の癒し・体の癒し・回復",
+      guide: "現状・原因・治療法・心の癒し・体の癒し・回復",
     },
     {
       id: "energy-balance",
       name: "エナジーバランス",
       category: "上級",
-      description: "現状・精神・肉体・行動・栄養・運動・バランス",
+      guide: "現状・精神・肉体・行動・栄養・運動・バランス",
     },
     {
       id: "investment",
       name: "投資スプレッド",
       category: "上級",
-      description: "リスク・リターン・タイミング・結果",
+      guide: "リスク・リターン・タイミング・結果",
     },
     {
       id: "horseshoe",
       name: "ホースシュー",
       category: "最上級",
-      description: "過去・現在・未来・アプローチ・周囲・障害・結果",
+      guide: "過去・現在・未来・アプローチ・周囲・障害・結果",
     },
     {
       id: "celtic-cross",
       name: "ケルト十字",
       category: "最上級",
-      description:
+      guide:
         "現在・課題・遠い過去・近い過去・可能な未来・近い未来・アプローチ・周囲・内面・最終結果",
     },
   ];
@@ -226,7 +241,7 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
     console.log(`開始: ${userInput} - ${selectedSpread}`);
   };
 
-  const getFavoriteSpread = (spreadId: string): Spread | undefined => {
+  const getFavoriteSpread = (spreadId: string): Partial<Spread> | undefined => {
     return allSpreads.find((s) => s.id === spreadId);
   };
 
@@ -378,8 +393,8 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
                   selectionMode === spread.id ? "selected" : ""
                 }`}
                 onClick={() => {
-                  setSelectionMode(spread.id);
-                  setSelectedSpread(spread.id);
+                  setSelectionMode(spread.id!);
+                  setSelectedSpread(spread.id!);
                 }}
               >
                 <div
@@ -415,7 +430,7 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
                         className={`option-item text-sm ${
                           selectedSpread === spread.id ? "selected" : ""
                         }`}
-                        onClick={() => setSelectedSpread(spread.id)}
+                        onClick={() => setSelectedSpread(spread.id!)}
                       >
                         <div
                           className={`radio-button ${
@@ -425,7 +440,7 @@ const PremiumPage: React.FC<PremiumPageProps> = ({ onDowngrade }) => {
                         <div>
                           <div>{spread.name}</div>
                           <div className="text-xs text-gray-500">
-                            {spread.description}
+                            {spread.guide}
                           </div>
                         </div>
                       </div>

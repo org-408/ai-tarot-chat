@@ -1,27 +1,29 @@
 import { useEffect, useState } from "react";
-import { RemainingReadings } from "shared/lib/types";
+import { JWTPayload, RemainingReadings } from "../shared/lib/types";
 import AdBanner from "./components/AdBanner";
-import FreePage from "./components/FreePage";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
-import PremiumPage from "./components/PremiumPage";
-import StandardPage from "./components/StandardPage";
+import SalonPage from "./components/SalonPage";
 import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
 import { readingService } from "./lib/services/reading";
-import { MasterData, syncService } from "./lib/services/sync";
-import { PageType, SessionData, UserPlan } from "./types";
+import { syncService } from "./lib/services/sync";
+import TarotSplashScreen from "./splashscreen";
+import { MasterData, PageType, UserPlan } from "./types";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("reading");
-  const [session, setSession] = useState<SessionData | null>(null);
   const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [remainingReadings, setRemainingReadings] =
     useState<RemainingReadings>();
+  const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
+  const currentPlan = (jwtPayload?.planCode as UserPlan) || "GUEST";
+
+  // AuthServiceインスタンス
 
   const authService = new AuthService();
 
@@ -32,7 +34,7 @@ function App() {
 
   // 広告表示スタイル
   useEffect(() => {
-    if (session?.plan === "FREE" || session?.plan === "GUEST") {
+    if (!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST") {
       document.body.classList.add("with-ads");
     } else {
       document.body.classList.remove("with-ads");
@@ -41,7 +43,7 @@ function App() {
     return () => {
       document.body.classList.remove("with-ads");
     };
-  }, [session?.plan]);
+  }, [jwtPayload]);
 
   /**
    * セッション初期化
@@ -58,14 +60,10 @@ function App() {
       await initializeApp();
 
       // デバイス登録
-      const deviceData = await authService.registerDevice();
-      console.log("デバイス登録完了");
+      const payload = await authService.registerDevice();
+      console.log("デバイス登録完了", payload);
 
-      setSession({
-        clientId: deviceData.clientId,
-        plan: deviceData.plan as UserPlan,
-        user: deviceData.user,
-      });
+      setJwtPayload(payload);
 
       // マスターデータ取得
       const masters = await syncService.getMasterData();
@@ -96,15 +94,11 @@ function App() {
       setLoading(true);
       console.log("ログイン開始");
 
-      const result = await authService.signInWithWeb();
-      console.log("ログイン成功:", result);
+      const payload = await authService.signInWithWeb();
+      console.log("ログイン成功:", payload);
 
       // セッション更新
-      setSession({
-        clientId: session?.clientId || "",
-        plan: result.plan as UserPlan,
-        user: result.user,
-      });
+      setJwtPayload(payload);
     } catch (err) {
       console.error("ログイン失敗:", err);
       setError(err instanceof Error ? err.message : "ログインに失敗しました");
@@ -121,15 +115,12 @@ function App() {
       await authService.logout();
 
       // デバイス再登録
-      const deviceData = await authService.registerDevice();
+      const payload = await authService.registerDevice();
+      console.log("サインアウト デバイス再登録:", payload);
 
-      setSession({
-        clientId: deviceData.clientId,
-        plan: deviceData.plan as UserPlan,
-        user: undefined,
-      });
+      setJwtPayload(payload);
     } catch (err) {
-      console.error("ログアウトエラー:", err);
+      console.error("ログアウトエラー・デバイス再登録:", err);
     }
   };
 
@@ -137,19 +128,22 @@ function App() {
    * プラン変更（モック実装）
    */
   const handlePlanChange = (newPlan: UserPlan) => {
-    console.log(`プラン変更リクエスト: ${session?.plan} → ${newPlan}`);
+    console.log(`プラン変更リクエスト: ${currentPlan} → ${newPlan}`);
 
     // 有料プランかつ未認証の場合はログインが必要
     if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
-      console.log("認証が必要です。ログインを開始します。");
-      handleLogin();
+      console.log("認証が必要です。");
       return;
     }
 
     // TODO: サーバー側でプラン変更APIを実装
     // 現状は一時的にローカル変更のみ
-    setSession((prev) => (prev ? { ...prev, plan: newPlan } : null));
-    alert(`プランを ${newPlan} に変更しました（モック）`);
+    const success = readingService.changePlan(newPlan);
+    if (!success) {
+      console.error("プラン変更に失敗しました");
+      return;
+    }
+    console.log(`プランを ${newPlan} に変更しました（モック）`);
   };
 
   /**
@@ -179,16 +173,17 @@ function App() {
   };
 
   // ローディング表示
-  if (loading && !session) {
+  if (loading && !jwtPayload) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">読み込み中...</div>
-      </div>
+      // <div className="flex items-center justify-center min-h-screen">
+      //   <div className="text-xl">読み込み中...</div>
+      // </div>
+      <TarotSplashScreen message={"読み込み中..."} />
     );
   }
 
   // エラー表示
-  if (error && !session) {
+  if (error && !jwtPayload) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl text-red-500">{error}</div>
@@ -197,7 +192,7 @@ function App() {
   }
 
   // セッションがない場合のフォールバック
-  if (!session) {
+  if (!jwtPayload) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl text-red-500">
@@ -207,48 +202,91 @@ function App() {
     );
   }
 
-  const isAuthenticated = !!session.user;
+  // マスターデータ・残回数データがない場合のフォールバック
+  if (!masterData || !remainingReadings) {
+    return (
+      <TarotSplashScreen message={"マスターデータを同期中..."} />
+      // <div className="flex items-center justify-center min-h-screen">
+      //   <div className="text-xl">マスターデータを同期中...</div>
+      // </div>
+    );
+  }
+
+  const isAuthenticated = !!jwtPayload?.user;
 
   // ページレンダリング
   const renderPage = () => {
     switch (pageType) {
       case "reading":
-        switch (session.plan) {
-          case "GUEST":
-          case "FREE":
-            return (
-              <FreePage
-                onLogin={handleLogin}
-                onUpgrade={handleUpgrade}
-                isAuthenticated={isAuthenticated}
-                user={session.user}
-                isLoggingIn={loading}
-              />
-            );
-          case "STANDARD":
-            return (
-              <StandardPage
-                onUpgrade={handleUpgrade}
-                onDowngrade={handleDowngrade}
-              />
-            );
-          case "PREMIUM":
-            return <PremiumPage onDowngrade={handleDowngrade} />;
-          default:
-            return (
-              <FreePage
-                onLogin={handleLogin}
-                onUpgrade={handleUpgrade}
-                isAuthenticated={isAuthenticated}
-                user={session.user}
-                isLoggingIn={loading}
-              />
-            );
-        }
+        return (
+          <SalonPage
+            payload={jwtPayload}
+            masterData={masterData}
+            isAuthenticated={isAuthenticated}
+            onLogin={handleLogin}
+            onUpgrade={handleUpgrade}
+            onDowngrade={handleDowngrade}
+            isLoggingIn={loading}
+            remainingReadings={remainingReadings}
+            onStartReading={(spreadId, categoryId) => {
+              console.log(
+                `占い開始: spread=${spreadId}, category=${categoryId}`
+              );
+              // TODO: ReadingPageに遷移
+            }}
+          />
+        );
+      // switch (session.plan) {
+      //   case "GUEST":
+      //   case "FREE":
+      //     return (
+      //       <FreePage
+      //         onLogin={handleLogin}
+      //         onUpgrade={handleUpgrade}
+      //         isAuthenticated={isAuthenticated}
+      //         user={session.user}
+      //         isLoggingIn={loading}
+      //         remainingReadings={remainingReadings}
+      //       />
+      //     );
+      //   case "STANDARD":
+      //     return (
+      //       <StandardPage
+      //         onUpgrade={handleUpgrade}
+      //         onDowngrade={handleDowngrade}
+      //         isAuthenticated={isAuthenticated}
+      //         user={session.user}
+      //         isLoggingIn={loading}
+      //         remainingReadings={remainingReadings}
+      //       />
+      //     );
+      //   case "PREMIUM":
+      //     return (
+      //       <PremiumPage
+      //         onDowngrade={handleDowngrade}
+      //         isAuthenticated={isAuthenticated}
+      //         user={session.user}
+      //         isLoggingIn={loading}
+      //         remainingReadings={remainingReadings}
+      //       />
+      //     );
+      //   default:
+      //     return (
+      //       <FreePage
+      //         onLogin={handleLogin}
+      //         onUpgrade={handleUpgrade}
+      //         isAuthenticated={isAuthenticated}
+      //         user={session.user}
+      //         isLoggingIn={loading}
+      //         remainingReadings={remainingReadings}
+      //       />
+      //     );
+      // }
       case "plans":
         return (
           <PlansPage
-            currentPlan={session.plan}
+            payload={jwtPayload}
+            plans={masterData.plans}
             isAuthenticated={isAuthenticated}
             onChangePlan={handlePlanChange}
             onLogin={handleLogin}
@@ -290,12 +328,21 @@ function App() {
         );
       default:
         return (
-          <FreePage
+          <SalonPage
+            payload={jwtPayload}
+            masterData={masterData}
+            isAuthenticated={isAuthenticated}
             onLogin={handleLogin}
             onUpgrade={handleUpgrade}
-            isAuthenticated={isAuthenticated}
-            user={session.user}
+            onDowngrade={handleDowngrade}
             isLoggingIn={loading}
+            remainingReadings={remainingReadings}
+            onStartReading={(spreadId, categoryId) => {
+              console.log(
+                `占い開始: spread=${spreadId}, category=${categoryId}`
+              );
+              // TODO: ReadingPageに遷移
+            }}
           />
         );
     }
@@ -303,7 +350,7 @@ function App() {
 
   return (
     <div className="bg-gray-100 w-full overflow-x-hidden">
-      <Header currentPlan={session.plan} currentPage={pageType} />
+      <Header currentPlan={currentPlan} currentPage={pageType} />
 
       {/* 開発メニュー */}
       <div className="fixed top-2 right-2 z-50">
@@ -326,7 +373,7 @@ function App() {
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  session.plan === "FREE"
+                  currentPlan === "FREE"
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -340,7 +387,7 @@ function App() {
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  session.plan === "STANDARD"
+                  currentPlan === "STANDARD"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -354,7 +401,7 @@ function App() {
                   setPageType("reading");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  session.plan === "PREMIUM"
+                  currentPlan === "PREMIUM"
                     ? "bg-yellow-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -402,15 +449,15 @@ function App() {
       </div>
 
       {/* ユーザー情報表示 */}
-      {session.user && (
+      {jwtPayload.user && (
         <div className="fixed top-2 left-2 z-40 bg-black bg-opacity-10 text-xs px-2 py-1 rounded opacity-30 hover:opacity-80 transition-all">
-          {session.user.email}
+          {jwtPayload.user.email}
         </div>
       )}
 
       {renderPage()}
 
-      <AdBanner currentPlan={session.plan} />
+      <AdBanner currentPlan={currentPlan} />
 
       <Navigation currentPage={pageType} onPageChange={handlePageChange} />
     </div>

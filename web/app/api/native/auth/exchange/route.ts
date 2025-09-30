@@ -20,19 +20,11 @@ export async function POST(request: NextRequest) {
       deviceId,
     });
 
-    console.log(`✅ チケット交換完了 (clientId: ${result.client.id})`);
+    console.log(`✅ チケット交換完了 (clientId: ${result})`);
 
     // 既存パターンに合わせたレスポンス
     return Response.json({
       token: result.token,
-      userId: result.client.userId,
-      client: {
-        id: result.client.id,
-        userId: result.client.userId,
-        isRegistered: result.client.isRegistered,
-        plan: result.client.plan,
-        user: result.client.user,
-      },
     });
   } catch (error) {
     console.error("❌ チケット交換エラー:", error);

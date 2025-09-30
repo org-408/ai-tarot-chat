@@ -172,9 +172,10 @@ const PlatformInfo = ({
 interface SignInFormProps {
   error?: string;
   isMobileApp?: boolean;
+  deviceId?: string;
 }
 
-export function SignInForm({ error, isMobileApp }: SignInFormProps) {
+export function SignInForm({ error, isMobileApp, deviceId }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const { isMobile } = useDeviceDetection();
@@ -187,7 +188,9 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
 
     try {
       // パスで判別できるので、パラメータ不要
-      const callbackUrl = isMobileApp ? "/auth/mobile/callback" : "/dashboard";
+      const callbackUrl = isMobileApp
+        ? `/auth/mobile/callback?deviceId=${deviceId}`
+        : "/dashboard";
 
       await signIn(provider, {
         callbackUrl,

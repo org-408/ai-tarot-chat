@@ -1,4 +1,6 @@
 // lib/services/auth.ts
+import { decodeJWT } from "@/../shared/lib/auth/jwt";
+import type { JWTPayload } from "@/../shared/lib/types";
 import { getVersion } from "@tauri-apps/api/app";
 import { version as osVersion, platform } from "@tauri-apps/plugin-os";
 import { authenticate } from "tauri-plugin-web-auth-api";
@@ -16,9 +18,10 @@ export class AuthService {
   /**
    * デバイス登録 - 起動時に必ず実行
    */
-  async registerDevice() {
+  async registerDevice(): Promise<JWTPayload> {
     console.log("registerDevice:デバイス登録開始");
 
+    // デバイスIDを取得（なければ新規作成してストア登録）
     const deviceId = await this.ensureDeviceId();
     console.log("デバイスID:", deviceId);
 
@@ -34,40 +37,36 @@ export class AuthService {
     );
 
     try {
-      const data = await apiClient.postWithoutAuth<{
-        token: string;
-        userId: string | null;
-        client: {
-          id: string;
-          userId: string | null;
-          isRegistered: boolean;
-          plan: string;
-          user?: { id: string; email: string };
-        };
-      }>("/api/native/device/register", {
-        deviceId,
-        platform: platformName,
-        appVersion: appVersionStr,
-        osVersion: osVersionStr,
-        // pushToken は将来的に追加
-      });
-
-      console.log("デバイス登録成功:", data);
-
-      // サーバーレスポンスに合わせて保存
-      await storeRepository.set(this.KEYS.ACCESS_TOKEN, data.token);
-      await storeRepository.set(this.KEYS.CLIENT_ID, data.client.id);
-
-      if (data.client.userId) {
-        await storeRepository.set(this.KEYS.USER_ID, data.client.userId);
+      const result = await apiClient.postWithoutAuth<{ token: string }>(
+        "/api/native/device/register",
+        {
+          deviceId,
+          platform: platformName,
+          appVersion: appVersionStr,
+          osVersion: osVersionStr,
+          // pushToken は将来的に追加
+        }
+      );
+      if (!result || "error" in result) {
+        throw new Error("デバイス登録に失敗しました");
       }
 
-      return {
-        accessToken: data.token,
-        clientId: data.client.id,
-        plan: data.client.plan,
-        user: data.client.user,
-      };
+      console.log("デバイス登録成功:", result);
+      const { token } = result;
+      const payload = await decodeJWT<JWTPayload>(token);
+      if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
+        throw new Error("不正なトークンが返却されました");
+      }
+
+      // サーバーレスポンスに合わせて保存
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+      await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
+
+      if (payload.user?.id) {
+        await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
+      }
+
+      return payload;
     } catch (error) {
       console.error("デバイス登録エラー:", error);
       throw error;
@@ -77,7 +76,7 @@ export class AuthService {
   /**
    * OAuth認証 - ユーザーとデバイスを紐付け
    */
-  async signInWithWeb() {
+  async signInWithWeb(): Promise<JWTPayload> {
     const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
     const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
     const callbackScheme =
@@ -85,12 +84,16 @@ export class AuthService {
     console.log("🔐 Web認証開始:", url, callbackScheme);
 
     try {
-      const result = await authenticate({
+      const auth = await authenticate({
         url,
         callbackScheme,
       });
+      if (!auth || "error" in auth) {
+        console.log("❌ 認証キャンセルまたはエラー:", auth);
+        throw new Error("認証に失敗しました");
+      }
 
-      const callbackUrl = new URL(result.callbackUrl);
+      const callbackUrl = new URL(auth.callbackUrl);
       const ticket = callbackUrl.searchParams.get("ticket");
 
       if (!ticket) {
@@ -99,47 +102,43 @@ export class AuthService {
 
       console.log("🎫 チケット取得成功");
 
-      const { token: jwt, userId } = await apiClient.postWithoutAuth<{
-        token: string;
-        userId: string;
-      }>("/api/native/exchange", { ticket });
-
-      console.log("✅ JWT取得成功 (userId:", userId, ")");
-
-      await storeRepository.set(this.KEYS.ACCESS_TOKEN, jwt);
-
       const deviceId = await this.getDeviceId();
-      const linkData = await apiClient.postWithoutAuth(
-        "/api/native/link-user",
-        { deviceId, userId }
-      );
+      if (!deviceId) {
+        throw new Error("デバイスIDが存在しません");
+      }
+      console.log("デバイスID:", deviceId);
 
-      console.log("ユーザー紐付け成功:", linkData);
+      const result = await apiClient.postWithoutAuth<{
+        token: string;
+      }>("/api/native/exchange", { ticket, deviceId });
+      if (!result || "error" in result) {
+        console.log("❌ チケット交換エラー:", result);
+        throw new Error("トークン交換に失敗しました");
+      }
 
-      await storeRepository.set(this.KEYS.USER_ID, userId);
+      console.log("✅ JWT取得成功 result:", result);
+      const { token } = result;
+      const payload = await decodeJWT<JWTPayload>(token);
+      if (
+        !payload ||
+        !payload.deviceId ||
+        payload.deviceId !== deviceId ||
+        !payload.user ||
+        !payload.user.id
+      ) {
+        console.error("❌ JWTペイロードエラー:", payload);
+        throw new Error("不正なトークンが返却されました");
+      }
+      console.log("ユーザー紐付け成功:", payload);
 
-      // デバイス情報を再取得
-      const deviceData = await this.registerDevice();
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, result.token);
+      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
 
-      return {
-        success: true,
-        userId,
-        plan: deviceData.plan,
-        user: deviceData.user,
-      };
+      return payload;
     } catch (error) {
       console.error("❌ Web認証エラー:", error);
       throw error;
     }
-  }
-
-  async getSession() {
-    const accessToken = await this.getAccessToken();
-    if (!accessToken) {
-      throw new Error("アクセストークンがありません");
-    }
-
-    return await apiClient.get("/api/native/session");
   }
 
   private async ensureDeviceId(): Promise<string> {

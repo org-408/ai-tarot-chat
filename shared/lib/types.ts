@@ -76,6 +76,8 @@ export type Client = {
   userId?: string | null;
   user?: User;
   name?: string | null;
+  email?: string | null;
+  image?: string | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -107,6 +109,7 @@ export type Client = {
   // 関連
   readings?: Reading[];
   planChangeHistories?: PlanChangeHistory[];
+  chatMessages?: ChatMessage[];
 };
 
 // ==========================================
@@ -237,6 +240,7 @@ export type SpreadToCategory = {
 // プランモデル
 export type Plan = {
   id: string;
+  no: number;
   code: string;
   name: string;
   description: string;
@@ -260,8 +264,12 @@ export type PlanChangeHistory = {
   id: string;
   clientId: string;
   client?: Client;
-  planId: string;
-  plan?: Plan;
+  fromPlanId: string;
+  fromPlan?: Plan;
+  toPlanId: string;
+  toPlan?: Plan;
+  reason?: string | null; // "UPGRADE", "DOWNGRADE", "EXPIRE", "CANCEL"など
+  note?: string | null;
   changedAt: Date;
 };
 
@@ -438,6 +446,30 @@ export type FavoriteSpreadInput = Omit<
 // ==========================================
 // その他の型定義
 // ==========================================
+
+export interface JWTPayload {
+  t: string; // "app"
+  deviceId: string;
+  clientId: string;
+  planCode: string;
+  // ↓↓ ユーザー認証後のみ ↓↓
+  provider?: string; // "google", "apple", etc.
+  user?: {
+    id: string;
+    email?: string;
+    name?: string;
+    image?: string;
+  };
+}
+
+export interface TicketData {
+  t: string; // "ticket"
+  sub: string; // userId
+  email: string;
+  name?: string;
+  image?: string;
+  provider?: string;
+}
 
 export type RemainingReadings = {
   remainingReadings: number;
