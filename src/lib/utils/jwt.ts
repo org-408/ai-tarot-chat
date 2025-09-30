@@ -21,7 +21,9 @@ export async function decodeJWT<T>(
   token: string,
   secret: string = JWT_SECRET
 ): Promise<T> {
+  console.log("🔑 decodeJWT token", token);
   const jwtSecret = secret ?? JWT_SECRET;
+  console.log("🔑 decodeJWT secret", jwtSecret);
   const { payload } = await jwtVerify(
     token,
     new TextEncoder().encode(jwtSecret),

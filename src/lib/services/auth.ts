@@ -1,11 +1,11 @@
 // lib/services/auth.ts
 import type { JWTPayload } from "@/../shared/lib/types";
-import { decodeJWT } from "@/lib/utils/jwt";
 import { getVersion } from "@tauri-apps/api/app";
 import { version as osVersion, platform } from "@tauri-apps/plugin-os";
 import { authenticate } from "tauri-plugin-web-auth-api";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
+import { decodeJWT } from "../utils/jwt";
 
 export class AuthService {
   private readonly KEYS = {
@@ -37,7 +37,7 @@ export class AuthService {
     );
 
     try {
-      const result = await apiClient.postWithoutAuth<{ token: string }>(
+      const result = await apiClient.post<{ token: string }>(
         "/api/native/device/register",
         {
           deviceId,
@@ -53,7 +53,8 @@ export class AuthService {
 
       console.log("デバイス登録成功:", result);
       const { token } = result;
-      const payload = await decodeJWT<JWTPayload>(token);
+      const secret = import.meta.env.VITE_AUTH_SECRET;
+      const payload = await decodeJWT<JWTPayload>(token, secret);
       if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
         throw new Error("不正なトークンが返却されました");
       }
@@ -108,9 +109,9 @@ export class AuthService {
       }
       console.log("デバイスID:", deviceId);
 
-      const result = await apiClient.postWithoutAuth<{
+      const result = await apiClient.post<{
         token: string;
-      }>("/api/native/exchange", { ticket, deviceId });
+      }>("/api/native/auth/exchange", { ticket, deviceId });
       if (!result || "error" in result) {
         console.log("❌ チケット交換エラー:", result);
         throw new Error("トークン交換に失敗しました");
@@ -118,7 +119,8 @@ export class AuthService {
 
       console.log("✅ JWT取得成功 result:", result);
       const { token } = result;
-      const payload = await decodeJWT<JWTPayload>(token);
+      const secret = import.meta.env.VITE_AUTH_SECRET;
+      const payload = await decodeJWT<JWTPayload>(token, secret);
       if (
         !payload ||
         !payload.deviceId ||

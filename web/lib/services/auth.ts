@@ -112,6 +112,7 @@ export class AuthService {
     // チケット検証（既存パターンに合わせて）
     let ticketData: TicketData;
     try {
+      console.log("🔑 チケット検証開始 secret", JWT_SECRET);
       const payload = await decodeJWT<TicketData>(params.ticket, JWT_SECRET);
 
       if (payload.t !== "ticket" || !payload.sub) {

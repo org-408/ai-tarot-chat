@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { JWTPayload, RemainingReadings } from "../../shared/lib/types";
+import {
+  JWTPayload,
+  Plan,
+  RemainingReadings,
+  Spread,
+} from "../../shared/lib/types";
 import { MasterData, UserPlan } from "../types";
 
 interface SalonPageProps {
@@ -40,13 +45,30 @@ const SalonPage: React.FC<SalonPageProps> = ({
   // 利用可能なカテゴリ（全て表示）
   const availableCategories = masterData.categories || [];
 
+  const categoriesToShow =
+    currentPlan === "GUEST" || currentPlan === "FREE"
+      ? availableCategories.slice(0, 3)
+      : availableCategories;
+  console.log("Categories to Show:", categoriesToShow);
+
   // 利用可能なスプレッドをフィルタリング
+  console.log("Current Plan Data:", currentPlanData);
+  console.log("Master Data Spreads:", masterData.spreads);
+  const checkNo =
+    currentPlanData!.code === "GUEST" ? 2 : currentPlanData!.no + 1;
+  const availablePlansFromPlanNo = masterData.plans.filter(
+    (p: Plan) => p.no <= (checkNo || 0)
+  );
+  console.log("Current Plan No:", checkNo);
+  console.log("Available Plans from Plan No:", availablePlansFromPlanNo);
   const getAvailableSpreads = () => {
     if (!masterData.spreads) return [];
 
-    return masterData.spreads.filter((spread: any) => {
+    return masterData.spreads.filter((spread: Spread) => {
       // プラン制限チェック
-      if (spread.planId !== currentPlanData?.id) {
+      if (
+        !availablePlansFromPlanNo.map((p) => p.code).includes(spread.plan!.code)
+      ) {
         return false;
       }
 
@@ -64,6 +86,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   };
 
   const availableSpreads = getAvailableSpreads();
+  console.log("Available Spreads:", availableSpreads);
 
   // 初期選択
   useEffect(() => {
@@ -228,7 +251,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
               : "どのジャンルを占いますか？"}
           </div>
           <div className="space-y-2">
-            {availableCategories.map((category: any) => (
+            {categoriesToShow.map((category: any) => (
               <div
                 key={category.id}
                 className={`option-item ${
