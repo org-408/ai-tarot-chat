@@ -15,16 +15,16 @@ export async function POST(request: NextRequest) {
     console.log(`🔄 チケット交換処理開始 (deviceId: ${deviceId})`);
 
     // AuthService経由でチケット交換・ユーザー紐付け（既存パターンに合わせて）
-    const result = await authService.exchangeTicket({
+    const token = await authService.exchangeTicket({
       ticket,
       deviceId,
     });
 
-    console.log(`✅ チケット交換完了 (clientId: ${result})`);
+    console.log(`✅ チケット交換完了 (token: ${token})`);
 
     // 既存パターンに合わせたレスポンス
     return Response.json({
-      token: result.token,
+      token,
     });
   } catch (error) {
     console.error("❌ チケット交換エラー:", error);

@@ -33,9 +33,7 @@ export class AuthService {
     appVersion?: string;
     osVersion?: string;
     pushToken?: string;
-  }): Promise<{
-    token: string;
-  }> {
+  }): Promise<string> {
     return await prisma.$transaction(async (tx) => {
       // トランザクション付きRepositoryインスタンス作成
       const clientRepo = clientRepository.withTransaction(tx);
@@ -76,7 +74,7 @@ export class AuthService {
         planCode: client.plan.code,
       });
 
-      return { token };
+      return token;
     });
   }
 
@@ -106,9 +104,10 @@ export class AuthService {
   /**
    * チケット交換＋ユーザー紐付け
    */
-  async exchangeTicket(params: { ticket: string; deviceId: string }): Promise<{
-    token: string;
-  }> {
+  async exchangeTicket(params: {
+    ticket: string;
+    deviceId: string;
+  }): Promise<string> {
     // チケット検証（既存パターンに合わせて）
     let ticketData: TicketData;
     try {
@@ -186,7 +185,7 @@ export class AuthService {
         },
       });
 
-      return { token };
+      return token;
     });
   }
 

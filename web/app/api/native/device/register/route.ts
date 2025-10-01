@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     console.log(`プッシュ通知トークン: ${pushToken ? "あり" : "なし"}`);
 
     // AuthService経由でデバイス登録・更新
-    const result = await authService.registerOrUpdateDevice({
+    const token = await authService.registerOrUpdateDevice({
       deviceId,
       platform,
       appVersion,
@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
       pushToken,
     });
 
-    console.log(`✅ デバイス登録完了 (result: ${result})`);
+    console.log(`✅ デバイス登録完了 (token: ${token})`);
 
     return Response.json({
-      token: result.token,
+      token,
     });
   } catch (error) {
     console.error("❌ デバイス登録エラー:", error);
