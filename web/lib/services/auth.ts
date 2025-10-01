@@ -67,12 +67,15 @@ export class AuthService {
       if (!client || !client.plan)
         throw new Error("Client not found for device");
 
-      const token = await generateJWT<JWTPayload>({
-        t: "app",
-        deviceId: device.deviceId,
-        clientId: client.id,
-        planCode: client.plan.code,
-      });
+      const token = await generateJWT<JWTPayload>(
+        {
+          t: "app",
+          deviceId: device.deviceId,
+          clientId: client.id,
+          planCode: client.plan.code,
+        },
+        JWT_SECRET
+      );
 
       return token;
     });
@@ -91,14 +94,17 @@ export class AuthService {
     console.log(`✅ チケット発行成功 (userId: ${session.user.id})`);
 
     // 30秒間有効なチケットを発行（既存パターンに合わせて）
-    return await generateJWT<TicketData>({
-      t: "ticket",
-      sub: session.user.id,
-      email: session.user.email,
-      name: session.user.name || undefined,
-      image: session.user.image || undefined,
-      provider: session.provider,
-    });
+    return await generateJWT<TicketData>(
+      {
+        t: "ticket",
+        sub: session.user.id,
+        email: session.user.email,
+        name: session.user.name || undefined,
+        image: session.user.image || undefined,
+        provider: session.provider,
+      },
+      JWT_SECRET
+    );
   }
 
   /**
@@ -376,7 +382,10 @@ export class AuthService {
     }
 
     try {
-      const payload = await decodeJWT<JWTPayload>(authHeader.substring(7));
+      const payload = await decodeJWT<JWTPayload>(
+        authHeader.substring(7),
+        JWT_SECRET
+      );
       return { payload };
     } catch (error) {
       console.error("❌ APIリクエスト認証エラー:", error);
