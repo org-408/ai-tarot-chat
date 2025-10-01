@@ -11,6 +11,7 @@ import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
+console.log("🔑 AuthService initialized:", JWT_SECRET);
 if (!JWT_SECRET) {
   throw new Error("AUTH_SECRET environment variable is required");
 }
@@ -181,19 +182,22 @@ export class AuthService {
       if (!finalClient.plan) throw new Error("Failed to get updated client");
 
       // アプリ用JWT生成（既存パターンに合わせて）
-      const token = await generateJWT<JWTPayload>({
-        t: "app",
-        deviceId: device.deviceId,
-        clientId: finalClient.id,
-        planCode: finalClient.plan.code,
-        provider: ticketData.provider,
-        user: {
-          id: user.id,
-          email: user.email!,
-          name: user.name || undefined,
-          image: user.image || undefined,
+      const token = await generateJWT<JWTPayload>(
+        {
+          t: "app",
+          deviceId: device.deviceId,
+          clientId: finalClient.id,
+          planCode: finalClient.plan.code,
+          provider: ticketData.provider,
+          user: {
+            id: user.id,
+            email: user.email!,
+            name: user.name || undefined,
+            image: user.image || undefined,
+          },
         },
-      });
+        JWT_SECRET
+      );
 
       return token;
     });

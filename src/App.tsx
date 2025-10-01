@@ -9,6 +9,7 @@ import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
 import { clientService } from "./lib/services/client";
 import { syncService } from "./lib/services/sync";
+import TarotSplashScreen from "./splashscreen";
 import { MasterData, PageType, UserPlan } from "./types";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   const [usageStats, setUsageStats] = useState<UsageStats>();
   const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
   const currentPlan = (jwtPayload?.planCode as UserPlan) || "GUEST";
+  const [message, setMessage] = useState("読み込み中...");
 
   // AuthServiceインスタンス
 
@@ -56,10 +58,12 @@ function App() {
       console.log("1. アプリ起動 - セッション初期化開始");
       // storeなど初期化
       await initializeApp();
+      setMessage("アプリ起動中...");
 
       // デバイス登録
       const payload = await authService.registerDevice();
       console.log("2. デバイス登録完了", payload);
+      setMessage("デバイス登録完了");
 
       setJwtPayload(payload);
 
@@ -67,14 +71,19 @@ function App() {
       const masters = await syncService.getMasterData();
       setMasterData(masters);
       console.log("3. マスターデータ同期完了", masters);
+      setMessage("マスターデータ同期完了");
 
       // 占い残数の取得（毎回サーバーから取得）
       const usage = await clientService.getUsageAndReset();
       setUsageStats(usage);
       console.log("4. ユーザー利用状況の取得完了", usage);
+      setMessage("ユーザー利用状況の取得完了");
 
-      console.log("セッション初期化完了");
+      console.log("5. セッション初期化完了");
+      setMessage("セッション初期化完了");
       setLoading(false);
+
+      console.log("6. スプラッシュスクリーンを閉じる");
     } catch (err) {
       // ...
     }
@@ -184,10 +193,10 @@ function App() {
   // ローディング表示
   if (loading && !jwtPayload) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">読み込み中...</div>
-      </div>
-      // <TarotSplashScreen message={"読み込み中..."} />
+      // <div className="flex items-center justify-center min-h-screen">
+      //   <div className="text-xl">読み込み中...</div>
+      // </div>
+      <TarotSplashScreen message={message} />
     );
   }
 
