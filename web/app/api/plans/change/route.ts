@@ -30,7 +30,15 @@ export async function POST(request: NextRequest) {
     // プラン変更処理
     const needsUpdate = await planService.changePlan(clientId, code);
 
-    return NextResponse.json({ needsUpdate });
+    // JWTペイロード更新
+    if (!needsUpdate) {
+      console.log("❌ プラン変更失敗", needsUpdate, clientId, code);
+      return new Response("plan change failed", { status: 500 });
+    }
+
+    const newToken = await authService.refreshJwtPayload(payload.payload, code);
+    console.log(`✅ プラン変更完了`, needsUpdate, newToken);
+    return NextResponse.json({ success: !!needsUpdate, token: newToken });
   } catch (error) {
     console.error("更新チェックエラー:", error);
     return NextResponse.json(

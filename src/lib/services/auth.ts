@@ -168,6 +168,10 @@ export class AuthService {
     return await storeRepository.get<string>(this.KEYS.ACCESS_TOKEN);
   }
 
+  async saveAccessToken(token: string): Promise<void> {
+    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+  }
+
   async getClientId(): Promise<string | null> {
     return await storeRepository.get<string>(this.KEYS.CLIENT_ID);
   }

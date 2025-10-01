@@ -1,23 +1,25 @@
-import { ArrowUp } from "lucide-react";
+import { ArrowLeft, ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { MasterData } from "../types";
 
-const TarotReadingScreen = () => {
+interface ReadingPageProps {
+  spreadId: string;
+  categoryId: string;
+  masterData: MasterData;
+  onBack: () => void;
+}
+
+const ReadingPage: React.FC<ReadingPageProps> = ({
+  spreadId,
+  categoryId,
+  masterData,
+  onBack,
+}) => {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
       content:
         "こんにちは。私はClaudia、あなたの運命を読み解く占い師です。今日はどのようなことを占いましょうか？",
-      isTyping: false,
-    },
-    {
-      role: "user",
-      content: "最近、仕事で悩んでいることがあって...",
-      isTyping: false,
-    },
-    {
-      role: "assistant",
-      content:
-        "わかりました。仕事についてのお悩みですね。では、ケルト十字のスプレッドで占いましょう。カードを引いています...",
       isTyping: false,
     },
   ]);
@@ -28,6 +30,12 @@ const TarotReadingScreen = () => {
   >(null);
   const [typingMessage, setTypingMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
+  // 選択されたスプレッドとカテゴリの情報を取得
+  const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
+  const selectedCategory = masterData.categories?.find(
+    (c) => c.id === categoryId
+  );
 
   // クロスカードのアニメーション（3秒ごとに入れ替え）
   useEffect(() => {
@@ -223,12 +231,28 @@ const TarotReadingScreen = () => {
       <div className="relative flex-1 flex flex-col p-3 gap-3 overflow-hidden">
         {/* タロットボードエリア */}
         <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-3 border-2 border-purple-300/50 shadow-2xl flex-shrink-0">
+          {/* ヘッダー：戻るボタン + タイトル */}
           <div className="flex items-center justify-between mb-2">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 text-purple-700 hover:text-purple-900 transition-colors"
+            >
+              <ArrowLeft size={20} />
+              <span className="text-sm font-medium">戻る</span>
+            </button>
             <h2 className="text-lg font-bold text-purple-900 flex items-center gap-1">
               <span className="text-xl">🔮</span>
-              ケルト十字
+              {selectedSpread?.name || "ケルト十字"}
             </h2>
+            <div className="w-16"></div> {/* スペーサー */}
           </div>
+
+          {/* カテゴリ表示 */}
+          {selectedCategory && (
+            <div className="text-center text-xs text-purple-600 mb-2">
+              {selectedCategory.name}
+            </div>
+          )}
 
           {/* ボードエリア：グリッド + 位置情報リスト */}
           <div className="flex gap-2">
@@ -426,4 +450,4 @@ const TarotReadingScreen = () => {
   );
 };
 
-export default TarotReadingScreen;
+export default ReadingPage;

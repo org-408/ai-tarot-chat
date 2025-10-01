@@ -182,7 +182,7 @@ export class AuthService {
       if (!finalClient.plan) throw new Error("Failed to get updated client");
 
       // アプリ用JWT生成（既存パターンに合わせて）
-      const token = await generateJWT<JWTPayload>(
+      return await generateJWT<JWTPayload>(
         {
           t: "app",
           deviceId: device.deviceId,
@@ -198,8 +198,6 @@ export class AuthService {
         },
         JWT_SECRET
       );
-
-      return token;
     });
   }
 
@@ -373,6 +371,27 @@ export class AuthService {
       },
       chatMessages: { connect: chatMessages.map((c) => ({ id: c.id })) },
     })) as Client;
+  }
+
+  /**
+   * JWTペイロード更新（プラン変更時など）
+   */
+  async refreshJwtPayload(
+    payload: JWTPayload,
+    planCode: string
+  ): Promise<string> {
+    // アプリ用JWT生成（既存パターンに合わせて）
+    return await generateJWT<JWTPayload>(
+      {
+        t: "app",
+        deviceId: payload.deviceId,
+        clientId: payload.clientId,
+        planCode,
+        provider: payload.provider,
+        user: payload.user,
+      },
+      JWT_SECRET
+    );
   }
 
   /**

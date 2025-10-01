@@ -4,6 +4,7 @@ import AdBanner from "./components/AdBanner";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
+import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
 import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
@@ -23,7 +24,12 @@ function App() {
   const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
   const [message, setMessage] = useState("読み込み中...");
 
-  // AuthServiceインスタンス
+  // 占いセッション用のstate
+  const [isReading, setIsReading] = useState(false);
+  const [readingData, setReadingData] = useState<{
+    spreadId: string;
+    categoryId: string;
+  } | null>(null);
 
   const authService = new AuthService();
 
@@ -44,12 +50,10 @@ function App() {
     return () => {
       document.body.classList.remove("with-ads");
     };
-  }, [jwtPayload, currentPlan]);
+  }, [jwtPayload]);
 
   /**
    * セッション初期化
-   * 1. デバイス登録
-   * 2. セッション情報取得
    */
   const initializeSession = async () => {
     try {
@@ -66,9 +70,7 @@ function App() {
       console.log("2. デバイス登録完了", payload);
       setMessage("デバイス登録完了");
 
-      setJwtPayload(payload);
-      setCurrentPlan(payload.planCode as UserPlan);
-      console.log("2. Current Plan:", payload.planCode);
+      handleChangePayload(payload);
 
       // マスターデータ取得
       const masters = await syncService.getMasterData();
@@ -84,10 +86,13 @@ function App() {
 
       console.log("5. セッション初期化完了");
       setMessage("セッション初期化完了");
+      setLoading(false);
 
       console.log("6. スプラッシュスクリーンを閉じる");
     } catch (err) {
-      // ...
+      console.error("セッション初期化エラー:", err);
+      setError(err instanceof Error ? err.message : "初期化に失敗しました");
+      setLoading(false);
     }
   };
 
@@ -103,6 +108,15 @@ function App() {
     }
   }, [masterData, usageStats]);
 
+  const displayAds = () => {
+    document.body.classList.remove("with-ads");
+    if (!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST") {
+      document.body.classList.add("with-ads");
+    } else {
+      document.body.classList.remove("with-ads");
+    }
+  };
+
   /**
    * ログイン処理
    */
@@ -114,13 +128,13 @@ function App() {
       const payload = await authService.signInWithWeb();
       console.log("ログイン成功:", payload);
 
-      // セッション更新
-      setJwtPayload(payload);
-      setCurrentPlan(payload.planCode as UserPlan);
+      handleChangePayload(payload);
 
-      // ユーザー利用状況の取得
       const usage = await clientService.getUsageAndReset();
       console.log("ユーザー利用状況取得:", usage);
+      setUsageStats(usage);
+      // 広告表示更新(念の為)
+      displayAds();
     } catch (err) {
       console.error("ログイン失敗:", err);
       setError(err instanceof Error ? err.message : "ログインに失敗しました");
@@ -136,12 +150,10 @@ function App() {
     try {
       await authService.logout();
 
-      // デバイス再登録
       const payload = await authService.registerDevice();
       console.log("サインアウト デバイス再登録:", payload);
 
-      setJwtPayload(payload);
-      setCurrentPlan(payload.planCode as UserPlan);
+      handleChangePayload(payload);
     } catch (err) {
       console.error("ログアウトエラー・デバイス再登録:", err);
     }
@@ -153,31 +165,39 @@ function App() {
   const handlePlanChange = async (newPlan: UserPlan) => {
     console.log(`プラン変更リクエスト: ${currentPlan} → ${newPlan}`);
 
-    // 有料プランかつ未認証の場合はログインが必要
     if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
       console.log("認証が必要です。");
       return;
     }
 
-    // TODO: サーバー側でプラン変更APIを実装
-    // 現状は一時的にローカル変更のみ
-    const success = await clientService.changePlan(newPlan);
-    if (!success) {
+    const result = await clientService.changePlan(newPlan);
+    if (!result || "error" in result || !result.success || !result.payload) {
       console.error("プラン変更に失敗しました");
       return;
     }
     console.log(`プランを ${newPlan} に変更しました（モック）`);
-    // ユーザー利用状況を際取得
+    console.log("新しいペイロード:", result.payload);
+    handleChangePayload(result.payload);
+
     const usage = await clientService.getUsageAndReset();
-    if (!usage) {
+    if (!usage || "error" in usage) {
       console.error("ユーザー利用状況の取得に失敗しました");
       return;
     }
     setUsageStats(usage);
+    console.log("ユーザー利用状況の取得:", usage);
+  };
+
+  const handleChangePayload = (payload: JWTPayload) => {
+    setJwtPayload(payload);
+    setCurrentPlan(payload.planCode as UserPlan);
+    console.log("handleChangePayload: ", payload, payload.planCode);
+    // 広告表示更新
+    displayAds();
   };
 
   /**
-   * アップグレード処理（モック実装）
+   * アップグレード処理
    */
   const handleUpgrade = (targetPlan: UserPlan) => {
     console.log(`アップグレードリクエスト: ${targetPlan}`);
@@ -185,11 +205,10 @@ function App() {
   };
 
   /**
-   * ダウングレード処理（モック実装）
+   * ダウングレード処理
    */
   const handleDowngrade = (targetPlan: UserPlan) => {
     console.log(`ダウングレードリクエスト: ${targetPlan}`);
-
     if (confirm(`本当に ${targetPlan} プランにダウングレードしますか？`)) {
       handlePlanChange(targetPlan);
     }
@@ -200,19 +219,32 @@ function App() {
    */
   const handlePageChange = (page: PageType) => {
     setPageType(page);
+    setIsReading(false); // ページ変更時は占いモードを解除
+  };
+
+  /**
+   * 占い開始
+   */
+  const handleStartReading = (spreadId: string, categoryId: string) => {
+    console.log(`占い開始: spread=${spreadId}, category=${categoryId}`);
+    setReadingData({ spreadId, categoryId });
+    setIsReading(true);
+  };
+
+  /**
+   * 占いから戻る
+   */
+  const handleBackFromReading = () => {
+    console.log("占いから戻る");
+    setIsReading(false);
+    setReadingData(null);
   };
 
   // ローディング表示
-  if ((loading && !jwtPayload) || !masterData || !usageStats) {
-    return (
-      // <div className="flex items-center justify-center min-h-screen">
-      //   <div className="text-xl">読み込み中...</div>
-      // </div>
-      <TarotSplashScreen message={message} />
-    );
+  if (loading && !jwtPayload) {
+    return <TarotSplashScreen message={message} />;
   }
 
-  // マスターデータ・残回数データがない場合のフォールバック
   // エラー表示
   if (error && !jwtPayload) {
     return (
@@ -223,7 +255,7 @@ function App() {
   }
 
   // セッションがない場合のフォールバック
-  if (!jwtPayload) {
+  if (!jwtPayload || !masterData || !usageStats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl text-red-500">
@@ -234,6 +266,20 @@ function App() {
   }
 
   const isAuthenticated = !!jwtPayload?.user;
+
+  // 占いセッション中の表示
+  if (isReading && readingData) {
+    return (
+      <div className="bg-gray-100 w-full overflow-x-hidden">
+        <ReadingPage
+          spreadId={readingData.spreadId}
+          categoryId={readingData.categoryId}
+          masterData={masterData}
+          onBack={handleBackFromReading}
+        />
+      </div>
+    );
+  }
 
   // ページレンダリング
   const renderPage = () => {
@@ -249,12 +295,7 @@ function App() {
             onDowngrade={handleDowngrade}
             isLoggingIn={loading}
             usageStats={usageStats}
-            onStartReading={(spreadId, categoryId) => {
-              console.log(
-                `占い開始: spread=${spreadId}, category=${categoryId}`
-              );
-              // TODO: ReadingPageに遷移
-            }}
+            onStartReading={handleStartReading}
           />
         );
       case "plans":
@@ -312,12 +353,7 @@ function App() {
             onDowngrade={handleDowngrade}
             isLoggingIn={loading}
             usageStats={usageStats}
-            onStartReading={(spreadId, categoryId) => {
-              console.log(
-                `占い開始: spread=${spreadId}, category=${categoryId}`
-              );
-              // TODO: ReadingPageに遷移
-            }}
+            onStartReading={handleStartReading}
           />
         );
     }
@@ -415,7 +451,7 @@ function App() {
                   }}
                   className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
                 >
-                  🔑 Login
+                  🔐 Login
                 </button>
               )}
             </div>

@@ -1,5 +1,7 @@
-import { UsageStats } from "../../../shared/lib/types";
+import { JWTPayload, UsageStats } from "../../../shared/lib/types";
 import { apiClient } from "../utils/apiClient";
+import { decodeJWT } from "../utils/jwt";
+import { authService } from "./auth";
 
 /**
  * ユーザー情報の管理
@@ -21,17 +23,45 @@ export class ClientService {
   /**
    * プランを変更する
    */
-  async changePlan(newPlanCode: string): Promise<boolean> {
+  async changePlan(
+    newPlanCode: string
+  ): Promise<{ success: boolean; payload: JWTPayload }> {
     console.log("Changing client plan to:", newPlanCode);
-    const success = await apiClient.post<{ success: boolean }>(
+    const result = await apiClient.post<{ success: boolean; token: string }>(
       "/api/plans/change",
       { code: newPlanCode }
     );
-    console.log("Plan change response:", success);
-    if (!success || "error" in success) {
+    const { success, token } = result;
+    console.log("Plan change response:", success, token);
+    if (!result || !success || !token || "error" in result) {
       throw new Error("Failed to change plan");
     }
-    return success.success;
+
+    // トークンをデコードして新しいペイロードを取得
+    const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error("VITE_AUTH_SECRET environment variable is required");
+    }
+    console.log("changePlan: Decoding new JWT token", JWT_SECRET);
+    const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+    if (
+      !payload ||
+      !payload.deviceId ||
+      !payload.clientId ||
+      payload.t !== "app" ||
+      !payload.planCode ||
+      !payload.user ||
+      !payload.provider ||
+      payload.planCode !== newPlanCode
+    ) {
+      throw new Error("Failed to decode new JWT token");
+    }
+    // ペイロードの検証成功
+    console.log("New JWT payload decoded and verified:", payload);
+    // アクセストークンを保存
+    await authService.saveAccessToken(token);
+
+    return { success, payload };
   }
 }
 
