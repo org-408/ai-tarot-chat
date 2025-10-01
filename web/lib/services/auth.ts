@@ -11,6 +11,9 @@ import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("AUTH_SECRET environment variable is required");
+}
 
 export class AuthService {
   // 「厳密ログイン判定」：User.id があり、かつ Account が1件以上ある

@@ -7,6 +7,11 @@ import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { decodeJWT } from "../utils/jwt";
 
+const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("VITE_AUTH_SECRET environment variable is required");
+}
+
 export class AuthService {
   private readonly KEYS = {
     DEVICE_ID: "deviceId",
@@ -53,8 +58,7 @@ export class AuthService {
 
       console.log("デバイス登録成功:", result);
       const { token } = result;
-      const secret = import.meta.env.VITE_AUTH_SECRET;
-      const payload = await decodeJWT<JWTPayload>(token, secret);
+      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
       if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
         throw new Error("不正なトークンが返却されました");
       }
@@ -119,8 +123,7 @@ export class AuthService {
 
       console.log("✅ JWT取得成功 result:", result);
       const { token } = result;
-      const secret = import.meta.env.VITE_AUTH_SECRET;
-      const payload = await decodeJWT<JWTPayload>(token, secret);
+      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
       if (
         !payload ||
         !payload.deviceId ||
