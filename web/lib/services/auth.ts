@@ -106,7 +106,8 @@ export class AuthService {
         image: session.user.image || undefined,
         provider: session.provider,
       },
-      JWT_SECRET
+      JWT_SECRET,
+      "30s"
     );
   }
 
