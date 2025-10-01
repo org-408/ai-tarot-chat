@@ -6,8 +6,13 @@ const LOCAL_TIMEZONE = process.env.LOCAL_TIMEZONE || "Asia/Tokyo";
 /**
  * 2つの日付が日本時間で同じ日か判定
  */
-export function isSameDayJST(date1: Date, date2?: Date): boolean {
-  const srcDate = getJSTDate(date1);
+export function isSameDayJST(
+  date1: Date | undefined,
+  date2?: Date | undefined
+): boolean {
+  const srcDate = !!date1
+    ? getJSTDate(date1)
+    : getJSTDate(new Date(-8640000000000000)); // 有効な最小値
   const compareDate = !!date2 ? getJSTDate(date2) : getTodayJST();
   return srcDate === compareDate;
 }

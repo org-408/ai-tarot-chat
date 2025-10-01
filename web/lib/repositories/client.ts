@@ -1,4 +1,4 @@
-import type { Client, Device } from "@/../shared/lib/types";
+import type { Client, DailyResetHistory, Device } from "@/../shared/lib/types";
 import { Prisma } from "@prisma/client";
 import { BaseRepository } from "./base";
 
@@ -80,6 +80,17 @@ export class ClientRepository extends BaseRepository {
     });
   }
 
+  async resetDailyCounts(clientId: string) {
+    return this.db.client.update({
+      where: { id: clientId },
+      data: {
+        dailyReadingsCount: 0,
+        dailyCelticsCount: 0,
+        dailyPersonalCount: 0,
+      },
+    });
+  }
+
   // ==================== Device ====================
   async createDevice(data: Prisma.DeviceCreateInput): Promise<Device> {
     return await this.db.device.create({
@@ -123,6 +134,44 @@ export class ClientRepository extends BaseRepository {
 
   async deleteDevice(id: string): Promise<void> {
     await this.db.device.delete({
+      where: { id },
+    });
+  }
+
+  // ==================== DailyResetHistory ====================
+  async createDailyResetHistory(
+    data: Prisma.DailyResetHistoryCreateInput
+  ): Promise<DailyResetHistory> {
+    return (await this.db.dailyResetHistory.create({
+      data,
+      include: { client: true },
+    })) as DailyResetHistory;
+  }
+
+  async getDailyResetHistoryById(
+    id: string
+  ): Promise<DailyResetHistory | null> {
+    return (await this.db.dailyResetHistory.findUnique({
+      where: { id },
+      include: {
+        client: true,
+      },
+    })) as DailyResetHistory | null;
+  }
+
+  async updateDailyResetHistory(
+    id: string,
+    data: Prisma.DailyResetHistoryUncheckedUpdateInput
+  ): Promise<DailyResetHistory> {
+    return (await this.db.dailyResetHistory.update({
+      where: { id },
+      data,
+      include: { client: true },
+    })) as DailyResetHistory;
+  }
+
+  async deleteDailyResetHistory(id: string): Promise<void> {
+    await this.db.dailyResetHistory.delete({
       where: { id },
     });
   }

@@ -1,6 +1,4 @@
-import { RemainingReadings } from "@/../shared/lib/types";
 import { databaseRepository } from "../repositories/database";
-import { apiClient } from "../utils/apiClient";
 import { authService } from "./auth";
 
 export interface Reading {
@@ -175,35 +173,6 @@ export class ReadingService {
     );
 
     return rows[0]?.count ?? 0;
-  }
-
-  /**
-   * 利用可能な残りの占い回数を取得
-   */
-  async getRemainingReadings(): Promise<RemainingReadings> {
-    const data = await apiClient.get<RemainingReadings>(
-      "/api/readings/remaining"
-    );
-    console.log("Remaining readings fetched:", data);
-    if (!data || "error" in data) {
-      throw new Error("Failed to fetch remaining readings");
-    }
-    return data;
-  }
-
-  /**
-   * プランを変更する
-   */
-  async changePlan(newPlanCode: string): Promise<boolean> {
-    const success = await apiClient.post<{ success: boolean }>(
-      "/api/plans/change",
-      { code: newPlanCode }
-    );
-    console.log("Plan change response:", success);
-    if (!success || "error" in success) {
-      throw new Error("Failed to change plan");
-    }
-    return success.success;
   }
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { JWTPayload, RemainingReadings } from "../shared/lib/types";
+import { JWTPayload, UsageStats } from "../shared/lib/types";
 import AdBanner from "./components/AdBanner";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -7,9 +7,8 @@ import PlansPage from "./components/PlansPage";
 import SalonPage from "./components/SalonPage";
 import { initializeApp } from "./lib/init";
 import { AuthService } from "./lib/services/auth";
-import { readingService } from "./lib/services/reading";
+import { clientService } from "./lib/services/client";
 import { syncService } from "./lib/services/sync";
-import TarotSplashScreen from "./splashscreen";
 import { MasterData, PageType, UserPlan } from "./types";
 
 function App() {
@@ -18,8 +17,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
-  const [remainingReadings, setRemainingReadings] =
-    useState<RemainingReadings>();
+  const [usageStats, setUsageStats] = useState<UsageStats>();
   const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
   const currentPlan = (jwtPayload?.planCode as UserPlan) || "GUEST";
 
@@ -55,25 +53,25 @@ function App() {
       setLoading(true);
       setError(null);
 
-      console.log("アプリ起動 - セッション初期化開始");
+      console.log("1. アプリ起動 - セッション初期化開始");
       // storeなど初期化
       await initializeApp();
 
       // デバイス登録
       const payload = await authService.registerDevice();
-      console.log("デバイス登録完了", payload);
+      console.log("2. デバイス登録完了", payload);
 
       setJwtPayload(payload);
 
       // マスターデータ取得
       const masters = await syncService.getMasterData();
       setMasterData(masters);
-      console.log("マスターデータ同期完了", masters);
+      console.log("3. マスターデータ同期完了", masters);
 
       // 占い残数の取得（毎回サーバーから取得）
-      const remaining = await readingService.getRemainingReadings();
-      setRemainingReadings(remaining);
-      console.log("占い残数取得完了", remaining);
+      const usage = await clientService.getUsageAndReset();
+      setUsageStats(usage);
+      console.log("4. ユーザー利用状況の取得完了", usage);
 
       console.log("セッション初期化完了");
       setLoading(false);
@@ -99,6 +97,10 @@ function App() {
 
       // セッション更新
       setJwtPayload(payload);
+
+      // ユーザー利用状況の取得
+      const usage = await clientService.getUsageAndReset();
+      console.log("ユーザー利用状況取得:", usage);
     } catch (err) {
       console.error("ログイン失敗:", err);
       setError(err instanceof Error ? err.message : "ログインに失敗しました");
@@ -127,7 +129,7 @@ function App() {
   /**
    * プラン変更（モック実装）
    */
-  const handlePlanChange = (newPlan: UserPlan) => {
+  const handlePlanChange = async (newPlan: UserPlan) => {
     console.log(`プラン変更リクエスト: ${currentPlan} → ${newPlan}`);
 
     // 有料プランかつ未認証の場合はログインが必要
@@ -138,12 +140,19 @@ function App() {
 
     // TODO: サーバー側でプラン変更APIを実装
     // 現状は一時的にローカル変更のみ
-    const success = readingService.changePlan(newPlan);
+    const success = await clientService.changePlan(newPlan);
     if (!success) {
       console.error("プラン変更に失敗しました");
       return;
     }
     console.log(`プランを ${newPlan} に変更しました（モック）`);
+    // ユーザー利用状況を際取得
+    const usage = await clientService.getUsageAndReset();
+    if (!usage) {
+      console.error("ユーザー利用状況の取得に失敗しました");
+      return;
+    }
+    setUsageStats(usage);
   };
 
   /**
@@ -175,10 +184,10 @@ function App() {
   // ローディング表示
   if (loading && !jwtPayload) {
     return (
-      // <div className="flex items-center justify-center min-h-screen">
-      //   <div className="text-xl">読み込み中...</div>
-      // </div>
-      <TarotSplashScreen message={"読み込み中..."} />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl">読み込み中...</div>
+      </div>
+      // <TarotSplashScreen message={"読み込み中..."} />
     );
   }
 
@@ -203,12 +212,13 @@ function App() {
   }
 
   // マスターデータ・残回数データがない場合のフォールバック
-  if (!masterData || !remainingReadings) {
+  if (!masterData || !usageStats) {
+    console.log("マスターデータ・残回数データ同期中...");
     return (
-      <TarotSplashScreen message={"マスターデータを同期中..."} />
-      // <div className="flex items-center justify-center min-h-screen">
-      //   <div className="text-xl">マスターデータを同期中...</div>
-      // </div>
+      // <TarotSplashScreen message={"マスターデータを同期中..."} />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl">マスターデータを同期中...</div>
+      </div>
     );
   }
 
@@ -227,7 +237,7 @@ function App() {
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
             isLoggingIn={loading}
-            remainingReadings={remainingReadings}
+            usageStats={usageStats}
             onStartReading={(spreadId, categoryId) => {
               console.log(
                 `占い開始: spread=${spreadId}, category=${categoryId}`
@@ -236,52 +246,6 @@ function App() {
             }}
           />
         );
-      // switch (session.plan) {
-      //   case "GUEST":
-      //   case "FREE":
-      //     return (
-      //       <FreePage
-      //         onLogin={handleLogin}
-      //         onUpgrade={handleUpgrade}
-      //         isAuthenticated={isAuthenticated}
-      //         user={session.user}
-      //         isLoggingIn={loading}
-      //         remainingReadings={remainingReadings}
-      //       />
-      //     );
-      //   case "STANDARD":
-      //     return (
-      //       <StandardPage
-      //         onUpgrade={handleUpgrade}
-      //         onDowngrade={handleDowngrade}
-      //         isAuthenticated={isAuthenticated}
-      //         user={session.user}
-      //         isLoggingIn={loading}
-      //         remainingReadings={remainingReadings}
-      //       />
-      //     );
-      //   case "PREMIUM":
-      //     return (
-      //       <PremiumPage
-      //         onDowngrade={handleDowngrade}
-      //         isAuthenticated={isAuthenticated}
-      //         user={session.user}
-      //         isLoggingIn={loading}
-      //         remainingReadings={remainingReadings}
-      //       />
-      //     );
-      //   default:
-      //     return (
-      //       <FreePage
-      //         onLogin={handleLogin}
-      //         onUpgrade={handleUpgrade}
-      //         isAuthenticated={isAuthenticated}
-      //         user={session.user}
-      //         isLoggingIn={loading}
-      //         remainingReadings={remainingReadings}
-      //       />
-      //     );
-      // }
       case "plans":
         return (
           <PlansPage
@@ -336,7 +300,7 @@ function App() {
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
             isLoggingIn={loading}
-            remainingReadings={remainingReadings}
+            usageStats={usageStats}
             onStartReading={(spreadId, categoryId) => {
               console.log(
                 `占い開始: spread=${spreadId}, category=${categoryId}`

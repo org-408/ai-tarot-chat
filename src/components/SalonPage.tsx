@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  JWTPayload,
-  Plan,
-  RemainingReadings,
-  Spread,
-} from "../../shared/lib/types";
+import { JWTPayload, Plan, Spread, UsageStats } from "../../shared/lib/types";
 import { MasterData, UserPlan } from "../types";
 
 interface SalonPageProps {
@@ -15,7 +10,7 @@ interface SalonPageProps {
   onUpgrade: (plan: UserPlan) => void;
   onDowngrade: (plan: UserPlan) => void;
   isLoggingIn: boolean;
-  remainingReadings: RemainingReadings;
+  usageStats: UsageStats;
   onStartReading: (spreadId: string, categoryId: string) => void;
 }
 
@@ -27,7 +22,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   onUpgrade,
   onDowngrade,
   isLoggingIn,
-  remainingReadings,
+  usageStats,
   onStartReading,
 }) => {
   const currentPlan = (payload?.planCode || "GUEST") as UserPlan;
@@ -169,22 +164,22 @@ const SalonPage: React.FC<SalonPageProps> = ({
       {/* 回数制限表示 */}
       {isFree && (
         <div className="daily-limit mb-4">
-          残り {remainingReadings.remainingReadings} 回
+          残り {usageStats.remainingReadings} 回
         </div>
       )}
 
       {isStandard && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {remainingReadings.remainingReadings}回 / ケルト十字:{" "}
-          {remainingReadings.remainingCeltics}回
+          通常: {usageStats.remainingCeltics}回 / ケルト十字:{" "}
+          {usageStats.remainingCeltics}回
         </div>
       )}
 
       {isPremium && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {remainingReadings.remainingReadings}回 / ケルト十字:{" "}
-          {remainingReadings.remainingCeltics}回 / パーソナル:{" "}
-          {remainingReadings.remainingPersonal}回
+          通常: {usageStats.remainingReadings}回 / ケルト十字:{" "}
+          {usageStats.remainingCeltics}回 / パーソナル:{" "}
+          {usageStats.remainingPersonal}回
         </div>
       )}
 
@@ -314,7 +309,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         className="primary-button"
         onClick={handleStartReading}
         disabled={
-          (isFree && remainingReadings.remainingReadings <= 0) ||
+          (isFree && usageStats.remainingReadings <= 0) ||
           !selectedSpread ||
           !selectedCategory
         }
