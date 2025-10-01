@@ -8,7 +8,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
   const getHeaderTitle = () => {
     switch (currentPage) {
-      case "reading":
+      case "salon":
         switch (currentPlan) {
           case "FREE":
             return "🔮 今日のタロット占い";
@@ -32,8 +32,10 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
 
   const getSubtitle = () => {
     switch (currentPage) {
-      case "reading":
+      case "salon":
         switch (currentPlan) {
+          case "GUEST":
+            return "お試しでタロット占い";
           case "FREE":
             return "お気軽なタロット占い";
           case "STANDARD":

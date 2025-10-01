@@ -14,7 +14,7 @@ import TarotSplashScreen from "./splashscreen";
 import { MasterData, PageType, UserPlan } from "./types";
 
 function App() {
-  const [pageType, setPageType] = useState<PageType>("reading");
+  const [pageType, setPageType] = useState<PageType>("salon");
   const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +107,19 @@ function App() {
       }
     }
   }, [masterData, usageStats]);
+
+  // ReadingPage時のbody制御
+  useEffect(() => {
+    if (pageType === "reading") {
+      document.body.classList.add("reading-page");
+    } else {
+      document.body.classList.remove("reading-page");
+    }
+
+    return () => {
+      document.body.classList.remove("reading-page");
+    };
+  }, [pageType]);
 
   const displayAds = () => {
     console.log("Updating ad display based on plan:", jwtPayload, currentPlan);
@@ -232,6 +245,7 @@ function App() {
     console.log(`占い開始: spread=${spreadId}, category=${categoryId}`);
     setReadingData({ spreadId, categoryId });
     setIsReading(true);
+    setPageType("reading");
   };
 
   /**
@@ -241,6 +255,7 @@ function App() {
     console.log("占いから戻る");
     setIsReading(false);
     setReadingData(null);
+    setPageType("salon");
   };
 
   // ローディング表示
@@ -270,24 +285,22 @@ function App() {
 
   const isAuthenticated = !!jwtPayload?.user;
 
-  // 占いセッション中の表示
-  if (isReading && readingData) {
-    return (
-      <div className="bg-gray-100 w-full overflow-x-hidden">
-        <ReadingPage
-          spreadId={readingData.spreadId}
-          categoryId={readingData.categoryId}
-          masterData={masterData}
-          onBack={handleBackFromReading}
-        />
-      </div>
-    );
-  }
+  const containerStyle = {
+    position: "fixed" as const,
+    top: "56px", // ヘッダーの高さ
+    left: 0,
+    right: 0,
+    bottom:
+      currentPlan === "FREE" || currentPlan === "GUEST" ? "110px" : "70px", // フッター + 広告
+    overflow: "auto",
+    padding: "0.5rem",
+    background: "transparent",
+  };
 
   // ページレンダリング
   const renderPage = () => {
     switch (pageType) {
-      case "reading":
+      case "salon":
         return (
           <SalonPage
             payload={jwtPayload}
@@ -299,6 +312,15 @@ function App() {
             isLoggingIn={loading}
             usageStats={usageStats}
             onStartReading={handleStartReading}
+          />
+        );
+      case "reading":
+        return (
+          <ReadingPage
+            spreadId={readingData?.spreadId || ""}
+            categoryId={readingData?.categoryId || ""}
+            masterData={masterData}
+            onBack={handleBackFromReading}
           />
         );
       case "plans":
@@ -363,7 +385,7 @@ function App() {
   };
 
   return (
-    <div className="bg-gray-100 w-full overflow-x-hidden">
+    <div className="w-full" style={{ height: "100vh" }}>
       <Header currentPlan={currentPlan} currentPage={pageType} />
 
       {/* 開発メニュー */}
@@ -384,7 +406,7 @@ function App() {
                 onClick={() => {
                   handlePlanChange("FREE");
                   setDevMenuOpen(false);
-                  setPageType("reading");
+                  setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan === "FREE"
@@ -398,7 +420,7 @@ function App() {
                 onClick={() => {
                   handlePlanChange("STANDARD");
                   setDevMenuOpen(false);
-                  setPageType("reading");
+                  setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan === "STANDARD"
@@ -412,7 +434,7 @@ function App() {
                 onClick={() => {
                   handlePlanChange("PREMIUM");
                   setDevMenuOpen(false);
-                  setPageType("reading");
+                  setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan === "PREMIUM"
@@ -469,7 +491,7 @@ function App() {
         </div>
       )}
 
-      {renderPage()}
+      <div style={containerStyle}>{renderPage()}</div>
 
       <AdBanner currentPlan={currentPlan} />
 

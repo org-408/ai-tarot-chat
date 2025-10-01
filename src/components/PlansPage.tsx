@@ -19,73 +19,6 @@ const PlansPage: React.FC<PlansPageProps> = ({
   isLoggingIn,
 }) => {
   const currentPlan = (payload?.planCode || "GUEST") as UserPlan;
-  // const planData = {
-  //   GUEST: {
-  //     name: "🆓 ゲストプラン",
-  //     price: "¥0/月",
-  //     description: "ユーザー登録なしでお気軽に体験",
-  //     features: [
-  //       "1日1回制限",
-  //       "広告表示あり",
-  //       "基本スプレッド（2種類）",
-  //       "恋愛・仕事・今日の運勢",
-  //       "即答型占い",
-  //     ],
-  //     color: "from-green-400 to-green-600",
-  //     popular: false,
-  //     requiresAuth: false,
-  //   },
-  //   FREE: {
-  //     name: "🆓 フリープラン",
-  //     price: "¥0/月",
-  //     description: "もう少し占い方向けに",
-  //     features: [
-  //       "1日3回制限",
-  //       "広告表示あり",
-  //       "基本スプレッド（2種類）",
-  //       "恋愛・仕事・今日の運勢",
-  //       "即答型占い",
-  //     ],
-  //     color: "from-green-400 to-green-600",
-  //     popular: false,
-  //     requiresAuth: false,
-  //   },
-  //   STANDARD: {
-  //     name: "💎 スタンダードプラン",
-  //     price: "¥480/月",
-  //     description: "しっかり占いたい方に",
-  //     features: [
-  //       "回数無制限",
-  //       "広告なし",
-  //       "中級スプレッド（14種類）",
-  //       "5つの詳細ジャンル",
-  //       "履歴保存機能",
-  //       "根拠表示オプション",
-  //       "TODO機能",
-  //     ],
-  //     color: "from-blue-400 to-blue-600",
-  //     popular: true,
-  //     requiresAuth: true,
-  //   },
-  //   PREMIUM: {
-  //     name: "👑 プレミアムプラン",
-  //     price: "¥980/月",
-  //     description: "AIと対話しながら本格占い",
-  //     features: [
-  //       "回数無制限",
-  //       "広告なし",
-  //       "全スプレッド（22種類）",
-  //       "AI自動推奨機能",
-  //       "15分AI対話セッション",
-  //       "高度スプレッド（ケルト十字等）",
-  //       "お気に入り学習機能",
-  //       "行動計画生成",
-  //     ],
-  //     color: "from-yellow-400 to-orange-500",
-  //     popular: false,
-  //     requiresAuth: true,
-  //   },
-  // };
   const planData = plans.reduce((acc, plan) => {
     let requiresAuth = true;
     if (plan.code === "FREE") requiresAuth = false;
@@ -133,14 +66,14 @@ const PlansPage: React.FC<PlansPageProps> = ({
   return (
     <div className="main-container">
       {/* ヘッダー */}
-      <div className="page-title">💎 プラン選択</div>
+      <div className="page-title pt-3">💎 プラン選択</div>
 
       {/* 認証状態表示 */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
         <div className="text-sm text-gray-600">現在の状態</div>
         <div className="font-bold text-lg">{planData[currentPlan].name}</div>
         <div className="text-sm text-gray-500">
-          {planData[currentPlan].price}
+          ¥{planData[currentPlan].price}
         </div>
         {!isAuthenticated && (
           <div className="text-xs text-orange-600 mt-1">
@@ -186,7 +119,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
                 <div className="text-sm text-gray-600">{plan.description}</div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-xl">{plan.price}</div>
+                <div className="font-bold text-xl">¥{plan.price}</div>
                 {currentPlan === planKey && (
                   <div className="text-xs text-blue-600 font-bold">利用中</div>
                 )}

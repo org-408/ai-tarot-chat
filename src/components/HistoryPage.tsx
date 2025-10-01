@@ -89,7 +89,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ onNavigate }) => {
               占いを始めて、結果を記録しましょう！
             </p>
             <button
-              onClick={() => onNavigate("reading")}
+              onClick={() => onNavigate("salon")}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
             >
               🔮 占いを始める

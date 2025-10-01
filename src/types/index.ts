@@ -7,7 +7,7 @@ import {
 } from "../../shared/lib/types";
 
 export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
-export type PageType = "reading" | "plans" | "history" | "settings";
+export type PageType = "salon" | "reading" | "plans" | "history" | "settings";
 
 export interface Genre {
   id: string;
