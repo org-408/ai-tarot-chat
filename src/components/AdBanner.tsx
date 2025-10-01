@@ -6,7 +6,7 @@ interface AdBannerProps {
 
 const AdBanner: React.FC<AdBannerProps> = ({ currentPlan }) => {
   // フリープラン以外は広告を表示しない
-  if (currentPlan !== "FREE") {
+  if (currentPlan !== "FREE" && currentPlan !== "GUEST") {
     return null;
   }
 
