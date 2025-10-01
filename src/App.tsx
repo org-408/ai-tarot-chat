@@ -109,10 +109,13 @@ function App() {
   }, [masterData, usageStats]);
 
   const displayAds = () => {
+    console.log("Updating ad display based on plan:", jwtPayload, currentPlan);
     document.body.classList.remove("with-ads");
     if (!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST") {
+      console.log("Displaying ads for current plan:", currentPlan);
       document.body.classList.add("with-ads");
     } else {
+      console.log("Hiding ads for current plan:", currentPlan);
       document.body.classList.remove("with-ads");
     }
   };
@@ -241,7 +244,7 @@ function App() {
   };
 
   // ローディング表示
-  if (loading && !jwtPayload) {
+  if ((loading && !jwtPayload) || !masterData || !usageStats) {
     return <TarotSplashScreen message={message} />;
   }
 
@@ -255,7 +258,7 @@ function App() {
   }
 
   // セッションがない場合のフォールバック
-  if (!jwtPayload || !masterData || !usageStats) {
+  if (!jwtPayload) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl text-red-500">
