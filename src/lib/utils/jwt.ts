@@ -9,7 +9,10 @@ export async function generateJWT<T>(
   secret: string = JWT_SECRET,
   ttl: string = APP_JWT_TTL
 ): Promise<string> {
+  console.log("🔑 generateJWT payload", payload);
   const jwtSecret = secret ?? JWT_SECRET;
+  console.log("🔑 generateJWT secret", jwtSecret);
+  console.log("🔑 generateJWT ttl", ttl);
   return await new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
