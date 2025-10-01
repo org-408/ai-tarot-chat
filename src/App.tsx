@@ -34,6 +34,7 @@ function App() {
 
   // 広告表示スタイル
   useEffect(() => {
+    console.log("Current Plan changed:", jwtPayload, currentPlan);
     if (!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST") {
       document.body.classList.add("with-ads");
     } else {
@@ -43,7 +44,7 @@ function App() {
     return () => {
       document.body.classList.remove("with-ads");
     };
-  }, [jwtPayload]);
+  }, [jwtPayload, currentPlan]);
 
   /**
    * セッション初期化
@@ -67,6 +68,7 @@ function App() {
 
       setJwtPayload(payload);
       setCurrentPlan(payload.planCode as UserPlan);
+      console.log("2. Current Plan:", payload.planCode);
 
       // マスターデータ取得
       const masters = await syncService.getMasterData();
@@ -82,7 +84,6 @@ function App() {
 
       console.log("5. セッション初期化完了");
       setMessage("セッション初期化完了");
-      setLoading(false);
 
       console.log("6. スプラッシュスクリーンを閉じる");
     } catch (err) {
@@ -91,8 +92,16 @@ function App() {
   };
 
   useEffect(() => {
-    console.log("masterData 更新:", masterData);
-  }, [masterData]);
+    console.log("masterData 更新:", masterData, usageStats);
+    if (masterData && usageStats) {
+      setLoading(false);
+      setMessage("読み込み完了");
+    } else {
+      if (jwtPayload) {
+        setMessage("マスターデータを同期中...");
+      }
+    }
+  }, [masterData, usageStats]);
 
   /**
    * ログイン処理
@@ -194,7 +203,7 @@ function App() {
   };
 
   // ローディング表示
-  if (loading && !jwtPayload) {
+  if ((loading && !jwtPayload) || !masterData || !usageStats) {
     return (
       // <div className="flex items-center justify-center min-h-screen">
       //   <div className="text-xl">読み込み中...</div>
@@ -203,6 +212,7 @@ function App() {
     );
   }
 
+  // マスターデータ・残回数データがない場合のフォールバック
   // エラー表示
   if (error && !jwtPayload) {
     return (
@@ -219,17 +229,6 @@ function App() {
         <div className="text-xl text-red-500">
           セッションの取得に失敗しました
         </div>
-      </div>
-    );
-  }
-
-  // マスターデータ・残回数データがない場合のフォールバック
-  if (!masterData || !usageStats) {
-    console.log("マスターデータ・残回数データ同期中...");
-    return (
-      // <TarotSplashScreen message={"マスターデータを同期中..."} />
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl">マスターデータを同期中...</div>
       </div>
     );
   }
