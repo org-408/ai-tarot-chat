@@ -20,7 +20,7 @@ function App() {
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [usageStats, setUsageStats] = useState<UsageStats>();
   const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
-  const currentPlan = (jwtPayload?.planCode as UserPlan) || "GUEST";
+  const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
   const [message, setMessage] = useState("読み込み中...");
 
   // AuthServiceインスタンス
@@ -66,6 +66,7 @@ function App() {
       setMessage("デバイス登録完了");
 
       setJwtPayload(payload);
+      setCurrentPlan(payload.planCode as UserPlan);
 
       // マスターデータ取得
       const masters = await syncService.getMasterData();
@@ -106,6 +107,7 @@ function App() {
 
       // セッション更新
       setJwtPayload(payload);
+      setCurrentPlan(payload.planCode as UserPlan);
 
       // ユーザー利用状況の取得
       const usage = await clientService.getUsageAndReset();
@@ -130,6 +132,7 @@ function App() {
       console.log("サインアウト デバイス再登録:", payload);
 
       setJwtPayload(payload);
+      setCurrentPlan(payload.planCode as UserPlan);
     } catch (err) {
       console.error("ログアウトエラー・デバイス再登録:", err);
     }
