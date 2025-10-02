@@ -8,6 +8,7 @@ import { authRepository } from "@/lib/repositories/auth";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
+import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
@@ -421,6 +422,28 @@ export class AuthService {
       };
     }
   }
+
+  async createAppleClientSecret(opts: {
+    teamId: string          // Apple Developer Team ID
+    keyId: string           // Key ID (.p8 に対応)
+    clientId: string        // Service ID (例: com.example.web)
+    privateKey: string      // .p8 の中身
+    expiresIn?: string|number // 例: '30d'（最大180日）
+  }): Promise<string> {
+    const alg = 'ES256'
+    const ecKey = await importPKCS8(opts.privateKey, alg)
+    const now = Math.floor(Date.now() / 1000)
+
+    return await new SignJWT({})
+      .setProtectedHeader({ alg, kid: opts.keyId })
+      .setIssuer(opts.teamId)                        // iss
+      .setSubject(opts.clientId)                     // sub
+      .setAudience('https://appleid.apple.com')      // aud
+      .setIssuedAt(now)
+      .setExpirationTime(opts.expiresIn ?? '30d')    // ← 短め推奨
+      .sign(ecKey)
+  }
+
 }
 
 export const authService = new AuthService();

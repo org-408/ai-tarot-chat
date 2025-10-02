@@ -1,8 +1,11 @@
 // lib/services/auth.ts
-import type { JWTPayload } from "@/../shared/lib/types";
-import { getVersion } from "@tauri-apps/api/app";
-import { version as osVersion, platform } from "@tauri-apps/plugin-os";
-import { authenticate } from "tauri-plugin-web-auth-api";
+import type { JWTPayload } from "../../../../shared/lib/types";
+// import { getVersion } from "@tauri-apps/api/app";
+// import { version as osVersion, platform } from "@tauri-apps/plugin-os";
+import {App} from '@capacitor/app';
+import { Device } from '@capacitor/device';
+// import { authenticate } from "tauri-plugin-web-auth-api";
+import { GenericOAuth2 } from "@capacitor-community/generic-oauth2";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { decodeJWT } from "../utils/jwt";
@@ -10,6 +13,32 @@ import { decodeJWT } from "../utils/jwt";
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 if (!JWT_SECRET) {
   throw new Error("VITE_AUTH_SECRET environment variable is required");
+}
+
+export type Provider = 'google' | 'apple'
+
+const API = import.meta.env.VITE_API_BASE
+const REDIRECT = `${import.meta.env.VITE_DEEP_LINK_SCHEME}://auth/callback` // 例: aitarotchat://auth/callback
+
+// 各プロバイダ固有値を 1 か所に集約
+const PROVIDERS: Record<Provider, {
+  authorizationBaseUrl: string
+  scope: string
+  clientId: string
+  additionalParameters?: Record<string, string>
+}> = {
+  google: {
+    authorizationBaseUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    scope: 'openid email profile',
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID!,
+    additionalParameters: { access_type: 'offline', prompt: 'consent' }
+  },
+  apple: {
+    authorizationBaseUrl: 'https://appleid.apple.com/auth/authorize',
+    scope: 'name email',
+    // Apple は “Service ID”（Web用 client_id）をアプリ側に置く（公開OK）
+    clientId: import.meta.env.VITE_APPLE_SERVICE_ID!
+  }
 }
 
 export class AuthService {
@@ -32,9 +61,9 @@ export class AuthService {
 
     // Tauriから情報取得
     const [platformName, osVersionStr, appVersionStr] = await Promise.all([
-      platform(),
-      osVersion(),
-      getVersion(),
+      Device.getInfo().then(info => info.platform),
+      Device.getInfo().then(info => info.osVersion),
+      App.getInfo().then(info => info.version),
     ]);
 
     console.log(
@@ -81,31 +110,31 @@ export class AuthService {
   /**
    * OAuth認証 - ユーザーとデバイスを紐付け
    */
-  async signInWithWeb(): Promise<JWTPayload> {
+  async signInWithWeb(provider: Provider): Promise<JWTPayload> {
     const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
     const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
     const callbackScheme =
       import.meta.env.VITE_DEEP_LINK_SCHEME || "aitarotchat";
     console.log("🔐 Web認証開始:", url, callbackScheme);
+    const p = PROVIDERS[provider];
+    console.log("プロバイダ設定:", provider, p);
 
     try {
-      const auth = await authenticate({
-        url,
-        callbackScheme,
-      });
+      const auth = await GenericOAuth2.authenticate({
+        authorizationBaseUrl: p.authorizationBaseUrl,
+        accessTokenEndpoint:  `${API}/api/oauth/token?provider=${provider}`, // ← サーバーは 1 本
+        appId: p.clientId,
+        redirectUrl: REDIRECT,
+        scope: p.scope,
+        pkceEnabled: true,
+        ios: { responseType: 'code' },
+        android: { responseType: 'code' },
+        additionalParameters: p.additionalParameters
+      })
       if (!auth || "error" in auth) {
         console.log("❌ 認証キャンセルまたはエラー:", auth);
         throw new Error("認証に失敗しました");
       }
-
-      const callbackUrl = new URL(auth.callbackUrl);
-      const ticket = callbackUrl.searchParams.get("ticket");
-
-      if (!ticket) {
-        throw new Error("認証トークンが取得できませんでした");
-      }
-
-      console.log("🎫 チケット取得成功");
 
       const deviceId = await this.getDeviceId();
       if (!deviceId) {
@@ -113,16 +142,7 @@ export class AuthService {
       }
       console.log("デバイスID:", deviceId);
 
-      const result = await apiClient.post<{
-        token: string;
-      }>("/api/native/auth/exchange", { ticket, deviceId });
-      if (!result || "error" in result) {
-        console.log("❌ チケット交換エラー:", result);
-        throw new Error("トークン交換に失敗しました");
-      }
-
-      console.log("✅ JWT取得成功 result:", result);
-      const { token } = result;
+      const { token } = auth;
       const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
       if (
         !payload ||
@@ -134,7 +154,7 @@ export class AuthService {
         console.error("❌ JWTペイロードエラー:", payload);
         throw new Error("不正なトークンが返却されました");
       }
-      console.log("ユーザー紐付け成功:", payload);
+      console.log("Web認証・トークン取得成功:", payload);
 
       await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
       await storeRepository.set(this.KEYS.USER_ID, payload.user.id);

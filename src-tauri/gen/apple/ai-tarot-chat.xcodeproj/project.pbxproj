@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		186D57015402A8ACAF4276B8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50204C2931E832B8594EFF78 /* CoreGraphics.framework */; };
-		1B7A7B84544CE51A84A5901D /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 57FABD941F301F6E8F2A932C /* libapp.a */; };
 		2409FE90130AE362FEBB8AAA /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4EC14C8203DB0E15866FEA49 /* main.mm */; };
 		39450C9BD7D8F41EE5EAEF30 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DA36807AEF2044FB25FD497 /* WebKit.framework */; };
 		525DB7CBFB418BE73DF6F44C /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D9A8A6D4B2EC95E4779FDD10 /* libapp.a */; };
@@ -34,7 +33,6 @@
 		4FE3C59A11D312272BC17236 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
 		50204C2931E832B8594EFF78 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		523D6F51E469F4D3D8D6968A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		57FABD941F301F6E8F2A932C /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
 		5C4036F302E437919962F403 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		95B28D595386437D20A76CCC /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		9D577C2746201F60545EBE76 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -88,14 +86,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4E1CAD96B34958AC5EDCF97F /* debug */ = {
-			isa = PBXGroup;
-			children = (
-				57FABD941F301F6E8F2A932C /* libapp.a */,
-			);
-			path = debug;
-			sourceTree = "<group>";
-		};
 		65DE3EB6B7CE2A2209EAEC7D = {
 			isa = PBXGroup;
 			children = (
@@ -132,17 +122,8 @@
 		804C2F21E086B4760CB48B06 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
-				917C2BD94B5A5F6E2335DE7F /* arm64 */,
 			);
 			path = Externals;
-			sourceTree = "<group>";
-		};
-		917C2BD94B5A5F6E2335DE7F /* arm64 */ = {
-			isa = PBXGroup;
-			children = (
-				4E1CAD96B34958AC5EDCF97F /* debug */,
-			);
-			path = arm64;
 			sourceTree = "<group>";
 		};
 		B10BC6C6144A0EBE12FF8A94 /* Sources */ = {
@@ -167,13 +148,6 @@
 				4817CDAE86509F48F1194505 /* ai-tarot-chat_iOS.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		"TEMP_0C716540-43B4-4193-99A2-B78B5F2F4433" /* x86_64 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = x86_64;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -235,7 +209,6 @@
 				6E81DE64E60685B4B6DF4CA4 /* Assets.xcassets in Resources */,
 				9D4B4D37608A52CBBDE8F83C /* LaunchScreen.storyboard in Resources */,
 				A5249977CA73B3D2B3CE238F /* assets in Resources */,
-				1B7A7B84544CE51A84A5901D /* libapp.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
