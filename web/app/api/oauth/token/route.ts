@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
     // ここでユーザー照合・作成、自前JWT発行などを行ってもよい
     // 例: const appJwt = await issueAppJwtFromProviderTokens(tokens)
     return NextResponse.json(tokens);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     return NextResponse.json(
       { error: e?.message ?? "token exchange failed" },
