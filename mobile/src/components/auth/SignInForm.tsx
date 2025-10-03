@@ -1,8 +1,8 @@
 "use client";
 
 import { Loader2,  Shield } from "lucide-react";
-import {  useState } from "react";
-import { authService, type Provider } from "../../lib/services/auth";
+import { useState } from "react";
+import { authService } from "../../lib/services/auth";
 
 const GoogleSignInButton = ({
   isLoading,
@@ -107,7 +107,7 @@ export function SignInForm() {
 
     setIsLoading(true);
     setActiveProvider(provider);
-    await authService.signInWithWeb(provider as Provider);
+    await authService.signInWithWeb();
   };
 
   return (

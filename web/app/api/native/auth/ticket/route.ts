@@ -4,7 +4,7 @@ export async function GET() {
   console.log("📍 /api/native/auth/ticket - チケット発行リクエスト受信");
 
   try {
-    // AuthService経由でチケット生成（既存パターンに合わせて）
+    // AuthService経由でチケット生成
     const ticket = await authService.generateTicket();
     if (!ticket) {
       throw new Error("チケットが取得できませんでした");

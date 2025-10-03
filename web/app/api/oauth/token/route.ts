@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
     } else {
       // Apple は必ずサーバー交換（client_secret が必要）
       const client_secret = await authService.createAppleClientSecret({
-        teamId: process.env.APPLE_TEAM_ID!,
-        keyId: process.env.APPLE_KEY_ID!,
-        clientId: process.env.APPLE_SERVICE_ID!,
+        teamId: process.env.AUTH_APPLE_TEAM_ID!,
+        keyId: process.env.AUTH_APPLE_KEY_ID!,
+        clientId: process.env.AUTH_APPLE_ID!,
         privateKey: process.env.APPLE_PRIVATE_KEY!,
       });
 

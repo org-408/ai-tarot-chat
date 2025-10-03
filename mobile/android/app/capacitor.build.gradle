@@ -12,7 +12,9 @@ dependencies {
     implementation project(':capacitor-community-admob')
     implementation project(':capacitor-community-generic-oauth2')
     implementation project(':capacitor-app')
+    implementation project(':capacitor-browser')
     implementation project(':capacitor-device')
+    implementation project(':capacitor-preferences')
 
 }
 

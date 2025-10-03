@@ -1,19 +1,14 @@
-import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-import { authService } from "../services/auth";
+import { CapacitorHttp, type HttpResponse } from '@capacitor/core';
+import { authService } from '../services/auth';
+
+const BFF_URL = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
 
 export class ApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl?: string) {
-    this.baseUrl =
-      baseUrl || import.meta.env.VITE_BFF_URL || "http://localhost:3000";
-  }
-
   async get<T>(path: string): Promise<T> {
     const token = await authService.getAccessToken();
 
-    const response = await tauriFetch(`${this.baseUrl}${path}`, {
-      method: "GET",
+    const response: HttpResponse = await CapacitorHttp.get({
+      url: `${BFF_URL}${path}`,
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
         "Content-Type": "application/json",
@@ -26,37 +21,23 @@ export class ApiClient {
   async post<T>(path: string, body?: unknown): Promise<T> {
     const token = await authService.getAccessToken();
 
-    const response = await tauriFetch(`${this.baseUrl}${path}`, {
-      method: "POST",
+    const response: HttpResponse = await CapacitorHttp.post({
+      url: `${BFF_URL}${path}`,
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
         "Content-Type": "application/json",
       },
-      body: body ? JSON.stringify(body) : undefined,
+      data: body,
     });
 
     return this.handleResponse<T>(response);
   }
 
-  async postWithoutAuth<T>(path: string, body?: unknown): Promise<T> {
-    const response = await tauriFetch(`${this.baseUrl}${path}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-
-    return this.handleResponse<T>(response);
-  }
-
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "Unknown error");
-      throw new Error(`API Error ${response.status}: ${errorText}`);
+  private handleResponse<T>(response: HttpResponse): T {
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`API Error ${response.status}`);
     }
-
-    return await response.json();
+    return response.data as T;
   }
 }
 

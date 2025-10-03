@@ -1,7 +1,20 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import type { MasterData } from "../types";
 
-const ReadingPage: React.FC = () => {
+interface ReadingPageProps {
+  spreadId: string;
+  categoryId: string;
+  masterData: MasterData;
+  onBack: () => void;
+}
+
+const ReadingPage: React.FC<ReadingPageProps> = ({
+  spreadId,
+  categoryId,
+  masterData,
+  onBack,
+}) => {
   // テスト用の初期メッセージ（5-6個）
   const [messages, setMessages] = useState([
     {
@@ -48,10 +61,10 @@ const ReadingPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 選択されたスプレッドとカテゴリの情報を取得
-  // const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
-  // const selectedCategory = masterData.categories?.find(
-  //   (c) => c.id === categoryId
-  // );
+  const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
+  const selectedCategory = masterData.categories?.find(
+    (c) => c.id === categoryId
+  );
 
   // 広告の有無を判定（bodyのクラスから）
   const hasAds = document.body.classList.contains("with-ads");

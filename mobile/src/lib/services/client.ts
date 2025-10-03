@@ -1,4 +1,4 @@
-import { JWTPayload, UsageStats } from "../../../shared/lib/types";
+import type { JWTPayload, UsageStats } from "../../../../shared/lib/types";
 import { apiClient } from "../utils/apiClient";
 import { decodeJWT } from "../utils/jwt";
 import { authService } from "./auth";

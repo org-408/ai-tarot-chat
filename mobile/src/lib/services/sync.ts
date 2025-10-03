@@ -1,9 +1,7 @@
-// tauri/src/lib/services/sync.ts（シンプル化）
-import { MasterData } from "@/types";
+import type { MasterData } from "../../types";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { authService } from "./auth";
-import { readingService } from "./reading";
 
 export class SyncService {
   private readonly KEYS = {
@@ -14,8 +12,6 @@ export class SyncService {
   } as const;
 
   async sync(): Promise<{
-    pushed: number;
-    pulled: number;
     masterUpdated: boolean;
   }> {
     const accessToken = await authService.getAccessToken();
@@ -23,13 +19,11 @@ export class SyncService {
       throw new Error("Not authenticated");
     }
 
-    const pushed = await this.push();
-    const pulled = await this.pull();
     const masterUpdated = await this.syncMasterData();
 
     await storeRepository.set(this.KEYS.LAST_SYNC_AT, Date.now());
 
-    return { pushed, pulled, masterUpdated };
+    return { masterUpdated };
   }
 
   async syncMasterData(): Promise<boolean> {
@@ -111,36 +105,6 @@ export class SyncService {
 
     console.log("マスターデータ取得完了");
     return data;
-  }
-
-  private async push(): Promise<number> {
-    const unsynced = await readingService.getUnsyncedReadings();
-    if (unsynced.length === 0) return 0;
-
-    await apiClient.post("/api/sync/push", { readings: unsynced });
-
-    await readingService.markSynced(unsynced.map((r) => r.id));
-    return unsynced.length;
-  }
-
-  private async pull(): Promise<number> {
-    const cursor =
-      (await storeRepository.get<string>(this.KEYS.LAST_SYNC_CURSOR)) ?? "0";
-
-    const data = await apiClient.get<{ readings: any[]; cursor: string }>(
-      `/api/sync/pull?since=${cursor}`
-    );
-
-    for (const reading of data.readings) {
-      await readingService.saveReading(
-        reading.spreadId,
-        reading.cards,
-        reading.result
-      );
-    }
-
-    await storeRepository.set(this.KEYS.LAST_SYNC_CURSOR, data.cursor);
-    return data.readings.length;
   }
 
   async getLastSyncAt(): Promise<number | null> {
