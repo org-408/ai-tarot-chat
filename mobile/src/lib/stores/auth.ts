@@ -5,6 +5,7 @@ import { authService } from '../../lib/services/auth';
 import { decodeJWT } from '../../lib/utils/jwt';
 import type { JWTPayload } from '../../../../shared/lib/types';
 import type { UserPlan } from '../../types';
+import { clientService } from '../services/client';
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 
@@ -18,6 +19,7 @@ interface AuthState {
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setPayload: (payload: JWTPayload) => void;
+  changePlan: (newPlanCode: string) => Promise<void>;
 }
 
 /**
@@ -100,6 +102,24 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: !!payload.user,
         });
         console.log('[AuthStore] Payload updated:', payload.planCode);
+      },
+      changePlan: async (newPlanCode: string) => {
+        try {
+          console.log('[AuthStore] Change plan started:', newPlanCode);
+          if (!get().isAuthenticated) {
+            throw new Error('Authentication required to change plan');
+          }
+          const result = await clientService.changePlan(newPlanCode);
+          set({
+            payload: result.payload,
+            plan: result.payload.planCode as UserPlan,
+            isAuthenticated: !!result.payload.user,
+          });
+          console.log('[AuthStore] Change plan successful:', result.payload.planCode);
+        } catch (error) {
+          console.error('[AuthStore] Change plan failed:', error);
+          throw error;
+        }
       },
     }),
     {

@@ -1,20 +1,22 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { MasterData } from "../types";
+// 🔥 自分でフックを呼ぶ
+import { useMaster } from "../lib/hooks/useMaster";
 
 interface ReadingPageProps {
   spreadId: string;
   categoryId: string;
-  masterData: MasterData;
   onBack: () => void;
 }
 
 const ReadingPage: React.FC<ReadingPageProps> = ({
   spreadId,
   categoryId,
-  masterData,
   onBack,
 }) => {
+  // 🔥 自分で必要なデータを取得
+  const { data: masterData, isLoading: masterLoading } = useMaster();
+
   // テスト用の初期メッセージ（5-6個）
   const [messages, setMessages] = useState([
     {
@@ -53,12 +55,19 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   ]);
   const [inputValue, setInputValue] = useState("");
   const [crossFlipped, setCrossFlipped] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<
-    null | (typeof tarotCards)[number]
-  >(null);
+  const [selectedCard, setSelectedCard] = useState<null | (typeof tarotCards)[number]>(null);
   const [typingMessage, setTypingMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // ローディング中
+  if (masterLoading || !masterData) {
+    return (
+      <div className="main-container">
+        <div className="text-center py-20">読み込み中...</div>
+      </div>
+    );
+  }
 
   // 選択されたスプレッドとカテゴリの情報を取得
   const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
@@ -282,22 +291,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   return (
     <div className="main-container">
-      {/* 戻るボタン + カテゴリ表示 */}
-      {/* <div className="flex items-center justify-start mb-3">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1 text-purple-700 hover:text-purple-900 transition-colors"
-        >
-          <ArrowLeft size={18} />
-          <span className="text-sm font-medium">戻る</span>
-        </button>
-        {selectedCategory && (
-          <div className="ml-3 text-xs text-purple-600 font-medium">
-            {selectedCategory.name}
-          </div>
-        )}
-      </div> */}
-
       {/* タロットボードエリア */}
       <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 border border-purple-200 shadow-md mb-3">
         <div className="flex gap-2">

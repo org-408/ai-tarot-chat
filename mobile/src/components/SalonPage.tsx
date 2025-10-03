@@ -1,36 +1,46 @@
 import { useEffect, useState } from "react";
-import type { JWTPayload, Plan, Spread, UsageStats } from "../../../shared/lib/types";
-import type { MasterData, UserPlan } from "../types";
+import type { Plan, Spread } from "../../../shared/lib/types";
+import type { UserPlan } from "../types";
+// 🔥 自分でフックを呼ぶ
+import { useAuth } from "../lib/hooks/useAuth";
+import { useMaster } from "../lib/hooks/useMaster";
+import { useUsage } from "../lib/hooks/useUsage";
 
 interface SalonPageProps {
-  payload: JWTPayload | null;
-  masterData: MasterData;
-  isAuthenticated: boolean;
   onLogin: () => void;
   onUpgrade: (plan: UserPlan) => void;
   onDowngrade: (plan: UserPlan) => void;
-  isLoggingIn: boolean;
-  usageStats: UsageStats;
   onStartReading: (spreadId: string, categoryId: string) => void;
+  isLoggingIn: boolean;
 }
 
 const SalonPage: React.FC<SalonPageProps> = ({
-  payload,
-  masterData,
-  isAuthenticated,
   onLogin,
   onUpgrade,
   onDowngrade,
-  isLoggingIn,
-  usageStats,
   onStartReading,
+  isLoggingIn,
 }) => {
-  const currentPlan = (payload?.planCode || "GUEST") as UserPlan;
+  // 🔥 自分で必要なデータを取得
+  const { payload, plan: currentPlan, isAuthenticated, userId } = useAuth();
+  const { data: masterData, isLoading: masterLoading } = useMaster();
+  const { data: usageStats, isLoading: usageLoading } = useUsage(userId);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSpread, setSelectedSpread] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
   const [aiMode, setAiMode] = useState<string>("ai-auto");
+  
   const user = payload?.user || null;
+
+  // ローディング中
+  if (masterLoading || usageLoading || !masterData || !usageStats) {
+    return (
+      <div className="main-container">
+        <div className="text-center py-20">読み込み中...</div>
+      </div>
+    );
+  }
 
   // 現在のプラン情報を取得
   const currentPlanData = masterData.plans?.find(
@@ -56,6 +66,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   );
   console.log("Current Plan No:", checkNo);
   console.log("Available Plans from Plan No:", availablePlansFromPlanNo);
+  
   const getAvailableSpreads = () => {
     if (!masterData.spreads) return [];
 
@@ -170,7 +181,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       {isStandard && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {usageStats.remainingCeltics}回 / ケルト十字:{" "}
+          通常: {usageStats.remainingReadings}回 / ケルト十字:{" "}
           {usageStats.remainingCeltics}回
         </div>
       )}
@@ -326,12 +337,12 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {/* ログインセクション（未認証フリープランのみ） */}
+      {/* ログインセクション（未認証フリープランのみ）*/}
       {isFree && !isAuthenticated && (
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="text-center">
             <div className="font-bold text-blue-800 mb-2">
-              🔑 アカウント作成
+              🔐 アカウント作成
             </div>
             <div className="text-sm text-blue-600 mb-3">
               ログインで履歴保存・有料プランへのアップグレードが可能

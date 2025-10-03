@@ -1,12 +1,6 @@
 import { Preferences } from '@capacitor/preferences';
 
 export class StoreRepository {
-  async init() {
-    // Capacitor Preferencesは初期化不要
-    // 互換性のために空メソッドを提供
-    console.log('Store initialized (Capacitor Preferences)');
-  }
-
   async get<T>(key: string): Promise<T | null> {
     const { value } = await Preferences.get({ key });
     if (!value) return null;

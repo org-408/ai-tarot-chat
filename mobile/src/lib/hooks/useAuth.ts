@@ -5,7 +5,7 @@ import { useAuthStore } from '../stores/auth';
  * useAuthStore から直接インポートしてもOK
  */
 export function useAuth() {
-  const { payload, plan, isAuthenticated, login, logout, refresh, setPayload } = useAuthStore();
+  const { payload, plan, isAuthenticated, login, logout, refresh, setPayload, changePlan } = useAuthStore();
   
   return {
     payload,
@@ -17,5 +17,6 @@ export function useAuth() {
     logout,
     refresh,
     setPayload,
+    changePlan,
   };
 }

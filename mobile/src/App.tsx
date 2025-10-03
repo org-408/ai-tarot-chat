@@ -1,164 +1,53 @@
-import { useEffect, useState } from "react";
-import type { JWTPayload, UsageStats } from "../../shared/lib/types";
+import { useState } from "react";
 import AdBanner from "./components/AdBanner";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
 import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
-import { initializeApp } from "./lib/init";
-import { AuthService } from "./lib/services/auth";
-import { clientService } from "./lib/services/client";
-import { syncService } from "./lib/services/sync";
 import TarotSplashScreen from "./splashscreen";
-import type { MasterData, PageType, UserPlan } from "./types";
+import type { PageType, UserPlan } from "./types";
+import { useAuth } from "./lib/hooks/useAuth";
+import { queryClient } from "./components/providers/QueryProvider";
+import { clientService } from "./lib/services/client";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
-  const [masterData, setMasterData] = useState<MasterData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
-  const [usageStats, setUsageStats] = useState<UsageStats>();
-  const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
-  const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
-  const [message, setMessage] = useState("読み込み中...");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // 占いセッション用のstate
-  const [isReading, setIsReading] = useState(false);
+  // 占いセッション用
   const [readingData, setReadingData] = useState<{
     spreadId: string;
     categoryId: string;
   } | null>(null);
 
-  const authService = new AuthService();
+  // 🔥 App.tsxは認証状態のみ管理（広告・ヘッダー用）
+  const { payload, plan, isAuthenticated, userId, login: authLogin, logout: authLogout, setPayload, changePlan } = useAuth();
 
-  // 起動時フロー
-  useEffect(() => {
-    initializeSession();
-  }, []);
-
-  // 広告表示スタイル
-  useEffect(() => {
-    console.log("Current Plan changed:", jwtPayload, currentPlan);
-    if (!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST") {
-      document.body.classList.add("with-ads");
-    } else {
-      document.body.classList.remove("with-ads");
-    }
-
-    return () => {
-      document.body.classList.remove("with-ads");
-    };
-  }, [jwtPayload]);
+  // 初期化中
+  if (!payload) {
+    return <TarotSplashScreen message="読み込み中..." />;
+  }
 
   /**
-   * セッション初期化
-   */
-  const initializeSession = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      console.log("1. アプリ起動 - セッション初期化開始");
-      // storeなど初期化
-      await initializeApp();
-      setMessage("アプリ起動中...");
-
-      // デバイス登録
-      const payload = await authService.registerDevice();
-      console.log("2. デバイス登録完了", payload);
-      setMessage("デバイス登録完了");
-
-      handleChangePayload(payload);
-
-      // マスターデータ取得
-      const masters = await syncService.getMasterData();
-      setMasterData(masters);
-      console.log("3. マスターデータ同期完了", masters);
-      setMessage("マスターデータ同期完了");
-
-      // 占い残数の取得（毎回サーバーから取得）
-      const usage = await clientService.getUsageAndReset();
-      setUsageStats(usage);
-      console.log("4. ユーザー利用状況の取得完了", usage);
-      setMessage("ユーザー利用状況の取得完了");
-
-      console.log("5. セッション初期化完了");
-      setMessage("セッション初期化完了");
-      setLoading(false);
-
-      console.log("6. スプラッシュスクリーンを閉じる");
-    } catch (err) {
-      console.error("セッション初期化エラー:", err);
-      setError(err instanceof Error ? err.message : "初期化に失敗しました");
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    console.log("masterData 更新:", masterData, usageStats);
-    if (masterData && usageStats) {
-      setLoading(false);
-      setMessage("読み込み完了");
-    } else {
-      if (jwtPayload) {
-        setMessage("マスターデータを同期中...");
-      }
-    }
-  }, [masterData, usageStats]);
-
-  // ReadingPage時のbody制御
-  useEffect(() => {
-    if (pageType === "reading") {
-      document.body.classList.add("reading-page");
-    } else {
-      document.body.classList.remove("reading-page");
-    }
-
-    return () => {
-      document.body.classList.remove("reading-page");
-    };
-  }, [pageType]);
-
-  const displayAds = () => {
-    console.log("Updating ad display based on plan:", jwtPayload, currentPlan);
-    document.body.classList.remove("with-ads");
-    if (!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST") {
-      console.log("Displaying ads for current plan:", currentPlan);
-      document.body.classList.add("with-ads");
-    } else {
-      console.log("Hiding ads for current plan:", currentPlan);
-      document.body.classList.remove("with-ads");
-    }
-  };
-
-  /**
-   * ログイン処理
+   * ログイン処理（複数ページから呼ばれる）
    */
   const handleLogin = async () => {
     try {
-      setLoading(true);
+      setIsLoggingIn(true);
       console.log("ログイン開始");
 
-      const payload = await authService.signInWithWeb();
-      console.log("ログイン成功:", payload);
+      await authLogin();
+      console.log("ログイン成功");
 
-      handleChangePayload(payload);
-
-      const usage = await clientService.getUsageAndReset();
-      console.log("ユーザー利用状況取得:", usage);
-      setUsageStats(usage);
-      // 広告表示更新(念の為)
-      displayAds();
-
-      setIsAuthenticated(true);
+      // 利用状況を再取得
+      await queryClient.invalidateQueries({ queryKey: ['usage', userId] });
     } catch (err) {
       console.error("ログイン失敗:", err);
-      setError(err instanceof Error ? err.message : "ログインに失敗しました");
+      alert(err instanceof Error ? err.message : "ログインに失敗しました");
     } finally {
-      setLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
@@ -167,57 +56,37 @@ function App() {
    */
   const handleLogout = async () => {
     try {
-      await authService.logout();
-
-      const payload = await authService.registerDevice();
-      console.log("サインアウト デバイス再登録:", payload);
-
-      handleChangePayload(payload);
-
-      setIsAuthenticated(false);
+      console.log("ログアウト開始");
+      await authLogout();
+      console.log("ログアウト成功");
+      
       setPageType("salon");
-      setIsReading(false);
       setReadingData(null);
     } catch (err) {
-      console.error("ログアウトエラー・デバイス再登録:", err);
+      console.error("ログアウトエラー:", err);
     }
   };
 
   /**
-   * プラン変更（モック実装）
+   * プラン変更（複数ページから呼ばれる）
    */
   const handlePlanChange = async (newPlan: UserPlan) => {
-    console.log(`プラン変更リクエスト: ${currentPlan} → ${newPlan}`);
+    console.log(`プラン変更リクエスト: ${plan} → ${newPlan}`);
 
     if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
       console.log("認証が必要です。");
       return;
     }
 
-    const result = await clientService.changePlan(newPlan);
-    if (!result || "error" in result || !result.success || !result.payload) {
-      console.error("プラン変更に失敗しました");
-      return;
+    try {
+      await changePlan(newPlan);
+      
+      // 利用状況を再取得
+      await queryClient.invalidateQueries({ queryKey: ['usage', payload.user?.id] });
+      console.log("利用状況を再取得");
+    } catch (err) {
+      console.error("プラン変更エラー:", err);
     }
-    console.log(`プランを ${newPlan} に変更しました（モック）`);
-    console.log("新しいペイロード:", result.payload);
-    handleChangePayload(result.payload);
-
-    const usage = await clientService.getUsageAndReset();
-    if (!usage || "error" in usage) {
-      console.error("ユーザー利用状況の取得に失敗しました");
-      return;
-    }
-    setUsageStats(usage);
-    console.log("ユーザー利用状況の取得:", usage);
-  };
-
-  const handleChangePayload = (payload: JWTPayload) => {
-    setJwtPayload(payload);
-    setCurrentPlan(payload.planCode as UserPlan);
-    console.log("handleChangePayload: ", payload, payload.planCode);
-    // 広告表示更新
-    displayAds();
   };
 
   /**
@@ -242,8 +111,8 @@ function App() {
    * ページ変更
    */
   const handlePageChange = (page: PageType) => {
+    console.log("ページ変更:", page);
     setPageType(page);
-    setIsReading(false); // ページ変更時は占いモードを解除
   };
 
   /**
@@ -252,7 +121,6 @@ function App() {
   const handleStartReading = (spreadId: string, categoryId: string) => {
     console.log(`占い開始: spread=${spreadId}, category=${categoryId}`);
     setReadingData({ spreadId, categoryId });
-    setIsReading(true);
     setPageType("reading");
   };
 
@@ -261,48 +129,9 @@ function App() {
    */
   const handleBackFromReading = () => {
     console.log("占いから戻る");
-    setIsReading(false);
     setReadingData(null);
     setPageType("salon");
   };
-
-  // ローディング表示
-  if ((loading && !jwtPayload) || !masterData || !usageStats) {
-    return <TarotSplashScreen message={message} />;
-  }
-
-  // エラー表示
-  if (error && !jwtPayload) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-500">{error}</div>
-      </div>
-    );
-  }
-
-  // セッションがない場合のフォールバック
-  if (!jwtPayload) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-red-500">
-          セッションの取得に失敗しました
-        </div>
-      </div>
-    );
-  }
-
-// const containerStyle = {
-//   position: "fixed" as const,
-//   top: `calc(56px + env(safe-area-inset-top))`,  // Safe Area追加
-//   left: 0,
-//   right: 0,
-//   bottom: currentPlan === "FREE" || currentPlan === "GUEST" 
-//     ? `calc(110px + env(safe-area-inset-bottom))`  // Safe Area追加
-//     : `calc(70px + env(safe-area-inset-bottom))`,   // Safe Area追加
-//   overflow: "auto",
-//   padding: "0.5rem",
-//   background: "transparent",
-// };
 
   // ページレンダリング
   const renderPage = () => {
@@ -310,15 +139,11 @@ function App() {
       case "salon":
         return (
           <SalonPage
-            payload={jwtPayload}
-            masterData={masterData}
-            isAuthenticated={isAuthenticated}
             onLogin={handleLogin}
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
-            isLoggingIn={loading}
-            usageStats={usageStats}
             onStartReading={handleStartReading}
+            isLoggingIn={isLoggingIn}
           />
         );
       case "reading":
@@ -326,19 +151,15 @@ function App() {
           <ReadingPage
             spreadId={readingData?.spreadId || ""}
             categoryId={readingData?.categoryId || ""}
-            masterData={masterData}
             onBack={handleBackFromReading}
           />
         );
       case "plans":
         return (
           <PlansPage
-            payload={jwtPayload}
-            plans={masterData.plans}
-            isAuthenticated={isAuthenticated}
-            onChangePlan={handlePlanChange}
             onLogin={handleLogin}
-            isLoggingIn={loading}
+            onChangePlan={handlePlanChange}
+            isLoggingIn={isLoggingIn}
           />
         );
       case "history":
@@ -377,15 +198,11 @@ function App() {
       default:
         return (
           <SalonPage
-            payload={jwtPayload}
-            masterData={masterData}
-            isAuthenticated={isAuthenticated}
             onLogin={handleLogin}
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
-            isLoggingIn={loading}
-            usageStats={usageStats}
             onStartReading={handleStartReading}
+            isLoggingIn={isLoggingIn}
           />
         );
     }
@@ -393,7 +210,7 @@ function App() {
 
   return (
     <div className="w-full" style={{ height: "100vh" }}>
-      <Header currentPlan={currentPlan} currentPage={pageType} />
+      <Header currentPlan={plan} currentPage={pageType} />
 
       {/* 開発メニュー */}
       <div className="fixed top-2 right-2 z-50">
@@ -416,7 +233,7 @@ function App() {
                   setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "FREE"
+                  plan === "FREE"
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -430,7 +247,7 @@ function App() {
                   setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "STANDARD"
+                  plan === "STANDARD"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -444,7 +261,7 @@ function App() {
                   setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  currentPlan === "PREMIUM"
+                  plan === "PREMIUM"
                     ? "bg-yellow-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -456,11 +273,7 @@ function App() {
                   setDevMenuOpen(false);
                   setPageType("plans");
                 }}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
-                  pageType === "plans"
-                    ? "bg-purple-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
+                className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
               >
                 💎 Plan
               </button>
@@ -492,17 +305,17 @@ function App() {
       </div>
 
       {/* ユーザー情報表示 */}
-      {jwtPayload.user && (
+      {payload.user && (
         <div className="fixed top-2 left-2 z-40 bg-black bg-opacity-10 text-xs px-2 py-1 rounded opacity-30 hover:opacity-80 transition-all">
-          {jwtPayload.user.email}
+          {payload.user.email}
         </div>
       )}
 
-      <div className={`main-content-area ${!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST" ? 'with-ads' : ''}`}>
+      <div className={`main-content-area ${plan === "FREE" || plan === "GUEST" ? 'with-ads' : ''}`}>
         {renderPage()}
       </div>
 
-      <AdBanner currentPlan={currentPlan} />
+      <AdBanner currentPlan={plan} />
 
       <Navigation currentPage={pageType} onPageChange={handlePageChange} />
     </div>
