@@ -17,7 +17,7 @@
 body {
   margin: 0;
   padding: 0;
-  padding-top: 56px; /* ヘッダー分のスペース */
+  /* padding-top: calc(56px + env(safe-area-inset-top)); ヘッダー + Safe Area */
   /* padding-bottom: 80px; ボトムナビ分のスペース */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
@@ -25,17 +25,39 @@ body {
 }
 
 body.with-ads {
-  padding-bottom: 110px; /* ボトムナビ70px + 広告バナー40px */
+  padding-bottom: calc(110px + env(safe-area-inset-bottom)); /* ボトムナビ70px + 広告バナー40px + Safe Area */
 }
 
 body:not(.with-ads) {
-  padding-bottom: 70px; /* ボトムナビのみ */
+  padding-bottom: calc(70px + env(safe-area-inset-bottom)); /* ボトムナビのみ + Safe Area */
+}
+
+/* メインコンテンツエリア */
+.main-content-area {
+  position: fixed;
+  top: calc(56px + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  overflow: auto;
+  padding: 0.5rem;
+  background: transparent;
+}
+
+/* 広告あり */
+.main-content-area.with-ads {
+  bottom: calc(110px);
+}
+
+/* 広告なし */
+.main-content-area:not(.with-ads) {
+  bottom: calc(70px);
 }
 
 /* 固定ヘッダースタイル */
 .app-header {
   position: fixed;
   top: 0;
+  padding-top: env(safe-area-inset-top); /* Safe Area */
   left: 0;
   right: 0;
   z-index: 50;
@@ -144,7 +166,7 @@ body:not(.with-ads) {
 /* 固定広告バナースタイル */
 .ad-banner-fixed {
   position: fixed;
-  bottom: 70px; /* ボトムナビの上 */
+  bottom: 70px;
   left: 0;
   right: 0;
   z-index: 30;
@@ -169,7 +191,6 @@ body:not(.with-ads) {
   margin: 0 auto;
   background: white;
   border-radius: 0;
-  padding: 0;
   /* min-height: calc(100vh - 200px); */
 }
 
@@ -256,17 +277,6 @@ body:not(.with-ads) {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-}
-
-/* 広告バナー（ページ内） */
-.ads-banner {
-  background: #ffeb3b;
-  text-align: center;
-  padding: 0.5rem;
-  font-size: 0.75rem;
-  margin-top: 1rem;
-  border-radius: 0.25rem;
-  color: #333;
 }
 
 /* アップグレードヒント */
@@ -389,6 +399,7 @@ body:not(.with-ads) {
   .bottom-navigation {
     background: #1f1f1f;
     border-top-color: #374151;
+    padding-bottom: env(safe-area-inset-bottom); /* Safe Area */
   }
 
   .bottom-nav-item {

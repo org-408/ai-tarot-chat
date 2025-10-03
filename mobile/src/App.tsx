@@ -23,6 +23,7 @@ function App() {
   const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
   const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
   const [message, setMessage] = useState("読み込み中...");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // 占いセッション用のstate
   const [isReading, setIsReading] = useState(false);
@@ -151,6 +152,8 @@ function App() {
       setUsageStats(usage);
       // 広告表示更新(念の為)
       displayAds();
+
+      setIsAuthenticated(true);
     } catch (err) {
       console.error("ログイン失敗:", err);
       setError(err instanceof Error ? err.message : "ログインに失敗しました");
@@ -170,6 +173,11 @@ function App() {
       console.log("サインアウト デバイス再登録:", payload);
 
       handleChangePayload(payload);
+
+      setIsAuthenticated(false);
+      setPageType("salon");
+      setIsReading(false);
+      setReadingData(null);
     } catch (err) {
       console.error("ログアウトエラー・デバイス再登録:", err);
     }
@@ -283,19 +291,18 @@ function App() {
     );
   }
 
-  const isAuthenticated = !!jwtPayload?.user;
-
-  const containerStyle = {
-    position: "fixed" as const,
-    top: "56px", // ヘッダーの高さ
-    left: 0,
-    right: 0,
-    bottom:
-      currentPlan === "FREE" || currentPlan === "GUEST" ? "110px" : "70px", // フッター + 広告
-    overflow: "auto",
-    padding: "0.5rem",
-    background: "transparent",
-  };
+// const containerStyle = {
+//   position: "fixed" as const,
+//   top: `calc(56px + env(safe-area-inset-top))`,  // Safe Area追加
+//   left: 0,
+//   right: 0,
+//   bottom: currentPlan === "FREE" || currentPlan === "GUEST" 
+//     ? `calc(110px + env(safe-area-inset-bottom))`  // Safe Area追加
+//     : `calc(70px + env(safe-area-inset-bottom))`,   // Safe Area追加
+//   overflow: "auto",
+//   padding: "0.5rem",
+//   background: "transparent",
+// };
 
   // ページレンダリング
   const renderPage = () => {
@@ -491,7 +498,9 @@ function App() {
         </div>
       )}
 
-      <div style={containerStyle}>{renderPage()}</div>
+      <div className={`main-content-area ${!jwtPayload || currentPlan === "FREE" || currentPlan === "GUEST" ? 'with-ads' : ''}`}>
+        {renderPage()}
+      </div>
 
       <AdBanner currentPlan={currentPlan} />
 

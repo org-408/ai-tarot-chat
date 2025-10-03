@@ -17,13 +17,19 @@
     "@capacitor/browser": "^7.0.2",
     "@capacitor/core": "^7.4.3",
     "@capacitor/device": "^7.0.2",
+    "@capacitor/filesystem": "^7.1.4",
     "@capacitor/ios": "^7.4.3",
     "@capacitor/preferences": "^7.0.2",
     "@tailwindcss/vite": "^4.1.14",
+    "@tanstack/query-sync-storage-persister": "^5.90.2",
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-persist-client": "^5.90.2",
+    "idb-keyval": "^6.2.2",
     "jose": "^6.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "tailwindcss": "^4.1.14"
+    "tailwindcss": "^4.1.14",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",

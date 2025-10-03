@@ -9,12 +9,6 @@ import type{
 export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
 export type PageType = "salon" | "reading" | "plans" | "history" | "settings";
 
-export interface Genre {
-  id: string;
-  name: string;
-  description: string;
-}
-
 export interface NavigationItem {
   id: PageType;
   label: string;
@@ -27,16 +21,6 @@ export interface SpreadRecommendation {
   name: string;
   description: string;
   reason: string;
-}
-
-export interface SessionData {
-  clientId: string;
-  plan: UserPlan;
-  user?: {
-    id: string;
-    email: string;
-    name?: string;
-  };
 }
 
 export interface MasterData {

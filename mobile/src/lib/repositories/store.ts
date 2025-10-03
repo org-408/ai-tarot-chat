@@ -38,7 +38,6 @@ export class StoreRepository {
     await Preferences.clear();
   }
 
-  // Tauri版にあるメソッドも追加
   async getMany<T>(keys: string[]): Promise<Record<string, T | null>> {
     const result: Record<string, T | null> = {};
     for (const key of keys) {

@@ -488,12 +488,6 @@ export interface TicketData {
   provider?: string;
 }
 
-export type RemainingReadings = {
-  remainingReadings: number;
-  remainingCeltics: number;
-  remainingPersonal: number;
-};
-
 export type UsageStats = {
   // totalReadings: number;
   // totalCeltics: number;

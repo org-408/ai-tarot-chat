@@ -1,13 +1,16 @@
-// mobile/src/services/auth.capacitor.ts
 import { App } from '@capacitor/app';
 import { Device } from '@capacitor/device';
 import { Browser } from '@capacitor/browser';
 import type { JWTPayload } from '../../../../shared/lib/types';
 import { storeRepository } from '../repositories/store';
 import { decodeJWT } from '../utils/jwt';
+import { apiClient } from '../utils/apiClient';
+
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
-const BFF_URL = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
+if (!JWT_SECRET) {
+  throw new Error("VITE_AUTH_SECRET environment variable is required");
+}
 
 export class AuthService {
   private readonly KEYS = {
@@ -18,116 +21,151 @@ export class AuthService {
   } as const;
 
   /**
-   * デバイス登録 - 起動時に実行
+   * デバイス登録 - 起動時に必ず実行
    */
   async registerDevice(): Promise<JWTPayload> {
+    console.log("registerDevice:デバイス登録開始");
+
+    // デバイスIDを取得（なければ新規作成してストア登録）
     const deviceId = await this.ensureDeviceId();
-    
-    const [info, appInfo] = await Promise.all([
-      Device.getInfo(),
-      App.getInfo()
+    console.log("デバイスID:", deviceId);
+
+    // Capacitorから情報取得
+    const [platformName, osVersionStr, appVersionStr] = await Promise.all([
+      Device.getInfo().then(info => info.platform),
+      Device.getInfo().then(info => info.osVersion),
+      App.getInfo().then(info => info.version),
     ]);
 
-    const response = await fetch(`${BFF_URL}/api/native/device/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        deviceId,
-        platform: info.platform,
-        appVersion: appInfo.version,
-        osVersion: info.osVersion,
-      })
-    });
+    console.log(
+      `プラットフォーム: ${platformName}, OS: ${osVersionStr}, アプリ: ${appVersionStr}`
+    );
 
-    if (!response.ok) {
-      throw new Error('デバイス登録に失敗しました');
+    try {
+      const result = await apiClient.post<{ token: string }>(
+        "/api/native/device/register",
+        {
+          deviceId,
+          platform: platformName,
+          appVersion: appVersionStr,
+          osVersion: osVersionStr,
+          // pushToken は将来的に追加
+        }
+      );
+      if (!result || "error" in result) {
+        throw new Error("デバイス登録に失敗しました");
+      }
+
+      console.log("デバイス登録成功:", result);
+      const { token } = result;
+      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+      if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
+        throw new Error("不正なトークンが返却されました");
+      }
+
+      // サーバーレスポンスに合わせて保存
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+      await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
+
+      if (payload.user?.id) {
+        await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
+      }
+
+      return payload;
+    } catch (error) {
+      console.error("デバイス登録エラー:", error);
+      throw error;
     }
-
-    const { token } = await response.json();
-    const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
-    
-    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-    await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
-    
-    if (payload.user?.id) {
-      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
-    }
-
-    return payload;
   }
 
   /**
-   * OAuth認証 - Browser + Deep Link方式
+   * OAuth認証 - ユーザーとデバイスを紐付け
    */
   async signInWithWeb(): Promise<JWTPayload> {
-    const url = `${BFF_URL}/auth/signin?isMobile=true`;
-    const callbackScheme = import.meta.env.VITE_DEEP_LINK_SCHEME || "aitarotchat";
-    
-    return new Promise(async (resolve, reject) => {
-      // Deep Linkリスナー設定
-      const listener = await App.addListener('appUrlOpen', async (event) => {
-        console.log('appUrlOpen triggered:', event.url);
-        
-        // リスナー削除
-        await listener.remove();
-        
-        // ブラウザを閉じる
-        await Browser.close();
-        
-        try {
-          const callbackUrl = new URL(event.url);
-          const ticket = callbackUrl.searchParams.get("ticket");
-          
-          if (!ticket) {
-            reject(new Error("認証トークンが取得できませんでした"));
-            return;
-          }
+    const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
+    const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
+    const callbackScheme =
+      import.meta.env.VITE_DEEP_LINK_SCHEME || "aitarotchat";
+    console.log("🔐 Web認証開始:", url, callbackScheme);
 
-          const deviceId = await this.getDeviceId();
-          if (!deviceId) {
-            reject(new Error("デバイスIDが存在しません"));
-            return;
-          }
-
-          // チケット交換
-          const response = await fetch(`${BFF_URL}/api/native/auth/exchange`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticket, deviceId })
-          });
-
-          if (!response.ok) {
-            throw new Error('トークン交換に失敗しました');
-          }
-
-          const { token } = await response.json();
-          const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+    try {
+      // Capacitor版のauthenticate実装
+      const auth = await new Promise<{ callbackUrl: string }>((resolve, reject) => {
+        App.addListener('appUrlOpen', async (event) => {
+          await Browser.close();
+          resolve({ callbackUrl: event.url });
+        }).then(listener => {
+          // ブラウザを開く
+          Browser.open({ url, windowName: '_self' }).catch(reject);
           
-          if (!payload.user?.id) {
-            throw new Error('不正なトークンが返却されました');
-          }
-          
-          await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-          await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
-          
-          resolve(payload);
-        } catch (error) {
-          reject(error);
-        }
+          // タイムアウト設定（オプション）
+          setTimeout(() => {
+            listener.remove();
+            reject(new Error("認証タイムアウト"));
+          }, 120000); // 2分
+        });
       });
       
-      // ブラウザでOAuth画面を開く
-      await Browser.open({ 
-        url,
-        windowName: '_self'
-      });
-    });
+      if (!auth || "error" in auth) {
+        console.log("❌ 認証キャンセルまたはエラー:", auth);
+        throw new Error("認証に失敗しました");
+      }
+
+      const callbackUrl = new URL(auth.callbackUrl);
+      const ticket = callbackUrl.searchParams.get("ticket");
+
+      if (!ticket) {
+        throw new Error("認証トークンが取得できませんでした");
+      }
+
+      console.log("🎫 チケット取得成功");
+
+      const deviceId = await this.getDeviceId();
+      if (!deviceId) {
+        throw new Error("デバイスIDが存在しません");
+      }
+      console.log("デバイスID:", deviceId);
+
+      const result = await apiClient.post<{
+        token: string;
+      }>("/api/native/auth/exchange", { ticket, deviceId });
+      if (!result || "error" in result) {
+        console.log("❌ チケット交換エラー:", result);
+        throw new Error("トークン交換に失敗しました");
+      }
+
+      console.log("✅ JWT取得成功 result:", result);
+      const { token } = result;
+      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+      if (
+        !payload ||
+        !payload.deviceId ||
+        payload.deviceId !== deviceId ||
+        !payload.user ||
+        !payload.user.id
+      ) {
+        console.error("❌ JWTペイロードエラー:", payload);
+        throw new Error("不正なトークンが返却されました");
+      }
+      console.log("ユーザー紐付け成功:", payload);
+
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
+
+      return payload;
+    } catch (error) {
+      console.error("❌ Web認証エラー:", error);
+      throw error;
+    }
   }
 
   private async ensureDeviceId(): Promise<string> {
+    console.log("ensureDeviceId:デバイスID確認");
     let deviceId = await storeRepository.get<string>(this.KEYS.DEVICE_ID);
-    
+    console.log("現在のデバイスID:", deviceId);
+
     if (!deviceId) {
+      console.log("デバイスIDが存在しないため新規作成");
       deviceId = crypto.randomUUID();
       await storeRepository.set(this.KEYS.DEVICE_ID, deviceId);
     }
