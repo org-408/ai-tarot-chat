@@ -2,7 +2,7 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  console.log("📍 /api/native/device/register - デバイス登録リクエスト受信");
+  console.log("📍 /api/device/register - デバイス登録リクエスト受信");
 
   try {
     const { deviceId, platform, appVersion, osVersion, pushToken } =

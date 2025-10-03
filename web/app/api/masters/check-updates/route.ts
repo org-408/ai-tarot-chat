@@ -3,6 +3,7 @@ import { checkMasterDataUpdates } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
+  console.log("📍 /api/masters/check-updates - マスターデータ更新チェックリクエスト受信");
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);

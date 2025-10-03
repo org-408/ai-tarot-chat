@@ -43,7 +43,7 @@ export class AuthService {
 
     try {
       const result = await apiClient.post<{ token: string }>(
-        "/api/native/device/register",
+        "/api/device/register",
         {
           deviceId,
           platform: platformName,
@@ -128,7 +128,7 @@ export class AuthService {
 
       const result = await apiClient.post<{
         token: string;
-      }>("/api/native/auth/exchange", { ticket, deviceId });
+      }>("/api/auth/exchange", { ticket, deviceId });
       if (!result || "error" in result) {
         console.log("❌ チケット交換エラー:", result);
         throw new Error("トークン交換に失敗しました");
@@ -155,6 +155,44 @@ export class AuthService {
       return payload;
     } catch (error) {
       console.error("❌ Web認証エラー:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * トークン更新
+   */
+  async refreshToken(): Promise<JWTPayload> {
+    try {
+      console.log('[AuthService] Refreshing token');
+      
+      const response = await apiClient.post<{ token: string }>(
+        '/api/auth/refresh'
+      );
+      
+      // 新しいトークンを保存
+      await storeRepository.set('accessToken', response.token);
+      
+      // デコードして返す
+      const payload = await decodeJWT<JWTPayload>(
+        response.token,
+        JWT_SECRET
+      );
+      
+      // デバイスID等も保存
+      if (payload.deviceId) {
+        await storeRepository.set('deviceId', payload.deviceId);
+      }
+      if (payload.clientId) {
+        await storeRepository.set('clientId', payload.clientId);
+      }
+      if (payload.user?.id) {
+        await storeRepository.set('userId', payload.user.id);
+      }
+      
+      return payload;
+    } catch (error) {
+      console.error('[AuthService] Token refresh failed:', error);
       throw error;
     }
   }
@@ -197,11 +235,6 @@ export class AuthService {
     await storeRepository.delete(this.KEYS.ACCESS_TOKEN);
     await storeRepository.delete(this.KEYS.CLIENT_ID);
     await storeRepository.delete(this.KEYS.USER_ID);
-  }
-
-  async isAuthenticated(): Promise<boolean> {
-    const userId = await this.getUserId();
-    return userId !== null;
   }
 }
 

@@ -1,7 +1,7 @@
 import { authService } from "@/lib/services/auth";
 
 export async function GET() {
-  console.log("📍 /api/native/auth/ticket - チケット発行リクエスト受信");
+  console.log("📍 /api/auth/ticket - チケット発行リクエスト受信");
 
   try {
     // AuthService経由でチケット生成

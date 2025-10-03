@@ -2,7 +2,7 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  console.log("📍 /api/native/auth/exchange - チケット交換リクエスト受信");
+  console.log("📍 /api/auth/exchange - チケット交換リクエスト受信");
 
   try {
     const { ticket, deviceId } = await request.json().catch(() => ({}));

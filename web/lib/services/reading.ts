@@ -1,6 +1,5 @@
 import type {
   Reading,
-  RemainingReadings,
   Spread,
   TarotCard,
 } from "@/../shared/lib/types";
@@ -10,7 +9,6 @@ import { planRepository } from "@/lib/repositories/plan";
 import { readingRepository } from "@/lib/repositories/reading";
 import { spreadRepository } from "@/lib/repositories/spread";
 import { tarotRepository } from "@/lib/repositories/tarot";
-import { isSameDayJST } from "../utils/date";
 
 export class ReadingService {
   /**
@@ -106,34 +104,6 @@ export class ReadingService {
     }
 
     return await readingRepository.getReadingsByClientId(clientId, limit);
-  }
-
-  /**
-   * 今日の残り回数取得
-   */
-  async getRemainingReadings(clientId: string): Promise<RemainingReadings> {
-    const client = await clientRepository.getClientById(clientId);
-    if (!client) throw new Error("Client not found");
-
-    const plan = client.plan;
-    if (!plan) throw new Error("Plan not found");
-
-    console.log("Client last reading date:", client.lastReadingDate);
-    const lastReading = client.lastReadingDate;
-
-    // 日付が変わっていればリセット
-    const dailyCount =
-      lastReading && isSameDayJST(lastReading) ? client.dailyReadingsCount : 0;
-    const celticCount =
-      lastReading && isSameDayJST(lastReading) ? client.dailyCelticsCount : 0;
-    const personalCount =
-      lastReading && isSameDayJST(lastReading) ? client.dailyPersonalCount : 0;
-
-    return {
-      remainingReadings: Math.max(0, plan.maxReadings - dailyCount),
-      remainingCeltics: Math.max(0, plan.maxCeltics - celticCount),
-      remainingPersonal: Math.max(0, plan.maxPersonal - personalCount),
-    };
   }
 
   async drawRandomCards(

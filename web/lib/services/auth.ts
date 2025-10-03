@@ -18,17 +18,6 @@ if (!JWT_SECRET) {
 }
 
 export class AuthService {
-  // 「厳密ログイン判定」：User.id があり、かつ Account が1件以上ある
-  async isStrictlyAuthenticated() {
-    const session = await auth();
-    const uid = session?.user?.id;
-    if (!uid) return false;
-
-    // まれに Cookie はあるが Account が切れているケースを除外
-    const accounts = await authRepository.getAccountsByUserId(uid);
-    return Boolean(accounts.length > 0);
-  }
-
   /**
    * デバイス登録・再登録（Tauri起動時）
    */
@@ -206,7 +195,7 @@ export class AuthService {
   // Client統合（ユーザーが複数Clientを持ってしまった場合の救済用）
   // planはより上位のものを適用
   // 利用回数は合算
-  async mergeClients(
+  private async mergeClients(
     fromClientId: string,
     toClientId: string
   ): Promise<Client> {
@@ -378,8 +367,8 @@ export class AuthService {
    * JWTペイロード更新（プラン変更時など）
    */
   async refreshJwtPayload(
-    payload: JWTPayload,
-    planCode: string
+    payload: JWTPayload & { exp?: number },
+    planCode?: string
   ): Promise<string> {
     // アプリ用JWT生成（既存パターンに合わせて）
     return await generateJWT<JWTPayload>(
@@ -387,7 +376,7 @@ export class AuthService {
         t: "app",
         deviceId: payload.deviceId,
         clientId: payload.clientId,
-        planCode,
+        planCode: planCode || payload.planCode,
         provider: payload.provider,
         user: payload.user,
       },
@@ -396,12 +385,50 @@ export class AuthService {
   }
 
   /**
+   * 期限切れ・OAuth認証時は認証期限切れの検出とJWTペイロード更新
+   */
+  async detectTokenExpirationAndRefresh(
+    request: NextRequest
+  ): Promise<string> {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw new Error("認証が必要です");
+    }
+
+    try {
+      console.log("🔑 decodeJWT token", authHeader.substring(7));
+      const payload = await decodeJWT<JWTPayload>(
+        authHeader.substring(7),
+        JWT_SECRET,
+        true
+      );
+
+      // 期限切れでもpayloadを取得できるため、ここでログ出力
+      console.log("🔑 Token payload (not check expiration):", payload);
+
+      // OAuth認証時は auth() を呼んで認証期限切れを検出
+      if (payload.user && payload.provider) {
+        const session = await auth();
+        if (!session?.user?.id || !session?.user?.email) {
+          console.log("⚠️ OAuth認証期限切れ検出");
+          throw new Error("OAuth session expired");
+        }
+      }
+
+      return this.refreshJwtPayload(payload);
+    } catch (error) {
+      console.error("❌ APIリクエスト認証エラー:", error);
+      throw new Error("認証リフレッシュ失敗");
+    }
+  }
+
+  /**
    * API リクエストの認証をチェック（ゲスト・ユーザー両対応）
    * @returns { payload } または { error: NextResponse }
    */
   async verifyApiRequest(
     request: NextRequest
-  ): Promise<{ payload: JWTPayload } | { error: NextResponse }> {
+  ): Promise<{ payload: JWTPayload & { exp?: number } } | { error: NextResponse }> {
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return {

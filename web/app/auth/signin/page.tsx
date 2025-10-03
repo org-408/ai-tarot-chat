@@ -34,16 +34,6 @@ export default async function SignInPage({
   const params = await searchParams;
   const stars = generateStars();
 
-  // 既にログイン済みの場合の処理
-  const isAuthenticated = await authService.isStrictlyAuthenticated();
-  if (isAuthenticated) {
-    // isMobile="true" の場合のみモバイルコールバックへ
-    if (params.isMobile === "true") {
-      return redirect("/auth/mobile/callback?success=true");
-    }
-    return redirect(params.callbackUrl || "/dashboard");
-  }
-
   // isMobileApp: モバイルアプリかどうか（内部的な変数名）
   const isMobileApp = params.isMobile === "true";
 

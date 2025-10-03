@@ -20,7 +20,7 @@ function Content() {
   const deepLinkWithTicket = useCallback(async () => {
     try {
       setMsg("アプリに戻る準備中…");
-      const res = await fetch("/api/native/auth/ticket", { method: "GET" });
+      const res = await fetch("/api/auth/ticket", { method: "GET" });
       if (!res.ok) throw new Error("ticket-issue-failed");
       const { ticket } = await res.json();
       const url = `${APP_SCHEME}?ticket=${encodeURIComponent(ticket)}`;

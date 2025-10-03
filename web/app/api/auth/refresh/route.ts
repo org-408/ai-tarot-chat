@@ -1,23 +1,17 @@
 import { authService } from "@/lib/services/auth";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  console.log("📍 /api/native/session - セッション取得リクエスト受信");
+export async function POST(request: NextRequest) {
+  console.log("📍 /api/auth/refresh - セッション取得リクエスト受信");
 
   try {
     console.log("🔄 セッション検証処理開始");
 
     // AuthService経由でセッション検証
-    const payload = await authService.verifyApiRequest(request);
-    if ("error" in payload || !payload)
-      return new Response("unauthorized", { status: 401 });
+    const token = await authService.detectTokenExpirationAndRefresh(request);
+    console.log(`✅ セッション検証完了 (payload: ${token})`);
 
-    console.log(`✅ セッション検証完了 (payload: ${payload})`);
-
-    // 既存パターンに合わせたレスポンス
-    return Response.json({
-      payload,
-    });
+    return NextResponse.json({ token });
   } catch (error) {
     console.error("❌ セッション検証エラー:", error);
 

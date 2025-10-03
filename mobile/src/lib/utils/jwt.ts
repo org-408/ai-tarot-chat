@@ -22,22 +22,25 @@ export async function generateJWT<T>(
 
 export async function decodeJWT<T>(
   token: string,
-  secret: string = JWT_SECRET
-): Promise<T> {
+  secret: string = JWT_SECRET,
+  ignoreExpiration = false
+): Promise<T & { exp?: number }> {
   console.log("🔑 decodeJWT token", token);
   const jwtSecret = secret ?? JWT_SECRET;
   console.log("🔑 decodeJWT secret", jwtSecret);
+  console.log("🔑 decodeJWT ignoreExpiration", ignoreExpiration);
   const { payload } = await jwtVerify(
     token,
     new TextEncoder().encode(jwtSecret),
     {
       algorithms: [ALG],
-    }
+      currentDate: ignoreExpiration ? new Date(0) : undefined,
+    },
   );
   if (payload.t !== "app" && payload.t !== "ticket") {
     // "app" または "ticket" 以外は不正
     console.log("❌ Invalid token type:", payload.t);
     throw new Error("Invalid token type");
   }
-  return payload as unknown as T;
+  return payload as unknown as T & { exp?: number};
 }

@@ -43,7 +43,7 @@ export class AuthService {
 
     try {
       const result = await apiClient.post<{ token: string }>(
-        "/api/native/device/register",
+        "/api/device/register",
         {
           deviceId,
           platform: platformName,
@@ -115,7 +115,7 @@ export class AuthService {
 
       const result = await apiClient.post<{
         token: string;
-      }>("/api/native/auth/exchange", { ticket, deviceId });
+      }>("/api/auth/exchange", { ticket, deviceId });
       if (!result || "error" in result) {
         console.log("❌ チケット交換エラー:", result);
         throw new Error("トークン交換に失敗しました");

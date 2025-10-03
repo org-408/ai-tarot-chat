@@ -9,7 +9,10 @@ export async function generateJWT<T>(
   secret: string = JWT_SECRET,
   ttl: string = APP_JWT_TTL
 ): Promise<string> {
+  console.log("🔑 generateJWT payload", payload);
   const jwtSecret = secret ?? JWT_SECRET;
+  console.log("🔑 generateJWT secret", jwtSecret);
+  console.log("🔑 generateJWT ttl", ttl);
   return await new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
@@ -19,18 +22,25 @@ export async function generateJWT<T>(
 
 export async function decodeJWT<T>(
   token: string,
-  secret: string = JWT_SECRET
-): Promise<T> {
+  secret: string = JWT_SECRET,
+  ignoreExpiration = false
+): Promise<T & { exp?: number }> {
+  console.log("🔑 decodeJWT token", token);
   const jwtSecret = secret ?? JWT_SECRET;
+  console.log("🔑 decodeJWT secret", jwtSecret);
+  console.log("🔑 decodeJWT ignoreExpiration", ignoreExpiration);
   const { payload } = await jwtVerify(
     token,
     new TextEncoder().encode(jwtSecret),
     {
       algorithms: [ALG],
-    }
+      currentDate: ignoreExpiration ? new Date(0) : undefined,
+    },
   );
-  if (payload.t !== "app" && payload.t !== "ticket")
+  if (payload.t !== "app" && payload.t !== "ticket") {
     // "app" または "ticket" 以外は不正
+    console.log("❌ Invalid token type:", payload.t);
     throw new Error("Invalid token type");
-  return payload as unknown as T;
+  }
+  return payload as T & { exp?: number};
 }

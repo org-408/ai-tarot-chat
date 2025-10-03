@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { App as CapacitorApp } from '@capacitor/app';
 import AdBanner from "./components/AdBanner";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -9,7 +10,7 @@ import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 import { useAuth } from "./lib/hooks/useAuth";
 import { queryClient } from "./components/providers/QueryProvider";
-import { clientService } from "./lib/services/client";
+import { apiClient } from "./lib/utils/apiClient";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
@@ -23,11 +24,71 @@ function App() {
   } | null>(null);
 
   // 🔥 App.tsxは認証状態のみ管理（広告・ヘッダー用）
-  const { payload, plan, isAuthenticated, userId, login: authLogin, logout: authLogout, setPayload, changePlan } = useAuth();
+  const { 
+    isReady,
+    payload, 
+    plan, 
+    isAuthenticated, 
+    userId, 
+    init,
+    refresh,
+    login: authLogin, 
+    logout: authLogout, 
+    setPayload, 
+    changePlan 
+  } = useAuth();
+
+  // 🔥 初期化処理（アプリ起動時に1回だけ実行）
+  useEffect(() => {
+    console.log('[App] Initializing...');
+    init();
+  }, [init]);
+
+  // 🔥 アプリ状態の監視（バックグラウンド復帰時のチェック）
+  useEffect(() => {
+    const listener = CapacitorApp.addListener('appStateChange', async (state) => {
+      console.log('[App] App state changed:', state.isActive);
+      
+      if (state.isActive && isReady) {
+        // フォアグラウンドに復帰した時
+        console.log('[App] App resumed, checking token...');
+        try {
+          await refresh(); // トークンチェック＋必要なら更新
+        } catch (error) {
+          console.error('[App] Token refresh on resume failed:', error);
+        }
+      }
+    });
+
+    return () => {
+      listener.then(l => l.remove());
+    };
+  }, [refresh, isReady]);
 
   // 初期化中
-  if (!payload) {
+  if (!isReady) {
     return <TarotSplashScreen message="読み込み中..." />;
+  }
+
+  // 初期化完了後もpayloadがない場合（異常系）
+  if (!payload) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 to-indigo-900">
+        <div className="text-center text-white">
+          <div className="text-6xl mb-4">⚠️</div>
+          <div className="text-xl font-bold mb-2">初期化エラー</div>
+          <div className="text-sm opacity-80">
+            アプリの初期化に失敗しました
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 px-6 py-2 bg-white text-purple-900 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            再読み込み
+          </button>
+        </div>
+      </div>
+    );
   }
 
   /**
@@ -62,6 +123,9 @@ function App() {
       
       setPageType("salon");
       setReadingData(null);
+      
+      // 利用状況キャッシュをクリア
+      queryClient.clear();
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -75,6 +139,7 @@ function App() {
 
     if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
       console.log("認証が必要です。");
+      alert("このプランにはログインが必要です");
       return;
     }
 
@@ -86,6 +151,7 @@ function App() {
       console.log("利用状況を再取得");
     } catch (err) {
       console.error("プラン変更エラー:", err);
+      alert(err instanceof Error ? err.message : "プラン変更に失敗しました");
     }
   };
 
