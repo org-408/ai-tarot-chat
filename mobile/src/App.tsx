@@ -30,6 +30,8 @@ function App() {
     isAuthenticated, 
     userId, 
     init,
+    setupAppLifecycle,
+    cleanupAppLifecycle,
     refresh,
     login: authLogin, 
     logout: authLogout, 
@@ -38,9 +40,17 @@ function App() {
 
   // 🔥 初期化処理（アプリ起動時に1回だけ実行）
   useEffect(() => {
-    console.log('[App] Initializing...');
-    init();
-  }, [init]);
+    const initialize = async () => {
+      await init();
+      await setupAppLifecycle(); // 🔥 セットアップ
+    };
+
+    initialize();
+
+    return () => {
+      cleanupAppLifecycle(); // 🔥 クリーンアップ
+    };
+  }, []);
 
   // 🔥 アプリ状態の監視（バックグラウンド復帰時のチェック）
   useEffect(() => {
