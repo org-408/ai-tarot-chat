@@ -9,34 +9,34 @@ PODS:
     - Capacitor
     - Google-Mobile-Ads-SDK (= 11.3.0)
     - GoogleUserMessagingPlatform (< 3.0.0, >= 2.7.0)
-  - CapacitorCommunityGenericOauth2 (7.0.0):
-    - Capacitor
-    - OAuthSwift (= 2.2.0)
   - CapacitorCordova (7.4.3)
   - CapacitorDevice (7.0.2):
     - Capacitor
+  - CapacitorFilesystem (7.1.4):
+    - Capacitor
+    - IONFilesystemLib (~> 1.0.1)
   - CapacitorPreferences (7.0.2):
     - Capacitor
   - Google-Mobile-Ads-SDK (11.3.0):
     - GoogleUserMessagingPlatform (>= 1.1)
   - GoogleUserMessagingPlatform (2.7.0)
-  - OAuthSwift (2.2.0)
+  - IONFilesystemLib (1.0.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCommunityAdmob (from `../../node_modules/@capacitor-community/admob`)"
-  - "CapacitorCommunityGenericOauth2 (from `../../node_modules/@capacitor-community/generic-oauth2`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
+  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
   - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
 
 SPEC REPOS:
   trunk:
     - Google-Mobile-Ads-SDK
     - GoogleUserMessagingPlatform
-    - OAuthSwift
+    - IONFilesystemLib
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -47,12 +47,12 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/browser"
   CapacitorCommunityAdmob:
     :path: "../../node_modules/@capacitor-community/admob"
-  CapacitorCommunityGenericOauth2:
-    :path: "../../node_modules/@capacitor-community/generic-oauth2"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorDevice:
     :path: "../../node_modules/@capacitor/device"
+  CapacitorFilesystem:
+    :path: "../../node_modules/@capacitor/filesystem"
   CapacitorPreferences:
     :path: "../../node_modules/@capacitor/preferences"
 
@@ -61,14 +61,14 @@ SPEC CHECKSUMS:
   CapacitorApp: 26587c2ce485d88ddb39adb21cac64f8e481afe3
   CapacitorBrowser: 22541e48442de44dc629c214388290d6eecc6ae9
   CapacitorCommunityAdmob: 310beff216a3470b2c85b1fccd99d2a6815e1ef7
-  CapacitorCommunityGenericOauth2: d9e4afb9199a420a3f46a21ad1d9fe1ce0a7047d
   CapacitorCordova: 435121e81a2df4d0034f0fb11fcefab5104cfdb5
   CapacitorDevice: 81ae78d5d1942707caad79276badd458bf6ec603
+  CapacitorFilesystem: f9bd850c41e048180e5dc0cbb90f2033ede9d2cc
   CapacitorPreferences: 65107ed7437d96ee72583df5763985e3c0ff2bc2
   Google-Mobile-Ads-SDK: 301a16c461c331ba34ff4dab40a22ab7c147af61
   GoogleUserMessagingPlatform: a8b56893477f67212fbc8411c139e61d463349f5
-  OAuthSwift: 75efbb5bd9a4b2b71a37bd7e986bf3f55ddd54c6
+  IONFilesystemLib: 89258b8e3e85465da93127d25d7ce37f977e8a6f
 
-PODFILE CHECKSUM: fee4a6e243d4dd0273a31d35dd0acb1f7679ba27
+PODFILE CHECKSUM: b2b6b7f54745778b1aae57e6d29d6a9da50cc695
 
 COCOAPODS: 1.16.2

@@ -411,3 +411,23 @@ body:not(.with-ads) {
     background: #374151;
   }
 }
+
+/* 固定占いボタンのスタイル */
+.fixed-action-button {
+  position: fixed;
+  bottom: calc(70px + env(safe-area-inset-bottom)); /* ナビゲーションの上 */
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 2px solid #e9d5ff; /* purple-200 */
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  z-index: 45; /* ナビゲーション(40)より上、広告(30)より上 */
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* 広告ありの場合は広告の上に配置 */
+body.with-ads .fixed-action-button {
+  bottom: calc(110px + env(safe-area-inset-bottom)); /* ナビ70px + 広告40px */
+}

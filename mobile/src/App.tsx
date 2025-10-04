@@ -10,7 +10,6 @@ import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 import { useAuth } from "./lib/hooks/useAuth";
 import { queryClient } from "./components/providers/QueryProvider";
-import { apiClient } from "./lib/utils/apiClient";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
@@ -34,7 +33,6 @@ function App() {
     refresh,
     login: authLogin, 
     logout: authLogout, 
-    setPayload, 
     changePlan 
   } = useAuth();
 
@@ -64,6 +62,20 @@ function App() {
       listener.then(l => l.remove());
     };
   }, [refresh, isReady]);
+
+  // 🔥 サインイン完了後の自動アップグレード処理
+  useEffect(() => {
+    if (isAuthenticated && isReady) {
+      const pendingUpgrade = sessionStorage.getItem('pendingUpgrade');
+      if (pendingUpgrade && pendingUpgrade !== plan) {
+        console.log(`[App] 保留中のアップグレードを実行: ${pendingUpgrade}`);
+        sessionStorage.removeItem('pendingUpgrade');
+        
+        // プラン変更を実行
+        handlePlanChange(pendingUpgrade as UserPlan);
+      }
+    }
+  }, [isAuthenticated, isReady, plan]);
 
   // 初期化中
   if (!isReady) {
@@ -107,6 +119,8 @@ function App() {
     } catch (err) {
       console.error("ログイン失敗:", err);
       alert(err instanceof Error ? err.message : "ログインに失敗しました");
+      // ログイン失敗時は保留中のアップグレードをクリア
+      sessionStorage.removeItem('pendingUpgrade');
     } finally {
       setIsLoggingIn(false);
     }

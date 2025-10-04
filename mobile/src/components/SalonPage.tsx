@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Plan, Spread } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-// 🔥 自分でフックを呼ぶ
 import { useAuth } from "../lib/hooks/useAuth";
 import { useMaster } from "../lib/hooks/useMaster";
 import { useUsage } from "../lib/hooks/useUsage";
@@ -21,10 +20,9 @@ const SalonPage: React.FC<SalonPageProps> = ({
   onStartReading,
   isLoggingIn,
 }) => {
-  // 🔥 自分で必要なデータを取得
-  const { payload, plan: currentPlan, isAuthenticated, userId } = useAuth();
+  const { payload, plan: currentPlan, isAuthenticated, clientId } = useAuth();
   const { data: masterData, isLoading: masterLoading } = useMaster();
-  const { data: usageStats, isLoading: usageLoading } = useUsage(userId);
+  const { data: usageStats, isLoading: usageLoading } = useUsage(clientId!);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSpread, setSelectedSpread] = useState<string>("");
@@ -33,52 +31,60 @@ const SalonPage: React.FC<SalonPageProps> = ({
   
   const user = payload?.user || null;
 
-  // ローディング中
+  console.log('[SalonPage] Loading state:', {
+    masterLoading,
+    usageLoading,
+    hasMasterData: !!masterData,
+    hasUsageStats: !!usageStats,
+    clientId,
+    currentPlan,
+  });
+
   if (masterLoading || usageLoading || !masterData || !usageStats) {
+    const reasons = [];
+    if (masterLoading) reasons.push('マスターデータ読み込み中');
+    if (usageLoading) reasons.push('利用状況読み込み中');
+    if (!masterData) reasons.push('マスターデータなし');
+    if (!usageStats) reasons.push('利用状況データなし');
+    
     return (
       <div className="main-container">
-        <div className="text-center py-20">読み込み中...</div>
+        <div className="text-center py-20">
+          <div>読み込み中...</div>
+          <div className="text-xs text-gray-500 mt-2">
+            {reasons.join(' / ')}
+          </div>
+        </div>
       </div>
     );
   }
 
-  // 現在のプラン情報を取得
   const currentPlanData = masterData.plans?.find(
     (p: any) => p.code === currentPlan
   );
 
-  // 利用可能なカテゴリ（全て表示）
   const availableCategories = masterData.categories || [];
-
   const categoriesToShow =
     currentPlan === "GUEST" || currentPlan === "FREE"
       ? availableCategories.slice(0, 3)
       : availableCategories;
-  console.log("Categories to Show:", categoriesToShow);
 
-  // 利用可能なスプレッドをフィルタリング
-  console.log("Current Plan Data:", currentPlanData);
-  console.log("Master Data Spreads:", masterData.spreads);
   const checkNo =
     currentPlanData!.code === "GUEST" ? 2 : currentPlanData!.no + 1;
   const availablePlansFromPlanNo = masterData.plans.filter(
     (p: Plan) => p.no <= (checkNo || 0)
   );
-  console.log("Current Plan No:", checkNo);
-  console.log("Available Plans from Plan No:", availablePlansFromPlanNo);
   
   const getAvailableSpreads = () => {
     if (!masterData.spreads) return [];
 
     return masterData.spreads.filter((spread: Spread) => {
-      // プラン制限チェック
       if (
         !availablePlansFromPlanNo.map((p) => p.code).includes(spread.plan!.code)
       ) {
         return false;
       }
 
-      // カテゴリフィルタ
       if (selectedCategory) {
         const spreadCategoryIds =
           spread.categories?.map((sc: any) => sc.categoryId) || [];
@@ -92,9 +98,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   };
 
   const availableSpreads = getAvailableSpreads();
-  console.log("Available Spreads:", availableSpreads);
 
-  // 初期選択
   useEffect(() => {
     if (availableCategories.length > 0 && !selectedCategory) {
       setSelectedCategory(availableCategories[0].id);
@@ -112,12 +116,22 @@ const SalonPage: React.FC<SalonPageProps> = ({
     onStartReading(selectedSpread, selectedCategory);
   };
 
-  // プラン判定
+  const handleUpgradeClick = (targetPlan: UserPlan) => {
+    if (!isAuthenticated) {
+      console.log(`[SalonPage] 未認証：${targetPlan}へのアップグレードを保留してサインイン`);
+      sessionStorage.setItem('pendingUpgrade', targetPlan);
+      onLogin();
+    } else {
+      console.log(`[SalonPage] 認証済み：${targetPlan}へ直接アップグレード`);
+      onUpgrade(targetPlan);
+    }
+  };
+
   const isPremium = currentPlan === "PREMIUM";
   const isStandard = currentPlan === "STANDARD";
   const isFree = currentPlan === "FREE" || currentPlan === "GUEST";
+  const isGuest = currentPlan === "GUEST";
 
-  // プランアイコン取得
   const getPlanIcon = () => {
     switch (currentPlan) {
       case "PREMIUM":
@@ -133,8 +147,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
   };
 
   return (
-    <div className="main-container">
-      {/* プラン表示ヘッダー */}
+    <div className="main-container pb-28">
+      
       <div
         className={`mb-4 p-3 rounded-lg border ${
           isPremium
@@ -172,7 +186,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       </div>
 
-      {/* 回数制限表示 */}
       {isFree && (
         <div className="daily-limit mb-4">
           残り {usageStats.remainingReadings} 回
@@ -194,7 +207,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {/* プレミアム: AI入力フィールド */}
       {isPremium && currentPlanData?.hasPersonal && (
         <div className="mb-6">
           <div className="section-title">📝 どんなことを占いたいですか？</div>
@@ -208,7 +220,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {/* プレミアム: AIおまかせオプション */}
       {isPremium && currentPlanData?.hasPersonal && (
         <div className="mb-6">
           <div className="section-title">🎴 占い方を選んでください：</div>
@@ -247,7 +258,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {/* カテゴリ選択 */}
       {(!isPremium || aiMode !== "ai-auto") && (
         <div className="mb-6">
           <div className="section-title">
@@ -282,7 +292,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {/* スプレッド選択 */}
       <div className="mb-6">
         <div className="section-title">
           {isPremium ? "🎴 スプレッドを選択：" : "🎴 占い方："}
@@ -315,112 +324,123 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       </div>
 
-      {/* 占い開始ボタン */}
-      <button
-        className="primary-button"
-        onClick={handleStartReading}
-        disabled={
-          (isFree && usageStats.remainingReadings <= 0) ||
-          !selectedSpread ||
-          !selectedCategory
-        }
-      >
-        {isPremium ? "🤖 占いを始める" : "🔮 占いを始める"}
-      </button>
-
-      {/* アップグレードヒント */}
-      {!isPremium && (
-        <div className="upgrade-hint">
-          {isFree
-            ? "💎 もっと詳しく占うには→アップグレード"
-            : "🤖 AIと対話しながら占うには→プレミアム"}
-        </div>
-      )}
-
-      {/* ログインセクション（未認証フリープランのみ）*/}
-      {isFree && !isAuthenticated && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="text-center">
-            <div className="font-bold text-blue-800 mb-2">
-              🔐 アカウント作成
+      {isGuest && (
+        <div className="mt-6 space-y-3">
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-center">
+              <div className="font-bold text-blue-800 mb-2">
+                📝 無料登録で回数3倍
+              </div>
+              <div className="text-sm text-blue-600 mb-3">
+                ✓ 1日3回まで占える<br/>
+                ✓ 履歴保存で振り返り可能
+              </div>
+              <button
+                onClick={onLogin}
+                disabled={isLoggingIn}
+                className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {isLoggingIn ? "認証中..." : "無料でユーザー登録"}
+              </button>
             </div>
-            <div className="text-sm text-blue-600 mb-3">
-              ログインで履歴保存・有料プランへのアップグレードが可能
-            </div>
-            <button
-              onClick={onLogin}
-              disabled={isLoggingIn}
-              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {isLoggingIn ? "認証中..." : "ユーザー登録してもっと楽しむ"}
-            </button>
+          </div>
+
+          <div className="text-center text-sm text-gray-600 mb-2">
+            💡 または、一気に本格プランへ
+          </div>
+          
+          <button
+            onClick={() => handleUpgradeClick("STANDARD")}
+            disabled={isLoggingIn}
+            className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md disabled:opacity-50"
+          >
+            💎 スタンダード（¥{masterData.plans?.find((p) => p.code === "STANDARD")?.price || 480}/月）
+            <div className="text-xs opacity-90">広告なし・無制限</div>
+          </button>
+          
+          <button
+            onClick={() => handleUpgradeClick("PREMIUM")}
+            disabled={isLoggingIn}
+            className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md disabled:opacity-50"
+          >
+            👑 プレミアム（¥{masterData.plans?.find((p) => p.code === "PREMIUM")?.price || 980}/月）
+            <div className="text-xs opacity-90">AI対話＋全機能</div>
+          </button>
+
+          <div className="text-xs text-center text-gray-500 mt-2">
+            ※有料プランは自動的にユーザー登録されます
           </div>
         </div>
       )}
 
-      {/* プラン変更ボタン */}
-      <div className="mt-6 space-y-2">
+      {currentPlan === "FREE" && (
+        <div className="mt-6 space-y-3">
+          <div className="text-center text-sm text-gray-600 mb-3">
+            💡 もっと詳しく占うなら
+          </div>
+          
+          <button
+            onClick={() => handleUpgradeClick("STANDARD")}
+            className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
+          >
+            💎 スタンダード（¥{masterData.plans?.find((p) => p.code === "STANDARD")?.price || 480}/月）
+            <div className="text-xs opacity-90">広告なし・無制限</div>
+          </button>
+          
+          <button
+            onClick={() => handleUpgradeClick("PREMIUM")}
+            className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md"
+          >
+            👑 プレミアム（¥{masterData.plans?.find((p) => p.code === "PREMIUM")?.price || 980}/月）
+            <div className="text-xs opacity-90">AI対話＋全機能</div>
+          </button>
+        </div>
+      )}
+
+      {(isStandard || isPremium) && (
+        <div className="mt-6 space-y-2">
+          {isStandard && (
+            <button
+              onClick={() => onUpgrade("PREMIUM")}
+              className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
+            >
+              👑 プレミアムプラン (¥
+              {masterData.plans?.find((p) => p.code === "PREMIUM")?.price || 980}
+              /月)
+            </button>
+          )}
+          
+          <button
+            onClick={() => {
+              const targetPlan = isPremium ? "STANDARD" : "FREE";
+              if (confirm(`本当に ${targetPlan === "STANDARD" ? "スタンダード" : "フリー"} プランにダウングレードしますか？`)) {
+                onDowngrade(targetPlan as UserPlan);
+              }
+            }}
+            className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
+          >
+            {isPremium ? "💎 スタンダードプランにダウングレード" : "フリープランにダウングレード"}
+          </button>
+        </div>
+      )}
+
+      <div className="fixed-action-button">
+        <button
+          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg shadow-xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleStartReading}
+          disabled={
+            (isFree && usageStats.remainingReadings <= 0) ||
+            !selectedSpread ||
+            !selectedCategory
+          }
+        >
+          {isPremium ? "🤖 占いを始める" : "✨ 占いを始める ✨"}
+        </button>
+        
         {isFree && (
-          <>
-            <button
-              onClick={() => onUpgrade("STANDARD")}
-              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-            >
-              💎 スタンダードプラン (¥
-              {masterData.plans?.find((p) => p.code === "STANDARD")?.price ||
-                480}
-              /月)
-            </button>
-            <button
-              onClick={() => onUpgrade("PREMIUM")}
-              className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
-            >
-              👑 プレミアムプラン (¥
-              {masterData.plans?.find((p) => p.code === "PREMIUM")?.price ||
-                980}
-              /月)
-            </button>
-          </>
-        )}
-
-        {isStandard && (
-          <>
-            <button
-              onClick={() => onUpgrade("PREMIUM")}
-              className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
-            >
-              👑 プレミアムプラン (¥
-              {masterData.plans?.find((p) => p.code === "PREMIUM")?.price ||
-                980}
-              /月)
-            </button>
-            <button
-              onClick={() => onDowngrade("FREE")}
-              className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-            >
-              フリープランにダウングレード
-            </button>
-          </>
-        )}
-
-        {isPremium && (
-          <>
-            <button
-              onClick={() => onDowngrade("STANDARD")}
-              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-            >
-              💎 スタンダードプラン (¥
-              {masterData.plans?.find((p) => p.code === "STANDARD")?.price ||
-                480}
-              /月)
-            </button>
-            <button
-              onClick={() => onDowngrade("FREE")}
-              className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-            >
-              フリープランにダウングレード
-            </button>
-          </>
+          <div className="text-center text-xs text-gray-500 mt-2">
+            今日あと{usageStats.remainingReadings}回
+          </div>
         )}
       </div>
     </div>

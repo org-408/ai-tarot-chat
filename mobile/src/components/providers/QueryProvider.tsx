@@ -54,10 +54,16 @@ export function QueryProvider({ children }: QueryProviderProps) {
         maxAge: 24 * 60 * 60 * 1000, // 24時間
         buster: '', // アプリバージョンアップ時にキャッシュクリアする場合は設定
         dehydrateOptions: {
-          // どのクエリを永続化するか（オプション）
+          // 永続化するクエリを制限してサイズを抑える
           shouldDehydrateQuery: (query) => {
             // エラー状態のクエリは永続化しない
-            return query.state.status === 'success';
+            if (query.state.status !== 'success') {
+              return false;
+            }
+            
+            // マスターデータのみ永続化（他のクエリは除外）
+            const queryKey = query.queryKey[0];
+            return queryKey === 'masters' || queryKey === 'usage';
           },
         },
       }}

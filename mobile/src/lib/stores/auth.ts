@@ -7,6 +7,7 @@ import type { JWTPayload } from '../../../../shared/lib/types';
 import type { UserPlan } from '../../types';
 import { clientService } from '../services/client';
 import { apiClient } from '../utils/apiClient';
+import { App as CapacitorApp } from '@capacitor/app';
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 
@@ -19,12 +20,19 @@ interface AuthState {
   
   // アクション
   init: () => Promise<void>;
+  setupAppLifecycle: () => void;
+  cleanupAppLifecycle: () => void;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setPayload: (payload: JWTPayload) => void;
   changePlan: (newPlanCode: string) => Promise<void>;
 }
+
+// 🔥 リスナーを保持するための変数（ストアの外）
+let appStateListener: any = null;
+let resumeListener: any = null;
+let visibilityHandler: (() => void) | null = null;
 
 /**
  * 認証ストア
@@ -86,6 +94,73 @@ export const useAuthStore = create<AuthState>()(
           console.log('[AuthStore] Initialization completed');
         } catch (error) {
           console.error('[AuthStore] Initialization failed:', error);
+        }
+      },
+
+      // 🔥 アプリライフサイクルリスナーの設定
+      setupAppLifecycle: () => {
+        console.log('[AuthStore] Setting up app lifecycle listeners');
+        
+        // すでに設定されている場合はクリーンアップ
+        get().cleanupAppLifecycle();
+        
+        // 1. Capacitor: appStateChange
+        CapacitorApp.addListener('appStateChange', async (state) => {
+          if (state.isActive) {
+            console.log('[AuthStore] App resumed (appStateChange)');
+            try {
+              await get().refresh();
+            } catch (error) {
+              console.error('[AuthStore] Refresh on appStateChange failed:', error);
+            }
+          }
+        }).then(listener => {
+          appStateListener = listener;
+        });
+
+        // 2. Capacitor: resume
+        CapacitorApp.addListener('resume', async () => {
+          console.log('[AuthStore] App resumed (resume event)');
+          try {
+            await get().refresh();
+          } catch (error) {
+            console.error('[AuthStore] Refresh on resume failed:', error);
+          }
+        }).then(listener => {
+          resumeListener = listener;
+        });
+
+        // 3. Web/PWA: visibilitychange
+        visibilityHandler = async () => {
+          if (document.visibilityState === 'visible') {
+            console.log('[AuthStore] Document visible');
+            try {
+              await get().refresh();
+            } catch (error) {
+              console.error('[AuthStore] Refresh on visibility failed:', error);
+            }
+          }
+        };
+        document.addEventListener('visibilitychange', visibilityHandler);
+      },
+
+      // 🔥 アプリライフサイクルリスナーのクリーンアップ
+      cleanupAppLifecycle: () => {
+        console.log('[AuthStore] Cleaning up app lifecycle listeners');
+        
+        if (appStateListener) {
+          appStateListener.remove();
+          appStateListener = null;
+        }
+        
+        if (resumeListener) {
+          resumeListener.remove();
+          resumeListener = null;
+        }
+        
+        if (visibilityHandler) {
+          document.removeEventListener('visibilitychange', visibilityHandler);
+          visibilityHandler = null;
         }
       },
 
