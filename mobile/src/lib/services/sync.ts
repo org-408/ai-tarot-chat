@@ -1,4 +1,4 @@
-import type { MasterData } from "../../types";
+import type { MasterData } from "../../../../shared/lib/types";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { authService } from "./auth";
@@ -29,6 +29,7 @@ export class SyncService {
   async syncMasterData(): Promise<boolean> {
     try {
       const needsUpdate = await this.checkMasterDataUpdates();
+      console.log("📍 /api/masters/ - マスタデータ更新チェック:", needsUpdate);
 
       if (needsUpdate) {
         await this.fetchAndSaveMasterData();

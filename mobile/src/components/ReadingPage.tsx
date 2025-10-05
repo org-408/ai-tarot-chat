@@ -131,6 +131,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   // カードを引く（初回のみ）
   // TODO: 依存配列の見直し[0] -> [selectedDeck]
   useEffect(() => {
+    console.log("マスターデータ:", masterData);
     if (masterData.decks![0].cards && selectedSpread?.cells && drawnCards.length === 0) {
       const cards = drawRandomCards(
         masterData.decks![0].cards,
@@ -139,7 +140,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       );
       setDrawnCards(cards);
     }
-  }, [masterData.decks![0].cards, selectedSpread, drawnCards.length]);
+  }, [masterData, selectedSpread, drawnCards.length]);
 
   const chatHeight = "calc(100vh - 56px - 70px - 40px - 332px - 20px)";
 
