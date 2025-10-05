@@ -1,7 +1,7 @@
 import {
   createSpreadCell,
   getSpreadCellsBySpreadId,
-} from "@/lib/services/spread-service";
+} from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {

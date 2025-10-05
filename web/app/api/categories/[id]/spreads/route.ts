@@ -1,4 +1,4 @@
-import { getSpreadsByCategory } from "@/lib/services/spread-service";
+import { getSpreadsByCategory } from "@/lib/services/spread";
 import { NextResponse } from "next/server";
 
 interface RouteParams {

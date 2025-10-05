@@ -1,4 +1,4 @@
-import { createSpread, getSpreads } from "@/lib/services/spread-service";
+import { createSpread, getSpreads } from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 // スプレッド一覧取得

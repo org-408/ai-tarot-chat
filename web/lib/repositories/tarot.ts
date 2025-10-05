@@ -33,6 +33,7 @@ export class TarotRepository extends BaseRepository {
   async getAllDecks(): Promise<TarotDeck[]> {
     return await this.db.tarotDeck.findMany({
       orderBy: { createdAt: "desc" },
+      include: { cards: true },
     });
   }
 

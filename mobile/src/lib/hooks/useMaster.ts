@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { syncService } from '../services/sync';
-import type { MasterData } from '../../types';
+import type { MasterData } from '../../../../shared/lib/types';
 
 /**
  * マスターデータ取得フック

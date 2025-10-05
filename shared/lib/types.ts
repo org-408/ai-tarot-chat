@@ -513,3 +513,12 @@ export type UsageStats = {
   lastCelticReadingDate?: Date | null;
   lastPersonalReadingDate?: Date | null;
 };
+
+export interface MasterData {
+  plans: Plan[];
+  levels: SpreadLevel[];
+  categories: ReadingCategory[];
+  spreads?: Spread[];
+  decks?: TarotDeck[];
+  tarotists?: Tarotist[];
+}

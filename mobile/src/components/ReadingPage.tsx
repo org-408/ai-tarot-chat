@@ -1,6 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-// 🔥 自分でフックを呼ぶ
+import type { TarotDeck, TarotCard, DrawnCard } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/useMaster";
 
 interface ReadingPageProps {
@@ -9,15 +9,26 @@ interface ReadingPageProps {
   onBack: () => void;
 }
 
+// カード配置情報の型
+interface CardPlacement {
+  id: string;
+  number: number;
+  gridX: number;
+  gridY: number;
+  rotation: number;
+  card: TarotCard;
+  isReversed: boolean;
+  position: string;
+  description: string;
+}
+
 const ReadingPage: React.FC<ReadingPageProps> = ({
   spreadId,
   categoryId,
   onBack,
 }) => {
-  // 🔥 自分で必要なデータを取得
   const { data: masterData, isLoading: masterLoading } = useMaster();
 
-  // テスト用の初期メッセージ（5-6個）
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -55,13 +66,12 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   ]);
   const [inputValue, setInputValue] = useState("");
   const [crossFlipped, setCrossFlipped] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<null | (typeof tarotCards)[number]>(null);
+  const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
   const [typingMessage, setTypingMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [drawnCards, setDrawnCards] = useState<CardPlacement[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Textarea のフォーカス時移動処理
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleInputFocus = () => {
@@ -69,6 +79,39 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   };
   const handleInputBlur = () => {
     setIsInputFocused(false);
+  };
+
+  // カードをランダムに引く関数
+  const drawRandomCards = (
+    allCards: TarotCard[],
+    spreadCells: any[],
+    count: number
+  ): CardPlacement[] => {
+    // カードをシャッフル
+    const shuffled = [...allCards].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, count);
+
+    return spreadCells.map((cell, index) => {
+      const card = selected[index];
+      const isReversed = Math.random() > 0.5; // 50%の確率で逆位置
+      
+      return {
+        id: `${card.id}-${index}`,
+        number: (cell.vOrder || cell.hOrder || index) + 1,
+        gridX: cell.x,
+        gridY: cell.y,
+        rotation: cell.hLabel ? 90 : 0, // 横向きラベルがあれば90度回転
+        card,
+        isReversed,
+        position: cell.vLabel || cell.hLabel || `位置${index + 1}`,
+        description: `${cell.vLabel || cell.hLabel}の意味を示します`,
+      };
+    });
+  };
+
+  // カード画像パスを生成
+  const getCardImagePath = (card: TarotCard): string => {
+    return `/cards/${card.code}.jpg`;
   };
 
   // ローディング中
@@ -80,16 +123,26 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     );
   }
 
-  // 選択されたスプレッドとカテゴリの情報を取得
-  const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
+  const selectedSpread = masterData.spreads?.find((s: { id: string; }) => s.id === spreadId);
   const selectedCategory = masterData.categories?.find(
-    (c) => c.id === categoryId
+    (c: { id: string; }) => c.id === categoryId
   );
 
-  // チャットエリアの高さを計算
+  // カードを引く（初回のみ）
+  // TODO: 依存配列の見直し[0] -> [selectedDeck]
+  useEffect(() => {
+    if (masterData.decks![0].cards && selectedSpread?.cells && drawnCards.length === 0) {
+      const cards = drawRandomCards(
+        masterData.decks![0].cards,
+        selectedSpread.cells,
+        selectedSpread.cells.length
+      );
+      setDrawnCards(cards);
+    }
+  }, [masterData.decks![0].cards, selectedSpread, drawnCards.length]);
+
   const chatHeight = "calc(100vh - 56px - 70px - 40px - 332px - 20px)";
 
-  // クロスカードのアニメーション(3秒ごとに入れ替え)
   useEffect(() => {
     const interval = setInterval(() => {
       setCrossFlipped((prev) => !prev);
@@ -97,135 +150,22 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // ページ読み込み時に最上部にスクロール
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // メッセージ追加時に最下部にスクロール
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingMessage]);
 
-  // タロットカードのグリッド配置(ケルト十字)
-  const tarotCards = [
-    {
-      id: 1,
-      number: 1,
-      gridX: 1,
-      gridY: 2,
-      rotation: 0,
-      name: "愚者",
-      color: "bg-yellow-200",
-      position: "現在の状況",
-      description: "あなたの現在の状態を示します",
-    },
-    {
-      id: 2,
-      number: 2,
-      gridX: 1,
-      gridY: 2,
-      rotation: 90,
-      name: "魔術師",
-      color: "bg-yellow-200",
-      position: "課題・障害",
-      description: "現在直面している問題や妨げとなるもの",
-    },
-    {
-      id: 3,
-      number: 3,
-      gridX: 1,
-      gridY: 3,
-      rotation: 0,
-      name: "女教皇",
-      color: "bg-blue-200",
-      position: "基礎・原因",
-      description: "状況の根本的な原因や土台",
-    },
-    {
-      id: 4,
-      number: 4,
-      gridX: 0,
-      gridY: 2,
-      rotation: 0,
-      name: "女帝",
-      color: "bg-yellow-200",
-      position: "過去",
-      description: "過去の出来事や影響",
-    },
-    {
-      id: 5,
-      number: 5,
-      gridX: 1,
-      gridY: 1,
-      rotation: 0,
-      name: "皇帝",
-      color: "bg-orange-200",
-      position: "可能性",
-      description: "起こりうる最良の展開",
-    },
-    {
-      id: 6,
-      number: 6,
-      gridX: 2,
-      gridY: 2,
-      rotation: 0,
-      name: "教皇",
-      color: "bg-gray-300",
-      position: "近い未来",
-      description: "近い将来に起こること",
-    },
-    {
-      id: 7,
-      number: 7,
-      gridX: 3,
-      gridY: 0,
-      rotation: 0,
-      name: "恋人",
-      color: "bg-yellow-200",
-      position: "あなた自身",
-      description: "この状況におけるあなたの立場",
-    },
-    {
-      id: 8,
-      number: 8,
-      gridX: 3,
-      gridY: 1,
-      rotation: 0,
-      name: "戦車",
-      color: "bg-yellow-200",
-      position: "周囲の影響",
-      description: "環境や他者からの影響",
-    },
-    {
-      id: 9,
-      number: 9,
-      gridX: 3,
-      gridY: 2,
-      rotation: 0,
-      name: "力",
-      color: "bg-yellow-200",
-      position: "希望と恐れ",
-      description: "あなたの願いと不安",
-    },
-    {
-      id: 10,
-      number: 10,
-      gridX: 3,
-      gridY: 3,
-      rotation: 0,
-      name: "隠者",
-      color: "bg-gray-400",
-      position: "最終結果",
-      description: "最終的な結末や答え",
-    },
-  ];
+  // グリッドサイズを計算
+  const gridCols = drawnCards.length > 0 
+    ? Math.max(...drawnCards.map((c) => c.gridX)) + 1 
+    : 4;
+  const gridRows = drawnCards.length > 0
+    ? Math.max(...drawnCards.map((c) => c.gridY)) + 1
+    : 4;
 
-  // グリッドの最大列数・行数を計算
-  const gridCols = Math.max(...tarotCards.map((c) => c.gridX ?? 0)) + 1;
-  const gridRows = Math.max(...tarotCards.map((c) => c.gridY ?? 0)) + 1;
-
-  // 4x4表示エリア分の高さを計算
   const cardSize = 60;
   const colGap = 6;
   const rowGap = 12;
@@ -246,7 +186,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       ]);
       setInputValue("");
 
-      // タイピングアニメーション付きで返信
       const responseText =
         "カードが示しています...素晴らしいエネルギーを感じます。あなたの直感に従うことが大切です。";
       setIsTyping(true);
@@ -274,115 +213,129 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     }
   };
 
-  const cardIcons: { [key: string]: string } = {
-    愚者: "🤹",
-    魔術師: "🪄",
-    女教皇: "🌙",
-    女帝: "👑",
-    皇帝: "⚜️",
-    教皇: "🔑",
-    恋人: "💕",
-    戦車: "🛡️",
-    力: "🦁",
-    隠者: "🕯️",
+  const getZIndex = (cardNumber: number) => {
+    // クロス配置の場合のz-index制御
+    const crossCards = drawnCards.filter(c => c.rotation === 90 || c.rotation === 0);
+    if (crossCards.length >= 2) {
+      if (cardNumber === crossCards[0].number) return crossFlipped ? 20 : 10;
+      if (cardNumber === crossCards[1].number) return crossFlipped ? 10 : 20;
+    }
+    return 5;
   };
 
-  // クロスカードのz-indexを決定
-  const getZIndex = (cardNumber: number) => {
-    if (cardNumber === 1) return crossFlipped ? 20 : 10;
-    if (cardNumber === 2) return crossFlipped ? 10 : 20;
-    return 5;
+  // カード画像コンポーネント
+  const TarotCardImage: React.FC<{ placement: CardPlacement }> = ({ placement }) => {
+    return (
+      <div className="relative w-11 h-16 hover:scale-105 transition-transform cursor-pointer">
+        <div className="absolute -top-1 -left-1 w-4 h-4 bg-purple-600 text-white text-[7px] font-bold rounded-full flex items-center justify-center z-10">
+          {placement.number}
+        </div>
+        <img
+          src={getCardImagePath(placement.card)}
+          alt={placement.card.name}
+          className={`w-full h-full object-cover rounded border-2 shadow-md ${
+            placement.isReversed 
+              ? 'border-red-500 transform rotate-180' 
+              : 'border-amber-600'
+          }`}
+          style={{
+            transform: placement.isReversed ? 'rotate(180deg)' : 'none',
+          }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+            if (fallback) fallback.style.display = 'flex';
+          }}
+        />
+        {/* フォールバック表示 */}
+        <div className="hidden w-full h-full bg-purple-100 rounded border-2 border-amber-600 shadow-md flex-col items-center justify-center p-0.5">
+          <div className="text-base">{placement.card.type === 'major' ? '🌟' : '🎴'}</div>
+          <div className="text-[6px] font-bold text-gray-800 text-center leading-tight">
+            {placement.card.name}
+          </div>
+          {placement.isReversed && (
+            <div className="text-[6px] text-red-600">逆位置</div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="main-container">
-      {/* タロットボードエリア - フォーカス時は非表示 */}
       {!isInputFocused && (
-      <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 border border-purple-200 shadow-md mb-3">
-        <div className="flex gap-2">
-          {/* カード配置グリッド(左側) */}
-          <div
-            className="flex-shrink-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-2 border border-purple-200"
-            style={{
-              width: `${visibleAreaWidth}px`,
-              height: `${visibleAreaHeight}px`,
-              overflowY: gridRows > visibleRows ? "auto" : "hidden",
-            }}
-          >
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 border border-purple-200 shadow-md mb-3">
+          <div className="flex gap-2">
             <div
+              className="flex-shrink-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-2 border border-purple-200"
               style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${gridCols}, 60px)`,
-                gridTemplateRows: `repeat(${gridRows}, 60px)`,
-                columnGap: `${colGap}px`,
-                rowGap: `${rowGap}px`,
+                width: `${visibleAreaWidth}px`,
+                height: `${visibleAreaHeight}px`,
+                overflowY: gridRows > visibleRows ? "auto" : "hidden",
               }}
             >
-              {tarotCards.map((card) => (
-                <div
-                  key={card.id}
-                  style={{
-                    gridColumn: card.gridX + 1,
-                    gridRow: card.gridY + 1,
-                    transform: `rotate(${card.rotation}deg)`,
-                    transformOrigin: "center center",
-                    zIndex: getZIndex(card.number),
-                    transition: "z-index 0.5s ease-in-out",
-                  }}
-                  className="flex items-center justify-center"
-                >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: `repeat(${gridCols}, 60px)`,
+                  gridTemplateRows: `repeat(${gridRows}, 60px)`,
+                  columnGap: `${colGap}px`,
+                  rowGap: `${rowGap}px`,
+                }}
+              >
+                {drawnCards.map((placement) => (
                   <div
-                    className={`relative w-11 h-16 ${card.color} rounded border border-amber-600 shadow-md flex flex-col items-center justify-center p-0.5 hover:scale-105 transition-transform cursor-pointer`}
+                    key={placement.id}
+                    style={{
+                      gridColumn: placement.gridX + 1,
+                      gridRow: placement.gridY + 1,
+                      transform: `rotate(${placement.rotation}deg)`,
+                      transformOrigin: "center center",
+                      zIndex: getZIndex(placement.number),
+                      transition: "z-index 0.5s ease-in-out",
+                    }}
+                    className="flex items-center justify-center"
                   >
-                    <div className="absolute -top-1 -left-1 w-4 h-4 bg-purple-600 text-white text-[7px] font-bold rounded-full flex items-center justify-center">
-                      {card.number}
-                    </div>
-                    <div className="text-base">{cardIcons[card.name]}</div>
-                    <div className="text-[6px] font-bold text-gray-800 text-center leading-tight">
-                      {card.name}
-                    </div>
+                    <TarotCardImage placement={placement} />
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 位置情報リスト(右側) */}
-          <div
-            className="flex-1 bg-white rounded-lg border border-purple-200 flex flex-col"
-            style={{ height: `${visibleAreaHeight}px` }}
-          >
-            <div className="p-1 border-b border-purple-200 flex-shrink-0">
-              <div className="text-[9px] font-bold text-purple-900 text-center">
-                位置の意味
+                ))}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto">
-              <div className="">
-                {tarotCards.map((card) => (
-                  <button
-                    key={card.id}
-                    onClick={() => setSelectedCard(card)}
-                    className="w-full bg-purple-50 hover:bg-purple-100 rounded p-1 border border-purple-200 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-1">
-                      <div className="w-4 h-4 bg-purple-600 text-white text-[7px] font-bold rounded-full flex items-center justify-center flex-shrink-0">
-                        {card.number}
+
+            <div
+              className="flex-1 bg-white rounded-lg border border-purple-200 flex flex-col"
+              style={{ height: `${visibleAreaHeight}px` }}
+            >
+              <div className="p-1 border-b border-purple-200 flex-shrink-0">
+                <div className="text-[9px] font-bold text-purple-900 text-center">
+                  位置の意味
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <div className="">
+                  {drawnCards.map((placement) => (
+                    <button
+                      key={placement.id}
+                      onClick={() => setSelectedCard(placement)}
+                      className="w-full bg-purple-50 hover:bg-purple-100 rounded p-1 border border-purple-200 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-1">
+                        <div className="w-4 h-4 bg-purple-600 text-white text-[7px] font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                          {placement.number}
+                        </div>
+                        <div className="text-[10px] font-semibold text-purple-900 leading-tight">
+                          {placement.position}
+                        </div>
                       </div>
-                      <div className="text-[10px] font-semibold text-purple-900 leading-tight">
-                        {card.position}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
       )}
 
-      {/* ポップアップモーダル */}
       {selectedCard && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -401,7 +354,15 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               </h3>
             </div>
             <div className="text-sm text-gray-700 mb-2">
-              カード: <span className="font-semibold">{selectedCard.name}</span>
+              カード: <span className="font-semibold">{selectedCard.card.name}</span>
+              {selectedCard.isReversed && (
+                <span className="text-red-600 ml-2">(逆位置)</span>
+              )}
+            </div>
+            <div className="text-xs text-gray-600 mb-2">
+              キーワード: {selectedCard.isReversed 
+                ? selectedCard.card.reversedKeywords.join('、')
+                : selectedCard.card.uprightKeywords.join('、')}
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
               {selectedCard.description}
@@ -416,12 +377,10 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         </div>
       )}
 
-      {/* チャットエリア - 固定高さ */}
       <div
         className="bg-white/90 backdrop-blur-sm rounded-xl border border-purple-200 shadow-md flex flex-col"
         style={{ height: chatHeight }}
       >
-        {/* ヘッダー */}
         <div className="p-2 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-sm border border-purple-300 shadow-sm">
@@ -434,7 +393,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           </div>
         </div>
 
-        {/* メッセージエリア - スクロール可能な固定エリア */}
         <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-0">
           {messages.map((message, index) => (
             <div key={index} className="flex gap-2">
@@ -457,7 +415,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
             </div>
           ))}
 
-          {/* タイピング中のメッセージ */}
           {isTyping && (
             <div className="flex gap-2">
               <div className="flex-shrink-0">
@@ -476,9 +433,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* 入力エリア */}
         <div className="p-2 border-gray-200 flex-shrink-0">
-          <div className="flex gap-1.5 items-end ">
+          <div className="flex gap-1.5 items-end">
             <textarea
               ref={textareaRef}
               value={inputValue}

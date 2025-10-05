@@ -22,11 +22,3 @@ export interface SpreadRecommendation {
   description: string;
   reason: string;
 }
-
-export interface MasterData {
-  plans: Plan[];
-  levels: SpreadLevel[];
-  categories: ReadingCategory[];
-  spreads?: Spread[];
-  tarotists?: Tarotist[];
-}

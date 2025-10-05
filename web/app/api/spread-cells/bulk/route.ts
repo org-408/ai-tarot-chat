@@ -1,4 +1,4 @@
-import { bulkUpdateSpreadCells } from "@/lib/services/spread-service";
+import { bulkUpdateSpreadCells } from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 // 複数セル一括更新

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal, type SetStateAction } from "react";
 import type { Plan, Spread } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 import { useAuth } from "../lib/hooks/useAuth";
@@ -81,7 +81,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
     return masterData.spreads.filter((spread: Spread) => {
       if (
-        !availablePlansFromPlanNo.map((p) => p.code).includes(spread.plan!.code)
+        !availablePlansFromPlanNo.map((p: Plan) => p.code).includes(spread.plan!.code)
       ) {
         return false;
       }
@@ -102,14 +102,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   // コンポーネント内
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-  const freePlan = masterData.plans?.find(p => p.code === "FREE");
-  const standardPlan = masterData.plans?.find(p => p.code === "STANDARD");
-  const premiumPlan = masterData.plans?.find(p => p.code === "PREMIUM");
+  const freePlan = masterData.plans?.find((p: { code: string; }) => p.code === "FREE");
+  const standardPlan = masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD");
+  const premiumPlan = masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM");
 
   // 上位プラン取得
   const upgradablePlans = masterData.plans
-    ?.filter(p => p.no > (currentPlanData?.no || 0))
-    .sort((a, b) => a.no - b.no);
+    ?.filter((p: Plan) => p.no > (currentPlanData?.no || 0))
+    .sort((a: { no: number; }, b: { no: number; }) => a.no - b.no);
 
   // プランごとの色設定を動的に決定
   const getPlanColors = (planCode: string) => {
@@ -399,7 +399,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             disabled={isLoggingIn}
             className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md disabled:opacity-50"
           >
-            💎 スタンダード（¥{masterData.plans?.find((p) => p.code === "STANDARD")?.price || 480}/月）
+            💎 スタンダード（¥{masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD")?.price || 480}/月）
             <div className="text-xs opacity-90">広告なし・無制限</div>
           </button>
           
@@ -408,7 +408,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             disabled={isLoggingIn}
             className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md disabled:opacity-50"
           >
-            👑 プレミアム（¥{masterData.plans?.find((p) => p.code === "PREMIUM")?.price || 980}/月）
+            👑 プレミアム（¥{masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}/月）
             <div className="text-xs opacity-90">AI対話＋全機能</div>
           </button>
 
@@ -448,7 +448,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                   </div>
 
                   {/* 上位プランをアコーディオン表示 */}
-                  {upgradablePlans.map(plan => {
+                  {upgradablePlans.map((plan: { code: string; id: string; name: string; price: number; description: string; features: string[]; maxReadings: number; maxCeltics: number; hasPersonal: boolean; maxPersonal: number; }) => {
                     const colors = getPlanColors(plan.code);
                     const isExpanded = expandedPlan === plan.code;
                     
@@ -527,7 +527,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             onClick={() => handleUpgradeClick("STANDARD")}
             className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
           >
-            💎 スタンダード（¥{masterData.plans?.find((p) => p.code === "STANDARD")?.price || 480}/月）
+            💎 スタンダード（¥{masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD")?.price || 480}/月）
             <div className="text-xs opacity-90">広告なし・無制限</div>
           </button>
           
@@ -535,7 +535,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             onClick={() => handleUpgradeClick("PREMIUM")}
             className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md"
           >
-            👑 プレミアム（¥{masterData.plans?.find((p) => p.code === "PREMIUM")?.price || 980}/月）
+            👑 プレミアム（¥{masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}/月）
             <div className="text-xs opacity-90">AI対話＋全機能</div>
           </button>
         </div>
@@ -549,7 +549,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
               className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
             >
               👑 プレミアムプラン (¥
-              {masterData.plans?.find((p) => p.code === "PREMIUM")?.price || 980}
+              {masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}
               /月)
             </button>
           )}
