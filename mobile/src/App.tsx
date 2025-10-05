@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { App as CapacitorApp } from '@capacitor/app';
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
@@ -8,6 +7,7 @@ import SalonPage from "./components/SalonPage";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 import { useAuth } from "./lib/hooks/useAuth";
+import { useLifecycle, useLifecycleStore } from "./lib/stores/lifecycle";
 import { queryClient } from "./components/providers/QueryProvider";
 
 function App() {
@@ -21,74 +21,88 @@ function App() {
     categoryId: string;
   } | null>(null);
 
-  // 🔥 App.tsxは認証状態のみ管理（広告・ヘッダー用）
+  // 🔥 認証状態（広告・ヘッダー用）
   const { 
-    isReady,
     payload, 
     plan, 
     isAuthenticated, 
     userId, 
-    init,
-    setupAppLifecycle,
-    cleanupAppLifecycle,
-    refresh,
     login: authLogin, 
     logout: authLogout, 
     changePlan 
   } = useAuth();
 
+  // 🔥 ライフサイクル管理
+  const { 
+    isInitialized, 
+    isRefreshing, 
+    dateChanged, 
+    error,
+    clearDateChanged,
+    clearError
+  } = useLifecycle();
+
   // 🔥 初期化処理（アプリ起動時に1回だけ実行）
   useEffect(() => {
-    const initialize = async () => {
-      await init();
-      await setupAppLifecycle(); // 🔥 セットアップ
-    };
-
-    initialize();
-
-    return () => {
-      cleanupAppLifecycle(); // 🔥 クリーンアップ
-    };
-  }, []);
-
-  // 🔥 アプリ状態の監視（バックグラウンド復帰時のチェック）
-  useEffect(() => {
-    const listener = CapacitorApp.addListener('appStateChange', async (state) => {
-      console.log('[App] App state changed:', state.isActive);
-      
-      if (state.isActive && isReady) {
-        // フォアグラウンドに復帰した時
-        console.log('[App] App resumed, checking token...');
-        try {
-          await refresh(); // トークンチェック＋必要なら更新
-        } catch (error) {
-          console.error('[App] Token refresh on resume failed:', error);
-        }
-      }
+    const lifecycleStore = useLifecycleStore.getState();
+    
+    lifecycleStore.init().then(() => {
+      lifecycleStore.setup();
     });
 
     return () => {
-      listener.then(l => l.remove());
+      lifecycleStore.cleanup();
     };
-  }, [refresh, isReady]);
+  }, []);
+
+  // 🔥 日付変更時の通知とキャッシュ更新
+  useEffect(() => {
+    if (dateChanged) {
+      console.log('[App] 日付が変わりました - 利用状況を再取得');
+      
+      // 利用状況のキャッシュを無効化して再取得
+      queryClient.invalidateQueries({ queryKey: ['usage'] });
+      
+      // TODO: トースト通知を表示
+      // showNotification('新しい日になりました！占い回数がリセットされました🎉');
+      
+      // 3秒後に通知をクリア
+      setTimeout(() => {
+        clearDateChanged();
+      }, 3000);
+    }
+  }, [dateChanged, clearDateChanged]);
+
+  // 🔥 エラーハンドリング
+  useEffect(() => {
+    if (error) {
+      console.error('[App] Lifecycle error:', error);
+      // TODO: エラー通知を表示
+      // showErrorNotification(error.message);
+      
+      setTimeout(() => {
+        clearError();
+      }, 5000);
+    }
+  }, [error, clearError]);
 
   // 🔥 サインイン完了後の自動アップグレード処理
   useEffect(() => {
-    if (isAuthenticated && isReady) {
+    if (isAuthenticated && isInitialized) {
       const pendingUpgrade = sessionStorage.getItem('pendingUpgrade');
       if (pendingUpgrade && pendingUpgrade !== plan) {
         console.log(`[App] 保留中のアップグレードを実行: ${pendingUpgrade}`);
         sessionStorage.removeItem('pendingUpgrade');
-        
-        // プラン変更を実行
         handlePlanChange(pendingUpgrade as UserPlan);
       }
     }
-  }, [isAuthenticated, isReady, plan]);
+  }, [isAuthenticated, isInitialized, plan]);
 
   // 初期化中
-  if (!isReady) {
-    return <TarotSplashScreen message="読み込み中..." />;
+  if (!isInitialized) {
+    return <TarotSplashScreen message={
+      isRefreshing ? "データを更新中..." : "読み込み中..."
+    } />;
   }
 
   // 初期化完了後もpayloadがない場合（異常系）
@@ -299,6 +313,27 @@ function App() {
 
   return (
     <div className="w-full" style={{ height: "100vh" }}>
+      {/* 🔥 リフレッシュ中インジケーター */}
+      {isRefreshing && (
+        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+          🔄 更新中...
+        </div>
+      )}
+
+      {/* 🔥 日付変更通知 */}
+      {dateChanged && (
+        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+          ✨ 新しい日になりました！
+        </div>
+      )}
+
+      {/* 🔥 エラー通知 */}
+      {error && (
+        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+          ⚠️ {error.message}
+        </div>
+      )}
+
       <Header currentPlan={plan} currentPage={pageType} />
 
       {/* 開発メニュー */}
@@ -403,7 +438,6 @@ function App() {
       <div className="main-content-area" style={pageType === "salon" ? { paddingBottom: '105px' } : {}}>
         {renderPage()}
       </div>
-
 
       <Navigation currentPage={pageType} onPageChange={handlePageChange} />
     </div>

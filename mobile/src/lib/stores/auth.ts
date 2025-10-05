@@ -7,7 +7,6 @@ import type { JWTPayload } from '../../../../shared/lib/types';
 import type { UserPlan } from '../../types';
 import { clientService } from '../services/client';
 import { apiClient } from '../utils/apiClient';
-import { App as CapacitorApp } from '@capacitor/app';
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 
@@ -20,8 +19,6 @@ interface AuthState {
   
   // アクション
   init: () => Promise<void>;
-  setupAppLifecycle: () => void;
-  cleanupAppLifecycle: () => void;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -29,16 +26,8 @@ interface AuthState {
   changePlan: (newPlanCode: string) => Promise<void>;
 }
 
-// 🔥 リスナーを保持するための変数（ストアの外）
-let appStateListener: any = null;
-let resumeListener: any = null;
-let visibilityHandler: (() => void) | null = null;
-
 /**
- * 認証ストア
- * - JWTペイロード管理
- * - プラン情報管理
- * - ログイン/ログアウト
+ * 認証ストア（ライフサイクル処理を削除）
  */
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -97,73 +86,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // 🔥 アプリライフサイクルリスナーの設定
-      setupAppLifecycle: () => {
-        console.log('[AuthStore] Setting up app lifecycle listeners');
-        
-        // すでに設定されている場合はクリーンアップ
-        get().cleanupAppLifecycle();
-        
-        // 1. Capacitor: appStateChange
-        CapacitorApp.addListener('appStateChange', async (state) => {
-          if (state.isActive) {
-            console.log('[AuthStore] App resumed (appStateChange)');
-            try {
-              await get().refresh();
-            } catch (error) {
-              console.error('[AuthStore] Refresh on appStateChange failed:', error);
-            }
-          }
-        }).then(listener => {
-          appStateListener = listener;
-        });
-
-        // 2. Capacitor: resume
-        CapacitorApp.addListener('resume', async () => {
-          console.log('[AuthStore] App resumed (resume event)');
-          try {
-            await get().refresh();
-          } catch (error) {
-            console.error('[AuthStore] Refresh on resume failed:', error);
-          }
-        }).then(listener => {
-          resumeListener = listener;
-        });
-
-        // 3. Web/PWA: visibilitychange
-        visibilityHandler = async () => {
-          if (document.visibilityState === 'visible') {
-            console.log('[AuthStore] Document visible');
-            try {
-              await get().refresh();
-            } catch (error) {
-              console.error('[AuthStore] Refresh on visibility failed:', error);
-            }
-          }
-        };
-        document.addEventListener('visibilitychange', visibilityHandler);
-      },
-
-      // 🔥 アプリライフサイクルリスナーのクリーンアップ
-      cleanupAppLifecycle: () => {
-        console.log('[AuthStore] Cleaning up app lifecycle listeners');
-        
-        if (appStateListener) {
-          appStateListener.remove();
-          appStateListener = null;
-        }
-        
-        if (resumeListener) {
-          resumeListener.remove();
-          resumeListener = null;
-        }
-        
-        if (visibilityHandler) {
-          document.removeEventListener('visibilitychange', visibilityHandler);
-          visibilityHandler = null;
-        }
-      },
-
       login: async () => {
         try {
           console.log('[AuthStore] Login started');
@@ -184,7 +106,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log('[AuthStore] Logout started');
           await authService.logout();
-          apiClient.clearTokenCache(); // キャッシュクリア
+          apiClient.clearTokenCache();
           set({
             payload: null,
             plan: 'GUEST',
@@ -203,7 +125,7 @@ export const useAuthStore = create<AuthState>()(
           const token = await storeRepository.get<string>('accessToken');
           
           if (!token) {
-            console.log('[AuthStore] No token found');
+            console.log('[AuthStore] No token to refresh');
             return;
           }
           
@@ -225,6 +147,7 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: !!payload.user,
             });
           }
+          
           console.log('[AuthStore] Refresh successful');
         } catch (error) {
           console.error('[AuthStore] Refresh failed:', error);
@@ -261,6 +184,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
     }),
+
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => ({
@@ -280,9 +204,6 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-/**
- * 便利なセレクター
- */
 export const useAuth = () => {
   const { payload, plan, isAuthenticated, login, logout, refresh, setPayload } = useAuthStore();
   
