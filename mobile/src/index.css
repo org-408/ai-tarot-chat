@@ -17,40 +17,21 @@
 body {
   margin: 0;
   padding: 0;
-  /* padding-top: calc(56px + env(safe-area-inset-top)); ヘッダー + Safe Area */
-  /* padding-bottom: 80px; ボトムナビ分のスペース */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   overflow: hidden;
-}
-
-body.with-ads {
-  padding-bottom: calc(110px + env(safe-area-inset-bottom)); /* ボトムナビ70px + 広告バナー40px + Safe Area */
-}
-
-body:not(.with-ads) {
-  padding-bottom: calc(70px + env(safe-area-inset-bottom)); /* ボトムナビのみ + Safe Area */
+  padding-bottom: calc(40px + env(safe-area-inset-bottom)); /* ボトムナビのみ */
 }
 
 /* メインコンテンツエリア */
 .main-content-area {
   position: fixed;
-  top: calc(56px + env(safe-area-inset-top));
+  top: calc(60px + env(safe-area-inset-top));
   left: 0;
   right: 0;
+  bottom: calc(34px + env(safe-area-inset-bottom));
   overflow: auto;
-  padding: 0.5rem;
   background: transparent;
-}
-
-/* 広告あり */
-.main-content-area.with-ads {
-  bottom: calc(110px);
-}
-
-/* 広告なし */
-.main-content-area:not(.with-ads) {
-  bottom: calc(70px);
 }
 
 /* 固定ヘッダースタイル */
@@ -161,28 +142,6 @@ body:not(.with-ads) {
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   line-height: 1;
-}
-
-/* 固定広告バナースタイル */
-.ad-banner-fixed {
-  position: fixed;
-  bottom: 70px;
-  left: 0;
-  right: 0;
-  z-index: 30;
-  background: #ffeb3b;
-  border-top: 1px solid #fdd835;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
-}
-
-.ad-banner-content {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 0.75rem 1rem;
-  text-align: center;
-  font-size: 0.75rem;
-  color: #333;
-  font-weight: 500;
 }
 
 /* メインコンテナ調整 */
@@ -415,19 +374,19 @@ body:not(.with-ads) {
 /* 固定占いボタンのスタイル */
 .fixed-action-button {
   position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom)); /* ナビゲーションの上 */
+  bottom: calc(40px + env(safe-area-inset-bottom)); /* ナビゲーションの上 */
   left: 0;
   right: 0;
-  background: white;
-  border-top: 2px solid #e9d5ff; /* purple-200 */
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 16px;
-  z-index: 45; /* ナビゲーション(40)より上、広告(30)より上 */
+  background: transparent;
+  border-top: none; /* purple-200 */
+  box-shadow: none;
+  padding: 8x 16px;
+  z-index: 45;
   max-width: 400px;
   margin: 0 auto;
+  pointer-events: none; /* 背景はクリック不可 */
 }
 
-/* 広告ありの場合は広告の上に配置 */
-body.with-ads .fixed-action-button {
-  bottom: calc(110px + env(safe-area-inset-bottom)); /* ナビ70px + 広告40px */
+.fixed-action-button > * {
+  pointer-events: auto; /* ボタン自体はクリック可能 */
 }

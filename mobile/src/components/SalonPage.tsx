@@ -147,7 +147,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   };
 
   return (
-    <div className="main-container pb-28">
+    <div className="main-container">
       
       <div
         className={`mb-4 p-3 rounded-lg border ${
@@ -426,7 +426,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       <div className="fixed-action-button">
         <button
-          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg shadow-xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg shadow-2xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleStartReading}
           disabled={
             (isFree && usageStats.remainingReadings <= 0) ||
@@ -438,7 +438,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </button>
         
         {isFree && (
-          <div className="text-center text-xs text-gray-500 mt-2">
+          <div className="text-center text-xs text-white bg-black bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
             今日あと{usageStats.remainingReadings}回
           </div>
         )}

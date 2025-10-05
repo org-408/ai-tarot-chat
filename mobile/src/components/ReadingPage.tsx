@@ -17,6 +17,19 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   // 🔥 自分で必要なデータを取得
   const { data: masterData, isLoading: masterLoading } = useMaster();
 
+  // Textarea のフォーカス時移動処理
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const handleInputFocus = () => {
+    // キーボード表示後に入力欄を画面内に収める
+    setTimeout(() => {
+      textareaRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 300);
+  };
+
+
   // テスト用の初期メッセージ（5-6個）
   const [messages, setMessages] = useState([
     {
@@ -75,14 +88,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     (c) => c.id === categoryId
   );
 
-  // 広告の有無を判定（bodyのクラスから）
-  const hasAds = document.body.classList.contains("with-ads");
-
   // チャットエリアの高さを計算
-  // 画面全体(100vh) - ヘッダー(56px) - フッター(70px) - 広告(40px if with-ads) - 戻るボタン(40px) - タロットボード(332px) - マージン(20px)
-  const chatHeight = hasAds
-    ? "calc(100vh - 56px - 70px - 40px - 40px - 332px - 20px)" // 広告あり: 約442px
-    : "calc(100vh - 56px - 70px - 40px - 332px - 20px)"; // 広告なし: 約482px
+  const chatHeight = "calc(100vh - 56px - 70px - 40px - 332px - 20px)";
 
   // クロスカードのアニメーション(3秒ごとに入れ替え)
   useEffect(() => {
@@ -470,10 +477,12 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         </div>
 
         {/* 入力エリア */}
-        <div className="p-2 border-t border-gray-200 flex-shrink-0">
-          <div className="flex gap-1.5 items-end">
+        <div className="p-2 border-gray-200 flex-shrink-0">
+          <div className="flex gap-1.5 items-end ">
             <textarea
+              ref={textareaRef}
               value={inputValue}
+              onFocus={handleInputFocus}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -483,7 +492,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               }}
               placeholder="メッセージを入力..."
               rows={2}
-              className="flex-1 resize-none bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-400 focus:border-transparent"
+              className="flex-1 resize-none bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-400 focus:border-transparent shadow-lg p-4 focus:shadow-xl"
             />
             <button
               onClick={handleSendMessage}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { App as CapacitorApp } from '@capacitor/app';
-import AdBanner from "./components/AdBanner";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
@@ -401,11 +400,10 @@ function App() {
         </div>
       )}
 
-      <div className={`main-content-area ${plan === "FREE" || plan === "GUEST" ? 'with-ads' : ''}`}>
+      <div className="main-content-area" style={pageType === "salon" ? { paddingBottom: '105px' } : {}}>
         {renderPage()}
       </div>
 
-      <AdBanner currentPlan={plan} />
 
       <Navigation currentPage={pageType} onPageChange={handlePageChange} />
     </div>

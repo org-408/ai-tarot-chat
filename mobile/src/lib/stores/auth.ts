@@ -244,9 +244,10 @@ export const useAuthStore = create<AuthState>()(
       changePlan: async (newPlanCode: string) => {
         try {
           console.log('[AuthStore] Change plan started:', newPlanCode);
-          if (!get().isAuthenticated) {
-            throw new Error('Authentication required to change plan');
-          }
+          // TODO: 認証必須にする場合はコメントアウトを外す
+          // if (!get().isAuthenticated) {
+          //   throw new Error('Authentication required to change plan');
+          // }
           const result = await clientService.changePlan(newPlanCode);
           set({
             payload: result.payload,
