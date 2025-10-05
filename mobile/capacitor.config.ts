@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
       enabled: true
     },
     Keyboard: {
-      resize: 'scroll',
+      resize: 'none',
       resizeOnFullScreen: true
     }
   }

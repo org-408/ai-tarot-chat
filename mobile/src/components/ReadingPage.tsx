@@ -17,19 +17,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   // 🔥 自分で必要なデータを取得
   const { data: masterData, isLoading: masterLoading } = useMaster();
 
-  // Textarea のフォーカス時移動処理
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const handleInputFocus = () => {
-    // キーボード表示後に入力欄を画面内に収める
-    setTimeout(() => {
-      textareaRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
-    }, 300);
-  };
-
-
   // テスト用の初期メッセージ（5-6個）
   const [messages, setMessages] = useState([
     {
@@ -71,7 +58,18 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const [selectedCard, setSelectedCard] = useState<null | (typeof tarotCards)[number]>(null);
   const [typingMessage, setTypingMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Textarea のフォーカス時移動処理
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+  };
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
+  };
 
   // ローディング中
   if (masterLoading || !masterData) {
@@ -298,7 +296,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   return (
     <div className="main-container">
-      {/* タロットボードエリア */}
+      {/* タロットボードエリア - フォーカス時は非表示 */}
+      {!isInputFocused && (
       <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 border border-purple-200 shadow-md mb-3">
         <div className="flex gap-2">
           {/* カード配置グリッド(左側) */}
@@ -381,6 +380,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           </div>
         </div>
       </div>
+      )}
 
       {/* ポップアップモーダル */}
       {selectedCard && (
@@ -483,8 +483,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               ref={textareaRef}
               value={inputValue}
               onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={(e) => {
+              onKeyUp={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSendMessage();

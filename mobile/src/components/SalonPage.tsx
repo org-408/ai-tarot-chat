@@ -438,7 +438,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </button>
         
         {isFree && (
-          <div className="text-center text-xs text-white bg-black bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
+          <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
             今日あと{usageStats.remainingReadings}回
           </div>
         )}
