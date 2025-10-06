@@ -176,7 +176,7 @@ export class AuthService {
 
       // プランコードの変更（GUEST → FREE など）
       console.log(`🔄 プランコード確認 (current: ${finalClient.plan.code}),`, finalClient.plan.no);
-      const newPlanCode = finalClient.plan.no === 0 ? "FREE" : finalClient.plan.code;
+      const newPlanCode = finalClient.plan.code === "GUEST" ? "FREE" : finalClient.plan.code;
 
       // アプリ用JWT生成（既存パターンに合わせて）
       return await generateJWT<JWTPayload>(
