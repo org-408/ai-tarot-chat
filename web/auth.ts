@@ -7,7 +7,13 @@ import { clientService } from "./lib/services/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [Google, Apple],
+  providers: [Google({
+    authorization: {
+      params: {
+        prompt: "select_account",
+      }
+    }
+  }), Apple],
   callbacks: {
     async signIn({ user }) {
       console.log("SignIn callback triggered");
