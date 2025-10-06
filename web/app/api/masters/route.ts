@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     // マスターデータ取得
     const masters = await getAllMasterData();
-    console.log("📍 /api/masters/ - マスタデータ送信完了");
+    console.log("📍 /api/masters/ - マスタデータ取得完了", masters);
 
     return NextResponse.json(masters);
   } catch (error) {

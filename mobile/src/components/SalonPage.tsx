@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal, type SetStateAction } from "react";
+import { use, useEffect, useMemo, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal, type SetStateAction } from "react";
 import type { JWTPayload, MasterData, Plan, Spread, UsageStats } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 import { ChevronDown } from "lucide-react";
@@ -117,6 +117,11 @@ const SalonPage: React.FC<SalonPageProps> = ({
         };
     }
   };
+
+  useMemo(() => {
+    console.log("[SalonPage] masterData or usageStats changed", { masterData, usageStats });
+  }, [masterData, usageStats]);
+  console.log("[SalonPage] masterData or usageStats changed", { masterData, usageStats });
 
   useEffect(() => {
     if (availableCategories.length > 0 && !selectedCategory) {

@@ -71,6 +71,12 @@ function App() {
     init().then(() => {
       console.log("[App] 初期化完了");
       setup();
+      // 初期化時はマスターデータを必ず取得する
+      queryClient.invalidateQueries({ queryKey: ['masters'] });
+      console.log("[App] マスターデータ取得要求送信");
+      // 利用状況も取得する
+      queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      console.log("[App] 利用状況取得要求送信");
     });
 
     return () => {

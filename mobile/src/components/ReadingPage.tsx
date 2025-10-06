@@ -195,7 +195,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         card,
         isReversed,
         position: cell.vLabel || cell.hLabel || `位置${index + 1}`,
-        description: `${cell.vLabel || cell.hLabel}の意味を示します`,
+        description: `このカードは${cell.vLabel || cell.hLabel}の意味を示します`,
       };
     });
   };
@@ -471,8 +471,11 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                 {selectedCard.number}
               </div>
               <h3 className="text-base font-bold text-purple-900">
-                {selectedCard.position}
+                位置の意味：{selectedCard.position}
               </h3>
+            </div>
+            <div className="text-xs text-gray-600 mb-2">
+              {selectedCard.description}
             </div>
             {/* タロットカードを表示 */}
             <div className="flex justify-center mb-2">
@@ -489,9 +492,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                 ? selectedCard.card.reversedKeywords.join('、')
                 : selectedCard.card.uprightKeywords.join('、')}
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed mb-4">
-              {selectedCard.description}
-            </p>
             <button
               onClick={() => setSelectedCard(null)}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 font-medium transition-colors text-sm"
