@@ -65,7 +65,7 @@ export class PlanService {
 
       // ユーザーのプラン更新
       return await clientRepo.updateClient(clientId, {
-        planId: newPlan.id,
+        plan: { connect: { code: newPlanCode } },
         dailyReadingsCount,
         dailyCelticsCount,
         dailyPersonalCount,
