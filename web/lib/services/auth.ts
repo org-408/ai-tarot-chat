@@ -1,5 +1,6 @@
 import {
   JWTPayload,
+  Plan,
   type Client,
   type TicketData,
 } from "@/../shared/lib/types";
@@ -10,6 +11,7 @@ import { prisma } from "@/lib/repositories/database";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
 import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
+import { planRepository } from "../repositories";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
 console.log("🔑 AuthService initialized:", JWT_SECRET);
@@ -132,9 +134,15 @@ export class AuthService {
       // デバイス取得
       const device = await clientRepo.getDeviceByDeviceId(params.deviceId);
       console.log(`🔍 デバイス検索 (deviceId: ${params.deviceId})`, device);
-      if (!device || !device.clientId) {
+      if (!device || !device.clientId || !device.client) {
         throw new Error("Device not found. Please register device first.");
       }
+      const client = device.client;
+      if (!client.plan) throw new Error("Failed to get updated client");
+
+      // プランコードの変更（GUEST → FREE など）
+      console.log(`🔄 プランコード確認 (current: ${client.plan.code}),`, client.plan.no);
+      const planCode = client.plan.code === "GUEST" ? "FREE" : client.plan.code;
 
       // ユーザーのDBとの照合
       const user = await authRepo.getUserById(ticketData.sub);
@@ -152,7 +160,8 @@ export class AuthService {
         // 既存Clientがある場合：デバイスをそのClientに統合
         finalClient = await this.mergeClients(
           device.clientId,
-          existingClient.id
+          existingClient.id,
+          planCode
         );
         console.log(
           `✅ 既存Clientに統合 (user: ${user}, client: ${finalClient})`
@@ -160,10 +169,11 @@ export class AuthService {
       } else {
         // 既存Clientがない場合：現在のClientにユーザー情報を紐付け
         finalClient = await clientRepo.updateClient(device.clientId, {
-          userId: user.id,
+          user: { connect: { id: user.id } },
           email: user.email,
           name: user.name,
           image: user.image,
+          plan: { connect: { code: planCode } },
           isRegistered: true,
           lastLoginAt: new Date(),
         });
@@ -172,11 +182,9 @@ export class AuthService {
         );
       }
 
-      if (!finalClient.plan) throw new Error("Failed to get updated client");
-
-      // プランコードの変更（GUEST → FREE など）
-      console.log(`🔄 プランコード確認 (current: ${finalClient.plan.code}),`, finalClient.plan.no);
-      const newPlanCode = finalClient.plan.code === "GUEST" ? "FREE" : finalClient.plan.code;
+      if (!finalClient || !finalClient.plan) {
+        throw new Error("Failed to get final client or plan");
+      }
 
       // アプリ用JWT生成（既存パターンに合わせて）
       return await generateJWT<JWTPayload>(
@@ -184,7 +192,7 @@ export class AuthService {
           t: "app",
           deviceId: device.deviceId,
           clientId: finalClient.id,
-          planCode: newPlanCode,
+          planCode: finalClient.plan.code,
           provider: ticketData.provider,
           user: {
             id: user.id,
@@ -204,7 +212,8 @@ export class AuthService {
   // 利用回数は合算
   private async mergeClients(
     fromClientId: string,
-    toClientId: string
+    toClientId: string,
+    newPlanCode: string
   ): Promise<Client> {
     console.log(`🔀 Merging clients: from ${fromClientId} to ${toClientId}`);
     if (fromClientId === toClientId) {
@@ -243,17 +252,14 @@ export class AuthService {
     console.log(`👤 Merging for userId: `, userId, toClient.userId, fromClient.userId);
 
     // plan情報は、より上位のものを適用
-    const higherPlan =
-      fromClient.plan && toClient.plan
-        ? fromClient.plan.no > toClient.plan.no
-          ? fromClient.plan
-          : toClient.plan
-        : fromClient.plan || toClient.plan;
+    const newPlan = await planRepository.getPlanByCode(newPlanCode);
+    const plans = [fromClient.plan, toClient.plan, newPlan].filter(Boolean) as Plan[];
+    const higherPlan = plans.reduce((prev, curr) => (curr.no > prev.no ? curr : prev));
 
     if (!higherPlan) {
       throw new Error("Both clients have no plan");
     }
-    console.log(`🏆 Higher plan selected: `, higherPlan, fromClient.plan, toClient.plan);
+    console.log(`🏆 Higher plan selected: `, higherPlan, fromClient.plan, toClient.plan, newPlan);
 
     // 利用回数は合算
     const sumReadingsCount =
@@ -359,11 +365,11 @@ export class AuthService {
 
     // fromClientのデバイスをすべてtoClientに移動
     return (await clientRepository.updateClient(toClient.id, {
-      userId,
+      user: { connect: { id: userId } },
       name: toClient.name || fromClient.name,
       email: toClient.email || fromClient.email,
       image: toClient.image || fromClient.image,
-      planId: higherPlan.id,
+      plan: { connect: { id: higherPlan.id } },
       dailyReadingsCount: Math.min(sumReadingsCount, higherPlan.maxReadings),
       dailyCelticsCount: Math.min(sumCelticsCount, higherPlan.maxCeltics),
       dailyPersonalCount: Math.min(sumPersonalCount, higherPlan.maxPersonal),

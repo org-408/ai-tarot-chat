@@ -58,7 +58,7 @@ export class ClientRepository extends BaseRepository {
 
   async updateClient(
     id: string,
-    data: Prisma.ClientUncheckedUpdateInput
+    data: Prisma.ClientUpdateInput
   ): Promise<Client> {
     return (await this.db.client.update({
       where: { id },
