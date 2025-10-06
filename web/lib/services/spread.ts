@@ -1,53 +1,12 @@
 import type { SpreadCell, SpreadInput } from "@/../shared/lib/types";
 import { prisma } from "@/prisma/prisma";
+import { spreadRepository } from "../repositories";
 
 // -------- Spread操作 --------
 
 // スプレッド一覧の取得
 export async function getSpreads() {
-  const spreads = await prisma.spread.findMany({
-    include: {
-      cells: true,
-      level: true,
-      plan: true,
-      categories: {
-        include: {
-          category: true,
-        },
-      },
-    },
-  });
-
-  // Prismaの結果をアプリの型に変換
-  return spreads.map((spread) => ({
-    id: spread.id,
-    code: spread.code,
-    name: spread.name,
-    category: spread.category,
-    levelId: spread.levelId,
-    level: spread.level,
-    planId: spread.planId,
-    plan: spread.plan,
-    guide: spread.guide || "",
-    createdAt: spread.createdAt,
-    updatedAt: spread.updatedAt,
-    cells: spread.cells.map((cell) => ({
-      id: cell.id,
-      x: cell.x,
-      y: cell.y,
-      vLabel: cell.vLabel || null,
-      hLabel: cell.hLabel || null,
-      vOrder: cell.vOrder || null,
-      hOrder: cell.hOrder || null,
-      spreadId: cell.spreadId,
-    })),
-    categories: spread.categories.map((c) => ({
-      id: c.id,
-      spreadId: c.spreadId,
-      categoryId: c.categoryId,
-      category: c.category,
-    })),
-  }));
+  return await spreadRepository.getAllSpreads();
 }
 
 // スプレッドの取得

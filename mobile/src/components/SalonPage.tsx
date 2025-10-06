@@ -369,7 +369,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       </div>
 
-      {isGuest && (
+      {/* {isGuest && (
         <div className="mt-6 space-y-3">
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-center">
@@ -416,132 +416,130 @@ const SalonPage: React.FC<SalonPageProps> = ({
             ※有料プランは自動的にユーザー登録されます
           </div>
         </div>
-      )}
+      )} */}
 
-      {currentPlan === "FREE" && (
-        <div className="mt-6 space-y-3">
-          <div className="text-center text-sm text-gray-600 mb-3">
-            💡 もっと詳しく占うなら
-              {upgradablePlans && upgradablePlans.length > 0 && (
-                <div className="mt-6 space-y-3">
-                  {/* ゲストの場合のみ無料登録CTA */}
-                  {isGuest && freePlan && (
-                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-sm font-bold text-blue-800 mb-1">
-                        🔓 無料登録で回数{freePlan.maxReadings}倍
-                      </div>
-                      <div className="text-xs text-blue-600 mb-2">
-                        1日{freePlan.maxReadings}回まで + {freePlan.hasHistory ? '履歴保存' : ''}
-                      </div>
-                      <button
-                        onClick={onLogin}
-                        disabled={isLoggingIn}
-                        className="w-full py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors disabled:opacity-50"
-                      >
-                        {isLoggingIn ? "認証中..." : "無料でユーザー登録"}
-                      </button>
+      <div className="mt-6 space-y-3">
+        <div className="text-center text-sm text-gray-600 mb-3">
+          💡 もっと詳しく占うなら
+            {upgradablePlans && upgradablePlans.length > 0 && (
+              <div className="mt-6 space-y-3">
+                {/* ゲストの場合のみ無料登録CTA */}
+                {isGuest && freePlan && (
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="text-sm font-bold text-blue-800 mb-1">
+                      🔓 無料登録で回数{freePlan.maxReadings}倍
                     </div>
-                  )}
-
-                  <div className="text-xs text-center text-gray-500">
-                    💡 {isGuest ? 'または、本格プランで全機能を' : 'さらに上位プランへアップグレード'}
+                    <div className="text-xs text-blue-600 mb-2">
+                      1日{freePlan.maxReadings}回まで + {freePlan.hasHistory ? '履歴保存' : ''}
+                    </div>
+                    <button
+                      onClick={onLogin}
+                      disabled={isLoggingIn}
+                      className="w-full py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors disabled:opacity-50"
+                    >
+                      {isLoggingIn ? "認証中..." : "無料でユーザー登録"}
+                    </button>
                   </div>
+                )}
 
-                  {/* 上位プランをアコーディオン表示 */}
-                  {upgradablePlans.map((plan: { code: string; id: string; name: string; price: number; description: string; features: string[]; maxReadings: number; maxCeltics: number; hasPersonal: boolean; maxPersonal: number; }) => {
-                    const colors = getPlanColors(plan.code);
-                    const isExpanded = expandedPlan === plan.code;
-                    
-                    return (
-                      <div 
-                        key={plan.id}
-                        className={`border ${colors.border} rounded-lg overflow-hidden transition-all`}
-                      >
-                        {/* アコーディオンヘッダー */}
-                        <button
-                          onClick={() => setExpandedPlan(isExpanded ? null : plan.code)}
-                          className={`w-full p-3 ${colors.bg} flex items-center justify-between transition-colors`}
-                        >
-                          <div className="text-left flex-1">
-                            <div className={`font-bold ${colors.text} flex items-center gap-1`}>
-                              <span>{colors.icon}</span>
-                              <span>{plan.name}</span>
-                            </div>
-                            <div className={`text-xs ${colors.subText} mt-0.5`}>
-                              ¥{plan.price.toLocaleString()}/月 - {plan.description}
-                            </div>
-                          </div>
-                          <ChevronDown 
-                            className={`w-4 h-4 ${colors.text} transition-transform flex-shrink-0 ml-2 ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          />
-                        </button>
-                        
-                        {/* アコーディオンコンテンツ */}
-                        {isExpanded && (
-                          <div className={`p-3 bg-white border-t ${colors.border} space-y-2`}>
-                            {/* 機能リスト */}
-                            <div className="space-y-1">
-                              {plan.features?.map((feature, i) => (
-                                <div key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
-                                  <span className="text-green-500 flex-shrink-0 mt-0.5">✓</span>
-                                  <span>{feature}</span>
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* 利用制限情報 */}
-                            <div className="pt-2 border-t border-gray-100">
-                              <div className="text-[10px] text-gray-500 space-y-0.5">
-                                {plan.maxReadings > 0 && (
-                                  <div>📊 通常占い: {plan.maxReadings === 999 ? '無制限' : `${plan.maxReadings}回/日`}</div>
-                                )}
-                                {plan.maxCeltics > 0 && (
-                                  <div>⭐ ケルト十字: {plan.maxCeltics === 999 ? '無制限' : `${plan.maxCeltics}回/日`}</div>
-                                )}
-                                {plan.hasPersonal && plan.maxPersonal > 0 && (
-                                  <div>🤖 パーソナル占い: {plan.maxPersonal === 999 ? '無制限' : `${plan.maxPersonal}回/日`}</div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* アップグレードボタン */}
-                            <button
-                              onClick={() => handleUpgradeClick(plan.code as UserPlan)}
-                              disabled={isLoggingIn}
-                              className={`w-full mt-2 py-2 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 ${colors.button}`}
-                            >
-                              {isLoggingIn ? "処理中..." : `${plan.name}を始める`}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="text-xs text-center text-gray-500">
+                  💡 {isGuest ? 'または、本格プランで全機能を' : 'さらに上位プランへアップグレード'}
                 </div>
-              )}
-          </div>
-          
-          <button
-            onClick={() => handleUpgradeClick("STANDARD")}
-            className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
-          >
-            💎 スタンダード（¥{masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD")?.price || 480}/月）
-            <div className="text-xs opacity-90">広告なし・無制限</div>
-          </button>
-          
-          <button
-            onClick={() => handleUpgradeClick("PREMIUM")}
-            className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md"
-          >
-            👑 プレミアム（¥{masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}/月）
-            <div className="text-xs opacity-90">AI対話＋全機能</div>
-          </button>
-        </div>
-      )}
 
-      {(isStandard || isPremium) && (
+                {/* 上位プランをアコーディオン表示 */}
+                {upgradablePlans.map((plan: { code: string; id: string; name: string; price: number; description: string; features: string[]; maxReadings: number; maxCeltics: number; hasPersonal: boolean; maxPersonal: number; }) => {
+                  const colors = getPlanColors(plan.code);
+                  const isExpanded = expandedPlan === plan.code;
+                  
+                  return (
+                    <div 
+                      key={plan.id}
+                      className={`border ${colors.border} rounded-lg overflow-hidden transition-all`}
+                    >
+                      {/* アコーディオンヘッダー */}
+                      <button
+                        onClick={() => setExpandedPlan(isExpanded ? null : plan.code)}
+                        className={`w-full p-3 ${colors.bg} flex items-center justify-between transition-colors`}
+                      >
+                        <div className="text-left flex-1">
+                          <div className={`font-bold ${colors.text} flex items-center gap-1`}>
+                            <span>{colors.icon}</span>
+                            <span>{plan.name}</span>
+                          </div>
+                          <div className={`text-xs ${colors.subText} mt-0.5`}>
+                            ¥{plan.price.toLocaleString()}/月 - {plan.description}
+                          </div>
+                        </div>
+                        <ChevronDown 
+                          className={`w-4 h-4 ${colors.text} transition-transform flex-shrink-0 ml-2 ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      
+                      {/* アコーディオンコンテンツ */}
+                      {isExpanded && (
+                        <div className={`p-3 bg-white border-t ${colors.border} space-y-2`}>
+                          {/* 機能リスト */}
+                          <div className="space-y-1">
+                            {plan.features?.map((feature, i) => (
+                              <div key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
+                                <span className="text-green-500 flex-shrink-0 mt-0.5">✓</span>
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 利用制限情報 */}
+                          <div className="pt-2 border-t border-gray-100">
+                            <div className="text-[10px] text-gray-500 space-y-0.5">
+                              {plan.maxReadings > 0 && (
+                                <div>📊 通常占い: {plan.maxReadings === 999 ? '無制限' : `${plan.maxReadings}回/日`}</div>
+                              )}
+                              {plan.maxCeltics > 0 && (
+                                <div>⭐ ケルト十字: {plan.maxCeltics === 999 ? '無制限' : `${plan.maxCeltics}回/日`}</div>
+                              )}
+                              {plan.hasPersonal && plan.maxPersonal > 0 && (
+                                <div>🤖 パーソナル占い: {plan.maxPersonal === 999 ? '無制限' : `${plan.maxPersonal}回/日`}</div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* アップグレードボタン */}
+                          <button
+                            onClick={() => handleUpgradeClick(plan.code as UserPlan)}
+                            disabled={isLoggingIn}
+                            className={`w-full mt-2 py-2 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 ${colors.button}`}
+                          >
+                            {isLoggingIn ? "処理中..." : `${plan.name}を始める`}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+        </div>
+        
+        {/* <button
+          onClick={() => handleUpgradeClick("STANDARD")}
+          className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
+        >
+          💎 スタンダード（¥{masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD")?.price || 480}/月）
+          <div className="text-xs opacity-90">広告なし・無制限</div>
+        </button>
+        
+        <button
+          onClick={() => handleUpgradeClick("PREMIUM")}
+          className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md"
+        >
+          👑 プレミアム（¥{masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}/月）
+          <div className="text-xs opacity-90">AI対話＋全機能</div>
+        </button> */}
+      </div>
+
+      {/* {(isStandard || isPremium) && (
         <div className="mt-6 space-y-2">
           {isStandard && (
             <button
@@ -566,7 +564,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             {isPremium ? "💎 スタンダードプランにダウングレード" : "フリープランにダウングレード"}
           </button>
         </div>
-      )}
+      )} */}
 
       <div className="fixed-action-button">
         <button

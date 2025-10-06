@@ -46,16 +46,11 @@ export class PlanRepository extends BaseRepository {
     });
   }
 
-  async getAllPlans(): Promise<Plan[]> {
+  // all=true で非アクティブプランも含む
+  async getAllPlans(all: boolean = false): Promise<Plan[]> {
     return await this.db.plan.findMany({
-      orderBy: { price: "asc" },
-    });
-  }
-
-  async getActivePlans(): Promise<Plan[]> {
-    return await this.db.plan.findMany({
-      where: { isActive: true },
-      orderBy: { price: "asc" },
+      where: { isActive: all ? undefined : true },
+      orderBy: { no: "asc" },
     });
   }
 

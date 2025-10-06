@@ -3,14 +3,13 @@ import { getSpreads } from "@/lib/services/spread";
 import { getAllDecks } from "@/lib/services/tarot";
 import { getTarotists } from "@/lib/services/tarotist";
 import { prisma } from "@/prisma/prisma";
+import { planService } from "./plan";
 
 // 型定義（シンプルに boolean のみ返す）
 
 // プラン一覧を取得
 export async function getPlans(): Promise<Plan[]> {
-  return await prisma.plan.findMany({
-    orderBy: { id: "asc" },
-  });
+  return await planService.getPlans();
 }
 
 // スプレッドレベル一覧を取得

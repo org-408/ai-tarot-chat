@@ -116,7 +116,16 @@ export class SpreadRepository extends BaseRepository {
   async getAllSpreads(): Promise<Spread[]> {
     return await this.db.spread.findMany({
       orderBy: { createdAt: "asc" },
-      include: { cells: true },
+      include: {
+        cells: true,
+        level: true,
+        plan: true,
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
     });
   }
 

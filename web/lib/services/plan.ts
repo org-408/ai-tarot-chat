@@ -1,6 +1,6 @@
 // services/plan.service.ts
 
-import type { Client } from "@/../shared/lib/types";
+import type { Client, Plan } from "@/../shared/lib/types";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
@@ -74,26 +74,10 @@ export class PlanService {
   }
 
   /**
-   * プラン機能チェック
+   * プラン一覧取得
    */
-  async checkFeatureAccess(
-    clientId: string,
-    feature: "personal" | "history"
-  ): Promise<boolean> {
-    const client = await clientRepository.getClientById(clientId);
-    if (!client) return false;
-
-    const plan = await planRepository.getPlanById(client.planId);
-    if (!plan) return false;
-
-    switch (feature) {
-      case "personal":
-        return plan.hasPersonal;
-      case "history":
-        return plan.hasHistory;
-      default:
-        return false;
-    }
+  async getPlans(all: boolean = false): Promise<Plan[]> {
+    return await planRepository.getAllPlans(all);
   }
 }
 

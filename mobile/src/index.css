@@ -329,7 +329,7 @@ body {
 }
 
 /* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
     background-color: #2f2f2f;
@@ -358,7 +358,7 @@ body {
   .bottom-navigation {
     background: #1f1f1f;
     border-top-color: #374151;
-    padding-bottom: env(safe-area-inset-bottom); /* Safe Area */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .bottom-nav-item {
@@ -369,7 +369,7 @@ body {
     color: #f3f4f6;
     background: #374151;
   }
-}
+} */
 
 /* 固定占いボタンのスタイル */
 .fixed-action-button {
@@ -380,7 +380,7 @@ body {
   background: transparent;
   border-top: none; /* purple-200 */
   box-shadow: none;
-  padding: 8x 16px;
+  padding: 0px 16px;
   z-index: 45;
   max-width: 400px;
   margin: 0 auto;
