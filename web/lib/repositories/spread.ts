@@ -2,6 +2,7 @@ import type {
   ReadingCategory,
   Spread,
   SpreadCell,
+  SpreadInput,
   SpreadLevel,
 } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
@@ -69,11 +70,26 @@ export class SpreadRepository extends BaseRepository {
     return created.id;
   }
 
+  async updateSpread(id: string, spread: SpreadInput): Promise<Spread> {
+    return await this.db.spread.update({
+      where: { id },
+      data: {
+        name: spread.name,
+        category: spread.category,
+        levelId: spread.levelId,
+        planId: spread.planId,
+        guide: spread.guide,
+      },
+    });
+  }
+
   async getSpreadById(id: string): Promise<Spread | null> {
     return await this.db.spread.findUnique({
       where: { id },
       include: {
         cells: true,
+        level: true,
+        plan: true,
         categories: {
           include: {
             category: true,
