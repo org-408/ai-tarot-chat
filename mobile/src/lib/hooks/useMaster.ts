@@ -13,11 +13,7 @@ export function useMaster(isInitialized: boolean) {
     queryFn: async () => {
       console.log('[useMaster] Fetching master data...');
       const data = await syncService.getMasterData();
-      console.log('[useMaster] Master data fetched:', {
-        plans: data.plans?.length,
-        categories: data.categories?.length,
-        spreads: data.spreads?.length,
-      });
+      console.log('[useMaster] Master data fetched:', data);
       return data;
     },
     enabled: isInitialized, // 認証初期化後に実行
