@@ -131,17 +131,20 @@ export class AuthService {
       const authRepo = authRepository.withTransaction(tx);
       // デバイス取得
       const device = await clientRepo.getDeviceByDeviceId(params.deviceId);
+      console.log(`🔍 デバイス検索 (deviceId: ${params.deviceId})`, device);
       if (!device || !device.clientId) {
         throw new Error("Device not found. Please register device first.");
       }
 
       // ユーザーのDBとの照合
       const user = await authRepo.getUserById(ticketData.sub);
+      console.log(`🔍 ユーザー検索 (userId: ${ticketData.sub})`, user);
       if (!user) {
         throw new Error("User not found in DB.");
       }
 
       const existingClient = user.client;
+      console.log(`🔍 既存Client `, existingClient);
       let finalClient: Client;
 
       // user と 別の Client が紐付いている場合は統合
@@ -202,6 +205,7 @@ export class AuthService {
     fromClientId: string,
     toClientId: string
   ): Promise<Client> {
+    console.log(`🔀 Merging clients: from ${fromClientId} to ${toClientId}`);
     if (fromClientId === toClientId) {
       throw new Error("Cannot merge the same client");
     }
@@ -217,11 +221,13 @@ export class AuthService {
     if (!toClient) {
       throw new Error("toClient not found");
     }
+    console.log(`🔍 fromClient ${fromClient}, toClient ${toClient}`);
 
     // 先に作られたClientを優先
     if (fromClient.createdAt < toClient.createdAt) {
       [fromClient, toClient] = [toClient, fromClient];
     }
+    console.log(`🔄 Swapped if needed: fromClient ${fromClient}, toClient ${toClient}`);
 
     // 念の為、deletedAt チェック
     if (fromClient.deletedAt || toClient.deletedAt) {
@@ -233,6 +239,7 @@ export class AuthService {
     if (!userId) {
       throw new Error("Cannot merge clients with different userId");
     }
+    console.log(`👤 Merging for userId: `, userId, toClient.userId, fromClient.userId);
 
     // plan情報は、より上位のものを適用
     const higherPlan =
@@ -245,6 +252,7 @@ export class AuthService {
     if (!higherPlan) {
       throw new Error("Both clients have no plan");
     }
+    console.log(`🏆 Higher plan selected: `, higherPlan, fromClient.plan, toClient.plan);
 
     // 利用回数は合算
     const sumReadingsCount =
@@ -287,8 +295,10 @@ export class AuthService {
             ),
           ]
         : fromClient.devices || toClient.devices || [];
+    console.log(`📱 Merging devices: `, devices);
 
     const isRegistered = fromClient.isRegistered || toClient.isRegistered;
+    console.log(`🔍 isRegistered: `, isRegistered);
 
     const lastLoginAt =
       fromClient.lastLoginAt && toClient.lastLoginAt
@@ -296,6 +306,7 @@ export class AuthService {
           ? fromClient.lastLoginAt
           : toClient.lastLoginAt
         : fromClient.lastLoginAt || toClient.lastLoginAt;
+    console.log(`🕒 lastLoginAt: `, lastLoginAt);
 
     const favoriteSpreads =
       fromClient.favoriteSpreads && toClient.favoriteSpreads
@@ -309,6 +320,7 @@ export class AuthService {
             ),
           ]
         : fromClient.favoriteSpreads || toClient.favoriteSpreads || [];
+    console.log(`⭐ Merging favoriteSpreads: `, favoriteSpreads);
 
     const readings =
       fromClient.readings && toClient.readings
@@ -319,6 +331,7 @@ export class AuthService {
             ),
           ]
         : fromClient.readings || toClient.readings || [];
+    console.log(`🔮 Merging readings: `, readings);
 
     const planChangeHistories =
       fromClient.planChangeHistories && toClient.planChangeHistories
@@ -330,6 +343,7 @@ export class AuthService {
             ),
           ]
         : fromClient.planChangeHistories || toClient.planChangeHistories || [];
+    console.log(`📈 Merging planChangeHistories: `, planChangeHistories);
 
     const chatMessages =
       fromClient.chatMessages && toClient.chatMessages
@@ -340,6 +354,7 @@ export class AuthService {
             ),
           ]
         : fromClient.chatMessages || toClient.chatMessages || [];
+    console.log(`💬 Merging chatMessages: `, chatMessages);
 
     // fromClientのデバイスをすべてtoClientに移動
     return (await clientRepository.updateClient(toClient.id, {
