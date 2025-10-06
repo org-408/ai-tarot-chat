@@ -148,7 +148,7 @@ export class AuthService {
       let finalClient: Client;
 
       // user と 別の Client が紐付いている場合は統合
-      if (existingClient) {
+      if (existingClient && existingClient.id !== device.clientId) {
         // 既存Clientがある場合：デバイスをそのClientに統合
         finalClient = await this.mergeClients(
           device.clientId,
