@@ -175,6 +175,7 @@ export class AuthService {
       if (!finalClient.plan) throw new Error("Failed to get updated client");
 
       // プランコードの変更（GUEST → FREE など）
+      console.log(`🔄 プランコード確認 (current: ${finalClient.plan.code}),`, finalClient.plan.no);
       const newPlanCode = finalClient.plan.no === 0 ? "FREE" : finalClient.plan.code;
 
       // アプリ用JWT生成（既存パターンに合わせて）
