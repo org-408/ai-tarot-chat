@@ -7,7 +7,7 @@ import type { MasterData } from '../../../../shared/lib/types';
  * - 24時間キャッシュ
  * - バックグラウンド自動更新
  */
-export function useMaster() {
+export function useMaster(isInitialized: boolean) {
   return useQuery<MasterData>({
     queryKey: ['masters'],
     queryFn: async () => {
@@ -20,6 +20,7 @@ export function useMaster() {
       });
       return data;
     },
+    enabled: isInitialized, // 認証初期化後に実行
     staleTime: 24 * 60 * 60 * 1000, // 24時間
     gcTime: 7 * 24 * 60 * 60 * 1000, // 7日間
     retry: 3, // マスターデータは重要なので3回リトライ

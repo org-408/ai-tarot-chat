@@ -1,33 +1,25 @@
-import type { PlanInput } from "../../../shared/lib/types";
+import type { JWTPayload, MasterData, PlanInput } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-// 🔥 自分でフックを呼ぶ
-import { useAuth } from "../lib/hooks/useAuth";
 import { useMaster } from "../lib/hooks/useMaster";
 
 interface PlansPageProps {
+  payload: JWTPayload;
+  isAuthenticated: boolean;
+  masterData: MasterData; // マスターデータを親から受け取る
   onLogin: () => void;
   onChangePlan: (plan: UserPlan) => void;
   isLoggingIn: boolean;
 }
 
 const PlansPage: React.FC<PlansPageProps> = ({
+  payload,
+  isAuthenticated,
+  masterData,
   onLogin,
   onChangePlan,
   isLoggingIn,
 }) => {
-  // 🔥 自分で必要なデータを取得
-  const { payload, plan: currentPlan, isAuthenticated } = useAuth();
-  const { data: masterData, isLoading: masterLoading } = useMaster();
-
-  // ローディング中
-  if (masterLoading || !masterData) {
-    return (
-      <div className="main-container">
-        <div className="text-center py-20">読み込み中...</div>
-      </div>
-    );
-  }
-
+  const currentPlan = payload.planCode || "GUEST";
   const planData = masterData.plans.reduce((acc, plan) => {
     let requiresAuth = true;
     if (plan.code === "FREE") requiresAuth = false;

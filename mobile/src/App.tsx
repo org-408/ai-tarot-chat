@@ -7,13 +7,16 @@ import SalonPage from "./components/SalonPage";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 import { useAuth } from "./lib/hooks/useAuth";
-import { useLifecycle, useLifecycleStore } from "./lib/stores/lifecycle";
+import { useLifecycle } from "./lib/hooks/useLifecycle";
 import { queryClient } from "./components/providers/QueryProvider";
+import { useMaster } from "./lib/hooks/useMaster";
+import { useUsage } from "./lib/hooks/useUsage";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
 
   // 占いセッション用
   const [readingData, setReadingData] = useState<{
@@ -26,7 +29,8 @@ function App() {
     payload, 
     plan, 
     isAuthenticated, 
-    userId, 
+    clientId,
+    userId,
     login: authLogin, 
     logout: authLogout, 
     changePlan 
@@ -38,20 +42,27 @@ function App() {
     isRefreshing, 
     dateChanged, 
     error,
+    init,
+    setup,
+    cleanup,
     clearDateChanged,
     clearError
   } = useLifecycle();
 
+  // 🔥 マスターデータ取得
+  const { data: masterData } = useMaster(isInitialized);
+
+  // 🔥 利用状況取得
+  const { data: usageStats,  } = useUsage(isInitialized, clientId);
+
   // 🔥 初期化処理（アプリ起動時に1回だけ実行）
   useEffect(() => {
-    const lifecycleStore = useLifecycleStore.getState();
-    
-    lifecycleStore.init().then(() => {
-      lifecycleStore.setup();
+    init().then(() => {
+      setup();
     });
 
     return () => {
-      lifecycleStore.cleanup();
+      cleanup();
     };
   }, []);
 
@@ -86,7 +97,7 @@ function App() {
     }
   }, [error, clearError]);
 
-  // 🔥 サインイン完了後の自動アップグレード処理
+  // 🔥 サインイン完了後の自動アップグレード処理他
   useEffect(() => {
     if (isAuthenticated && isInitialized) {
       const pendingUpgrade = sessionStorage.getItem('pendingUpgrade');
@@ -99,9 +110,11 @@ function App() {
   }, [isAuthenticated, isInitialized, plan]);
 
   // 初期化中
-  if (!isInitialized) {
+  if (!isInitialized || !masterData || !usageStats) {
     return <TarotSplashScreen message={
-      isRefreshing ? "データを更新中..." : "読み込み中..."
+      !isInitialized ? "アプリを初期化中..." :
+      !masterData ? "マスターデータを読み込み中..." :
+      "利用状況を読み込み中..."
     } />;
   }
 
@@ -138,7 +151,7 @@ function App() {
       console.log("ログイン成功");
 
       // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ['usage', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
     } catch (err) {
       console.error("ログイン失敗:", err);
       alert(err instanceof Error ? err.message : "ログインに失敗しました");
@@ -161,8 +174,9 @@ function App() {
       setPageType("salon");
       setReadingData(null);
       
-      // 利用状況キャッシュをクリア
-      queryClient.clear();
+      // 利用状況を再取得
+      await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      console.log("利用状況を再取得");
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -184,7 +198,7 @@ function App() {
       await changePlan(newPlan);
       
       // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ['usage', payload.user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
       console.log("利用状況を再取得");
     } catch (err) {
       console.error("プラン変更エラー:", err);
@@ -242,6 +256,10 @@ function App() {
       case "salon":
         return (
           <SalonPage
+            payload={payload}
+            isAuthenticated={isAuthenticated}
+            masterData={masterData}
+            usageStats={usageStats}
             onLogin={handleLogin}
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
@@ -252,6 +270,8 @@ function App() {
       case "reading":
         return (
           <ReadingPage
+            payload={payload}
+            masterData={masterData}
             spreadId={readingData?.spreadId || ""}
             categoryId={readingData?.categoryId || ""}
             onBack={handleBackFromReading}
@@ -260,6 +280,9 @@ function App() {
       case "plans":
         return (
           <PlansPage
+            payload={payload}
+            isAuthenticated={isAuthenticated}
+            masterData={masterData}
             onLogin={handleLogin}
             onChangePlan={handlePlanChange}
             isLoggingIn={isLoggingIn}
@@ -301,6 +324,10 @@ function App() {
       default:
         return (
           <SalonPage
+            payload={payload}
+            isAuthenticated={isAuthenticated}
+            masterData={masterData}
+            usageStats={usageStats}
             onLogin={handleLogin}
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}

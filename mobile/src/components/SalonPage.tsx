@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal, type SetStateAction } from "react";
-import type { Plan, Spread } from "../../../shared/lib/types";
+import type { JWTPayload, MasterData, Plan, Spread, UsageStats } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useMaster } from "../lib/hooks/useMaster";
-import { useUsage } from "../lib/hooks/useUsage";
 import { ChevronDown } from "lucide-react";
 
 interface SalonPageProps {
+  payload: JWTPayload;
+  isAuthenticated: boolean;
+  masterData: MasterData;
+  usageStats: UsageStats;
   onLogin: () => void;
   onUpgrade: (plan: UserPlan) => void;
   onDowngrade: (plan: UserPlan) => void;
@@ -15,56 +16,29 @@ interface SalonPageProps {
 }
 
 const SalonPage: React.FC<SalonPageProps> = ({
+  payload,
+  isAuthenticated,
+  masterData,
+  usageStats,
   onLogin,
   onUpgrade,
   onDowngrade,
   onStartReading,
   isLoggingIn,
 }) => {
-  const { payload, plan: currentPlan, isAuthenticated, clientId } = useAuth();
-  const { data: masterData, isLoading: masterLoading } = useMaster();
-  const { data: usageStats, isLoading: usageLoading } = useUsage(clientId!);
-
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSpread, setSelectedSpread] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
   const [aiMode, setAiMode] = useState<string>("ai-auto");
   
   const user = payload?.user || null;
+  const currentPlan = payload?.planCode || "GUEST";
 
-  console.log('[SalonPage] Loading state:', {
-    masterLoading,
-    usageLoading,
-    hasMasterData: !!masterData,
-    hasUsageStats: !!usageStats,
-    clientId,
-    currentPlan,
-  });
-
-  if (masterLoading || usageLoading || !masterData || !usageStats) {
-    const reasons = [];
-    if (masterLoading) reasons.push('マスターデータ読み込み中');
-    if (usageLoading) reasons.push('利用状況読み込み中');
-    if (!masterData) reasons.push('マスターデータなし');
-    if (!usageStats) reasons.push('利用状況データなし');
-    
-    return (
-      <div className="main-container">
-        <div className="text-center py-20">
-          <div>読み込み中...</div>
-          <div className="text-xs text-gray-500 mt-2">
-            {reasons.join(' / ')}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const currentPlanData = masterData.plans?.find(
+  const currentPlanData = masterData!.plans?.find(
     (p: any) => p.code === currentPlan
   );
 
-  const availableCategories = masterData.categories || [];
+  const availableCategories = masterData!.categories || [];
   const categoriesToShow =
     currentPlan === "GUEST" || currentPlan === "FREE"
       ? availableCategories.slice(0, 3)
@@ -72,14 +46,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const checkNo =
     currentPlanData!.code === "GUEST" ? 2 : currentPlanData!.no + 1;
-  const availablePlansFromPlanNo = masterData.plans.filter(
+  const availablePlansFromPlanNo = masterData!.plans.filter(
     (p: Plan) => p.no <= (checkNo || 0)
   );
   
   const getAvailableSpreads = () => {
-    if (!masterData.spreads) return [];
+    if (!masterData!.spreads) return [];
 
-    return masterData.spreads.filter((spread: Spread) => {
+    return masterData!.spreads.filter((spread: Spread) => {
       if (
         !availablePlansFromPlanNo.map((p: Plan) => p.code).includes(spread.plan!.code)
       ) {
@@ -102,12 +76,12 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   // コンポーネント内
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-  const freePlan = masterData.plans?.find((p: { code: string; }) => p.code === "FREE");
-  const standardPlan = masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD");
-  const premiumPlan = masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM");
+  const freePlan = masterData!.plans?.find((p: { code: string; }) => p.code === "FREE");
+  const standardPlan = masterData!.plans?.find((p: { code: string; }) => p.code === "STANDARD");
+  const premiumPlan = masterData!.plans?.find((p: { code: string; }) => p.code === "PREMIUM");
 
   // 上位プラン取得
-  const upgradablePlans = masterData.plans
+  const upgradablePlans = masterData!.plans
     ?.filter((p: Plan) => p.no > (currentPlanData?.no || 0))
     .sort((a: { no: number; }, b: { no: number; }) => a.no - b.no);
 
@@ -369,55 +343,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       </div>
 
-      {/* {isGuest && (
-        <div className="mt-6 space-y-3">
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-center">
-              <div className="font-bold text-blue-800 mb-2">
-                📝 無料登録で回数3倍
-              </div>
-              <div className="text-sm text-blue-600 mb-3">
-                ✓ 1日3回まで占える<br/>
-                ✓ 履歴保存で振り返り可能
-              </div>
-              <button
-                onClick={onLogin}
-                disabled={isLoggingIn}
-                className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
-              >
-                {isLoggingIn ? "認証中..." : "無料でユーザー登録"}
-              </button>
-            </div>
-          </div>
-
-          <div className="text-center text-sm text-gray-600 mb-2">
-            💡 または、一気に本格プランへ
-          </div>
-          
-          <button
-            onClick={() => handleUpgradeClick("STANDARD")}
-            disabled={isLoggingIn}
-            className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md disabled:opacity-50"
-          >
-            💎 スタンダード（¥{masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD")?.price || 480}/月）
-            <div className="text-xs opacity-90">広告なし・無制限</div>
-          </button>
-          
-          <button
-            onClick={() => handleUpgradeClick("PREMIUM")}
-            disabled={isLoggingIn}
-            className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md disabled:opacity-50"
-          >
-            👑 プレミアム（¥{masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}/月）
-            <div className="text-xs opacity-90">AI対話＋全機能</div>
-          </button>
-
-          <div className="text-xs text-center text-gray-500 mt-2">
-            ※有料プランは自動的にユーザー登録されます
-          </div>
-        </div>
-      )} */}
-
       <div className="mt-6 space-y-3">
         <div className="text-center text-sm text-gray-600 mb-3">
           💡 もっと詳しく占うなら
@@ -511,7 +436,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                             disabled={isLoggingIn}
                             className={`w-full mt-2 py-2 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 ${colors.button}`}
                           >
-                            {isLoggingIn ? "処理中..." : `${plan.name}を始める`}
+                            {isLoggingIn ? "処理中..." : `${plan.name}を始める  (¥${plan.price.toLocaleString()}/月)`}
                           </button>
                         </div>
                       )}
@@ -521,50 +446,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
               </div>
             )}
         </div>
-        
-        {/* <button
-          onClick={() => handleUpgradeClick("STANDARD")}
-          className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
-        >
-          💎 スタンダード（¥{masterData.plans?.find((p: { code: string; }) => p.code === "STANDARD")?.price || 480}/月）
-          <div className="text-xs opacity-90">広告なし・無制限</div>
-        </button>
-        
-        <button
-          onClick={() => handleUpgradeClick("PREMIUM")}
-          className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-colors shadow-md"
-        >
-          👑 プレミアム（¥{masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}/月）
-          <div className="text-xs opacity-90">AI対話＋全機能</div>
-        </button> */}
       </div>
-
-      {/* {(isStandard || isPremium) && (
-        <div className="mt-6 space-y-2">
-          {isStandard && (
-            <button
-              onClick={() => onUpgrade("PREMIUM")}
-              className="w-full py-2 px-4 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition-colors"
-            >
-              👑 プレミアムプラン (¥
-              {masterData.plans?.find((p: { code: string; }) => p.code === "PREMIUM")?.price || 980}
-              /月)
-            </button>
-          )}
-          
-          <button
-            onClick={() => {
-              const targetPlan = isPremium ? "STANDARD" : "FREE";
-              if (confirm(`本当に ${targetPlan === "STANDARD" ? "スタンダード" : "フリー"} プランにダウングレードしますか？`)) {
-                onDowngrade(targetPlan as UserPlan);
-              }
-            }}
-            className="w-full py-2 px-4 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-          >
-            {isPremium ? "💎 スタンダードプランにダウングレード" : "フリープランにダウングレード"}
-          </button>
-        </div>
-      )} */}
 
       <div className="fixed-action-button">
         <button

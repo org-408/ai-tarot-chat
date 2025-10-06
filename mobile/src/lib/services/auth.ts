@@ -71,6 +71,7 @@ export class AuthService {
         await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
       }
 
+      console.log("デバイス登録完了:", payload);
       return payload;
     } catch (error) {
       console.error("デバイス登録エラー:", error);
@@ -152,6 +153,7 @@ export class AuthService {
       await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
       await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
 
+      console.log("🔐 Web認証完了:", payload);
       return payload;
     } catch (error) {
       console.error("❌ Web認証エラー:", error);
@@ -189,7 +191,8 @@ export class AuthService {
       if (payload.user?.id) {
         await storeRepository.set('userId', payload.user.id);
       }
-      
+
+      console.log('[AuthService] Token refresh successful:', payload);
       return payload;
     } catch (error) {
       console.error('[AuthService] Token refresh failed:', error);

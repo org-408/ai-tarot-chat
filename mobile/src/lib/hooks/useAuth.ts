@@ -26,6 +26,7 @@ export function useAuth() {
     clientId: payload?.clientId || null,
     userId: payload?.user?.id || null,
     email: payload?.user?.email || null,
+    image: payload?.user?.image || null,
     init,
     login,
     logout,

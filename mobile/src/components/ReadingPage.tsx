@@ -1,9 +1,10 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { TarotCard } from "../../../shared/lib/types";
-import { useMaster } from "../lib/hooks/useMaster";
+import type { JWTPayload, MasterData, TarotCard } from "../../../shared/lib/types";
 
 interface ReadingPageProps {
+  payload: JWTPayload;
+  masterData: MasterData; // マスターデータを親から受け取る
   spreadId: string;
   categoryId: string;
   onBack: () => void;
@@ -115,12 +116,11 @@ const TEMP_CARDS: TarotCard[] = [
 ];
 
 const ReadingPage: React.FC<ReadingPageProps> = ({
+  masterData,
   spreadId,
   categoryId,
   onBack,
 }) => {
-  const { data: masterData, isLoading: masterLoading } = useMaster();
-
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -225,15 +225,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     });
     // eslint-disable-next-line
   }, [drawnCards]);
-
-  // ローディング中
-  if (masterLoading || !masterData) {
-    return (
-      <div className="main-container">
-        <div className="text-center py-20">読み込み中...</div>
-      </div>
-    );
-  }
 
   const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
   const selectedCategory = masterData.categories?.find(
