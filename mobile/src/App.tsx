@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
@@ -13,10 +13,10 @@ import { useMaster } from "./lib/hooks/useMaster";
 import { useUsage } from "./lib/hooks/useUsage";
 
 function App() {
+  const [isAppInitialized, setIsAppInitialized] = useState(false);
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
 
   // 占いセッション用
   const [readingData, setReadingData] = useState<{
@@ -49,20 +49,33 @@ function App() {
     clearError
   } = useLifecycle();
 
+  useEffect(() => {
+    console.log(`[App] isInitialized changed: ${isInitialized}`);
+  }, [isInitialized]);
+
   // 🔥 マスターデータ取得
   const { data: masterData } = useMaster(isInitialized);
 
   // 🔥 利用状況取得
-  const { data: usageStats,  } = useUsage(isInitialized, clientId);
+  const { data: usageStats } = useUsage(isInitialized, clientId);
 
   // 🔥 初期化処理（アプリ起動時に1回だけ実行）
   useEffect(() => {
+    console.log("[App] 初期化開始");
+    // React.StrictMode 対応のため2回目以降のinitを防止
+    if (isInitialized) {
+      console.log("[App] すでに初期化中または完了しているためスキップ");
+      return;
+    }
+    setIsAppInitialized(true);
     init().then(() => {
+      console.log("[App] 初期化完了");
       setup();
     });
 
     return () => {
       cleanup();
+      console.log("[App] クリーンアップ完了");
     };
   }, []);
 
@@ -100,6 +113,7 @@ function App() {
   // 🔥 サインイン完了後の自動アップグレード処理他
   useEffect(() => {
     if (isAuthenticated && isInitialized) {
+      console.log(`[App] サインイン検出 - 現在のプラン: ${plan}, ユーザーID: ${userId}`);
       const pendingUpgrade = sessionStorage.getItem('pendingUpgrade');
       if (pendingUpgrade && pendingUpgrade !== plan) {
         console.log(`[App] 保留中のアップグレードを実行: ${pendingUpgrade}`);

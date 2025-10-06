@@ -38,10 +38,8 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
     
     try {
       // 1. 認証初期化
+      console.log('[Lifecycle] Initializing AuthStore...');
       await useAuthStore.getState().init();
-      
-      // 2. 日次制限初期化
-      await useDailyLimitStore.getState().init();
       
       set({ 
         isInitialized: true,

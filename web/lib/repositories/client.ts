@@ -128,7 +128,7 @@ export class ClientRepository extends BaseRepository {
     return await this.db.device.update({
       where: { id },
       data,
-      include: { client: { include: { plan: true } } },
+      include: { client: { include: { plan: true, user: true } } },
     });
   }
 

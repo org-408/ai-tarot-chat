@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { UsageStats } from '../../../../shared/lib/types';
 import { clientService } from '../services/client';
 import { storeRepository } from '../repositories/store';
+import { getTodayJST, isSameDayJST } from '../utils/date';
 
 interface DailyLimitState {
   isReady: boolean;
@@ -26,7 +27,7 @@ export const useDailyLimitStore = create<DailyLimitState>()(
         console.log('[DailyLimit] Initializing...');
         try {
           const usage = await clientService.getUsageAndReset();
-          const today = new Date().toDateString();
+          const today = getTodayJST();
           
           set({ 
             usage, 
@@ -44,7 +45,7 @@ export const useDailyLimitStore = create<DailyLimitState>()(
         console.log('[DailyLimit] Refreshing usage...');
         try {
           const usage = await clientService.getUsageAndReset();
-          const today = new Date().toDateString();
+          const today = getTodayJST();
           
           set({ 
             usage,
@@ -61,10 +62,10 @@ export const useDailyLimitStore = create<DailyLimitState>()(
         console.log('[DailyLimit] Checking date change...');
         
         const { lastFetchedDate } = get();
-        const today = new Date().toDateString();
+        const today = getTodayJST();
         
         // 日付が変わっていない場合はスキップ
-        if (lastFetchedDate === today) {
+        if (isSameDayJST(lastFetchedDate ? new Date(lastFetchedDate) : undefined)) {
           console.log('[DailyLimit] Same day, skipping reset');
           return false;
         }

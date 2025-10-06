@@ -68,6 +68,7 @@ export class AuthService {
       await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
 
       if (payload.user?.id) {
+        console.log("ユーザーID:", payload.user.id);
         await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
       }
 

@@ -59,9 +59,16 @@ export class AuthService {
         });
       }
       if (!device) throw new Error("Failed to create device");
+      console.log("✅ Device registered/updated:", device);
+
       const client = device.client;
       if (!client || !client.plan)
         throw new Error("Client not found for device");
+
+      console.log("✅ Client for device:", client);
+      
+      const user = client.user;
+      console.log("👤 Associated user:", user);
 
       // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
       const token = await generateJWT<JWTPayload>(
@@ -71,11 +78,11 @@ export class AuthService {
           clientId: client.id,
           planCode: client.plan.code,
           provider: client.provider || undefined,
-          user: client.user ? {
-            id: client.user.id,
-            email: client.user.email || undefined,
-            name: client.user.name || undefined,
-            image: client.user.image || undefined,
+          user: user ? {
+            id: user.id,
+            email: user.email || undefined,
+            name: user.name || undefined,
+            image: user.image || undefined,
           } : undefined,
         },
         JWT_SECRET
