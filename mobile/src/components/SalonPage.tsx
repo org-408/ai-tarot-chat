@@ -354,7 +354,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             {upgradablePlans && upgradablePlans.length > 0 && (
               <div className="mt-6 space-y-3">
                 {/* ゲストの場合のみ無料登録CTA */}
-                {isGuest && freePlan && (
+                {/* {isGuest && freePlan && (
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="text-sm font-bold text-blue-800 mb-1">
                       🔓 無料登録で回数{freePlan.maxReadings}倍
@@ -370,10 +370,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
                       {isLoggingIn ? "認証中..." : "無料でユーザー登録"}
                     </button>
                   </div>
-                )}
+                )} */}
 
                 <div className="text-xs text-center text-gray-500">
-                  💡 {isGuest ? 'または、本格プランで全機能を' : 'さらに上位プランへアップグレード'}
+                  💡 {isGuest ? '無料登録でもっと楽しむ。本格プランもご用意' : 'さらに上位プランへアップグレード'}
                 </div>
 
                 {/* 上位プランをアコーディオン表示 */}
@@ -427,7 +427,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                                 <div>📊 通常占い: {plan.maxReadings === 999 ? '無制限' : `${plan.maxReadings}回/日`}</div>
                               )}
                               {plan.maxCeltics > 0 && (
-                                <div>⭐ ケルト十字: {plan.maxCeltics === 999 ? '無制限' : `${plan.maxCeltics}回/日`}</div>
+                                <div>{isStandard ? `または、` : ''}⭐ ケルト十字: {plan.maxCeltics === 999 ? '無制限' : `${plan.maxCeltics}回/日`}</div>
                               )}
                               {plan.hasPersonal && plan.maxPersonal > 0 && (
                                 <div>🤖 パーソナル占い: {plan.maxPersonal === 999 ? '無制限' : `${plan.maxPersonal}回/日`}</div>
@@ -437,11 +437,11 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
                           {/* アップグレードボタン */}
                           <button
-                            onClick={() => handleUpgradeClick(plan.code as UserPlan)}
+                            onClick={() => {if (isGuest) { onLogin() } else { handleUpgradeClick(plan.code as UserPlan) } }}
                             disabled={isLoggingIn}
                             className={`w-full mt-2 py-2 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 ${colors.button}`}
                           >
-                            {isLoggingIn ? "処理中..." : `${plan.name}を始める  (¥${plan.price.toLocaleString()}/月)`}
+                            {isLoggingIn ? "処理中..." : isGuest ? `無料でユーザー登録` : `${plan.name}を始める  (¥${plan.price.toLocaleString()}/月)`}
                           </button>
                         </div>
                       )}

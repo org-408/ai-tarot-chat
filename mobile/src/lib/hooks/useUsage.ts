@@ -7,7 +7,7 @@ import type { UsageStats } from '../../../../shared/lib/types';
  * - 1分キャッシュ
  * - ユーザーIDがない場合は実行しない
  */
-export function useUsage(isInitialized: boolean, clientId: string | null) {
+export function useUsage(clientId: string | null) {
   return useQuery<UsageStats>({
     queryKey: ['usage', clientId],
     queryFn: async () => {
@@ -16,7 +16,7 @@ export function useUsage(isInitialized: boolean, clientId: string | null) {
       console.log('[useUsage] Usage stats fetched:', data);
       return data;
     },
-    enabled: isInitialized && !!clientId, // clientIdがある場合のみ実行
+    enabled: !!clientId, // clientIdがある場合のみ実行
     staleTime: 60_000, // 1分
     gcTime: 5 * 60_000, // 5分
   });

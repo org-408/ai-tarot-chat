@@ -49,15 +49,11 @@ function App() {
     clearError
   } = useLifecycle();
 
-  useEffect(() => {
-    console.log(`[App] isInitialized changed: ${isInitialized}`);
-  }, [isInitialized]);
-
   // 🔥 マスターデータ取得
   const { data: masterData } = useMaster(isInitialized);
 
   // 🔥 利用状況取得
-  const { data: usageStats } = useUsage(isInitialized, clientId);
+  const { data: usageStats } = useUsage(clientId);
 
   // 🔥 初期化処理（アプリ起動時に1回だけ実行）
   useEffect(() => {
@@ -72,7 +68,7 @@ function App() {
       console.log("[App] 初期化完了");
       setup();
       // 初期化時はマスターデータを必ず取得する
-      queryClient.invalidateQueries({ queryKey: ['masters'] });
+      queryClient.invalidateQueries({ queryKey: ['masters', true] });
       console.log("[App] マスターデータ取得要求送信");
       // 利用状況も取得する
       queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
