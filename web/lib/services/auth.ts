@@ -63,12 +63,20 @@ export class AuthService {
       if (!client || !client.plan)
         throw new Error("Client not found for device");
 
+      // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
       const token = await generateJWT<JWTPayload>(
         {
           t: "app",
           deviceId: device.deviceId,
           clientId: client.id,
           planCode: client.plan.code,
+          provider: client.provider || undefined,
+          user: client.user ? {
+            id: client.user.id,
+            email: client.user.email || undefined,
+            name: client.user.name || undefined,
+            image: client.user.image || undefined,
+          } : undefined,
         },
         JWT_SECRET
       );
@@ -140,6 +148,13 @@ export class AuthService {
       const client = device.client;
       if (!client.plan) throw new Error("Failed to get updated client");
 
+      // プロバイダーの設定
+      const provider = ticketData.provider;
+      if (!provider) {
+        // NOTE: OAuth認証以外を追加した場合には、ここを修正
+        throw new Error("Provider not found");
+      }
+
       // プランコードの変更（GUEST → FREE など）
       console.log(`🔄 プランコード確認 (current: ${client.plan.code}),`, client.plan.no);
       const planCode = client.plan.code === "GUEST" ? "FREE" : client.plan.code;
@@ -161,7 +176,8 @@ export class AuthService {
         finalClient = await this.mergeClients(
           device.clientId,
           existingClient.id,
-          planCode
+          provider, // provider は必ず更新
+          planCode,
         );
         console.log(
           `✅ 既存Clientに統合 (user: ${user}, client: ${finalClient})`
@@ -173,6 +189,7 @@ export class AuthService {
           email: user.email,
           name: user.name,
           image: user.image,
+          provider, // provider を設定
           plan: { connect: { code: planCode } },
           isRegistered: true,
           lastLoginAt: new Date(),
@@ -193,7 +210,7 @@ export class AuthService {
           deviceId: device.deviceId,
           clientId: finalClient.id,
           planCode: finalClient.plan.code,
-          provider: ticketData.provider,
+          provider,
           user: {
             id: user.id,
             email: user.email!,
@@ -213,7 +230,8 @@ export class AuthService {
   private async mergeClients(
     fromClientId: string,
     toClientId: string,
-    newPlanCode: string
+    provider: string,
+    newPlanCode: string,
   ): Promise<Client> {
     console.log(`🔀 Merging clients: from ${fromClientId} to ${toClientId}`);
     if (fromClientId === toClientId) {
@@ -369,6 +387,7 @@ export class AuthService {
       name: toClient.name || fromClient.name,
       email: toClient.email || fromClient.email,
       image: toClient.image || fromClient.image,
+      provider,
       plan: { connect: { id: higherPlan.id } },
       dailyReadingsCount: Math.min(sumReadingsCount, higherPlan.maxReadings),
       dailyCelticsCount: Math.min(sumCelticsCount, higherPlan.maxCeltics),
@@ -378,7 +397,7 @@ export class AuthService {
       lastPersonalReadingDate,
       devices: { connect: devices.map((d) => ({ id: d.id })) },
       isRegistered,
-      lastLoginAt,
+      lastLoginAt: new Date(), // ログイン直後なので更新
       favoriteSpreads: { connect: favoriteSpreads.map((s) => ({ id: s.id })) },
       readings: { connect: readings.map((r) => ({ id: r.id })) },
       planChangeHistories: {

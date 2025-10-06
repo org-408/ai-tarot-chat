@@ -109,7 +109,7 @@ export class ClientRepository extends BaseRepository {
   async getDeviceByDeviceId(deviceId: string): Promise<Device | null> {
     return await this.db.device.findUnique({
       where: { deviceId },
-      include: { client: { include: { plan: true } } },
+      include: { client: { include: { plan: true, user: true } } },
     });
   }
 

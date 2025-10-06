@@ -117,6 +117,7 @@ model Client {
 
   // ユーザー状態
   isRegistered Boolean  @default(false)
+  provider     String?  // "google", "apple" 何でサインインしたか
   lastLoginAt  DateTime?
 
   // お気に入りスプレッド

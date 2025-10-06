@@ -74,7 +74,7 @@ export type Device = {
 export type Client = {
   id: string;
   userId?: string | null;
-  user?: User;
+  user?: User | null;
   name?: string | null;
   email?: string | null;
   image?: string | null;
@@ -101,6 +101,7 @@ export type Client = {
 
   // ユーザー状態
   isRegistered: boolean;
+  provider?: string | null; // "google", "apple" 何でサインインしたか
   lastLoginAt?: Date | null;
 
   // お気に入りスプレッド

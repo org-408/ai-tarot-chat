@@ -463,7 +463,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         
         {isFree && (
           <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
-            今日あと{usageStats.remainingReadings}回
+            今日はあと{usageStats.remainingReadings}回
           </div>
         )}
       </div>
