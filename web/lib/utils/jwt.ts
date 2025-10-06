@@ -13,11 +13,13 @@ export async function generateJWT<T>(
   const jwtSecret = secret ?? JWT_SECRET;
   console.log("🔑 generateJWT secret", jwtSecret);
   console.log("🔑 generateJWT ttl", ttl);
-  return await new SignJWT(payload as unknown as Record<string, unknown>)
+  const result =  await new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
     .setExpirationTime(ttl)
     .sign(new TextEncoder().encode(jwtSecret));
+  console.log("🔑 generateJWT token", result);
+  return result;
 }
 
 export async function decodeJWT<T>(
@@ -42,5 +44,6 @@ export async function decodeJWT<T>(
     console.log("❌ Invalid token type:", payload.t);
     throw new Error("Invalid token type");
   }
+  console.log("🔑 decodeJWT payload", payload);
   return payload as T & { exp?: number};
 }
