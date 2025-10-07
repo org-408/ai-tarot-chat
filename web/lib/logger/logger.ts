@@ -2,12 +2,47 @@ import winston from 'winston';
 import Transport from 'winston-transport';
 import { logService } from '../services/log';
 
-// Edge 環境でも動作するパス結合関数
-function joinPath(...parts: string[]): string {
-  return parts.join('/').replace(/\/+/g, '/');
+// Edge 環境検出
+const isEdgeRuntime = typeof process === 'undefined' || process.env?.NEXT_RUNTIME === 'edge';
+
+// Edge ランタイム用のシンプルなロガー
+class EdgeLogger {
+  private level: string;
+  private service: string;
+
+  constructor(options: { level?: string; defaultMeta?: { service: string } }) {
+    this.level = options.level || 'info';
+    this.service = options.defaultMeta?.service || 'unknown';
+  }
+
+  log(level: string, message: string, meta: any = {}) {
+    // Edge環境ではコンソール出力のみ
+    console.log(`[${level.toUpperCase()}] ${message}`, { ...meta, service: this.service });
+    
+    // DB記録が必要な場合は fetch API を使った実装も可能
+    // この例では簡易的にコンソール出力のみ
+  }
+
+  info(message: string, meta: any = {}) {
+    this.log('info', message, meta);
+  }
+
+  error(message: string, meta: any = {}) {
+    this.log('error', message, meta);
+  }
+
+  warn(message: string, meta: any = {}) {
+    this.log('warn', message, meta);
+  }
+
+  debug(message: string, meta: any = {}) {
+    if (this.level === 'debug') {
+      this.log('debug', message, meta);
+    }
+  }
 }
 
-// カスタムトランスポート（Prisma用）
+// PrismaTransport (Node.js環境用)
 class PrismaTransport extends Transport {
   constructor(opts?: Transport.TransportStreamOptions) {
     super(opts);
@@ -15,7 +50,18 @@ class PrismaTransport extends Transport {
 
   async log(info: winston.LogEntry, callback: (error?: Error | null, success?: boolean) => void) {
     try {
-      const { level, message, device, ...metadata } = info;
+      const { level, message, device, timestamp, ...metadata } = info;
+      
+      // timestampの処理
+      let logTimestamp: Date;
+      if (timestamp) {
+        logTimestamp = typeof timestamp === 'string'
+          ? new Date(timestamp)
+          : (timestamp instanceof Date ? timestamp : new Date());
+      } else {
+        logTimestamp = new Date();
+      }
+      
       // Prismaを使ってログを保存
       await logService.createLog({
         level: level as string,
@@ -23,9 +69,8 @@ class PrismaTransport extends Transport {
         metadata: metadata || {},
         clientId: metadata.clientId || null,
         path: metadata.path || null,
-        timestamp: new Date(), // 現在日時を設定
-        device: device || 'web_server', // デフォルトは'web_server'
-
+        timestamp: logTimestamp,
+        device: device || 'web_server',
       });
       callback(null, true);
     } catch (error) {
@@ -35,76 +80,79 @@ class PrismaTransport extends Transport {
   }
 }
 
-const isEdge = typeof process === 'undefined' || process.env?.NEXT_RUNTIME === 'edge';
+// 環境に応じて適切なロガーを作成
+let logger: winston.Logger | EdgeLogger;
 
-// 環境に応じて適切な値を返す関数
-function getBaseDir(): string {
-  if (isEdge) {
-    return '/logs'; // Edge環境ではこの値は実際には使われない
-  }
+if (isEdgeRuntime) {
+  // Edge Runtime用のシンプルなロガー
+  logger = new EdgeLogger({
+    level: 'info', // Edge環境ではデフォルトでinfoレベル
+    defaultMeta: { service: 'ai-tarot-chat' }
+  });
+} else {
+  // Node.js環境用のWinstonロガー
+  const isDev = process.env.NODE_ENV !== 'production';
+  const logDir = `${process.cwd()}/logs`;
   
-  return process.cwd();
+  logger = winston.createLogger({
+    level: isDev ? 'debug' : 'info',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+    ),
+    defaultMeta: { service: 'ai-tarot-chat' },
+    transports: [
+      // コンソール出力
+      ...(isDev || process.env.DISABLE_CONSOLE_LOG !== 'true'
+        ? [new winston.transports.Console({
+            format: winston.format.combine(
+              winston.format.colorize(),
+              winston.format.printf(({ timestamp, level, message, ...meta }) => 
+                `${timestamp} [${level}]: ${message} ${Object.keys(meta).length && meta.service ? JSON.stringify(meta) : ''}`
+              )
+            )
+          })]
+        : []),
+      
+      // ファイル出力
+      ...(process.env.ENABLE_FILE_LOG === 'true'
+        ? [
+            new winston.transports.File({ 
+              filename: `${logDir}/error.log`,
+              level: 'error',
+              maxsize: 10485760,
+              maxFiles: 10,
+            }),
+            new winston.transports.File({ 
+              filename: `${logDir}/combined.log`,
+              maxsize: 10485760,
+              maxFiles: 10,
+            })
+          ] 
+        : []),
+      
+      // Prisma/DB出力
+      ...(process.env.ENABLE_DB_LOG === 'true'
+        ? [new PrismaTransport({ level: 'info' })]
+        : [])
+    ],
+  });
 }
 
-const logDir = joinPath(getBaseDir(), 'logs');
-
-// 環境設定
-const isDev = typeof process !== 'undefined' && process.env
-  ? process.env.NODE_ENV !== 'production' 
-  : false;
-
-// ロガーの設定
-const logger = winston.createLogger({
-  level: isDev ? 'debug' : 'info',
-  format: winston.format.combine(
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'ai-tarot-chat' },
-  transports: [
-    // 1. コンソール出力 (開発環境では常に有効、本番環境ではDISABLE_CONSOLE_LOGが設定されていなければ有効)
-    ...(isDev || (typeof process !== 'undefined' && process.env && process.env.DISABLE_CONSOLE_LOG !== 'true')
-      ? [new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.printf(({ timestamp, level, message, ...meta }) => 
-              `${timestamp} [${level}]: ${message} ${Object.keys(meta).length && meta.service ? JSON.stringify(meta) : ''}`
-            )
-          )
-        })]
-      : []),
-    
-    // 2. ファイル出力 (ENABLE_FILE_LOG=trueなら有効かつNode.js環境の場合のみ)
-    ...((typeof process !== 'undefined' && process.env && process.env.ENABLE_FILE_LOG === 'true' && typeof window === 'undefined')
-      ? [
-          new winston.transports.File({ 
-            filename: joinPath(logDir, 'error.log'),
-            level: 'error',
-            maxsize: 10485760, // 10MB
-            maxFiles: 10,
-          }),
-          new winston.transports.File({ 
-            filename: joinPath(logDir, 'combined.log'),
-            maxsize: 10485760, // 10MB
-            maxFiles: 10,
-          })
-        ] 
-      : []),
-    
-    // 3. Prisma/DB出力 (ENABLE_DB_LOG=trueなら有効)
-    ...((typeof process !== 'undefined' && process.env && process.env.ENABLE_DB_LOG === 'true')
-      ? [new PrismaTransport({ level: 'info' })] // infoレベル以上のみDBに保存
-      : [])
-  ],
-});
-
-// ショートハンドメソッド（コンテキスト情報付きログ）
+// 共通インターフェース
 export const logWithContext = (
   level: 'info' | 'error' | 'warn' | 'debug',
   message: string, 
   context?: { clientId?: string; path?: string; [key: string]: unknown },
   device: string = 'web_server'
 ) => {
-  logger.log(level, message, { ...context, device });
+  if (isEdgeRuntime) {
+    // Edge環境
+    (logger as EdgeLogger).log(level, message, { ...context, device });
+  } else {
+    // Node.js環境
+    (logger as winston.Logger).log(level, message, { ...context, device });
+  }
 };
 
 export default logger;

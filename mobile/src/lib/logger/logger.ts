@@ -9,6 +9,9 @@ export const logWithContext = (
   // コンソールにも出力（開発時に便利）
   console.log(`[${level.toUpperCase()}] ${message}`, context);
 
+  // タイムスタンプ追加
+  context = { ...context, timestamp: new Date() };
+
   // サーバーに送信（認証なし）
   try {
     apiClient.postWithoutAuth('/api/logger', { 
