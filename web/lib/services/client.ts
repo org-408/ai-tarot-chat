@@ -11,6 +11,8 @@ export class ClientService {
     clientId: string,
     resetType: string = "USAGE_CHECK"
   ): Promise<UsageStats> {
+    console.log(`Checking and resetting usage for client: ${clientId} with resetType: ${resetType}`);
+    // トランザクションで処理
     return await prisma.$transaction(async (tx) => {
       const clientRepo = clientRepository.withTransaction(tx);
 
