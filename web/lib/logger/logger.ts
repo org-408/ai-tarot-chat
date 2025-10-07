@@ -15,7 +15,7 @@ class PrismaTransport extends Transport {
 
   async log(info: winston.LogEntry, callback: (error?: Error | null, success?: boolean) => void) {
     try {
-      const { level, message, timestamp, device, ...metadata } = info;
+      const { level, message, device, ...metadata } = info;
       // Prismaを使ってログを保存
       await logService.createLog({
         level: level as string,
@@ -23,8 +23,8 @@ class PrismaTransport extends Transport {
         metadata: metadata || {},
         clientId: metadata.clientId || null,
         path: metadata.path || null,
-        timestamp: timestamp || new Date(), // 現在日時を設定
-        device: device || 'web', // デフォルトは'web'
+        timestamp: new Date(), // 現在日時を設定
+        device: device || 'web_server', // デフォルトは'web_server'
 
       });
       callback(null, true);
@@ -57,7 +57,6 @@ const isDev = typeof process !== 'undefined' && process.env
 const logger = winston.createLogger({
   level: isDev ? 'debug' : 'info',
   format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.json()
   ),
   defaultMeta: { service: 'ai-tarot-chat' },
