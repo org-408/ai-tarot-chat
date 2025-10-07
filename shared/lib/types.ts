@@ -526,3 +526,15 @@ export interface MasterData {
   decks?: TarotDeck[];
   tarotists?: Tarotist[];
 }
+
+// ログモデル
+export type Log = {
+  id: string;
+  level: string; // "info", "error", "warn", "debug"
+  message: string;
+  metadata?: Object | null; // JSON文字列化されたメタ情報
+  clientId?: string | null;
+  client?: Client | null;
+  path: string; // 発生箇所のパス
+  createdAt: Date;
+};

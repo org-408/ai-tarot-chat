@@ -2,6 +2,7 @@ import type { Spread, TarotCard, UsageStats } from "@/../shared/lib/types";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { isSameDayJST } from "../utils/date";
+import { logWithContext } from "@/lib/logger/logger";
 
 export class ClientService {
   /**
@@ -11,30 +12,24 @@ export class ClientService {
     clientId: string,
     resetType: string = "USAGE_CHECK"
   ): Promise<UsageStats> {
-    console.log(`Checking and resetting usage for client: ${clientId} with resetType: ${resetType}`);
+    logWithContext('info', "Checking and resetting usage", { clientId, resetType });
     // トランザクションで処理
     return await prisma.$transaction(async (tx) => {
       const clientRepo = clientRepository.withTransaction(tx);
 
       let client = await clientRepo.getClientById(clientId);
       if (!client) throw new Error("Client not found");
-      console.log("Fetched client:", client);
+      logWithContext('info', "Fetched client", { client, clientId });
 
       const plan = client.plan;
       if (!plan) throw new Error("Plan not found");
       const planCode = plan.code;
-      console.log("Client plan:", plan);
+      logWithContext('info', "Client plan", { plan });
 
       // 日付確認
-      console.log("Client last reading date:", client.lastReadingDate);
-      console.log(
-        "Client last celtic reading date:",
-        client.lastCelticReadingDate
-      );
-      console.log(
-        "Client last personal reading date:",
-        client.lastPersonalReadingDate
-      );
+      logWithContext('info', "Client last reading date", { lastReadingDate: client.lastReadingDate });
+      logWithContext('info', "Client last celtic reading date", { lastCelticReadingDate: client.lastCelticReadingDate });
+      logWithContext('info', "Client last personal reading date", { lastPersonalReadingDate: client.lastPersonalReadingDate });
       const needsReset =
         [
           client.lastReadingDate,
@@ -49,19 +44,14 @@ export class ClientService {
 
       // 日付が変わっていればリセット
       if (needsReset) {
-        console.log("Resetting daily counts for client:", client.id);
+        logWithContext('info', "Resetting daily counts for client", { clientId: client.id });
         // beforeリセット用に保存
         const beforeReadingsCount = client.dailyReadingsCount;
         const beforeCelticsCount = client.dailyCelticsCount;
         const beforePersonalCount = client.dailyPersonalCount;
-        console.log(
-          "Before counts - Readings:",
-          beforeReadingsCount,
-          "Celtics:",
-          beforeCelticsCount,
-          "Personal:",
-          beforePersonalCount
-        );
+        logWithContext('info', "Before counts - Readings", { beforeReadingsCount });
+        logWithContext('info', "Before counts - Celtics", { beforeCelticsCount });
+        logWithContext('info', "Before counts - Personal", { beforePersonalCount });
 
         // clientのカウントリセット
         client = await clientRepo.resetDailyCounts(client.id);
@@ -77,12 +67,12 @@ export class ClientService {
           afterPersonalCount: 0,
           afterReadingsCount: 0,
         });
-        console.log("Daily counts reset completed for client:", client.id);
+        logWithContext('info', "Daily counts reset completed for client", { clientId: client.id });
       }
 
-      console.log("dailyReadingsCount:", client.dailyReadingsCount);
-      console.log("dailyCelticsCount:", client.dailyCelticsCount);
-      console.log("dailyPersonalCount:", client.dailyPersonalCount);
+      logWithContext('info', "Daily readings count", { dailyReadingsCount: client.dailyReadingsCount });
+      logWithContext('info', "Daily celtics count", { dailyCelticsCount: client.dailyCelticsCount });
+      logWithContext('info', "Daily personal count", { dailyPersonalCount: client.dailyPersonalCount });
 
       // UsageStats組み立て
       return {

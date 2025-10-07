@@ -128,6 +128,7 @@ model Client {
   planChangeHistories PlanChangeHistory[]
   chatMessages ChatMessage[]
   dailyResetHistories DailyResetHistory[]
+  logs Log[]
 
   @@index([email])
   @@index([planId])
@@ -427,4 +428,25 @@ model FavoriteSpread {
   spread    Spread   @relation(fields: [spreadId], references: [id])
   createdAt DateTime @default(now())
   @@unique([clientId, spreadId])
+}
+
+// ==========================================
+// Logging関連モデル
+// ==========================================
+// schema.prisma に追加するモデル
+model Log {
+  id        String   @id @default(cuid())
+  level     String   @default("info")// 'info', 'warn', 'error' など
+  message   String   @default("")    // ログメッセージ
+  metadata  Json?    // 追加情報をJSON形式で保存
+  clientId  String?  // 関連するクライアントID（必要な場合）
+  path      String?  // APIパスなど
+  createdAt DateTime @default(now())
+
+  // 必要に応じてクライアントとのリレーション
+  client    Client?  @relation(fields: [clientId], references: [id])
+
+  @@index([createdAt])
+  @@index([level])
+  @@index([clientId])
 }
