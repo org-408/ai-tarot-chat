@@ -9,6 +9,7 @@ import { authRepository } from "@/lib/repositories/auth";
 import { clientRepository } from "@/lib/repositories/client";
 import { prisma } from "@/lib/repositories/database";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
+import { Prisma } from "@prisma/client";
 import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { logWithContext } from "../logger/logger";
@@ -223,6 +224,7 @@ export class AuthService {
       if (existingClient && existingClient.id !== device.clientId) {
         // 既存Clientがある場合：デバイスをそのClientに統合
         finalClient = await this.mergeClients(
+          tx,
           device.clientId,
           existingClient.id,
           provider, // provider は必ず更新
@@ -288,29 +290,32 @@ export class AuthService {
   // Client統合（ユーザーが複数Clientを持ってしまった場合の救済用）
   // planはより上位のものを適用
   // 利用回数は合算
+  // トランザクションの関係で、tx を受け取る
   private async mergeClients(
+    tx: Prisma.TransactionClient,
     fromClientId: string,
     toClientId: string,
     provider: string,
     newPlanCode: string
   ): Promise<Client> {
     logWithContext("info", "🔀 Merging clients", {
+      tx,
       from: fromClientId,
       to: toClientId,
     });
+    const clientRepo = clientRepository.withTransaction(tx);
+    const planRepo = planRepository.withTransaction(tx);
     if (fromClientId === toClientId) {
       throw new Error("Cannot merge the same client");
     }
 
-    let fromClient = await clientRepository.getClientWithAllRelations(
-      fromClientId
-    );
+    let fromClient = await clientRepo.getClientWithAllRelations(fromClientId);
     if (!fromClient) {
       logWithContext("error", "❌ fromClient not found", { fromClientId });
       throw new Error("fromClient not found");
     }
 
-    let toClient = await clientRepository.getClientWithAllRelations(toClientId);
+    let toClient = await clientRepo.getClientWithAllRelations(toClientId);
     if (!toClient) {
       logWithContext("error", "❌ toClient not found", { toClientId });
       throw new Error("toClient not found");
@@ -351,7 +356,7 @@ export class AuthService {
     });
 
     // plan情報は、より上位のものを適用
-    const newPlan = await planRepository.getPlanByCode(newPlanCode);
+    const newPlan = await planRepo.getPlanByCode(newPlanCode);
     const plans = [fromClient.plan, toClient.plan, newPlan].filter(
       Boolean
     ) as Plan[];
@@ -478,7 +483,7 @@ export class AuthService {
     logWithContext("info", "💬 Merging chatMessages:", { chatMessages });
 
     // fromClientのデバイスをすべてtoClientに移動
-    const updatedClient = (await clientRepository.updateClient(toClient.id, {
+    const updatedClient = (await clientRepo.updateClient(toClient.id, {
       user: { connect: { id: userId } },
       name: toClient.name || fromClient.name,
       email: toClient.email || fromClient.email,

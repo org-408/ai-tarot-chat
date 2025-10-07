@@ -39,6 +39,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model User {
@@ -200,6 +202,7 @@ model TarotCard {
   readings         DrawnCard[]
   
   @@unique([code, language])  // 同じコードでも言語が異なれば複数存在可
+  @@index([deckId])
 }
 
 // カードの意味モデル
@@ -251,6 +254,9 @@ model Spread {
   categories  SpreadToCategory[]
   reading Reading[]
   favoriteSpreads FavoriteSpread[]
+
+  @@index([levelId])
+  @@index([planId])
 }
 
 // スプレッドのセルモデル
@@ -264,6 +270,8 @@ model SpreadCell {
   hOrder    Int?
   spread    Spread?   @relation(fields: [spreadId], references: [id])
   spreadId  String
+
+  @@index([spreadId])
 }
 
 // カテゴリモデル
@@ -288,6 +296,8 @@ model SpreadToCategory {
   category     ReadingCategory @relation(fields: [categoryId], references: [id])
   
   @@unique([spreadId, categoryId])
+  @@index([categoryId])
+  @@index([spreadId])
 }
 
 // ==========================================
@@ -300,7 +310,7 @@ model Plan {
   no          Int       @unique @default(autoincrement())  // 並び順
   code        String    @unique  // "GUEST", "FREE", "STANDARD", "PREMIUM"
   name        String    // "ゲスト", "フリー", "スタンダード", "プレミアム"
-  description String   @db.Text
+  description String    @db.Text
   price       Int       @default(0)  // 月額価格または1回あたりの価格
   isActive    Boolean   @default(true)
   features    String[]  // 含まれる機能の配列
@@ -335,6 +345,10 @@ model PlanChangeHistory {
   reason      String?   // "UPGRADE", "DOWNGRADE", "EXPIRE", "CANCEL"など
   note        String?   @db.Text
   changedAt   DateTime  @default(now())
+
+  @@index([clientId])
+  @@index([fromPlanId])
+  @@index([toPlanId])
 }
 
 // タロット占い師モデル
@@ -371,6 +385,12 @@ model Reading {
 
   // 関連
   chatMessages  ChatMessage[]
+
+  @@index([clientId])
+  @@index([deviceId])
+  @@index([tarotistId])
+  @@index([spreadId])
+  @@index([categoryId])
 }
 
 // リーディングで引いたカードモデル
@@ -385,6 +405,10 @@ model DrawnCard {
   isReversed Boolean
   order     Int      // 引いた順番
   createdAt DateTime @default(now())
+
+  @@index([readingId])
+  @@index([cardId])
+  @@unique([readingId, order]) // 同じリーディング内で同じ順番は不可
 }
 
 // チャットタイプ
@@ -417,6 +441,13 @@ model ChatMessage {
   role       ChatRole   // "user" or "tarotist""
   message    String   @db.Text
   createdAt  DateTime @default(now())
+
+  @@index([clientId])
+  @@index([deviceId])
+  @@index([tarotistId])
+  @@index([readingId])
+  @@index([chatType])
+  @@index([role])
 }
 
 // お気に入りスプレッドモデル
@@ -427,6 +458,7 @@ model FavoriteSpread {
   spreadId  String
   spread    Spread   @relation(fields: [spreadId], references: [id])
   createdAt DateTime @default(now())
+
   @@unique([clientId, spreadId])
 }
 
@@ -442,7 +474,7 @@ model Log {
   clientId  String?  // 関連するクライアントID（必要な場合）
   path      String?  // APIパスなど
   timestamp DateTime // ログの発生日時
-  device    String   @default("web_server") // 'web', 'mobile' などデバイス情報
+  source    String   @default("web_server") // 'web', 'mobile' などデバイス情報
   createdAt DateTime @default(now())
 
   // 必要に応じてクライアントとのリレーション
@@ -451,4 +483,7 @@ model Log {
   @@index([createdAt])
   @@index([level])
   @@index([clientId])
+  @@index([source])
+  @@index([path])
+  @@index([timestamp])
 }

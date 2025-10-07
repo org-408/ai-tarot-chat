@@ -472,43 +472,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
                             ))}
                           </div>
 
-                          {/* 利用制限情報 */}
-                          <div className="pt-2 border-t border-gray-100">
-                            <div className="text-[10px] text-gray-500 space-y-0.5">
-                              {plan.maxReadings > 0 && (
-                                <div>
-                                  📊 通常占い:
-                                  {expandedPlan === "PREMIUM"
-                                    ? "(含むケルト十字)"
-                                    : " "}
-                                  {plan.maxReadings === 999
-                                    ? "無制限"
-                                    : `${plan.maxReadings}回/日`}
-                                </div>
-                              )}
-                              {plan.maxCeltics > 0 &&
-                                expandedPlan !== "PREMIUM" && (
-                                  <div>
-                                    {expandedPlan === "STANDARD"
-                                      ? `または、`
-                                      : ""}
-                                    ⭐ ケルト十字:{" "}
-                                    {plan.maxCeltics === 999
-                                      ? "無制限"
-                                      : `${plan.maxCeltics}回/日`}
-                                  </div>
-                                )}
-                              {plan.hasPersonal && plan.maxPersonal > 0 && (
-                                <div>
-                                  🤖 パーソナル占い:{" "}
-                                  {plan.maxPersonal === 999
-                                    ? "無制限"
-                                    : `${plan.maxPersonal}回/日`}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
                           {/* アップグレードボタン */}
                           <button
                             onClick={() => {

@@ -4,7 +4,7 @@ export const logWithContext = (
   level: "info" | "error" | "warn" | "debug",
   message: string,
   context?: { clientId?: string; path?: string; [key: string]: unknown },
-  device: string = "mobile"
+  source: string = "mobile"
 ) => {
   // コンソールにも出力（開発時に便利）
   console.log(`[${level.toUpperCase()}] ${message}`, context);
@@ -19,7 +19,7 @@ export const logWithContext = (
         level,
         message,
         context,
-        device,
+        source,
       })
       .catch((e) => console.error("ログ送信エラー:", e));
   } catch (e) {
