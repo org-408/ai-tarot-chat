@@ -28,8 +28,8 @@ interface LifecycleState {
 import type { PluginListenerHandle } from "@capacitor/core";
 
 let appStateListener: PluginListenerHandle | null = null;
-let resumeListener: PluginListenerHandle | null = null;
-let visibilityHandler: (() => void) | null = null;
+// let resumeListener: PluginListenerHandle | null = null;
+// let visibilityHandler: (() => void) | null = null;
 
 export const useLifecycleStore = create<LifecycleState>((set, get) => ({
   isInitialized: false,
@@ -109,22 +109,22 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
       appStateListener = listener;
     });
 
-    // 2. resume
-    CapacitorApp.addListener("resume", async () => {
-      await get().onResume();
-    }).then((listener) => {
-      resumeListener = listener;
-    });
+    // // 2. resume
+    // CapacitorApp.addListener("resume", async () => {
+    //   await get().onResume();
+    // }).then((listener) => {
+    //   resumeListener = listener;
+    // });
 
-    // 3. visibilitychange
-    visibilityHandler = async () => {
-      if (document.visibilityState === "visible") {
-        await get().onResume();
-      } else {
-        await get().onPause();
-      }
-    };
-    document.addEventListener("visibilitychange", visibilityHandler);
+    // // 3. visibilitychange
+    // visibilityHandler = async () => {
+    //   if (document.visibilityState === "visible") {
+    //     await get().onResume();
+    //   } else {
+    //     await get().onPause();
+    //   }
+    // };
+    // document.addEventListener("visibilitychange", visibilityHandler);
   },
 
   cleanup: () => {
@@ -135,19 +135,28 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
       appStateListener = null;
     }
 
-    if (resumeListener) {
-      resumeListener.remove();
-      resumeListener = null;
-    }
+    // if (resumeListener) {
+    //   resumeListener.remove();
+    //   resumeListener = null;
+    // }
 
-    if (visibilityHandler) {
-      document.removeEventListener("visibilitychange", visibilityHandler);
-      visibilityHandler = null;
-    }
+    // if (visibilityHandler) {
+    //   document.removeEventListener("visibilitychange", visibilityHandler);
+    //   visibilityHandler = null;
+    // }
   },
 
   onResume: async () => {
     logWithContext("info", "[Lifecycle] App resumed");
+    if (get().isInitLocked) {
+      logWithContext("info", "[Lifecycle] Init in progress, skipping onResume");
+      return;
+    }
+    if (!get().isInitialized) {
+      logWithContext("info", "[Lifecycle] Not initialized, running init()");
+      await get().init();
+      return;
+    }
     set({
       isRefreshing: true,
       dateChanged: false,

@@ -477,20 +477,27 @@ const SalonPage: React.FC<SalonPageProps> = ({
                             <div className="text-[10px] text-gray-500 space-y-0.5">
                               {plan.maxReadings > 0 && (
                                 <div>
-                                  📊 通常占い:{" "}
+                                  📊 通常占い:
+                                  {expandedPlan === "PREMIUM"
+                                    ? "(含むケルト十字)"
+                                    : " "}
                                   {plan.maxReadings === 999
                                     ? "無制限"
                                     : `${plan.maxReadings}回/日`}
                                 </div>
                               )}
-                              {plan.maxCeltics > 0 && (
-                                <div>
-                                  {isStandard ? `または、` : ""}⭐ ケルト十字:{" "}
-                                  {plan.maxCeltics === 999
-                                    ? "無制限"
-                                    : `${plan.maxCeltics}回/日`}
-                                </div>
-                              )}
+                              {plan.maxCeltics > 0 &&
+                                expandedPlan !== "PREMIUM" && (
+                                  <div>
+                                    {expandedPlan === "STANDARD"
+                                      ? `または、`
+                                      : ""}
+                                    ⭐ ケルト十字:{" "}
+                                    {plan.maxCeltics === 999
+                                      ? "無制限"
+                                      : `${plan.maxCeltics}回/日`}
+                                  </div>
+                                )}
                               {plan.hasPersonal && plan.maxPersonal > 0 && (
                                 <div>
                                   🤖 パーソナル占い:{" "}
@@ -516,7 +523,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                           >
                             {isLoggingIn
                               ? "処理中..."
-                              : isGuest
+                              : isGuest && expandedPlan === "FREE"
                               ? `無料でユーザー登録`
                               : `${
                                   plan.name
