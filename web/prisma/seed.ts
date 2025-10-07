@@ -519,74 +519,79 @@ interface CardData {
 // タロットデータのインポート
 async function importTarotDeck() {
   try {
-    // JSONファイルの読み込み
-    const jsonPath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "docs",
-      "tarot_data_dictionary.json"
-    );
-    const tarotData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    for (const language of ["en", "ja"]) {
+      // JSONファイルの読み込み
+      const jsonPath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "docs",
+        `tarot_data_dictionary_${language}.json`
+      );
+      const tarotData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
 
-    // タロットデッキの作成
-    const deck = await prisma.tarotDeck.create({
-      data: {
-        name: "標準タロットデッキ",
-        version: tarotData.metadata.version,
-        purpose: tarotData.metadata.purpose,
-        totalCards: tarotData.metadata.total_cards,
-        sources: tarotData.metadata.sources,
-        optimizedFor: tarotData.metadata.optimized_for,
-        primaryFocus: tarotData.metadata.primary_focus,
-        categories: tarotData.metadata.categories,
-        status: tarotData.metadata.status,
-      },
-    });
-
-    console.log(`タロットデッキを作成しました: ${deck.name}`);
-
-    // カードの作成
-    let count = 1;
-    for (const [cardId, cardData] of Object.entries(tarotData.cards) as [
-      string,
-      CardData
-    ][]) {
-      // カードを作成
-      await prisma.tarotCard.create({
+      // タロットデッキの作成
+      const deck = await prisma.tarotDeck.create({
         data: {
-          no: count++,
-          code: cardId,
-          name: cardData.name,
-          type: cardData.type,
-          number: parseInt(cardData.number, 10),
-          suit: cardData.suit,
-          element: cardData.element,
-          zodiac: cardData.zodiac,
-          uprightKeywords: cardData.upright_keywords || [],
-          reversedKeywords: cardData.reversed_keywords || [],
-          promptContext: cardData.prompt_context,
-          deckId: deck.id,
-          // meanings を CardMeaning の形式に変換して作成
-          meanings: {
-            create: Object.entries(cardData.meanings || {}).map(
-              ([category, data]) => ({
-                category,
-                upright: data.upright,
-                reversed: data.reversed,
-              })
-            ),
-          },
-        },
-        include: {
-          meanings: true,
+          name: "標準タロットデッキ",
+          version: tarotData.metadata.version,
+          purpose: tarotData.metadata.purpose,
+          totalCards: tarotData.metadata.total_cards,
+          sources: tarotData.metadata.sources,
+          optimizedFor: tarotData.metadata.optimized_for,
+          primaryFocus: tarotData.metadata.primary_focus,
+          categories: tarotData.metadata.categories,
+          status: tarotData.metadata.status,
+          language: language,
         },
       });
-    }
 
-    console.log(
-      `${Object.keys(tarotData.cards).length}枚のカードをインポートしました`
-    );
+      console.log(`タロットデッキを作成しました: ${deck.name}`);
+
+      // カードの作成
+      let count = 1;
+      for (const [cardId, cardData] of Object.entries(tarotData.cards) as [
+        string,
+        CardData
+      ][]) {
+        // カードを作成
+        await prisma.tarotCard.create({
+          data: {
+            no: count++,
+            code: cardId,
+            name: cardData.name,
+            type: cardData.type,
+            number: parseInt(cardData.number, 10),
+            suit: cardData.suit,
+            element: cardData.element,
+            zodiac: cardData.zodiac,
+            uprightKeywords: cardData.upright_keywords || [],
+            reversedKeywords: cardData.reversed_keywords || [],
+            promptContext: cardData.prompt_context,
+            language: language,
+            deckId: deck.id,
+            // meanings を CardMeaning の形式に変換して作成
+            meanings: {
+              create: Object.entries(cardData.meanings || {}).map(
+                ([category, data]) => ({
+                  category,
+                  upright: data.upright,
+                  reversed: data.reversed,
+                  language: language,
+                })
+              ),
+            },
+          },
+          include: {
+            meanings: true,
+          },
+        });
+      }
+
+      console.log(
+        `${language} で ${Object.keys(tarotData.cards).length} 枚のカードをインポートしました`
+      );
+    }
   } catch (error) {
     console.error("タロットデータのインポート中にエラーが発生しました:", error);
   }

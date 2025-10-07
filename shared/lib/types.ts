@@ -146,6 +146,7 @@ export type TarotDeck = {
   primaryFocus: string;
   categories: string[];
   status: string;
+  language: string;
   createdAt: Date;
   updatedAt: Date;
   cards?: TarotCard[];
@@ -165,6 +166,7 @@ export type TarotCard = {
   uprightKeywords: string[];
   reversedKeywords: string[];
   promptContext: string;
+  language: string;
   deckId: string;
   deck?: TarotDeck;
   meanings?: CardMeaning[];
@@ -180,6 +182,7 @@ export type CardMeaning = {
   reversed: string;
   cardId: string;
   card?: TarotCard;
+  language: string;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -30,8 +30,9 @@ export class TarotRepository extends BaseRepository {
     });
   }
 
-  async getAllDecks(): Promise<TarotDeck[]> {
+  async getAllDecks(all: boolean = false, language: string = "ja"): Promise<TarotDeck[]> {
     return await this.db.tarotDeck.findMany({
+      where: all ? undefined : { language },
       orderBy: { createdAt: "desc" },
       include: { cards: true },
     });

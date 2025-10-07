@@ -1,10 +1,8 @@
-import type { TarotCard, TarotDeck } from "@/../shared/lib/types";
-import { prisma } from "@/prisma/prisma";
+import type { TarotDeck } from "@/../shared/lib/types";
+import { tarotRepository } from "../repositories";
 
 // -------- TarotDeck操作 --------
 
-export async function getAllDecks(): Promise<TarotDeck[]> {
-  return await prisma.tarotDeck.findMany({
-    include: { cards: true },
-  });
+export async function getAllDecks(all: boolean = false, language: string = "ja"): Promise<TarotDeck[]> {
+  return await tarotRepository.getAllDecks(all, language);
 }

@@ -166,9 +166,12 @@ model TarotDeck {
   primaryFocus String
   categories  String[]
   status      String
+  language    String    @default("en")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   cards       TarotCard[]
+
+  @@unique([name, language])  // 同じ名前でも言語が異なれば複数存在可
 }
 
 // タロットカードモデル
@@ -185,6 +188,7 @@ model TarotCard {
   uprightKeywords   String[]      // 配列を直接保存
   reversedKeywords  String[]      // 配列を直接保存
   promptContext     String        @db.Text
+  language          String        @default("en")
   deckId            String
   deck              TarotDeck     @relation(fields: [deckId], references: [id])
   meanings          CardMeaning[]
@@ -193,6 +197,8 @@ model TarotCard {
 
   // 関連
   readings         DrawnCard[]
+  
+  @@unique([code, language])  // 同じコードでも言語が異なれば複数存在可
 }
 
 // カードの意味モデル
@@ -203,10 +209,11 @@ model CardMeaning {
   reversed    String    @db.Text
   cardId      String
   card        TarotCard @relation(fields: [cardId], references: [id])
+  language    String    @default("en")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([cardId, category])
+  @@unique([cardId, category, language])
 }
 
 // ==========================================
