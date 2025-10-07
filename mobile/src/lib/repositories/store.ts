@@ -1,10 +1,10 @@
-import { Preferences } from '@capacitor/preferences';
+import { Preferences } from "@capacitor/preferences";
 
 export class StoreRepository {
   async get<T>(key: string): Promise<T | null> {
     const { value } = await Preferences.get({ key });
     if (!value) return null;
-    
+
     try {
       return JSON.parse(value) as T;
     } catch {
@@ -15,7 +15,7 @@ export class StoreRepository {
   async set<T>(key: string, value: T): Promise<void> {
     await Preferences.set({
       key,
-      value: JSON.stringify(value)
+      value: JSON.stringify(value),
     });
   }
 

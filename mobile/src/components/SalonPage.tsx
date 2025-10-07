@@ -1,7 +1,15 @@
-import { use, useEffect, useMemo, useState, type JSXElementConstructor, type Key, type ReactElement, type ReactNode, type ReactPortal, type SetStateAction } from "react";
-import type { JWTPayload, MasterData, Plan, Spread, UsageStats } from "../../../shared/lib/types";
-import type { UserPlan } from "../types";
 import { ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type {
+  JWTPayload,
+  MasterData,
+  Plan,
+  ReadingCategory,
+  Spread,
+  SpreadToCategory,
+  UsageStats,
+} from "../../../shared/lib/types";
+import type { UserPlan } from "../types";
 
 interface SalonPageProps {
   payload: JWTPayload;
@@ -22,7 +30,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   usageStats,
   onLogin,
   onUpgrade,
-  onDowngrade,
+  // onDowngrade,
   onStartReading,
   isLoggingIn,
 }) => {
@@ -30,15 +38,15 @@ const SalonPage: React.FC<SalonPageProps> = ({
   const [selectedSpread, setSelectedSpread] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
   const [aiMode, setAiMode] = useState<string>("ai-auto");
-  
+
   const user = payload?.user || null;
   const currentPlan = payload?.planCode || "GUEST";
 
   const currentPlanData = masterData!.plans?.find(
-    (p: any) => p.code === currentPlan
+    (p: Plan) => p.code === currentPlan
   );
 
-  const availableCategories = masterData!.categories || [];
+  const availableCategories = masterData.categories;
   const categoriesToShow =
     currentPlan === "GUEST" || currentPlan === "FREE"
       ? availableCategories.slice(0, 3)
@@ -49,20 +57,22 @@ const SalonPage: React.FC<SalonPageProps> = ({
   const availablePlansFromPlanNo = masterData!.plans.filter(
     (p: Plan) => p.no <= (checkNo || 0)
   );
-  
+
   const getAvailableSpreads = () => {
     if (!masterData!.spreads) return [];
 
     return masterData!.spreads.filter((spread: Spread) => {
       if (
-        !availablePlansFromPlanNo.map((p: Plan) => p.code).includes(spread.plan!.code)
+        !availablePlansFromPlanNo
+          .map((p: Plan) => p.code)
+          .includes(spread.plan!.code)
       ) {
         return false;
       }
 
       if (selectedCategory) {
         const spreadCategoryIds =
-          spread.categories?.map((sc: any) => sc.categoryId) || [];
+          spread.categories?.map((sc: SpreadToCategory) => sc.categoryId) || [];
         if (!spreadCategoryIds.includes(selectedCategory)) {
           return false;
         }
@@ -76,52 +86,64 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   // コンポーネント内
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-  const freePlan = masterData!.plans?.find((p: { code: string; }) => p.code === "FREE");
-  const standardPlan = masterData!.plans?.find((p: { code: string; }) => p.code === "STANDARD");
-  const premiumPlan = masterData!.plans?.find((p: { code: string; }) => p.code === "PREMIUM");
+  // const freePlan = masterData!.plans?.find(
+  //   (p: { code: string }) => p.code === "FREE"
+  // );
+  // const standardPlan = masterData!.plans?.find(
+  //   (p: { code: string }) => p.code === "STANDARD"
+  // );
+  // const premiumPlan = masterData!.plans?.find(
+  //   (p: { code: string }) => p.code === "PREMIUM"
+  // );
 
   // 上位プラン取得
   const upgradablePlans = masterData!.plans
     ?.filter((p: Plan) => p.no > (currentPlanData?.no || 0))
-    .sort((a: { no: number; }, b: { no: number; }) => a.no - b.no);
+    .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
   // プランごとの色設定を動的に決定
   const getPlanColors = (planCode: string) => {
-    switch(planCode) {
-      case 'PREMIUM':
+    switch (planCode) {
+      case "PREMIUM":
         return {
-          border: 'border-yellow-300',
-          bg: 'bg-yellow-50',
-          text: 'text-yellow-800',
-          subText: 'text-yellow-600',
-          button: 'bg-yellow-500 hover:bg-yellow-600',
-          icon: '👑'
+          border: "border-yellow-300",
+          bg: "bg-yellow-50",
+          text: "text-yellow-800",
+          subText: "text-yellow-600",
+          button: "bg-yellow-500 hover:bg-yellow-600",
+          icon: "👑",
         };
-      case 'STANDARD':
+      case "STANDARD":
         return {
-          border: 'border-blue-200',
-          bg: 'bg-blue-50',
-          text: 'text-blue-800',
-          subText: 'text-blue-600',
-          button: 'bg-blue-500 hover:bg-blue-600',
-          icon: '💎'
+          border: "border-blue-200",
+          bg: "bg-blue-50",
+          text: "text-blue-800",
+          subText: "text-blue-600",
+          button: "bg-blue-500 hover:bg-blue-600",
+          icon: "💎",
         };
       default: // FREE
         return {
-          border: 'border-gray-200',
-          bg: 'bg-gray-50',
-          text: 'text-gray-800',
-          subText: 'text-gray-600',
-          button: 'bg-gray-500 hover:bg-gray-600',
-          icon: '🆓'
+          border: "border-gray-200",
+          bg: "bg-gray-50",
+          text: "text-gray-800",
+          subText: "text-gray-600",
+          button: "bg-gray-500 hover:bg-gray-600",
+          icon: "🆓",
         };
     }
   };
 
   useMemo(() => {
-    console.log("[SalonPage] masterData or usageStats changed", { masterData, usageStats });
+    console.log("[SalonPage] masterData or usageStats changed", {
+      masterData,
+      usageStats,
+    });
   }, [masterData, usageStats]);
-  console.log("[SalonPage] masterData or usageStats changed", { masterData, usageStats });
+  console.log("[SalonPage] masterData or usageStats changed", {
+    masterData,
+    usageStats,
+  });
 
   useEffect(() => {
     if (availableCategories.length > 0 && !selectedCategory) {
@@ -142,8 +164,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const handleUpgradeClick = (targetPlan: UserPlan) => {
     if (!isAuthenticated) {
-      console.log(`[SalonPage] 未認証：${targetPlan}へのアップグレードを保留してサインイン`);
-      sessionStorage.setItem('pendingUpgrade', targetPlan);
+      console.log(
+        `[SalonPage] 未認証：${targetPlan}へのアップグレードを保留してサインイン`
+      );
+      sessionStorage.setItem("pendingUpgrade", targetPlan);
       onLogin();
     } else {
       console.log(`[SalonPage] 認証済み：${targetPlan}へ直接アップグレード`);
@@ -172,7 +196,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   return (
     <div className="main-container">
-      
       <div
         className={`mb-4 p-3 rounded-lg border ${
           isPremium
@@ -291,7 +314,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
               : "どのジャンルを占いますか？"}
           </div>
           <div className="space-y-2">
-            {categoriesToShow.map((category: any) => (
+            {categoriesToShow.map((category: ReadingCategory) => (
               <div
                 key={category.id}
                 className={`option-item ${
@@ -321,7 +344,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
           {isPremium ? "🎴 スプレッドを選択：" : "🎴 占い方："}
         </div>
         <div className="space-y-2">
-          {availableSpreads.map((spread: any) => {
+          {availableSpreads.map((spread: Spread) => {
             const cardCount = spread.cells?.length || 0;
             return (
               <div
@@ -351,10 +374,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
       <div className="mt-6 space-y-3">
         <div className="text-center text-sm text-gray-600 mb-3">
           💡 もっと詳しく占うなら
-            {upgradablePlans && upgradablePlans.length > 0 && (
-              <div className="mt-6 space-y-3">
-                {/* ゲストの場合のみ無料登録CTA */}
-                {/* {isGuest && freePlan && (
+          {upgradablePlans && upgradablePlans.length > 0 && (
+            <div className="mt-6 space-y-3">
+              {/* ゲストの場合のみ無料登録CTA */}
+              {/* {isGuest && freePlan && (
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="text-sm font-bold text-blue-800 mb-1">
                       🔓 無料登録で回数{freePlan.maxReadings}倍
@@ -372,49 +395,78 @@ const SalonPage: React.FC<SalonPageProps> = ({
                   </div>
                 )} */}
 
-                <div className="text-xs text-center text-gray-500">
-                  💡 {isGuest ? '無料登録でもっと楽しむ。本格プランもご用意' : 'さらに上位プランへアップグレード'}
-                </div>
+              <div className="text-xs text-center text-gray-500">
+                💡{" "}
+                {isGuest
+                  ? "無料登録でもっと楽しむ。本格プランもご用意"
+                  : "さらに上位プランへアップグレード"}
+              </div>
 
-                {/* 上位プランをアコーディオン表示 */}
-                {upgradablePlans.map((plan: { code: string; id: string; name: string; price: number; description: string; features: string[]; maxReadings: number; maxCeltics: number; hasPersonal: boolean; maxPersonal: number; }) => {
+              {/* 上位プランをアコーディオン表示 */}
+              {upgradablePlans.map(
+                (plan: {
+                  code: string;
+                  id: string;
+                  name: string;
+                  price: number;
+                  description: string;
+                  features: string[];
+                  maxReadings: number;
+                  maxCeltics: number;
+                  hasPersonal: boolean;
+                  maxPersonal: number;
+                }) => {
                   const colors = getPlanColors(plan.code);
                   const isExpanded = expandedPlan === plan.code;
-                  
+
                   return (
-                    <div 
+                    <div
                       key={plan.id}
                       className={`border ${colors.border} rounded-lg overflow-hidden transition-all`}
                     >
                       {/* アコーディオンヘッダー */}
                       <button
-                        onClick={() => setExpandedPlan(isExpanded ? null : plan.code)}
+                        onClick={() =>
+                          setExpandedPlan(isExpanded ? null : plan.code)
+                        }
                         className={`w-full p-3 ${colors.bg} flex items-center justify-between transition-colors`}
                       >
                         <div className="text-left flex-1">
-                          <div className={`font-bold ${colors.text} flex items-center gap-1`}>
+                          <div
+                            className={`font-bold ${colors.text} flex items-center gap-1`}
+                          >
                             <span>{colors.icon}</span>
                             <span>{plan.name}</span>
                           </div>
                           <div className={`text-xs ${colors.subText} mt-0.5`}>
-                            ¥{plan.price.toLocaleString()}/月 - {plan.description}
+                            ¥{plan.price.toLocaleString()}/月 -{" "}
+                            {plan.description}
                           </div>
                         </div>
-                        <ChevronDown 
-                          className={`w-4 h-4 ${colors.text} transition-transform flex-shrink-0 ml-2 ${
-                            isExpanded ? 'rotate-180' : ''
+                        <ChevronDown
+                          className={`w-4 h-4 ${
+                            colors.text
+                          } transition-transform flex-shrink-0 ml-2 ${
+                            isExpanded ? "rotate-180" : ""
                           }`}
                         />
                       </button>
-                      
+
                       {/* アコーディオンコンテンツ */}
                       {isExpanded && (
-                        <div className={`p-3 bg-white border-t ${colors.border} space-y-2`}>
+                        <div
+                          className={`p-3 bg-white border-t ${colors.border} space-y-2`}
+                        >
                           {/* 機能リスト */}
                           <div className="space-y-1">
                             {plan.features?.map((feature, i) => (
-                              <div key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
-                                <span className="text-green-500 flex-shrink-0 mt-0.5">✓</span>
+                              <div
+                                key={i}
+                                className="text-xs text-gray-700 flex items-start gap-1.5"
+                              >
+                                <span className="text-green-500 flex-shrink-0 mt-0.5">
+                                  ✓
+                                </span>
                                 <span>{feature}</span>
                               </div>
                             ))}
@@ -424,32 +476,60 @@ const SalonPage: React.FC<SalonPageProps> = ({
                           <div className="pt-2 border-t border-gray-100">
                             <div className="text-[10px] text-gray-500 space-y-0.5">
                               {plan.maxReadings > 0 && (
-                                <div>📊 通常占い: {plan.maxReadings === 999 ? '無制限' : `${plan.maxReadings}回/日`}</div>
+                                <div>
+                                  📊 通常占い:{" "}
+                                  {plan.maxReadings === 999
+                                    ? "無制限"
+                                    : `${plan.maxReadings}回/日`}
+                                </div>
                               )}
                               {plan.maxCeltics > 0 && (
-                                <div>{isStandard ? `または、` : ''}⭐ ケルト十字: {plan.maxCeltics === 999 ? '無制限' : `${plan.maxCeltics}回/日`}</div>
+                                <div>
+                                  {isStandard ? `または、` : ""}⭐ ケルト十字:{" "}
+                                  {plan.maxCeltics === 999
+                                    ? "無制限"
+                                    : `${plan.maxCeltics}回/日`}
+                                </div>
                               )}
                               {plan.hasPersonal && plan.maxPersonal > 0 && (
-                                <div>🤖 パーソナル占い: {plan.maxPersonal === 999 ? '無制限' : `${plan.maxPersonal}回/日`}</div>
+                                <div>
+                                  🤖 パーソナル占い:{" "}
+                                  {plan.maxPersonal === 999
+                                    ? "無制限"
+                                    : `${plan.maxPersonal}回/日`}
+                                </div>
                               )}
                             </div>
                           </div>
 
                           {/* アップグレードボタン */}
                           <button
-                            onClick={() => {if (isGuest) { onLogin() } else { handleUpgradeClick(plan.code as UserPlan) } }}
+                            onClick={() => {
+                              if (isGuest) {
+                                onLogin();
+                              } else {
+                                handleUpgradeClick(plan.code as UserPlan);
+                              }
+                            }}
                             disabled={isLoggingIn}
                             className={`w-full mt-2 py-2 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 ${colors.button}`}
                           >
-                            {isLoggingIn ? "処理中..." : isGuest ? `無料でユーザー登録` : `${plan.name}を始める  (¥${plan.price.toLocaleString()}/月)`}
+                            {isLoggingIn
+                              ? "処理中..."
+                              : isGuest
+                              ? `無料でユーザー登録`
+                              : `${
+                                  plan.name
+                                }を始める  (¥${plan.price.toLocaleString()}/月)`}
                           </button>
                         </div>
                       )}
                     </div>
                   );
-                })}
-              </div>
-            )}
+                }
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -465,7 +545,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         >
           {isPremium ? "🤖 占いを始める" : "✨ 占いを始める ✨"}
         </button>
-        
+
         {isFree && (
           <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
             今日はあと{usageStats.remainingReadings}回

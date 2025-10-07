@@ -3,18 +3,21 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
-import { clientService } from "./lib/services/client";
 import { logWithContext } from "./lib/logger/logger";
+import { clientService } from "./lib/services/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [Google({
-    authorization: {
-      params: {
-        prompt: "select_account",
-      }
-    }
-  }), Apple],
+  providers: [
+    Google({
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
+    }),
+    Apple,
+  ],
   callbacks: {
     async signIn({ user }) {
       await logWithContext("info", "Sign-in attempt", { user });
@@ -25,7 +28,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (client) {
         await logWithContext("info", "Associated client found", { client });
         await clientService.updateLoginDate(client.id);
-        await logWithContext("info", "Client lastLoginAt updated", { clientId: client.id });
+        await logWithContext("info", "Client lastLoginAt updated", {
+          clientId: client.id,
+        });
       }
       return true;
     },

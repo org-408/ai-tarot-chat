@@ -1,6 +1,9 @@
-import type { JWTPayload, MasterData, PlanInput } from "../../../shared/lib/types";
+import type {
+  JWTPayload,
+  MasterData,
+  PlanInput,
+} from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-import { useMaster } from "../lib/hooks/useMaster";
 
 interface PlansPageProps {
   payload: JWTPayload;

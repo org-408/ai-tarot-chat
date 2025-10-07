@@ -1,16 +1,16 @@
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
 import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
-import TarotSplashScreen from "./splashscreen";
-import type { PageType, UserPlan } from "./types";
 import { useAuth } from "./lib/hooks/useAuth";
 import { useLifecycle } from "./lib/hooks/useLifecycle";
-import { queryClient } from "./components/providers/QueryProvider";
 import { useMaster } from "./lib/hooks/useMaster";
 import { useUsage } from "./lib/hooks/useUsage";
+import { queryClient } from "./lib/services/queryClient";
+import TarotSplashScreen from "./splashscreen";
+import type { PageType, UserPlan } from "./types";
 
 function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
@@ -24,28 +24,28 @@ function App() {
   } | null>(null);
 
   // 🔥 ライフサイクル管理
-  const { 
-    isInitialized, 
-    isRefreshing, 
-    dateChanged, 
+  const {
+    isInitialized,
+    isRefreshing,
+    dateChanged,
     error,
     init,
     setup,
     cleanup,
     clearDateChanged,
-    clearError
+    clearError,
   } = useLifecycle();
 
   // 🔥 認証状態（広告・ヘッダー用）
-  const { 
-    payload, 
-    plan, 
-    isAuthenticated, 
+  const {
+    payload,
+    plan,
+    isAuthenticated,
     clientId,
     userId,
-    login: authLogin, 
-    logout: authLogout, 
-    changePlan 
+    login: authLogin,
+    logout: authLogout,
+    changePlan,
   } = useAuth();
 
   // 🔥 マスターデータ取得
@@ -71,51 +71,51 @@ function App() {
       cleanup();
       console.log("[App] クリーンアップ完了");
     };
-  }, []);
+  }, [cleanup, init, isInitialized, setup]);
 
   useEffect(() => {
     console.log("[App] State changed", { masterData, usageStats, payload });
     if (!masterData) {
       console.log("[App] マスターデータ取得中...");
-      queryClient.invalidateQueries({ queryKey: ['master', true, true] });
+      queryClient.invalidateQueries({ queryKey: ["master", true, true] });
       return;
     }
     if (!usageStats && clientId) {
       console.log("[App] 利用状況取得中...");
-      queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
       return;
     }
     if (!payload) {
       console.log("[App] ユーザーデータ取得中...");
       return;
     }
-  }, [masterData, usageStats, payload]);
+  }, [masterData, usageStats, payload, clientId]);
 
   // 🔥 日付変更時の通知とキャッシュ更新
   useEffect(() => {
     if (dateChanged) {
-      console.log('[App] 日付が変わりました - 利用状況を再取得');
-      
+      console.log("[App] 日付が変わりました - 利用状況を再取得");
+
       // 利用状況のキャッシュを無効化して再取得
-      queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
-      
+      queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
+
       // TODO: トースト通知を表示
       // showNotification('新しい日になりました！占い回数がリセットされました🎉');
-      
+
       // 3秒後に通知をクリア
       setTimeout(() => {
         clearDateChanged();
       }, 3000);
     }
-  }, [dateChanged, clearDateChanged]);
+  }, [dateChanged, clearDateChanged, clientId]);
 
   // 🔥 エラーハンドリング
   useEffect(() => {
     if (error) {
-      console.error('[App] Lifecycle error:', error);
+      console.error("[App] Lifecycle error:", error);
       // TODO: エラー通知を表示
       // showErrorNotification(error.message);
-      
+
       setTimeout(() => {
         clearError();
       }, 5000);
@@ -125,25 +125,35 @@ function App() {
   // 🔥 サインイン完了後の自動アップグレード処理他
   useEffect(() => {
     if (isAuthenticated && isInitialized) {
-      console.log(`[App] サインイン検出 - 現在のプラン: ${plan}, ユーザーID: ${userId}`);
-      const pendingUpgrade = sessionStorage.getItem('pendingUpgrade');
+      console.log(
+        `[App] サインイン検出 - 現在のプラン: ${plan}, ユーザーID: ${userId}`
+      );
+      const pendingUpgrade = sessionStorage.getItem("pendingUpgrade");
       if (pendingUpgrade && pendingUpgrade !== plan) {
         console.log(`[App] 保留中のアップグレードを実行: ${pendingUpgrade}`);
-        sessionStorage.removeItem('pendingUpgrade');
-        handlePlanChange(pendingUpgrade as UserPlan);
+        sessionStorage.removeItem("pendingUpgrade");
+        // handlePlanChange(pendingUpgrade as UserPlan);
       }
     }
-  }, [isAuthenticated, isInitialized, plan]);
+  }, [isAuthenticated, isInitialized, plan, userId]);
 
   // 初期化中
   if (!isInitialized || !masterData || !usageStats || !payload) {
-    return <TarotSplashScreen message={
-      !isInitialized ? "アプリを初期化中..." :
-      !masterData ? "マスターデータを読み込み中..." :
-      !usageStats ? "利用状況を読み込み中..." :
-      !payload ? "ユーザーデータを読み込み中..." :
-      "利用状況を読み込み中..."
-    } />;
+    return (
+      <TarotSplashScreen
+        message={
+          !isInitialized
+            ? "アプリを初期化中..."
+            : !masterData
+            ? "マスターデータを読み込み中..."
+            : !usageStats
+            ? "利用状況を読み込み中..."
+            : !payload
+            ? "ユーザーデータを読み込み中..."
+            : "利用状況を読み込み中..."
+        }
+      />
+    );
   }
 
   // 初期化完了後もpayloadがない場合（異常系）
@@ -153,9 +163,7 @@ function App() {
         <div className="text-center text-white">
           <div className="text-6xl mb-4">⚠️</div>
           <div className="text-xl font-bold mb-2">初期化エラー</div>
-          <div className="text-sm opacity-80">
-            アプリの初期化に失敗しました
-          </div>
+          <div className="text-sm opacity-80">アプリの初期化に失敗しました</div>
           <button
             onClick={() => window.location.reload()}
             className="mt-6 px-6 py-2 bg-white text-purple-900 rounded-lg hover:bg-gray-100 transition-colors"
@@ -179,12 +187,12 @@ function App() {
       console.log("ログイン成功");
 
       // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
     } catch (err) {
       console.error("ログイン失敗:", err);
       alert(err instanceof Error ? err.message : "ログインに失敗しました");
       // ログイン失敗時は保留中のアップグレードをクリア
-      sessionStorage.removeItem('pendingUpgrade');
+      sessionStorage.removeItem("pendingUpgrade");
     } finally {
       setIsLoggingIn(false);
     }
@@ -198,12 +206,12 @@ function App() {
       console.log("ログアウト開始");
       await authLogout();
       console.log("ログアウト成功");
-      
+
       setPageType("salon");
       setReadingData(null);
-      
+
       // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
       console.log("利用状況を再取得");
     } catch (err) {
       console.error("ログアウトエラー:", err);
@@ -224,9 +232,9 @@ function App() {
 
     try {
       await changePlan(newPlan);
-      
+
       // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
       console.log("利用状況を再取得");
     } catch (err) {
       console.error("プラン変更エラー:", err);
@@ -490,7 +498,10 @@ function App() {
         </div>
       )}
 
-      <div className="main-content-area" style={pageType === "salon" ? { paddingBottom: '105px' } : {}}>
+      <div
+        className="main-content-area"
+        style={pageType === "salon" ? { paddingBottom: "105px" } : {}}
+      >
         {renderPage()}
       </div>
 

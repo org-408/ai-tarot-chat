@@ -6,7 +6,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
-  console.log(`[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`);
+  console.log(
+    `[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`
+  );
   const getHeaderTitle = () => {
     switch (currentPage) {
       case "salon":

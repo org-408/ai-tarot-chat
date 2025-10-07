@@ -1,4 +1,4 @@
-import { useLifecycleStore } from '../stores/lifecycle';
+import { useLifecycleStore } from "../stores/lifecycle";
 
 /**
  * ライフサイクル管理フック（エイリアス）
@@ -18,6 +18,7 @@ export function useLifecycle() {
     onPause,
     clearDateChanged,
     clearError,
+    reset,
   } = useLifecycleStore();
 
   return {
@@ -33,5 +34,6 @@ export function useLifecycle() {
     onPause,
     clearDateChanged,
     clearError,
+    reset,
   };
 }

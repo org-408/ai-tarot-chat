@@ -1,4 +1,4 @@
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
 
 /**
  * Capacitor Filesystem を使った大容量データ永続化
@@ -15,11 +15,15 @@ class FilesystemRepository {
     try {
       const jsonString = JSON.stringify(data);
       const sizeInBytes = new Blob([jsonString]).size;
-      
+
       // サイズチェック
       if (sizeInBytes > this.MAX_SIZE_BYTES) {
         console.warn(
-          `[Filesystem] Data too large to save (${(sizeInBytes / 1024 / 1024).toFixed(2)}MB): ${key}`
+          `[Filesystem] Data too large to save (${(
+            sizeInBytes /
+            1024 /
+            1024
+          ).toFixed(2)}MB): ${key}`
         );
         return; // 保存しない（エラーにしない）
       }
@@ -30,7 +34,7 @@ class FilesystemRepository {
         directory: this.directory,
         encoding: Encoding.UTF8, // 明示的にUTF8を指定
       });
-      
+
       console.log(
         `[Filesystem] Saved: ${key} (${(sizeInBytes / 1024).toFixed(2)}KB)`
       );
@@ -80,18 +84,18 @@ class FilesystemRepository {
   async clear(): Promise<void> {
     try {
       const { files } = await Filesystem.readdir({
-        path: '',
+        path: "",
         directory: this.directory,
       });
-      
+
       for (const file of files) {
-        if (file.name.endsWith('.json')) {
-          await this.delete(file.name.replace('.json', ''));
+        if (file.name.endsWith(".json")) {
+          await this.delete(file.name.replace(".json", ""));
         }
       }
-      console.log('[Filesystem] Cleared all data');
+      console.log("[Filesystem] Cleared all data");
     } catch (error) {
-      console.error('[Filesystem] Failed to clear:', error);
+      console.error("[Filesystem] Failed to clear:", error);
     }
   }
 }

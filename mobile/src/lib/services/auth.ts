@@ -1,11 +1,10 @@
-import { App } from '@capacitor/app';
-import { Device } from '@capacitor/device';
-import { Browser } from '@capacitor/browser';
-import type { JWTPayload } from '../../../../shared/lib/types';
-import { storeRepository } from '../repositories/store';
-import { decodeJWT } from '../utils/jwt';
-import { apiClient } from '../utils/apiClient';
-
+import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
+import { Device } from "@capacitor/device";
+import type { JWTPayload } from "../../../../shared/lib/types";
+import { storeRepository } from "../repositories/store";
+import { apiClient } from "../utils/apiClient";
+import { decodeJWT } from "../utils/jwt";
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 if (!JWT_SECRET) {
@@ -32,9 +31,9 @@ export class AuthService {
 
     // Capacitorから情報取得
     const [platformName, osVersionStr, appVersionStr] = await Promise.all([
-      Device.getInfo().then(info => info.platform),
-      Device.getInfo().then(info => info.osVersion),
-      App.getInfo().then(info => info.version),
+      Device.getInfo().then((info) => info.platform),
+      Device.getInfo().then((info) => info.osVersion),
+      App.getInfo().then((info) => info.version),
     ]);
 
     console.log(
@@ -92,22 +91,24 @@ export class AuthService {
 
     try {
       // Capacitor版のauthenticate実装
-      const auth = await new Promise<{ callbackUrl: string }>((resolve, reject) => {
-        App.addListener('appUrlOpen', async (event) => {
-          await Browser.close();
-          resolve({ callbackUrl: event.url });
-        }).then(listener => {
-          // ブラウザを開く
-          Browser.open({ url, windowName: '_self' }).catch(reject);
-          
-          // タイムアウト設定（オプション）
-          setTimeout(() => {
-            listener.remove();
-            reject(new Error("認証タイムアウト"));
-          }, 120000); // 2分
-        });
-      });
-      
+      const auth = await new Promise<{ callbackUrl: string }>(
+        (resolve, reject) => {
+          App.addListener("appUrlOpen", async (event) => {
+            await Browser.close();
+            resolve({ callbackUrl: event.url });
+          }).then((listener) => {
+            // ブラウザを開く
+            Browser.open({ url, windowName: "_self" }).catch(reject);
+
+            // タイムアウト設定（オプション）
+            setTimeout(() => {
+              listener.remove();
+              reject(new Error("認証タイムアウト"));
+            }, 120000); // 2分
+          });
+        }
+      );
+
       if (!auth || "error" in auth) {
         console.log("❌ 認証キャンセルまたはエラー:", auth);
         throw new Error("認証に失敗しました");
@@ -167,36 +168,33 @@ export class AuthService {
    */
   async refreshToken(): Promise<JWTPayload> {
     try {
-      console.log('[AuthService] Refreshing token');
-      
+      console.log("[AuthService] Refreshing token");
+
       const response = await apiClient.post<{ token: string }>(
-        '/api/auth/refresh'
+        "/api/auth/refresh"
       );
-      
+
       // 新しいトークンを保存
-      await storeRepository.set('accessToken', response.token);
-      
+      await storeRepository.set("accessToken", response.token);
+
       // デコードして返す
-      const payload = await decodeJWT<JWTPayload>(
-        response.token,
-        JWT_SECRET
-      );
-      
+      const payload = await decodeJWT<JWTPayload>(response.token, JWT_SECRET);
+
       // デバイスID等も保存
       if (payload.deviceId) {
-        await storeRepository.set('deviceId', payload.deviceId);
+        await storeRepository.set("deviceId", payload.deviceId);
       }
       if (payload.clientId) {
-        await storeRepository.set('clientId', payload.clientId);
+        await storeRepository.set("clientId", payload.clientId);
       }
       if (payload.user?.id) {
-        await storeRepository.set('userId', payload.user.id);
+        await storeRepository.set("userId", payload.user.id);
       }
 
-      console.log('[AuthService] Token refresh successful:', payload);
+      console.log("[AuthService] Token refresh successful:", payload);
       return payload;
     } catch (error) {
-      console.error('[AuthService] Token refresh failed:', error);
+      console.error("[AuthService] Token refresh failed:", error);
       throw error;
     }
   }

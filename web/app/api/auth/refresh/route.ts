@@ -3,7 +3,11 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext("info", "📍 /api/auth/refresh - セッション取得リクエスト受信", { path: "/api/auth/refresh" });
+  await logWithContext(
+    "info",
+    "📍 /api/auth/refresh - セッション取得リクエスト受信",
+    { path: "/api/auth/refresh" }
+  );
 
   try {
     await logWithContext("info", "🔄 セッション検証処理開始");
@@ -24,11 +28,18 @@ export async function POST(request: NextRequest) {
       errorMessage.includes("Invalid") ||
       errorMessage.includes("not found")
     ) {
-      await logWithContext("warn", "❌ セッション検証リクエストが無効", { errorMessage, status: 401 });
+      await logWithContext("warn", "❌ セッション検証リクエストが無効", {
+        errorMessage,
+        status: 401,
+      });
       return new Response("invalid", { status: 401 });
     }
 
-    await logWithContext("error", "❌ セッション検証リクエストで予期せぬエラー", { errorMessage, status: 500 });
+    await logWithContext(
+      "error",
+      "❌ セッション検証リクエストで予期せぬエラー",
+      { errorMessage, status: 500 }
+    );
     return new Response("session validation failed", { status: 500 });
   }
 }

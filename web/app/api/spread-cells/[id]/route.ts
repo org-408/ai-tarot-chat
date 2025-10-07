@@ -15,11 +15,17 @@ interface RouteParams {
 // 特定セル取得
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spread-cells/[id] - セル(${id})取得リクエスト受信`, { path: `/api/spread-cells/${id}`});
+  logWithContext(
+    "info",
+    `📍 /api/spread-cells/[id] - セル(${id})取得リクエスト受信`,
+    { path: `/api/spread-cells/${id}` }
+  );
   try {
     const cell = await getSpreadCellById(id);
     if (!cell) {
-      logWithContext("error", `❌ セル(${id})が見つかりません`, { status: 404 });
+      logWithContext("error", `❌ セル(${id})が見つかりません`, {
+        status: 404,
+      });
       return NextResponse.json(
         { error: "セルが見つかりません" },
         { status: 404 }
@@ -39,7 +45,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // セル更新
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spread-cells/[id] - セル(${id})更新リクエスト受信`, { path: `/api/spread-cells/${id}` });
+  logWithContext(
+    "info",
+    `📍 /api/spread-cells/[id] - セル(${id})更新リクエスト受信`,
+    { path: `/api/spread-cells/${id}` }
+  );
   try {
     const data = await request.json();
     const cell = await updateSpreadCellById(id, data);
@@ -57,7 +67,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // セル削除
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spread-cells/[id] - セル(${id})削除リクエスト受信`, { path: `/api/spread-cells/${id}` });
+  logWithContext(
+    "info",
+    `📍 /api/spread-cells/[id] - セル(${id})削除リクエスト受信`,
+    { path: `/api/spread-cells/${id}` }
+  );
   try {
     await deleteSpreadCellById(id);
     logWithContext("info", `✅ セル(${id})削除完了`);

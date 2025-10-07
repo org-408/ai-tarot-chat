@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { masterService } from '../services/master';
-import type { MasterData } from '../../../../shared/lib/types';
+import { useQuery } from "@tanstack/react-query";
+import type { MasterData } from "../../../../shared/lib/types";
+import { masterService } from "../services/master";
 
 /**
  * マスターデータ取得フック
@@ -8,13 +8,16 @@ import type { MasterData } from '../../../../shared/lib/types';
  * - バックグラウンド自動更新
  * - forceRefetch=true で強制再取得
  */
-export function useMaster(refresh: boolean = true, forceRefetch: boolean = false) {
+export function useMaster(
+  refresh: boolean = true,
+  forceRefetch: boolean = false
+) {
   return useQuery<MasterData>({
-    queryKey: ['masters', refresh, forceRefetch],
+    queryKey: ["masters", refresh, forceRefetch],
     queryFn: async () => {
-      console.log('[useMaster] Fetching master data...', { forceRefetch });
+      console.log("[useMaster] Fetching master data...", { forceRefetch });
       const data = await masterService.getMasterData();
-      console.log('[useMaster] Master data fetched:', data);
+      console.log("[useMaster] Master data fetched:", data);
       return data;
     },
     enabled: refresh, // 認証初期化後に実行
@@ -23,6 +26,6 @@ export function useMaster(refresh: boolean = true, forceRefetch: boolean = false
     retry: 3, // マスターデータは重要なので3回リトライ
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // 強制再取得時はマウント時に必ず再取得
-    refetchOnMount: forceRefetch ? 'always' : false,
+    refetchOnMount: forceRefetch ? "always" : false,
   });
 }

@@ -1,6 +1,4 @@
 import { SignInForm } from "@/components/auth/signin-form";
-import { authService } from "@/lib/services/auth";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 interface SearchParams {

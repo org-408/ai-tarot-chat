@@ -3,13 +3,18 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  logWithContext("info", "📍 /api/auth/exchange - チケット交換リクエスト受信", { path: "/api/auth/exchange" });
+  logWithContext("info", "📍 /api/auth/exchange - チケット交換リクエスト受信", {
+    path: "/api/auth/exchange",
+  });
 
   try {
     const { ticket, deviceId } = await request.json().catch(() => ({}));
 
     if (!ticket || !deviceId) {
-      logWithContext("error", "❌ ticket または deviceId が不足", { ticket, deviceId });
+      logWithContext("error", "❌ ticket または deviceId が不足", {
+        ticket,
+        deviceId,
+      });
       return new Response("invalid request", { status: 400 });
     }
 
@@ -39,11 +44,17 @@ export async function POST(request: NextRequest) {
       errorMessage.includes("not found") ||
       errorMessage.includes("expired")
     ) {
-      logWithContext("warn", "❌ チケット交換リクエストが無効", { errorMessage, status: 401 });
+      logWithContext("warn", "❌ チケット交換リクエストが無効", {
+        errorMessage,
+        status: 401,
+      });
       return new Response("invalid", { status: 401 });
     }
 
-    logWithContext("error", "❌ チケット交換リクエストで予期せぬエラー", { errorMessage, status: 500 });
+    logWithContext("error", "❌ チケット交換リクエストで予期せぬエラー", {
+      errorMessage,
+      status: 500,
+    });
     return new Response("exchange failed", { status: 500 });
   }
 }

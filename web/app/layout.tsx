@@ -1,4 +1,3 @@
-// app/layout.tsx
 import "@/components/providers";
 import { Providers } from "@/components/providers";
 import { ReactNode } from "react";

@@ -10,10 +10,10 @@ export function isSameDayJST(
   date1: Date | undefined,
   date2?: Date | undefined
 ): boolean {
-  const srcDate = !!date1
+  const srcDate = date1
     ? getJSTDate(date1)
     : getJSTDate(new Date(-8640000000000000)); // 有効な最小値
-  const compareDate = !!date2 ? getJSTDate(date2) : getTodayJST();
+  const compareDate = date2 ? getJSTDate(date2) : getTodayJST();
   return srcDate === compareDate;
 }
 

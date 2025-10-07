@@ -1,4 +1,4 @@
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from "../stores/auth";
 
 /**
  * 認証フック（エイリアス）
@@ -15,7 +15,8 @@ export function useAuth() {
     logout,
     refresh,
     setPayload,
-    changePlan
+    changePlan,
+    reset,
   } = useAuthStore();
 
   return {
@@ -33,5 +34,6 @@ export function useAuth() {
     refresh,
     setPayload,
     changePlan,
+    reset,
   };
 }

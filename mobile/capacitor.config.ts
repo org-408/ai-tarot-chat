@@ -1,18 +1,18 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.aitarotchat.app',
-  appName: 'mobile',
-  webDir: 'dist',
+  appId: "com.aitarotchat.app",
+  appName: "mobile",
+  webDir: "dist",
   plugins: {
     CapacitorHttp: {
-      enabled: true
+      enabled: true,
     },
     Keyboard: {
-      resize: 'none',
-      resizeOnFullScreen: true
-    }
-  }
+      resize: "none",
+      resizeOnFullScreen: true,
+    },
+  },
 };
 
 export default config;

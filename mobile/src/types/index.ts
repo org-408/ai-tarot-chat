@@ -1,11 +1,3 @@
-import type{
-  Plan,
-  ReadingCategory,
-  Spread,
-  SpreadLevel,
-  Tarotist,
-} from "../../../shared/lib/types";
-
 export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
 export type PageType = "salon" | "reading" | "plans" | "history" | "settings";
 

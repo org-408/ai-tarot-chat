@@ -1,5 +1,5 @@
-import { SignInForm } from "./components/auth/SignInForm";
 import { Suspense } from "react";
+import { SignInForm } from "./components/auth/SignInForm";
 
 const LoadingSkeleton = () => (
   <div className="space-y-3">

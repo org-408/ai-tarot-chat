@@ -2,7 +2,11 @@ import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
 
 export async function GET() {
-  await logWithContext("info", "📍 /api/auth/ticket - チケット発行リクエスト受信", { path: "/api/auth/ticket" });
+  await logWithContext(
+    "info",
+    "📍 /api/auth/ticket - チケット発行リクエスト受信",
+    { path: "/api/auth/ticket" }
+  );
 
   try {
     // AuthService経由でチケット生成
@@ -21,7 +25,10 @@ export async function GET() {
       error instanceof Error ? error.message : "ticket generation failed";
     const statusCode = errorMessage.includes("Not authenticated") ? 401 : 500;
 
-    await logWithContext("error", "❌ チケット発行リクエストで予期せぬエラー", { errorMessage, status: statusCode });
+    await logWithContext("error", "❌ チケット発行リクエストで予期せぬエラー", {
+      errorMessage,
+      status: statusCode,
+    });
     return new Response(errorMessage, { status: statusCode });
   }
 }

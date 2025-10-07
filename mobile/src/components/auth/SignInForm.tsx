@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2,  Shield } from "lucide-react";
+import { Loader2, Shield } from "lucide-react";
 import { useState } from "react";
 import { authService } from "../../lib/services/auth";
 

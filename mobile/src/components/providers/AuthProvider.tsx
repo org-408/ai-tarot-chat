@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
-import { useAuth } from '../../lib/hooks/useAuth';
-import { authService } from '../../lib/services/auth';
+import { useEffect, type ReactNode } from "react";
+import { useAuth } from "../../lib/hooks/useAuth";
+import { authService } from "../../lib/services/auth";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -13,27 +13,27 @@ interface AuthProviderProps {
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const { setPayload, refresh } = useAuth();
-  
+
   useEffect(() => {
     const initialize = async () => {
       try {
-        console.log('[AuthProvider] Initializing...');
-        
+        console.log("[AuthProvider] Initializing...");
+
         // まずセッション復旧を試みる
         await refresh();
-        
+
         // デバイス登録（初回 or トークン期限切れ時）
         const payload = await authService.registerDevice();
         setPayload(payload);
-        
-        console.log('[AuthProvider] Initialized successfully');
+
+        console.log("[AuthProvider] Initialized successfully");
       } catch (error) {
-        console.error('[AuthProvider] Initialization failed:', error);
+        console.error("[AuthProvider] Initialization failed:", error);
       }
     };
-    
+
     initialize();
-  }, []);
-  
+  }, [refresh, setPayload]);
+
   return <>{children}</>;
 }

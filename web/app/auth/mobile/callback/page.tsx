@@ -1,6 +1,4 @@
 "use client";
-import { logWithContext } from "@/lib/logger/logger";
-import { log } from "console";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -46,14 +44,20 @@ function Content() {
     // OAuth 認証の確定を待つ（success=true でも必ず待つ）
     if (status === "loading") {
       setMsg(success ? "セッション確立中…" : "認証を確定しています…");
-      console.log("info", "セッション確立中… : 認証を確定しています…", { status, success });
+      console.log("info", "セッション確立中… : 認証を確定しています…", {
+        status,
+        success,
+      });
       return;
     }
 
     // 認証確定後、ticket 発行 → deep link
     if (status === "authenticated") {
       deepLinkWithTicket();
-      console.log("info", "認証確定 → チケット発行 → アプリに戻る", { status, success });
+      console.log("info", "認証確定 → チケット発行 → アプリに戻る", {
+        status,
+        success,
+      });
       return;
     }
 
@@ -69,7 +73,10 @@ function Content() {
 
     // それでも未認証の場合は手動サインイン画面へ
     if (status === "unauthenticated" && retried.current) {
-      console.log("info", "未認証 → 手動サインイン画面へリダイレクト", { status, success });
+      console.log("info", "未認証 → 手動サインイン画面へリダイレクト", {
+        status,
+        success,
+      });
       router.push("/auth/signin?isMobile=true");
     }
   }, [status, success, router, deepLinkWithTicket]);
