@@ -4,16 +4,14 @@ import { getAllMasterData } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  await logWithContext(
-    "info",
-    "📍 /api/masters/ - マスタデータ取得リクエスト受信",
-    { path: "/api/masters" }
-  );
+  logWithContext("info", "📍 /api/masters/ - マスタデータ取得リクエスト受信", {
+    path: "/api/masters",
+  });
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);
     if ("error" in payload || !payload) {
-      await logWithContext("error", "❌ セッション検証エラー", {
+      logWithContext("error", "❌ セッション検証エラー", {
         payload,
         status: 401,
       });
@@ -22,13 +20,11 @@ export async function GET(request: NextRequest) {
 
     // マスターデータ取得
     const masters = await getAllMasterData();
-    await logWithContext("info", "📍 /api/masters/ - マスタデータ取得完了", {
-      masters,
-    });
+    logWithContext("info", "📍 /api/masters/ - マスタデータ取得完了");
 
     return NextResponse.json(masters);
   } catch (error) {
-    await logWithContext("error", "❌ マスタデータ取得エラー", {
+    logWithContext("error", "❌ マスタデータ取得エラー", {
       error,
       status: 500,
     });

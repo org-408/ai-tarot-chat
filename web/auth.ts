@@ -20,15 +20,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user }) {
-      await logWithContext("info", "Sign-in attempt", { user });
+      logWithContext("info", "Sign-in attempt", { user });
       // client と user が紐づいていたら、client.lastLoginAt を更新
       if (!user.id) return true;
-      await logWithContext("info", "User signed in", { user });
+      logWithContext("info", "User signed in", { user });
       const client = await clientService.getClientByUserId(user.id);
       if (client) {
-        await logWithContext("info", "Associated client found", { client });
+        logWithContext("info", "Associated client found", { client });
         await clientService.updateLoginDate(client.id);
-        await logWithContext("info", "Client lastLoginAt updated", {
+        logWithContext("info", "Client lastLoginAt updated", {
           clientId: client.id,
         });
       }

@@ -10,16 +10,18 @@ export async function generateJWT<T>(
   secret: string = JWT_SECRET,
   ttl: string = APP_JWT_TTL
 ): Promise<string> {
-  await logWithContext("info", "🔑 generateJWT payload:", { payload });
+  logWithContext("info", "🔑 generateJWT payload:", { payload });
   const jwtSecret = secret ?? JWT_SECRET;
-  await logWithContext("info", "🔑 generateJWT secret:", { jwtSecret });
-  await logWithContext("info", "🔑 generateJWT ttl:", { ttl });
-  const result =  await new SignJWT(payload as unknown as Record<string, unknown>)
+  logWithContext("info", "🔑 generateJWT secret:", { jwtSecret });
+  logWithContext("info", "🔑 generateJWT ttl:", { ttl });
+  const result = await new SignJWT(
+    payload as unknown as Record<string, unknown>
+  )
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
     .setExpirationTime(ttl)
     .sign(new TextEncoder().encode(jwtSecret));
-  await logWithContext("info", "🔑 generateJWT token:", { token: result });
+  logWithContext("info", "🔑 generateJWT token:", { token: result });
   return result;
 }
 
@@ -28,23 +30,25 @@ export async function decodeJWT<T>(
   secret: string = JWT_SECRET,
   ignoreExpiration = false
 ): Promise<T & { exp?: number }> {
-  await logWithContext("info", "🔑 decodeJWT token:", { token });
+  logWithContext("info", "🔑 decodeJWT token:", { token });
   const jwtSecret = secret ?? JWT_SECRET;
-  await logWithContext("info", "🔑 decodeJWT secret:", { jwtSecret });
-  await logWithContext("info", "🔑 decodeJWT ignoreExpiration:", { ignoreExpiration });
+  logWithContext("info", "🔑 decodeJWT secret:", { jwtSecret });
+  logWithContext("info", "🔑 decodeJWT ignoreExpiration:", {
+    ignoreExpiration,
+  });
   const { payload } = await jwtVerify(
     token,
     new TextEncoder().encode(jwtSecret),
     {
       algorithms: [ALG],
       currentDate: ignoreExpiration ? new Date(0) : undefined,
-    },
+    }
   );
   if (payload.t !== "app" && payload.t !== "ticket") {
     // "app" または "ticket" 以外は不正
-    await logWithContext("error", "❌ Invalid token type:", { type: payload.t });
+    logWithContext("error", "❌ Invalid token type:", { type: payload.t });
     throw new Error("Invalid token type");
   }
-  await logWithContext("info", "🔑 decodeJWT payload:", { payload });
-  return payload as T & { exp?: number};
+  logWithContext("info", "🔑 decodeJWT payload:", { payload });
+  return payload as T & { exp?: number };
 }

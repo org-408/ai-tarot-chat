@@ -3,7 +3,7 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext(
+  logWithContext(
     "info",
     "📍 /api/device/register - デバイス登録リクエスト受信",
     { path: "/api/device/register" }
@@ -14,20 +14,20 @@ export async function POST(request: NextRequest) {
       await request.json().catch(() => ({}));
 
     if (!deviceId) {
-      await logWithContext("error", "❌ deviceId が不足", {
+      logWithContext("error", "❌ deviceId が不足", {
         deviceId,
         status: 400,
       });
       return new Response("deviceId required", { status: 400 });
     }
 
-    await logWithContext("info", `🔄 デバイス登録処理開始`);
-    await logWithContext(
+    logWithContext("info", `🔄 デバイス登録処理開始`);
+    logWithContext(
       "info",
       `🔄 デバイス登録処理開始 - プラットフォーム: ${platform}, アプリバージョン: ${appVersion}, OSバージョン: ${osVersion}`,
       { deviceId }
     );
-    await logWithContext(
+    logWithContext(
       "info",
       `プッシュ通知トークン: ${pushToken ? "あり" : "なし"}`
     );
@@ -41,17 +41,17 @@ export async function POST(request: NextRequest) {
       pushToken,
     });
 
-    await logWithContext("info", `✅ デバイス登録完了`, { deviceId, token });
+    logWithContext("info", `✅ デバイス登録完了`, { deviceId, token });
 
     return Response.json({
       token,
     });
   } catch (error) {
-    await logWithContext("error", "❌ デバイス登録エラー", { error });
+    logWithContext("error", "❌ デバイス登録エラー", { error });
 
     const errorMessage =
       error instanceof Error ? error.message : "registration failed";
-    await logWithContext("error", "❌ デバイス登録リクエストで予期せぬエラー", {
+    logWithContext("error", "❌ デバイス登録リクエストで予期せぬエラー", {
       errorMessage,
       status: 500,
     });

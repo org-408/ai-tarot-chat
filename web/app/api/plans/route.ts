@@ -5,32 +5,30 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
-    await logWithContext(
-      "info",
-      "📍 /api/plans - プラン一覧取得リクエスト受信",
-      { path: "/api/plans" }
-    );
+    logWithContext("info", "📍 /api/plans - プラン一覧取得リクエスト受信", {
+      path: "/api/plans",
+    });
 
     // sessionチェック
     const payload = await authService.verifyApiRequest(request);
     if ("error" in payload || !payload) {
-      await logWithContext("error", "❌ セッション検証エラー", {
+      logWithContext("error", "❌ セッション検証エラー", {
         payload,
         status: 401,
       });
       return new Response("unauthorized", { status: 401 });
     }
 
-    await logWithContext("info", `✅ セッション検証完了`, { payload });
+    logWithContext("info", `✅ セッション検証完了`, { payload });
 
     // マスターデータからプラン一覧取得
     const plans = await getPlans();
-    await logWithContext("info", "📍 /api/plans - プラン一覧取得完了", {
+    logWithContext("info", "📍 /api/plans - プラン一覧取得完了", {
       plans,
     });
     return NextResponse.json(plans);
   } catch (error) {
-    await logWithContext("error", "❌ プラン一覧取得エラー", {
+    logWithContext("error", "❌ プラン一覧取得エラー", {
       error,
       status: 500,
     });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DebugResetButton } from "./components/DebugResetButton";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
@@ -343,6 +344,7 @@ function App() {
               <div className="text-6xl mb-4">🚧</div>
               <div className="text-lg font-bold mb-2">準備中</div>
               <div className="text-sm">設定機能を開発中です</div>
+              <DebugResetButton />
 
               {isAuthenticated && (
                 <div className="mt-8">

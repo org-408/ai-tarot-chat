@@ -4,7 +4,7 @@ import { checkMasterDataUpdates } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext(
+  logWithContext(
     "info",
     "📍 /api/masters/check-updates - マスターデータ更新チェックリクエスト受信",
     { path: "/api/masters/check-updates" }
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);
     if ("error" in payload || !payload) {
-      await logWithContext("error", "❌ セッション検証エラー", {
+      logWithContext("error", "❌ セッション検証エラー", {
         payload,
         status: 401,
       });
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // 更新チェック
     const needsUpdate = await checkMasterDataUpdates(lastUpdatedAt);
-    await logWithContext(
+    logWithContext(
       "info",
       "📍 /api/masters/check-updates - マスターデータ更新チェック完了",
       { needsUpdate }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ needsUpdate });
   } catch (error) {
-    await logWithContext("error", "❌ 更新チェックエラー", {
+    logWithContext("error", "❌ 更新チェックエラー", {
       error,
       status: 500,
     });

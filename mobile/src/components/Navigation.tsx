@@ -32,7 +32,7 @@ const Navigation: React.FC<NavigationProps> = ({
       id: "settings",
       label: "設定",
       icon: "⚙️",
-      available: false,
+      available: true,
     },
   ];
 

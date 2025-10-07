@@ -11,14 +11,13 @@ import { prisma } from "@/lib/repositories/database";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
 import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
-import { planRepository } from "../repositories";
 import { logWithContext } from "../logger/logger";
-import { log } from "console";
+import { planRepository } from "../repositories";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
-await logWithContext("info", "🔑 AuthService initialized:", { JWT_SECRET });
+logWithContext("info", "🔑 AuthService initialized:", { JWT_SECRET });
 if (!JWT_SECRET) {
-  await logWithContext("error", "❌ AUTH_SECRET is not defined", { status: 500 });
+  logWithContext("error", "❌ AUTH_SECRET is not defined", { status: 500 });
   throw new Error("AUTH_SECRET environment variable is required");
 }
 
@@ -33,7 +32,7 @@ export class AuthService {
     osVersion?: string;
     pushToken?: string;
   }): Promise<string> {
-    await logWithContext("info", "🔄 registerOrUpdateDevice called", { params });
+    logWithContext("info", "🔄 registerOrUpdateDevice called", { params });
     return await prisma.$transaction(async (tx) => {
       // トランザクション付きRepositoryインスタンス作成
       const clientRepo = clientRepository.withTransaction(tx);
@@ -50,7 +49,7 @@ export class AuthService {
           pushToken: params.pushToken,
           lastSeenAt: new Date(),
         });
-        await logWithContext("info", "✅ Device updated:", { device });
+        logWithContext("info", "✅ Device updated:", { device });
       } else {
         // 新規デバイス - 新規クライアント作成 （未登録ユーザー）
         device = await clientRepo.createDevice({
@@ -62,21 +61,21 @@ export class AuthService {
           lastSeenAt: new Date(),
           client: { create: { plan: { connect: { code: "GUEST" } } } },
         });
-        await logWithContext("info", "✅ Device created:", { device });
+        logWithContext("info", "✅ Device created:", { device });
       }
       if (!device) throw new Error("Failed to create device");
-      await logWithContext("info", "✅ Device registered/updated:", { device });
+      logWithContext("info", "✅ Device registered/updated:", { device });
 
       const client = device.client;
       if (!client || !client.plan) {
-        await logWithContext("error", "❌ Client not found for device", { device });
+        logWithContext("error", "❌ Client not found for device", { device });
         throw new Error("Client not found for device");
       }
 
-      await logWithContext("info", "✅ Client for device:", { client });
+      logWithContext("info", "✅ Client for device:", { client });
 
       const user = client.user;
-      await logWithContext("info", "👤 Associated user:", { user });
+      logWithContext("info", "👤 Associated user:", { user });
 
       // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
       const token = await generateJWT<JWTPayload>(
@@ -86,12 +85,14 @@ export class AuthService {
           clientId: client.id,
           planCode: client.plan.code,
           provider: client.provider || undefined,
-          user: user ? {
-            id: user.id,
-            email: user.email || undefined,
-            name: user.name || undefined,
-            image: user.image || undefined,
-          } : undefined,
+          user: user
+            ? {
+                id: user.id,
+                email: user.email || undefined,
+                name: user.name || undefined,
+                image: user.image || undefined,
+              }
+            : undefined,
         },
         JWT_SECRET
       );
@@ -104,15 +105,15 @@ export class AuthService {
    * チケット生成（Web認証後）
    */
   async generateTicket(): Promise<string> {
-    await logWithContext("info", "🔄 generateTicket called");
+    logWithContext("info", "🔄 generateTicket called");
     const session = await auth();
-    await logWithContext("info", "🔍 Current session:", { session });
+    logWithContext("info", "🔍 Current session:", { session });
 
     if (!session?.user?.id || !session?.user?.email) {
       throw new Error("Not authenticated");
     }
 
-    await logWithContext("info", "✅ チケット発行成功", { userId: session.user.id });
+    logWithContext("info", "✅ チケット発行成功", { userId: session.user.id });
 
     // 30秒間有効なチケットを発行（既存パターンに合わせて）
     const ticket = await generateJWT<TicketData>(
@@ -127,7 +128,7 @@ export class AuthService {
       JWT_SECRET,
       "30s"
     );
-    await logWithContext("info", "🔑 Ticket generated:", { ticket });
+    logWithContext("info", "🔑 Ticket generated:", { ticket });
     return ticket;
   }
 
@@ -138,21 +139,23 @@ export class AuthService {
     ticket: string;
     deviceId: string;
   }): Promise<string> {
-    await logWithContext("info", "🔄 exchangeTicket called", { params });
+    logWithContext("info", "🔄 exchangeTicket called", { params });
     // チケット検証（既存パターンに合わせて）
     let ticketData: TicketData;
     try {
-      await logWithContext("info", "🔑 チケット検証開始 secret", { secret: JWT_SECRET });
+      logWithContext("info", "🔑 チケット検証開始 secret", {
+        secret: JWT_SECRET,
+      });
       const payload = await decodeJWT<TicketData>(params.ticket, JWT_SECRET);
 
       if (payload.t !== "ticket" || !payload.sub) {
-        await logWithContext("error", "❌ Invalid ticket type:", { type: payload.t });
+        logWithContext("error", "❌ Invalid ticket type:", { type: payload.t });
         throw new Error("Invalid ticket type");
       }
 
       ticketData = payload as unknown as TicketData;
     } catch (error) {
-      await logWithContext("error", "❌ チケット検証失敗:", { error });
+      logWithContext("error", "❌ チケット検証失敗:", { error });
       throw new Error("Invalid ticket");
     }
 
@@ -161,14 +164,24 @@ export class AuthService {
       const authRepo = authRepository.withTransaction(tx);
       // デバイス取得
       const device = await clientRepo.getDeviceByDeviceId(params.deviceId);
-      await logWithContext("info", "🔍 デバイス検索", { deviceId: params.deviceId, device });
+      logWithContext("info", "🔍 デバイス検索", {
+        deviceId: params.deviceId,
+        device,
+      });
       if (!device || !device.clientId || !device.client) {
-        await logWithContext("error", "❌ Device not found or invalid:", { deviceId: params.deviceId, device });
+        logWithContext("error", "❌ Device not found or invalid:", {
+          deviceId: params.deviceId,
+          device,
+        });
         throw new Error("Device not found. Please register device first.");
       }
       const client = device.client;
       if (!client.plan) {
-        await logWithContext("error", "❌ Client or plan not found for device:", { device, client, plan: client.plan });
+        logWithContext("error", "❌ Client or plan not found for device:", {
+          device,
+          client,
+          plan: client.plan,
+        });
         throw new Error("Failed to get updated client");
       }
 
@@ -176,24 +189,34 @@ export class AuthService {
       const provider = ticketData.provider;
       if (!provider) {
         // NOTE: OAuth認証以外を追加した場合には、ここを修正
-        await logWithContext("error", "❌ Provider not found in ticket data:", { ticketData });
+        logWithContext("error", "❌ Provider not found in ticket data:", {
+          ticketData,
+        });
         throw new Error("Provider not found");
       }
 
       // プランコードの変更（GUEST → FREE など）
-      await logWithContext("info", "🔄 プランコード確認", { current: client.plan.code, no: client.plan.no });
+      logWithContext("info", "🔄 プランコード確認", {
+        current: client.plan.code,
+        no: client.plan.no,
+      });
       const planCode = client.plan.code === "GUEST" ? "FREE" : client.plan.code;
 
       // ユーザーのDBとの照合
       const user = await authRepo.getUserById(ticketData.sub);
-      await logWithContext("info", "🔍 ユーザー検索", { userId: ticketData.sub, user });
+      logWithContext("info", "🔍 ユーザー検索", {
+        userId: ticketData.sub,
+        user,
+      });
       if (!user) {
-        await logWithContext("error", "❌ User not found in DB:", { userId: ticketData.sub });
+        logWithContext("error", "❌ User not found in DB:", {
+          userId: ticketData.sub,
+        });
         throw new Error("User not found in DB.");
       }
 
       const existingClient = user.client;
-      await logWithContext("info", "🔍 既存Client", { existingClient });
+      logWithContext("info", "🔍 既存Client", { existingClient });
       let finalClient: Client;
 
       // user と 別の Client が紐付いている場合は統合
@@ -203,9 +226,12 @@ export class AuthService {
           device.clientId,
           existingClient.id,
           provider, // provider は必ず更新
-          planCode,
+          planCode
         );
-        await logWithContext("info", "✅ 既存Clientに統合", { user, client: finalClient });
+        logWithContext("info", "✅ 既存Clientに統合", {
+          user,
+          client: finalClient,
+        });
       } else {
         // 既存Clientがない場合：現在のClientにユーザー情報を紐付け
         finalClient = await clientRepo.updateClient(device.clientId, {
@@ -218,11 +244,18 @@ export class AuthService {
           isRegistered: true,
           lastLoginAt: new Date(),
         });
-        await logWithContext("info", "✅ 新規ユーザー紐付け", { user, client: finalClient });
+        logWithContext("info", "✅ 新規ユーザー紐付け", {
+          user,
+          client: finalClient,
+        });
       }
 
       if (!finalClient || !finalClient.plan) {
-        await logWithContext("error", "❌ Failed to get final client or plan after merge/update", { finalClient });
+        logWithContext(
+          "error",
+          "❌ Failed to get final client or plan after merge/update",
+          { finalClient }
+        );
         throw new Error("Failed to get final client or plan");
       }
 
@@ -243,7 +276,10 @@ export class AuthService {
         },
         JWT_SECRET
       );
-      await logWithContext("info", "🔑 JWT generated for device:", { deviceId: device.deviceId, jwt });
+      logWithContext("info", "🔑 JWT generated for device:", {
+        deviceId: device.deviceId,
+        jwt,
+      });
       return jwt;
     });
   }
@@ -256,9 +292,12 @@ export class AuthService {
     fromClientId: string,
     toClientId: string,
     provider: string,
-    newPlanCode: string,
+    newPlanCode: string
   ): Promise<Client> {
-    await logWithContext("info", "🔀 Merging clients", { from: fromClientId, to: toClientId });
+    logWithContext("info", "🔀 Merging clients", {
+      from: fromClientId,
+      to: toClientId,
+    });
     if (fromClientId === toClientId) {
       throw new Error("Cannot merge the same client");
     }
@@ -267,47 +306,72 @@ export class AuthService {
       fromClientId
     );
     if (!fromClient) {
-      await logWithContext("error", "❌ fromClient not found", { fromClientId });
+      logWithContext("error", "❌ fromClient not found", { fromClientId });
       throw new Error("fromClient not found");
     }
 
     let toClient = await clientRepository.getClientWithAllRelations(toClientId);
     if (!toClient) {
-      await logWithContext("error", "❌ toClient not found", { toClientId });
+      logWithContext("error", "❌ toClient not found", { toClientId });
       throw new Error("toClient not found");
     }
-    await logWithContext("info", "🔍 fromClient, toClient", { fromClient, toClient });
+    logWithContext("info", "🔍 fromClient, toClient", { fromClient, toClient });
 
     // 先に作られたClientを優先
     if (fromClient.createdAt < toClient.createdAt) {
       [fromClient, toClient] = [toClient, fromClient];
     }
-    await logWithContext("info", "🔄 Swapped if needed from, to", { fromClient, toClient });
+    logWithContext("info", "🔄 Swapped if needed from, to", {
+      fromClient,
+      toClient,
+    });
 
     // 念の為、deletedAt チェック
     if (fromClient.deletedAt || toClient.deletedAt) {
-      await logWithContext("error", "❌ Cannot merge deleted clients", { fromClient, toClient });
+      logWithContext("error", "❌ Cannot merge deleted clients", {
+        fromClient,
+        toClient,
+      });
       throw new Error("Cannot merge deleted clients");
     }
 
     // 念の為、userId チェック(toClient.userId が優先)
     const userId = toClient.userId || fromClient.userId;
     if (!userId) {
-      await logWithContext("error", "❌ Both clients have no userId", { fromClient, toClient });
+      logWithContext("error", "❌ Both clients have no userId", {
+        fromClient,
+        toClient,
+      });
       throw new Error("Cannot merge clients with different userId");
     }
-    await logWithContext("info", "👤 Merging for userId:", { userId, toClientUserId: toClient.userId, fromClientUserId: fromClient.userId });
+    logWithContext("info", "👤 Merging for userId:", {
+      userId,
+      toClientUserId: toClient.userId,
+      fromClientUserId: fromClient.userId,
+    });
 
     // plan情報は、より上位のものを適用
     const newPlan = await planRepository.getPlanByCode(newPlanCode);
-    const plans = [fromClient.plan, toClient.plan, newPlan].filter(Boolean) as Plan[];
-    const higherPlan = plans.reduce((prev, curr) => (curr.no > prev.no ? curr : prev));
+    const plans = [fromClient.plan, toClient.plan, newPlan].filter(
+      Boolean
+    ) as Plan[];
+    const higherPlan = plans.reduce((prev, curr) =>
+      curr.no > prev.no ? curr : prev
+    );
 
     if (!higherPlan) {
-      await logWithContext("error", "❌ Both clients have no plan", { fromClient, toClient });
+      logWithContext("error", "❌ Both clients have no plan", {
+        fromClient,
+        toClient,
+      });
       throw new Error("Both clients have no plan");
     }
-    await logWithContext("info", "🏆 Higher plan selected:", { higherPlan, fromClientPlan: fromClient.plan, toClientPlan: toClient.plan, newPlan });
+    logWithContext("info", "🏆 Higher plan selected:", {
+      higherPlan,
+      fromClientPlan: fromClient.plan,
+      toClientPlan: toClient.plan,
+      newPlan,
+    });
 
     // 利用回数は合算
     const sumReadingsCount =
@@ -350,10 +414,10 @@ export class AuthService {
             ),
           ]
         : fromClient.devices || toClient.devices || [];
-    await logWithContext("info", "📱 Merging devices:", { devices });
+    logWithContext("info", "📱 Merging devices:", { devices });
 
     const isRegistered = fromClient.isRegistered || toClient.isRegistered;
-    await logWithContext("info", "🔍 isRegistered:", { isRegistered });
+    logWithContext("info", "🔍 isRegistered:", { isRegistered });
 
     const lastLoginAt =
       fromClient.lastLoginAt && toClient.lastLoginAt
@@ -361,7 +425,7 @@ export class AuthService {
           ? fromClient.lastLoginAt
           : toClient.lastLoginAt
         : fromClient.lastLoginAt || toClient.lastLoginAt;
-    await logWithContext("info", "🕒 lastLoginAt:", { lastLoginAt });
+    logWithContext("info", "🕒 lastLoginAt:", { lastLoginAt });
 
     const favoriteSpreads =
       fromClient.favoriteSpreads && toClient.favoriteSpreads
@@ -375,7 +439,7 @@ export class AuthService {
             ),
           ]
         : fromClient.favoriteSpreads || toClient.favoriteSpreads || [];
-    await logWithContext("info", "⭐ Merging favoriteSpreads:", { favoriteSpreads });
+    logWithContext("info", "⭐ Merging favoriteSpreads:", { favoriteSpreads });
 
     const readings =
       fromClient.readings && toClient.readings
@@ -386,7 +450,7 @@ export class AuthService {
             ),
           ]
         : fromClient.readings || toClient.readings || [];
-    await logWithContext("info", "🔮 Merging readings:", { readings });
+    logWithContext("info", "🔮 Merging readings:", { readings });
 
     const planChangeHistories =
       fromClient.planChangeHistories && toClient.planChangeHistories
@@ -398,7 +462,9 @@ export class AuthService {
             ),
           ]
         : fromClient.planChangeHistories || toClient.planChangeHistories || [];
-    await logWithContext("info", "📈 Merging planChangeHistories:", { planChangeHistories });
+    logWithContext("info", "📈 Merging planChangeHistories:", {
+      planChangeHistories,
+    });
 
     const chatMessages =
       fromClient.chatMessages && toClient.chatMessages
@@ -409,7 +475,7 @@ export class AuthService {
             ),
           ]
         : fromClient.chatMessages || toClient.chatMessages || [];
-    await logWithContext("info", "💬 Merging chatMessages:", { chatMessages });
+    logWithContext("info", "💬 Merging chatMessages:", { chatMessages });
 
     // fromClientのデバイスをすべてtoClientに移動
     const updatedClient = (await clientRepository.updateClient(toClient.id, {
@@ -435,7 +501,7 @@ export class AuthService {
       },
       chatMessages: { connect: chatMessages.map((c) => ({ id: c.id })) },
     })) as Client;
-    await logWithContext("info", "✅ Clients merged into:", { updatedClient });
+    logWithContext("info", "✅ Clients merged into:", { updatedClient });
     return updatedClient;
   }
 
@@ -463,17 +529,17 @@ export class AuthService {
   /**
    * 期限切れ・OAuth認証時は認証期限切れの検出とJWTペイロード更新
    */
-  async detectTokenExpirationAndRefresh(
-    request: NextRequest
-  ): Promise<string> {
-    await logWithContext("info", "🔑 Detecting token expiration and refreshing...");
+  async detectTokenExpirationAndRefresh(request: NextRequest): Promise<string> {
+    logWithContext("info", "🔑 Detecting token expiration and refreshing...");
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       throw new Error("認証が必要です");
     }
 
     try {
-      await logWithContext("info", "🔑 decodeJWT token:", { token: authHeader.substring(7) });
+      logWithContext("info", "🔑 decodeJWT token:", {
+        token: authHeader.substring(7),
+      });
       const payload = await decodeJWT<JWTPayload>(
         authHeader.substring(7),
         JWT_SECRET,
@@ -481,21 +547,25 @@ export class AuthService {
       );
 
       // 期限切れでもpayloadを取得できるため、ここでログ出力
-      await logWithContext("info", "🔑 Token payload (not check expiration):", { payload });
+      logWithContext("info", "🔑 Token payload (not check expiration):", {
+        payload,
+      });
 
       // OAuth認証時は auth() を呼んで認証期限切れを検出
       if (payload.user && payload.provider) {
         const session = await auth();
         if (!session?.user?.id || !session?.user?.email) {
-          await logWithContext("warn", "⚠️ OAuth認証期限切れ検出");
+          logWithContext("warn", "⚠️ OAuth認証期限切れ検出");
           throw new Error("OAuth session expired");
         }
       }
 
-      await logWithContext("info", "✅ Token valid, refreshing JWT payload:", { payload });
+      logWithContext("info", "✅ Token valid, refreshing JWT payload:", {
+        payload,
+      });
       return this.refreshJwtPayload(payload);
     } catch (error) {
-      await logWithContext("error", "❌ APIリクエスト認証エラー:", { error });
+      logWithContext("error", "❌ APIリクエスト認証エラー:", { error });
       throw new Error("認証リフレッシュ失敗");
     }
   }
@@ -506,7 +576,9 @@ export class AuthService {
    */
   async verifyApiRequest(
     request: NextRequest
-  ): Promise<{ payload: JWTPayload & { exp?: number } } | { error: NextResponse }> {
+  ): Promise<
+    { payload: JWTPayload & { exp?: number } } | { error: NextResponse }
+  > {
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return {
@@ -529,26 +601,25 @@ export class AuthService {
   }
 
   async createAppleClientSecret(opts: {
-    teamId: string          // Apple Developer Team ID
-    keyId: string           // Key ID (.p8 に対応)
-    clientId: string        // Service ID (例: com.example.web)
-    privateKey: string      // .p8 の中身
-    expiresIn?: string|number // 例: '30d'（最大180日）
+    teamId: string; // Apple Developer Team ID
+    keyId: string; // Key ID (.p8 に対応)
+    clientId: string; // Service ID (例: com.example.web)
+    privateKey: string; // .p8 の中身
+    expiresIn?: string | number; // 例: '30d'（最大180日）
   }): Promise<string> {
-    const alg = 'ES256'
-    const ecKey = await importPKCS8(opts.privateKey, alg)
-    const now = Math.floor(Date.now() / 1000)
+    const alg = "ES256";
+    const ecKey = await importPKCS8(opts.privateKey, alg);
+    const now = Math.floor(Date.now() / 1000);
 
     return await new SignJWT({})
       .setProtectedHeader({ alg, kid: opts.keyId })
-      .setIssuer(opts.teamId)                        // iss
-      .setSubject(opts.clientId)                     // sub
-      .setAudience('https://appleid.apple.com')      // aud
+      .setIssuer(opts.teamId) // iss
+      .setSubject(opts.clientId) // sub
+      .setAudience("https://appleid.apple.com") // aud
       .setIssuedAt(now)
-      .setExpirationTime(opts.expiresIn ?? '30d')    // ← 短め推奨
-      .sign(ecKey)
+      .setExpirationTime(opts.expiresIn ?? "30d") // ← 短め推奨
+      .sign(ecKey);
   }
-
 }
 
 export const authService = new AuthService();

@@ -1,10 +1,15 @@
-import type { MasterData, Plan, ReadingCategory, SpreadLevel } from "@/../shared/lib/types";
+import type {
+  MasterData,
+  Plan,
+  ReadingCategory,
+  SpreadLevel,
+} from "@/../shared/lib/types";
 import { getSpreads } from "@/lib/services/spread";
 import { getAllDecks } from "@/lib/services/tarot";
 import { getTarotists } from "@/lib/services/tarotist";
 import { prisma } from "@/prisma/prisma";
-import { planService } from "./plan";
 import { logWithContext } from "../logger/logger";
+import { planService } from "./plan";
 
 // 型定義（シンプルに boolean のみ返す）
 
@@ -28,15 +33,16 @@ export async function getReadingCategories(): Promise<ReadingCategory[]> {
 }
 
 // 全マスタデータを一括取得
-export async function getAllMasterData(): Promise<MasterData>{
-  const [plans, levels, categories, spreads, decks, tarotists] = await Promise.all([
-    getPlans(),
-    getSpreadLevels(),
-    getReadingCategories(),
-    getSpreads(),
-    getAllDecks(),
-    getTarotists(),
-  ]);
+export async function getAllMasterData(): Promise<MasterData> {
+  const [plans, levels, categories, spreads, decks, tarotists] =
+    await Promise.all([
+      getPlans(),
+      getSpreadLevels(),
+      getReadingCategories(),
+      getSpreads(),
+      getAllDecks(),
+      getTarotists(),
+    ]);
 
   return {
     plans,
@@ -60,7 +66,7 @@ export async function checkMasterDataUpdates(
     ? new Date(lastUpdatedAt)
     : new Date(0);
 
-  await logWithContext("info", "マスターデータ更新チェック:", {
+  logWithContext("info", "マスターデータ更新チェック:", {
     clientLastUpdate: clientLastUpdate.toISOString(),
   });
 
@@ -97,7 +103,7 @@ export async function checkMasterDataUpdates(
   );
   const needsUpdate = serverLastUpdate > clientLastUpdate;
 
-  await logWithContext("info", "更新チェック結果:", {
+  logWithContext("info", "更新チェック結果:", {
     serverLastUpdate: serverLastUpdate.toISOString(),
     needsUpdate,
   });
