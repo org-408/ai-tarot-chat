@@ -62,6 +62,7 @@ export const useAuthStore = create<AuthState>()(
             logWithContext('info', '[AuthStore] Device registration successful:', { planCode: payload.planCode });
           } else {
             const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+            logWithContext('info', '[AuthStore] Decoded token payload:', { payload });
             if (payload && payload.t !== 'app' || payload.deviceId !== storedDeviceId || payload.clientId !== storedClientId || (payload.user?.id || null) !== storedUserId) {
               // 一致しない場合は、異常ケースとして、再登録の処理へ
               // TODO: ユーザーのデータ引き継ぎ・復元に対する機能を検討
