@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logWithContext } from '@/lib/logger/logger';
+import { log } from 'console';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
     
     // ログエントリの内容を取り出す
     const { level, message, device, ...context } = logEntry;
+    logWithContext('info', 'Received log entry', { level, message, device, context });
     
     // 必須フィールドの検証
     if (!level || !message) {
