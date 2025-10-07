@@ -32,10 +32,18 @@ class PrismaTransport extends Transport {
   }
 }
 
-// ログディレクトリの設定 (Edge環境対応)
-const logDir = typeof process !== 'undefined' && process.cwd 
-  ? joinPath(process.cwd(), 'logs')
-  : '/logs'; // フォールバック値
+const isEdge = typeof process === 'undefined' || process.env?.NEXT_RUNTIME === 'edge';
+
+// 環境に応じて適切な値を返す関数
+function getBaseDir(): string {
+  if (isEdge) {
+    return '/logs'; // Edge環境ではこの値は実際には使われない
+  }
+  
+  return process.cwd();
+}
+
+const logDir = joinPath(getBaseDir(), 'logs');
 
 // 環境設定
 const isDev = typeof process !== 'undefined' && process.env
