@@ -4,7 +4,7 @@ import { planService } from "@/lib/services/plan";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext("info", "📍 /api/plans/change - プラン変更リクエスト受信");
+  await logWithContext("info", "📍 /api/plans/change - プラン変更リクエスト受信", { path: "/api/plans/change" });
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);

@@ -3,7 +3,7 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext("info", "📍 /api/auth/refresh - セッション取得リクエスト受信");
+  await logWithContext("info", "📍 /api/auth/refresh - セッション取得リクエスト受信", { path: "/api/auth/refresh" });
 
   try {
     await logWithContext("info", "🔄 セッション検証処理開始");

@@ -4,7 +4,7 @@ import { getAllMasterData } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  await logWithContext("info", "📍 /api/masters/ - マスタデータ取得リクエスト受信");
+  await logWithContext("info", "📍 /api/masters/ - マスタデータ取得リクエスト受信", { path: "/api/masters" });
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);

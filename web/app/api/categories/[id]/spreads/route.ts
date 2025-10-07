@@ -10,7 +10,7 @@ interface RouteParams {
 
 // カテゴリ別スプレッド一覧取得
 export async function GET(request: Request, { params }: RouteParams) {
-  logWithContext("info", "📍 /api/categories/[id]/spreads - カテゴリ別スプレッド一覧取得リクエスト受信");
+  logWithContext("info", "📍 /api/categories/[id]/spreads - カテゴリ別スプレッド一覧取得リクエスト受信", { path: `/api/categories/${(await params).id}/spreads` });
   const { id } = await params;
   try {
     const spreads = await getSpreadsByCategory(id);

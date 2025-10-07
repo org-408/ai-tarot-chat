@@ -2,7 +2,7 @@ import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
 
 export async function GET() {
-  await logWithContext("info", "📍 /api/auth/ticket - チケット発行リクエスト受信");
+  await logWithContext("info", "📍 /api/auth/ticket - チケット発行リクエスト受信", { path: "/api/auth/ticket" });
 
   try {
     // AuthService経由でチケット生成

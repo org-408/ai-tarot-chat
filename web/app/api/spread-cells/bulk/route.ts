@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // 複数セル一括更新
 export async function PUT(request: NextRequest) {
-  logWithContext("info", "📍 /api/spread-cells/bulk - 複数セル一括更新リクエスト受信");
+  logWithContext("info", "📍 /api/spread-cells/bulk - 複数セル一括更新リクエスト受信", { path: "/api/spread-cells/bulk"});
   try {
     const { cells } = await request.json();
     if (!Array.isArray(cells)) {

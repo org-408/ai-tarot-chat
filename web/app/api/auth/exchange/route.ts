@@ -3,7 +3,7 @@ import { authService } from "@/lib/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  logWithContext("info", "📍 /api/auth/exchange - チケット交換リクエスト受信");
+  logWithContext("info", "📍 /api/auth/exchange - チケット交換リクエスト受信", { path: "/api/auth/exchange" });
 
   try {
     const { ticket, deviceId } = await request.json().catch(() => ({}));

@@ -15,7 +15,7 @@ interface RouteParams {
 // 特定スプレッド取得
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})取得リクエスト受信`);
+  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})取得リクエスト受信`, { path: `/api/spreads/${id}` });
   try {
     const spread = await getSpreadById(id);
     if (!spread) {
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // スプレッド更新
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})更新リクエスト受信`);
+  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})更新リクエスト受信`, { path: `/api/spreads/${id}` });
   try {
     const data = await request.json();
     const spread = await updateSpreadById(id, data);
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // スプレッド削除
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})削除リクエスト受信`);
+  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})削除リクエスト受信`, { path: `/api/spreads/${id}` });
   try {
     await deleteSpreadById(id);
     logWithContext("info", `✅ スプレッド(${id})削除完了`);

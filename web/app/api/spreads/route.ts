@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // スプレッド一覧取得
 export async function GET() {
-  logWithContext("info", "📍 /api/spreads - スプレッド一覧取得リクエスト受信");
+  logWithContext("info", "📍 /api/spreads - スプレッド一覧取得リクエスト受信", { path: "/api/spreads"});
   try {
     const spreads = await getSpreads();
     logWithContext("info", "✅ スプレッド一覧取得完了", { spreads });
@@ -20,7 +20,7 @@ export async function GET() {
 
 // スプレッド作成
 export async function POST(request: NextRequest) {
-  logWithContext("info", "📍 /api/spreads - スプレッド作成リクエスト受信");
+  logWithContext("info", "📍 /api/spreads - スプレッド作成リクエスト受信", { path: "/api/spreads" });
   try {
     const data = await request.json();
     const spread = await createSpread(data);

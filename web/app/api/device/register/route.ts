@@ -4,7 +4,7 @@ import { log } from "console";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext("info", "📍 /api/device/register - デバイス登録リクエスト受信");
+  await logWithContext("info", "📍 /api/device/register - デバイス登録リクエスト受信", { path: "/api/device/register" });
 
   try {
     const { deviceId, platform, appVersion, osVersion, pushToken } =

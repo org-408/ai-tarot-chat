@@ -4,7 +4,7 @@ import { checkMasterDataUpdates } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  await logWithContext("info", "📍 /api/masters/check-updates - マスターデータ更新チェックリクエスト受信");
+  await logWithContext("info", "📍 /api/masters/check-updates - マスターデータ更新チェックリクエスト受信", { path: "/api/masters/check-updates" });
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);

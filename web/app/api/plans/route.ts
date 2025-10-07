@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
-    await logWithContext("info", "📍 /api/plans - プラン一覧取得リクエスト受信");
+    await logWithContext("info", "📍 /api/plans - プラン一覧取得リクエスト受信", { path: "/api/plans" });
 
     // sessionチェック
     const payload = await authService.verifyApiRequest(request);

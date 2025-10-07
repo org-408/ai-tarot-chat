@@ -3,7 +3,7 @@ import { getReadingCategories } from "@/lib/services/master";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  logWithContext("info", "📍 /api/categories - カテゴリ一覧取得リクエスト受信");
+  logWithContext("info", "📍 /api/categories - カテゴリ一覧取得リクエスト受信", { path: "/api/categories" });
   try {
     const categories = await getReadingCategories();
     logWithContext("info", "📍 /api/categories - カテゴリ一覧取得完了", { categories });

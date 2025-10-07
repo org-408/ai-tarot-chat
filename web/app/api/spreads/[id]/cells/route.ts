@@ -14,7 +14,7 @@ interface RouteParams {
 // スプレッドのセル一覧取得
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})のセル一覧取得リクエスト受信`);
+  logWithContext("info", `📍 /api/spreads/[id]/cells - スプレッド(${id})のセル一覧取得リクエスト受信`, { path: `/api/spreads/${id}/cells` });
   try {
     const cells = await getSpreadCellsBySpreadId(id);
     logWithContext("info", `✅ スプレッド(${id})のセル一覧取得完了`, { cells });
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // スプレッドにセル追加
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  logWithContext("info", `📍 /api/spreads/[id] - スプレッド(${id})へのセル追加リクエスト受信`);
+  logWithContext("info", `📍 /api/spreads/[id]/cells - スプレッド(${id})へのセル追加リクエスト受信`, { path: `/api/spreads/${id}/cells` });
   try {
     const data = await request.json();
     const cell = await createSpreadCell(id, data);

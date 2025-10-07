@@ -3,7 +3,7 @@ import { getSpreadLevels } from "@/lib/services/master";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  logWithContext("info", "📍 /api/spread-levels - スプレッドレベル一覧取得リクエスト受信");
+  logWithContext("info", "📍 /api/spread-levels - スプレッドレベル一覧取得リクエスト受信", { path: "/api/spread-levels"});
   try {
     const levels = await getSpreadLevels();
     logWithContext("info", "✅ スプレッドレベル一覧取得完了", { levels });
