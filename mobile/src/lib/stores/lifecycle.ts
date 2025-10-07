@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { App as CapacitorApp } from '@capacitor/app';
 import { useAuthStore } from './auth';
 import { useDailyLimitStore } from './dailyLimit';
+import { queryClient } from '../../components/providers/QueryProvider';
+import { logWithContext } from '../logger/logger';
 
 interface LifecycleState {
   // 状態（外から見える）
@@ -10,6 +12,7 @@ interface LifecycleState {
   dateChanged: boolean; // 日付が変わった時にtrue
   lastResumedAt: Date | null;
   error: Error | null;
+  isInitLocked: boolean; // 初期化中に二重initを防止するためのフラグ
   
   // アクション
   init: () => Promise<void>;
@@ -31,34 +34,56 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
   dateChanged: false,
   lastResumedAt: null,
   error: null,
+  isInitLocked: false, // 初期化中に二重initを防止するためのフラグ
   
   init: async () => {
-    console.log('[Lifecycle] Initializing...');
-    set({ isRefreshing: true, error: null });
-    
+    const isInitLocked = get().isInitLocked;
+    const isInitialized = get().isInitialized;
+    if (isInitialized || isInitLocked) {
+      logWithContext('info', '[Lifecycle] Already initialized, skipping', { isInitLocked, isInitialized });
+      return;
+    }
+    logWithContext('info', '[Lifecycle] Initializing...', { isInitLocked, isInitialized });
+    set({ isInitLocked: true, isRefreshing: true, error: null });
+
     try {
       // 1. 認証初期化
-      console.log('[Lifecycle] Initializing AuthStore...');
+      logWithContext('info', '[Lifecycle] Initializing AuthStore...');
       await useAuthStore.getState().init();
+
+      // 2. マスターデータの取得
+      logWithContext('info', '[Lifecycle] Fetching master data...');
+      await queryClient.invalidateQueries({ queryKey: ['master', true, true] });
+
+      // 3. ユーザー利用状況の取得
+      logWithContext('info', '[Lifecycle] Fetching usage stats...');
+      const clientId = useAuthStore.getState().payload?.clientId || null;
+      if (clientId) {
+        await queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      } else {
+        logWithContext('info', '[Lifecycle] No clientId available, skipping usage fetch');
+      }
       
       set({ 
         isInitialized: true,
         isRefreshing: false,
         lastResumedAt: new Date()
       });
-      console.log('[Lifecycle] Initialization complete');
+      logWithContext('info', '[Lifecycle] Initialization complete');
     } catch (error) {
-      console.error('[Lifecycle] Initialization failed:', error);
+      logWithContext('error', '[Lifecycle] Initialization failed:', { error });
       set({ 
         isInitialized: true,
         isRefreshing: false,
         error: error as Error
       });
+    } finally {
+      set({ isInitLocked: false });
     }
   },
   
   setup: () => {
-    console.log('[Lifecycle] Setting up listeners');
+    logWithContext('info', '[Lifecycle] Setting up listeners');
     get().cleanup();
     
     // 1. appStateChange
@@ -91,7 +116,7 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
   },
   
   cleanup: () => {
-    console.log('[Lifecycle] Cleaning up listeners');
+    logWithContext('info', '[Lifecycle] Cleaning up listeners');
     
     if (appStateListener) {
       appStateListener.remove();
@@ -110,7 +135,7 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
   },
   
   onResume: async () => {
-    console.log('[Lifecycle] App resumed');
+    logWithContext('info', '[Lifecycle] App resumed');
     set({ 
       isRefreshing: true, 
       dateChanged: false,
@@ -131,12 +156,12 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
       });
       
       if (wasReset) {
-        console.log('[Lifecycle] Daily limits were reset');
+        logWithContext('info', '[Lifecycle] Daily limits were reset');
       }
       
-      console.log('[Lifecycle] Resume complete');
+      logWithContext('info', '[Lifecycle] Resume complete');
     } catch (error) {
-      console.error('[Lifecycle] Resume failed:', error);
+      logWithContext('error', '[Lifecycle] Resume failed:', { error });
       set({ 
         isRefreshing: false,
         error: error as Error
@@ -145,7 +170,7 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
   },
   
   onPause: async () => {
-    console.log('[Lifecycle] App paused');
+    logWithContext('info', '[Lifecycle] App paused');
     // 必要なら状態保存
   },
   
@@ -157,26 +182,3 @@ export const useLifecycleStore = create<LifecycleState>((set, get) => ({
     set({ error: null });
   },
 }));
-
-// 便利なセレクター
-export const useLifecycle = () => {
-  const { 
-    isInitialized, 
-    isRefreshing, 
-    dateChanged, 
-    lastResumedAt,
-    error,
-    clearDateChanged,
-    clearError 
-  } = useLifecycleStore();
-  
-  return {
-    isInitialized,
-    isRefreshing,
-    dateChanged,
-    lastResumedAt,
-    error,
-    clearDateChanged,
-    clearError,
-  };
-};

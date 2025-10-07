@@ -15,6 +15,8 @@ export class LogRepository extends BaseRepository {
       metadata: prismaLog.metadata ? (prismaLog.metadata as unknown as LogMetadata) : undefined,
       clientId: prismaLog.clientId || undefined,
       path: prismaLog.path || "", // nullの場合は空文字列に変換
+      timestamp: prismaLog.timestamp || 0,
+      device: prismaLog.device || "web_server",
       createdAt: prismaLog.createdAt,
     };
   }
@@ -29,6 +31,8 @@ export class LogRepository extends BaseRepository {
         metadata: log.metadata ? (log.metadata as unknown as Prisma.JsonObject) : undefined,
         clientId: log.clientId || null,
         path: log.path || null,
+        timestamp: log.timestamp || new Date(),
+        device: log.device || 'web_server',
       },
     });
 

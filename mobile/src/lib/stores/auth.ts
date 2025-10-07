@@ -7,6 +7,7 @@ import type { JWTPayload } from '../../../../shared/lib/types';
 import type { UserPlan } from '../../types';
 import { clientService } from '../services/client';
 import { apiClient } from '../utils/apiClient';
+import { logWithContext } from '../logger/logger';
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 
@@ -39,72 +40,72 @@ export const useAuthStore = create<AuthState>()(
       
       init: async () => {
         try {
-          console.log('[AuthStore] Initialization started');
+          logWithContext('info', '[AuthStore] Initialization started');
           set({ isReady: false });
           const token = await storeRepository.get<string>('accessToken');
           const storedDeviceId = await storeRepository.get<string>('deviceId');
           const storedClientId = await storeRepository.get<string>('clientId');
           const storedUserId = await storeRepository.get<string>('userId');
-          console.log('[AuthStore] Stored values:', { token, storedDeviceId, storedClientId, storedUserId });
+          logWithContext('info', '[AuthStore] Stored values:', { token, storedDeviceId, storedClientId, storedUserId });
           
           // アプリがダウンロードされた直後から順を追って実装
           if(!token) {
             // ダウンロード直後・トークン破損状態を想定
             // サーバー側で新規デバイス登録 or 既存デバイス認識を行い、新しいトークンを発行
-            console.log('[AuthStore] No token found, registering device');
+            logWithContext('info', '[AuthStore] No token found, registering device');
             const payload = await authService.registerDevice();
             set({
               payload,
               plan: payload.planCode as UserPlan,
               isAuthenticated: !!payload.user,
             });
-            console.log('[AuthStore] Device registration successful:', payload.planCode);
+            logWithContext('info', '[AuthStore] Device registration successful:', { planCode: payload.planCode });
           } else {
             const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
             if (payload && payload.t !== 'app' || payload.deviceId !== storedDeviceId || payload.clientId !== storedClientId || (payload.user?.id || null) !== storedUserId) {
               // 一致しない場合は、異常ケースとして、再登録の処理へ
               // TODO: ユーザーのデータ引き継ぎ・復元に対する機能を検討
-              console.log('[AuthStore] Device ID mismatch, re-registering device');
+              logWithContext('info', '[AuthStore] Device ID mismatch, re-registering device');
               const newPayload = await authService.registerDevice();
               set({
                 payload: newPayload,
                 plan: newPayload.planCode as UserPlan,
                 isAuthenticated: !!newPayload.user,
               });
-              console.log('[AuthStore] Device re-registration successful:', newPayload.planCode);
+              logWithContext('info', '[AuthStore] Device re-registration successful:', { planCode: newPayload.planCode });
             } else {
               // デバイス情報OK、トークン有効期限チェック
-              console.log('[AuthStore] Valid token found, checking expiration');
+              logWithContext('info', '[AuthStore] Valid token found, checking expiration');
               await get().refresh();
-              console.log('[AuthStore] Token refresh (if needed) completed');
+              logWithContext('info', '[AuthStore] Token refresh (if needed) completed');
             }
           }
           set({ isReady: true });
-          console.log('[AuthStore] Initialization completed');
+          logWithContext('info', '[AuthStore] Initialization completed');
         } catch (error) {
-          console.error('[AuthStore] Initialization failed:', error);
+          logWithContext('error', '[AuthStore] Initialization failed:', { error });
         }
       },
 
       login: async () => {
         try {
-          console.log('[AuthStore] Login started');
+          logWithContext('info', '[AuthStore] Login started');
           const payload = await authService.signInWithWeb();
           set({
             payload,
             plan: payload.planCode as UserPlan,
             isAuthenticated: !!payload.user,
           });
-          console.log('[AuthStore] Login successful:', payload.planCode);
+          logWithContext('info', '[AuthStore] Login successful:', { planCode: payload.planCode });
         } catch (error) {
-          console.error('[AuthStore] Login failed:', error);
+          logWithContext('error', '[AuthStore] Login failed:', { error });
           throw error;
         }
       },
       
       logout: async () => {
         try {
-          console.log('[AuthStore] Logout started');
+          logWithContext('info', '[AuthStore] Logout started');
           await authService.logout();
           apiClient.clearTokenCache();
           set({
@@ -112,20 +113,20 @@ export const useAuthStore = create<AuthState>()(
             plan: 'GUEST',
             isAuthenticated: false,
           });
-          console.log('[AuthStore] Logout successful');
+          logWithContext('info', '[AuthStore] Logout successful');
         } catch (error) {
-          console.error('[AuthStore] Logout failed:', error);
+          logWithContext('error', '[AuthStore] Logout failed:', { error });
           throw error;
         }
       },
       
       refresh: async () => {
         try {
-          console.log('[AuthStore] Refresh started');
+          logWithContext('info', '[AuthStore] Refresh started');
           const token = await storeRepository.get<string>('accessToken');
           
           if (!token) {
-            console.log('[AuthStore] No token to refresh');
+            logWithContext('info', '[AuthStore] No token to refresh');
             return;
           }
           
@@ -133,7 +134,7 @@ export const useAuthStore = create<AuthState>()(
           const isExpired = payload.exp && Date.now() >= payload.exp * 1000;
           
           if (isExpired) {
-            console.log('[AuthStore] Token expired, refreshing from server');
+            logWithContext('info', '[AuthStore] Token expired, refreshing from server');
             const newPayload = await authService.refreshToken();
             set({
               payload: newPayload,
@@ -147,10 +148,10 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: !!payload.user,
             });
           }
-          
-          console.log('[AuthStore] Refresh successful');
+
+          logWithContext('info', '[AuthStore] Refresh successful');
         } catch (error) {
-          console.error('[AuthStore] Refresh failed:', error);
+          logWithContext('error', '[AuthStore] Refresh failed:', { error });
           throw error;
         }
       },
@@ -161,12 +162,12 @@ export const useAuthStore = create<AuthState>()(
           plan: payload.planCode as UserPlan,
           isAuthenticated: !!payload.user,
         });
-        console.log('[AuthStore] Payload updated:', payload.planCode);
+        logWithContext('info', '[AuthStore] Payload updated:', { planCode: payload.planCode });
       },
 
       changePlan: async (newPlanCode: string) => {
         try {
-          console.log('[AuthStore] Change plan started:', newPlanCode);
+          logWithContext('info', '[AuthStore] Change plan started:', { newPlanCode });
           // TODO: 認証必須にする場合はコメントアウトを外す
           // if (!get().isAuthenticated) {
           //   throw new Error('Authentication required to change plan');
@@ -177,9 +178,9 @@ export const useAuthStore = create<AuthState>()(
             plan: result.payload.planCode as UserPlan,
             isAuthenticated: !!result.payload.user,
           });
-          console.log('[AuthStore] Change plan successful:', result.payload.planCode);
+          logWithContext('info', '[AuthStore] Change plan successful:', { planCode: result.payload.planCode });
         } catch (error) {
-          console.error('[AuthStore] Change plan failed:', error);
+          logWithContext('error', '[AuthStore] Change plan failed:', { error });
           throw error;
         }
       },
@@ -203,18 +204,3 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
-
-export const useAuth = () => {
-  const { payload, plan, isAuthenticated, login, logout, refresh, setPayload } = useAuthStore();
-  
-  return {
-    payload,
-    plan,
-    isAuthenticated,
-    userId: payload?.user?.id,
-    login,
-    logout,
-    refresh,
-    setPayload,
-  };
-};

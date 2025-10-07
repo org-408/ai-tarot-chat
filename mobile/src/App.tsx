@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
@@ -13,7 +13,6 @@ import { useMaster } from "./lib/hooks/useMaster";
 import { useUsage } from "./lib/hooks/useUsage";
 
 function App() {
-  const [isAppInitialized, setIsAppInitialized] = useState(false);
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -59,20 +58,13 @@ function App() {
   useEffect(() => {
     console.log("[App] 初期化開始");
     // React.StrictMode 対応のため2回目以降のinitを防止
-    if (isAppInitialized) {
+    if (isInitialized) {
       console.log("[App] すでに初期化中または完了しているためスキップ");
       return;
     }
-    setIsAppInitialized(true);
     init().then(() => {
       console.log("[App] 初期化完了");
       setup();
-      // 初期化時はマスターデータを必ず取得する
-      queryClient.invalidateQueries({ queryKey: ['masters', true] });
-      console.log("[App] マスターデータ取得要求送信");
-      // 利用状況も取得する
-      queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
-      console.log("[App] 利用状況取得要求送信");
     });
 
     return () => {
@@ -82,10 +74,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (isAppInitialized && !isInitialized) {
-      console.log("[App] ライフサイクル初期化中...", isAppInitialized, isInitialized);
+    console.log("[App] State changed", { masterData, usageStats, payload });
+    if (!masterData) {
+      console.log("[App] マスターデータ取得中...");
+      queryClient.invalidateQueries({ queryKey: ['master', true, true] });
+      return;
     }
-  }, [isAppInitialized, isInitialized]);
+    if (!usageStats && clientId) {
+      console.log("[App] 利用状況取得中...");
+      queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
+      return;
+    }
+    if (!payload) {
+      console.log("[App] ユーザーデータ取得中...");
+      return;
+    }
+  }, [masterData, usageStats, payload]);
 
   // 🔥 日付変更時の通知とキャッシュ更新
   useEffect(() => {
@@ -132,7 +136,7 @@ function App() {
   }, [isAuthenticated, isInitialized, plan]);
 
   // 初期化中
-  if (!isAppInitialized || !isInitialized || !masterData || !usageStats || !payload) {
+  if (!isInitialized || !masterData || !usageStats || !payload) {
     return <TarotSplashScreen message={
       !isInitialized ? "アプリを初期化中..." :
       !masterData ? "マスターデータを読み込み中..." :

@@ -90,6 +90,7 @@ const plans: Prisma.PlanCreateInput[] = [
     maxPersonal: 1,
     hasPersonal: true,
     hasHistory: true,
+    isActive: false,
   },
 ];
 

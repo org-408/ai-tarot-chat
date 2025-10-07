@@ -441,6 +441,8 @@ model Log {
   metadata  Json?    // 追加情報をJSON形式で保存
   clientId  String?  // 関連するクライアントID（必要な場合）
   path      String?  // APIパスなど
+  timestamp DateTime // ログの発生日時
+  device    String   @default("web") // 'web', 'mobile' などデバイス情報
   createdAt DateTime @default(now())
 
   // 必要に応じてクライアントとのリレーション

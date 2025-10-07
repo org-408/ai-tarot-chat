@@ -146,6 +146,48 @@ export class ApiClient {
     return this.handleResponse<T>(response);
   }
 
+  // 既存メソッドの修正: トークンなしGETリクエスト
+  async getWithoutAuth<T>(path: string): Promise<T> {
+    console.log(`[ApiClient] GET (without auth) request to: ${BFF_URL}${path}`);
+    return this.requestWithoutAuth<T>(async () => {
+      return CapacitorHttp.get({
+        url: `${BFF_URL}${path}`,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    });
+  }
+
+  // 新規メソッド: トークンなしPOSTリクエスト
+  async postWithoutAuth<T>(path: string, body?: unknown): Promise<T> {
+    console.log(`[ApiClient] POST (without auth) request to: ${BFF_URL}${path}`);
+    return this.requestWithoutAuth<T>(async () => {
+      return CapacitorHttp.post({
+        url: `${BFF_URL}${path}`,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: body,
+      });
+    });
+  }
+
+  // 認証なしリクエスト処理（リトライなし）
+  private async requestWithoutAuth<T>(
+    requestFn: () => Promise<HttpResponse>
+  ): Promise<T> {
+    console.log(`[ApiClient] requestWithoutAuth called`);
+    try {
+      const response = await requestFn();
+      console.log('[ApiClient] Response status:', response.status);
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      console.error('[ApiClient] Request error:', error);
+      throw error;
+    }
+  }
+  
   private handleResponse<T>(response: HttpResponse): T {
     console.log('[ApiClient] handleResponse called, status:', response.status);
     if (response.status < 200 || response.status >= 300) {

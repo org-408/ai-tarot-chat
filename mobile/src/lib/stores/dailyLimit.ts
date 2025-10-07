@@ -4,6 +4,7 @@ import type { UsageStats } from '../../../../shared/lib/types';
 import { clientService } from '../services/client';
 import { storeRepository } from '../repositories/store';
 import { getTodayJST, isSameDayJST } from '../utils/date';
+import { logWithContext } from '../logger/logger';
 
 interface DailyLimitState {
   isReady: boolean;
@@ -24,7 +25,7 @@ export const useDailyLimitStore = create<DailyLimitState>()(
       lastFetchedDate: null,
       
       init: async () => {
-        console.log('[DailyLimit] Initializing...');
+        logWithContext('info', '[DailyLimit] Initializing...');
         try {
           const usage = await clientService.getUsageAndReset();
           const today = getTodayJST();
@@ -34,15 +35,15 @@ export const useDailyLimitStore = create<DailyLimitState>()(
             lastFetchedDate: today,
             isReady: true 
           });
-          console.log('[DailyLimit] Initialized:', usage);
+          logWithContext('info', '[DailyLimit] Initialized:', { usage });
         } catch (error) {
-          console.error('[DailyLimit] Init failed:', error);
+          logWithContext('error', '[DailyLimit] Init failed:', { error });
           set({ isReady: true });
         }
       },
       
       refresh: async () => {
-        console.log('[DailyLimit] Refreshing usage...');
+        logWithContext('info', '[DailyLimit] Refreshing usage...');
         try {
           const usage = await clientService.getUsageAndReset();
           const today = getTodayJST();
@@ -51,22 +52,22 @@ export const useDailyLimitStore = create<DailyLimitState>()(
             usage,
             lastFetchedDate: today
           });
-          console.log('[DailyLimit] Refreshed:', usage);
+          logWithContext('info', '[DailyLimit] Refreshed:', { usage });
         } catch (error) {
-          console.error('[DailyLimit] Refresh failed:', error);
+          logWithContext('error', '[DailyLimit] Refresh failed:', { error });
         }
       },
       
       // 日付が変わったかチェック＆必要ならリセット
       checkDateAndReset: async () => {
-        console.log('[DailyLimit] Checking date change...');
+        logWithContext('info', '[DailyLimit] Checking date change...');
         
         const { lastFetchedDate } = get();
         const today = getTodayJST();
         
         // 日付が変わっていない場合はスキップ
         if (isSameDayJST(lastFetchedDate ? new Date(lastFetchedDate) : undefined)) {
-          console.log('[DailyLimit] Same day, skipping reset');
+          logWithContext('info', '[DailyLimit] Same day, skipping reset');
           return false;
         }
         
@@ -79,11 +80,11 @@ export const useDailyLimitStore = create<DailyLimitState>()(
             usage,
             lastFetchedDate: today
           });
-          
-          console.log('[DailyLimit] Date changed, limits reset:', usage);
+
+          logWithContext('info', '[DailyLimit] Date changed, limits reset:', { usage });
           return true; // リセットされた
         } catch (error) {
-          console.error('[DailyLimit] Date check failed:', error);
+          logWithContext('error', '[DailyLimit] Date check failed:', { error });
           return false;
         }
       },
@@ -106,16 +107,3 @@ export const useDailyLimitStore = create<DailyLimitState>()(
     }
   )
 );
-
-// 便利なセレクター
-export const useDailyLimit = () => {
-  const { usage, refresh, checkDateAndReset } = useDailyLimitStore();
-  
-  return {
-    usage,
-    remainingReadings: usage?.remainingReadings ?? 0,
-    canRead: (usage?.remainingReadings ?? 0) > 0,
-    refresh,
-    checkDateAndReset,
-  };
-};

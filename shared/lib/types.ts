@@ -536,5 +536,7 @@ export type Log = {
   clientId?: string | null;
   client?: Client | null;
   path?: string | null; // 発生箇所のパス
+  timestamp: Date;
+  device: string; // 'web', 'mobile' など
   createdAt: Date;
 };

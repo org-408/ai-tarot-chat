@@ -15,7 +15,7 @@ class PrismaTransport extends Transport {
 
   async log(info: winston.LogEntry, callback: (error?: Error | null, success?: boolean) => void) {
     try {
-      const { level, message, ...metadata } = info;
+      const { level, message, timestamp, device, ...metadata } = info;
       // Prismaを使ってログを保存
       await logService.createLog({
         level: level as string,
@@ -23,6 +23,9 @@ class PrismaTransport extends Transport {
         metadata: metadata || {},
         clientId: metadata.clientId || null,
         path: metadata.path || null,
+        timestamp: timestamp || new Date(), // 現在日時を設定
+        device: device || 'web', // デフォルトは'web'
+
       });
       callback(null, true);
     } catch (error) {
@@ -99,9 +102,10 @@ const logger = winston.createLogger({
 export const logWithContext = (
   level: 'info' | 'error' | 'warn' | 'debug',
   message: string, 
-  context?: { clientId?: string; path?: string; [key: string]: unknown }
+  context?: { clientId?: string; path?: string; [key: string]: unknown },
+  device: string = 'web_server'
 ) => {
-  logger.log(level, message, context);
+  logger.log(level, message, { ...context, device });
 };
 
 export default logger;
