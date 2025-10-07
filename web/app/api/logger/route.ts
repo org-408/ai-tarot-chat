@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
     
     // ログエントリの内容を取り出す
-    const { level, message, device, ...context } = logEntry;
+    const { level, message, device, context } = logEntry;
     logWithContext('info', 'Received log entry', { logEntry, level, message, device, context });
     
     // 必須フィールドの検証
