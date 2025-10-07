@@ -3,6 +3,11 @@ import Transport from 'winston-transport';
 import path from 'path';
 import { logService } from '../services/log';
 
+// Edge 環境でも動作するパス結合関数
+function joinPath(...parts: string[]): string {
+  return parts.join('/').replace(/\/+/g, '/');
+}
+
 // カスタムトランスポート（Prisma用）
 class PrismaTransport extends Transport {
   constructor(opts?: Transport.TransportStreamOptions) {
@@ -28,11 +33,15 @@ class PrismaTransport extends Transport {
   }
 }
 
-// ログディレクトリの設定
-const logDir = path.join(process.cwd(), 'logs');
+// ログディレクトリの設定 (Edge環境対応)
+const logDir = typeof process !== 'undefined' && process.cwd 
+  ? joinPath(process.cwd(), 'logs')
+  : '/logs'; // フォールバック値
 
 // 環境設定
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = typeof process !== 'undefined' && process.env
+  ? process.env.NODE_ENV !== 'production' 
+  : false;
 
 // ロガーの設定
 const logger = winston.createLogger({
@@ -44,7 +53,7 @@ const logger = winston.createLogger({
   defaultMeta: { service: 'ai-tarot-chat' },
   transports: [
     // 1. コンソール出力 (開発環境では常に有効、本番環境ではDISABLE_CONSOLE_LOGが設定されていなければ有効)
-    ...(isDev || process.env.DISABLE_CONSOLE_LOG !== 'true' 
+    ...(isDev || (typeof process !== 'undefined' && process.env && process.env.DISABLE_CONSOLE_LOG !== 'true')
       ? [new winston.transports.Console({
           format: winston.format.combine(
             winston.format.colorize(),
@@ -55,17 +64,17 @@ const logger = winston.createLogger({
         })]
       : []),
     
-    // 2. ファイル出力 (ENABLE_FILE_LOG=trueなら有効)
-    ...(process.env.ENABLE_FILE_LOG === 'true'
+    // 2. ファイル出力 (ENABLE_FILE_LOG=trueなら有効かつNode.js環境の場合のみ)
+    ...((typeof process !== 'undefined' && process.env && process.env.ENABLE_FILE_LOG === 'true' && typeof window === 'undefined')
       ? [
           new winston.transports.File({ 
-            filename: path.join(logDir, 'error.log'),
+            filename: joinPath(logDir, 'error.log'),
             level: 'error',
             maxsize: 10485760, // 10MB
             maxFiles: 10,
           }),
           new winston.transports.File({ 
-            filename: path.join(logDir, 'combined.log'),
+            filename: joinPath(logDir, 'combined.log'),
             maxsize: 10485760, // 10MB
             maxFiles: 10,
           })
@@ -73,7 +82,7 @@ const logger = winston.createLogger({
       : []),
     
     // 3. Prisma/DB出力 (ENABLE_DB_LOG=trueなら有効)
-    ...(process.env.ENABLE_DB_LOG === 'true'
+    ...((typeof process !== 'undefined' && process.env && process.env.ENABLE_DB_LOG === 'true')
       ? [new PrismaTransport({ level: 'info' })] // infoレベル以上のみDBに保存
       : [])
   ],
