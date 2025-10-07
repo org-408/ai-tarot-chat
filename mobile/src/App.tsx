@@ -83,8 +83,7 @@ function App() {
 
   useEffect(() => {
     if (isAppInitialized && !isInitialized) {
-      console.log("[App] 初期化に失敗しました");
-      alert("アプリの初期化に失敗しました。再読み込みしてください。");
+      console.log("[App] ライフサイクル初期化中...", isAppInitialized, isInitialized);
     }
   }, [isAppInitialized, isInitialized]);
 
@@ -133,10 +132,12 @@ function App() {
   }, [isAuthenticated, isInitialized, plan]);
 
   // 初期化中
-  if (!isInitialized || !masterData || !usageStats) {
+  if (!isAppInitialized || !isInitialized || !masterData || !usageStats || !payload) {
     return <TarotSplashScreen message={
       !isInitialized ? "アプリを初期化中..." :
       !masterData ? "マスターデータを読み込み中..." :
+      !usageStats ? "利用状況を読み込み中..." :
+      !payload ? "ユーザーデータを読み込み中..." :
       "利用状況を読み込み中..."
     } />;
   }

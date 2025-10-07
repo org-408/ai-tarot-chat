@@ -39,7 +39,7 @@ export const useMasterStore = create<MasterState>((set, get) => ({
         initialized: true,
       });
     } catch (error) {
-      console.error("マスタデータ取得エラー:", error);
+      console.error("error", "マスタデータ取得エラー:", { error });
       set({
         isLoading: false,
         error: error instanceof Error ? error.message : "不明なエラー",

@@ -88,7 +88,7 @@ export function useClients() {
       try {
         return await createMutation.mutateAsync(data);
       } catch (err) {
-        console.error("ユーザーの作成エラー:", err);
+        console.error("error", "ユーザーの作成エラー:", { err });
         return null;
       }
     },
@@ -96,7 +96,7 @@ export function useClients() {
       try {
         return await updateMutation.mutateAsync({ id, data });
       } catch (err) {
-        console.error("ユーザーの更新エラー:", err);
+        console.error("error", "ユーザーの更新エラー:", { err });
         return null;
       }
     },
@@ -105,7 +105,7 @@ export function useClients() {
         await deleteMutation.mutateAsync(id);
         return true;
       } catch (err) {
-        console.error("ユーザーの削除エラー:", err);
+        console.error("error", "ユーザーの削除エラー:", { err });
         return false;
       }
     },

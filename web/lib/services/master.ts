@@ -4,6 +4,7 @@ import { getAllDecks } from "@/lib/services/tarot";
 import { getTarotists } from "@/lib/services/tarotist";
 import { prisma } from "@/prisma/prisma";
 import { planService } from "./plan";
+import { logWithContext } from "../logger/logger";
 
 // 型定義（シンプルに boolean のみ返す）
 
@@ -59,7 +60,7 @@ export async function checkMasterDataUpdates(
     ? new Date(lastUpdatedAt)
     : new Date(0);
 
-  console.log("マスターデータ更新チェック:", {
+  await logWithContext("info", "マスターデータ更新チェック:", {
     clientLastUpdate: clientLastUpdate.toISOString(),
   });
 
@@ -96,7 +97,7 @@ export async function checkMasterDataUpdates(
   );
   const needsUpdate = serverLastUpdate > clientLastUpdate;
 
-  console.log("更新チェック結果:", {
+  await logWithContext("info", "更新チェック結果:", {
     serverLastUpdate: serverLastUpdate.toISOString(),
     needsUpdate,
   });

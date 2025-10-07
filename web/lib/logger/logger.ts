@@ -1,6 +1,5 @@
 import winston from 'winston';
 import Transport from 'winston-transport';
-import path from 'path';
 import { logService } from '../services/log';
 
 // Edge 環境でも動作するパス結合関数

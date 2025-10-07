@@ -1,9 +1,10 @@
+import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
 import { planService } from "@/lib/services/plan";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  console.log("📍 /api/plans/change - プラン変更リクエスト受信");
+  await logWithContext("info", "📍 /api/plans/change - プラン変更リクエスト受信");
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);
@@ -12,35 +13,35 @@ export async function POST(request: NextRequest) {
       !payload ||
       !payload.payload.deviceId ||
       !payload.payload.clientId
-    )
+    ) {
+      await logWithContext("error", "❌ セッション検証エラー", { payload, status: 401 });
       return new Response("unauthorized", { status: 401 });
-    console.log(`✅ セッション検証完了 (payload: ${payload})`);
+    }
+    await logWithContext("info", `✅ セッション検証完了`, { payload });
 
     // リクエストボディ取得
     const { code } = await request.json();
     const clientId = payload.payload.clientId;
     if (!code) {
-      console.error("❌ planCode が不足");
+      await logWithContext("error", "❌ planCode が不足", { code, status: 400 });
       return new Response("invalid request", { status: 400 });
     }
-    console.log(
-      `🔄 プラン変更処理開始 (clientId: ${clientId}, planCode: ${code})`
-    );
+    await logWithContext("info", `🔄 プラン変更処理開始`, { clientId, code });
 
     // プラン変更処理
     const needsUpdate = await planService.changePlan(clientId, code);
 
     // JWTペイロード更新
     if (!needsUpdate) {
-      console.log("❌ プラン変更失敗", needsUpdate, clientId, code);
+      await logWithContext("error", "❌ プラン変更失敗", { needsUpdate, clientId, code, status: 500 });
       return new Response("plan change failed", { status: 500 });
     }
 
     const newToken = await authService.refreshJwtPayload(payload.payload, code);
-    console.log(`✅ プラン変更完了`, needsUpdate, newToken);
+    await logWithContext("info", `✅ プラン変更完了`, { needsUpdate, newToken });
     return NextResponse.json({ success: !!needsUpdate, token: newToken });
   } catch (error) {
-    console.error("更新チェックエラー:", error);
+    await logWithContext("error", "❌ 更新チェックエラー", { error, status: 500 });
     return NextResponse.json(
       { error: "更新チェックに失敗しました" },
       { status: 500 }

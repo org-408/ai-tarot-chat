@@ -1,4 +1,6 @@
 "use client";
+import { logWithContext } from "@/lib/logger/logger";
+import { log } from "console";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -26,7 +28,7 @@ function Content() {
       const url = `${APP_SCHEME}?ticket=${encodeURIComponent(ticket)}`;
       window.location.href = url;
     } catch (e) {
-      console.error("チケット取得エラー:", e);
+      console.error("error", "チケット取得エラー:", e);
       if (!retried.current) {
         retried.current = true;
         await signIn(undefined, {
@@ -39,17 +41,19 @@ function Content() {
   }, [router]);
 
   useEffect(() => {
-    console.log("AuthMobileCallbackPage status:", status, { success });
+    console.log("info", "AuthMobileCallbackPage status:", { status, success });
 
     // OAuth 認証の確定を待つ（success=true でも必ず待つ）
     if (status === "loading") {
       setMsg(success ? "セッション確立中…" : "認証を確定しています…");
+      console.log("info", "セッション確立中… : 認証を確定しています…", { status, success });
       return;
     }
 
     // 認証確定後、ticket 発行 → deep link
     if (status === "authenticated") {
       deepLinkWithTicket();
+      console.log("info", "認証確定 → チケット発行 → アプリに戻る", { status, success });
       return;
     }
 
@@ -59,11 +63,13 @@ function Content() {
       signIn(undefined, {
         callbackUrl: "/auth/mobile/callback",
       });
+      console.log("info", "未認証 → 自動サインイン試行", { status, success });
       return;
     }
 
     // それでも未認証の場合は手動サインイン画面へ
     if (status === "unauthenticated" && retried.current) {
+      console.log("info", "未認証 → 手動サインイン画面へリダイレクト", { status, success });
       router.push("/auth/signin?isMobile=true");
     }
   }, [status, success, router, deepLinkWithTicket]);

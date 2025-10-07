@@ -4,6 +4,7 @@ import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
 import { clientService } from "./lib/services/client";
+import { logWithContext } from "./lib/logger/logger";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -16,15 +17,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   }), Apple],
   callbacks: {
     async signIn({ user }) {
-      console.log("SignIn callback triggered");
+      await logWithContext("info", "Sign-in attempt", { user });
       // client と user が紐づいていたら、client.lastLoginAt を更新
       if (!user.id) return true;
-      console.log("User signed in:", user);
+      await logWithContext("info", "User signed in", { user });
       const client = await clientService.getClientByUserId(user.id);
       if (client) {
-        console.log("Associated client found:", client);
+        await logWithContext("info", "Associated client found", { client });
         await clientService.updateLoginDate(client.id);
-        console.log("Client lastLoginAt updated");
+        await logWithContext("info", "Client lastLoginAt updated", { clientId: client.id });
       }
       return true;
     },

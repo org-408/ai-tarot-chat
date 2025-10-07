@@ -88,7 +88,7 @@ export function useSpreads() {
       try {
         return await createMutation.mutateAsync(data);
       } catch (err) {
-        console.error("スプレッドの作成エラー:", err);
+        console.error("error", "スプレッドの作成エラー:", { err });
         return null;
       }
     },
@@ -96,7 +96,7 @@ export function useSpreads() {
       try {
         return await updateMutation.mutateAsync({ id, data });
       } catch (err) {
-        console.error("スプレッドの更新エラー:", err);
+        console.error("error", "スプレッドの更新エラー:", { err });
         return null;
       }
     },
@@ -105,7 +105,7 @@ export function useSpreads() {
         await deleteMutation.mutateAsync(id);
         return true;
       } catch (err) {
-        console.error("スプレッドの削除エラー:", err);
+        console.error("error", "スプレッドの削除エラー:", { err });
         return false;
       }
     },

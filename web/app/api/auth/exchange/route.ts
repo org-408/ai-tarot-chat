@@ -1,18 +1,19 @@
+import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  console.log("📍 /api/auth/exchange - チケット交換リクエスト受信");
+  logWithContext("info", "📍 /api/auth/exchange - チケット交換リクエスト受信");
 
   try {
     const { ticket, deviceId } = await request.json().catch(() => ({}));
 
     if (!ticket || !deviceId) {
-      console.error("❌ ticket または deviceId が不足");
+      logWithContext("error", "❌ ticket または deviceId が不足", { ticket, deviceId });
       return new Response("invalid request", { status: 400 });
     }
 
-    console.log(`🔄 チケット交換処理開始 (deviceId: ${deviceId})`);
+    logWithContext("info", `🔄 チケット交換処理開始`, { ticket });
 
     // AuthService経由でチケット交換・ユーザー紐付け（既存パターンに合わせて）
     const token = await authService.exchangeTicket({
@@ -20,14 +21,14 @@ export async function POST(request: NextRequest) {
       deviceId,
     });
 
-    console.log(`✅ チケット交換完了 (token: ${token})`);
+    logWithContext("info", `✅ チケット交換完了`, { token });
 
     // 既存パターンに合わせたレスポンス
     return Response.json({
       token,
     });
   } catch (error) {
-    console.error("❌ チケット交換エラー:", error);
+    logWithContext("error", "❌ チケット交換エラー", { error });
 
     const errorMessage =
       error instanceof Error ? error.message : "exchange failed";
@@ -38,9 +39,11 @@ export async function POST(request: NextRequest) {
       errorMessage.includes("not found") ||
       errorMessage.includes("expired")
     ) {
+      logWithContext("warn", "❌ チケット交換リクエストが無効", { errorMessage, status: 401 });
       return new Response("invalid", { status: 401 });
     }
 
+    logWithContext("error", "❌ チケット交換リクエストで予期せぬエラー", { errorMessage, status: 500 });
     return new Response("exchange failed", { status: 500 });
   }
 }

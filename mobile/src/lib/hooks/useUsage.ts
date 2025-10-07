@@ -19,6 +19,8 @@ export function useUsage(clientId: string | null) {
     enabled: !!clientId, // clientIdがある場合のみ実行
     staleTime: 60_000, // 1分
     gcTime: 5 * 60_000, // 5分
+    refetchOnMount: false, // マウント時の再取得を無効化
+    retry: false, // エラー時の再試行を無効化
   });
 }
 
