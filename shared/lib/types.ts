@@ -535,6 +535,6 @@ export type Log = {
   metadata?: Object | null; // JSON文字列化されたメタ情報
   clientId?: string | null;
   client?: Client | null;
-  path: string; // 発生箇所のパス
+  path?: string | null; // 発生箇所のパス
   createdAt: Date;
 };

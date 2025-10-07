@@ -9,13 +9,13 @@ class PrismaTransport extends Transport {
     super(opts);
   }
 
-  async log(info: any, callback: Function) {
+  async log(info: winston.LogEntry, callback: (error?: Error | null, success?: boolean) => void) {
     try {
-      const { level, message, timestamp, ...metadata } = info;
+      const { level, message, ...metadata } = info;
       // Prismaを使ってログを保存
       await logService.createLog({
-        level,
-        message,
+        level: level as string,
+        message: message as string,
         metadata: metadata || {},
         clientId: metadata.clientId || null,
         path: metadata.path || null,
@@ -23,7 +23,7 @@ class PrismaTransport extends Transport {
       callback(null, true);
     } catch (error) {
       console.error('Prismaログ保存エラー:', error);
-      callback(error);
+      callback(error as Error);
     }
   }
 }
@@ -83,7 +83,7 @@ const logger = winston.createLogger({
 export const logWithContext = (
   level: 'info' | 'error' | 'warn' | 'debug',
   message: string, 
-  context?: { clientId?: string; path?: string; [key: string]: any }
+  context?: { clientId?: string; path?: string; [key: string]: unknown }
 ) => {
   logger.log(level, message, context);
 };

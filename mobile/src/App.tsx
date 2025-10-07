@@ -24,18 +24,6 @@ function App() {
     categoryId: string;
   } | null>(null);
 
-  // 🔥 認証状態（広告・ヘッダー用）
-  const { 
-    payload, 
-    plan, 
-    isAuthenticated, 
-    clientId,
-    userId,
-    login: authLogin, 
-    logout: authLogout, 
-    changePlan 
-  } = useAuth();
-
   // 🔥 ライフサイクル管理
   const { 
     isInitialized, 
@@ -49,6 +37,18 @@ function App() {
     clearError
   } = useLifecycle();
 
+  // 🔥 認証状態（広告・ヘッダー用）
+  const { 
+    payload, 
+    plan, 
+    isAuthenticated, 
+    clientId,
+    userId,
+    login: authLogin, 
+    logout: authLogout, 
+    changePlan 
+  } = useAuth();
+
   // 🔥 マスターデータ取得
   const { data: masterData } = useMaster(isInitialized);
 
@@ -59,7 +59,7 @@ function App() {
   useEffect(() => {
     console.log("[App] 初期化開始");
     // React.StrictMode 対応のため2回目以降のinitを防止
-    if (isInitialized) {
+    if (isAppInitialized) {
       console.log("[App] すでに初期化中または完了しているためスキップ");
       return;
     }
@@ -81,13 +81,20 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isAppInitialized && !isInitialized) {
+      console.log("[App] 初期化に失敗しました");
+      alert("アプリの初期化に失敗しました。再読み込みしてください。");
+    }
+  }, [isAppInitialized, isInitialized]);
+
   // 🔥 日付変更時の通知とキャッシュ更新
   useEffect(() => {
     if (dateChanged) {
       console.log('[App] 日付が変わりました - 利用状況を再取得');
       
       // 利用状況のキャッシュを無効化して再取得
-      queryClient.invalidateQueries({ queryKey: ['usage'] });
+      queryClient.invalidateQueries({ queryKey: ['usage', clientId] });
       
       // TODO: トースト通知を表示
       // showNotification('新しい日になりました！占い回数がリセットされました🎉');
