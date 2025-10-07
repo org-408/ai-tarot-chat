@@ -2,6 +2,14 @@ import winston from 'winston';
 import Transport from 'winston-transport';
 import { logService } from '../services/log';
 
+// ログのメタデータ型定義
+type LogMetadata = {
+  clientId?: string;
+  path?: string;
+  service?: string;
+  [key: string]: unknown;
+};
+
 // Edge 環境検出
 const isEdgeRuntime = typeof process === 'undefined' || process.env?.NEXT_RUNTIME === 'edge';
 
@@ -15,7 +23,7 @@ class EdgeLogger {
     this.service = options.defaultMeta?.service || 'unknown';
   }
 
-  log(level: string, message: string, meta: any = {}) {
+  log(level: string, message: string, meta: LogMetadata = {}) {
     // Edge環境ではコンソール出力のみ
     console.log(`[${level.toUpperCase()}] ${message}`, { ...meta, service: this.service });
     
@@ -23,19 +31,19 @@ class EdgeLogger {
     // この例では簡易的にコンソール出力のみ
   }
 
-  info(message: string, meta: any = {}) {
+  info(message: string, meta: LogMetadata = {}) {
     this.log('info', message, meta);
   }
 
-  error(message: string, meta: any = {}) {
+  error(message: string, meta: LogMetadata = {}) {
     this.log('error', message, meta);
   }
 
-  warn(message: string, meta: any = {}) {
+  warn(message: string, meta: LogMetadata = {}) {
     this.log('warn', message, meta);
   }
 
-  debug(message: string, meta: any = {}) {
+  debug(message: string, meta: LogMetadata = {}) {
     if (this.level === 'debug') {
       this.log('debug', message, meta);
     }
@@ -50,27 +58,27 @@ class PrismaTransport extends Transport {
 
   async log(info: winston.LogEntry, callback: (error?: Error | null, success?: boolean) => void) {
     try {
-      const { level, message, device, timestamp, ...metadata } = info;
+      const { level, message, device, ...metadata } = info;
       
       // timestampの処理
-      let logTimestamp: Date;
-      if (timestamp) {
-        logTimestamp = typeof timestamp === 'string'
-          ? new Date(timestamp)
-          : (timestamp instanceof Date ? timestamp : new Date());
+      let timestamp: Date;
+      if (metadata.timestamp) {
+        timestamp = typeof metadata.timestamp === 'string' 
+          ? new Date(metadata.timestamp) 
+          : (metadata.timestamp instanceof Date ? metadata.timestamp : new Date());
       } else {
-        logTimestamp = new Date();
+        timestamp = new Date();
       }
       
       // Prismaを使ってログを保存
       await logService.createLog({
         level: level as string,
         message: message as string,
-        metadata: metadata || {},
-        clientId: metadata.clientId || null,
-        path: metadata.path || null,
-        timestamp: logTimestamp,
-        device: device || 'web_server',
+        metadata: metadata as LogMetadata || {},
+        clientId: (metadata as LogMetadata).clientId || null,
+        path: (metadata as LogMetadata).path || null,
+        timestamp,
+        device: device as string || 'web_server',
       });
       callback(null, true);
     } catch (error) {
@@ -143,7 +151,7 @@ if (isEdgeRuntime) {
 export const logWithContext = (
   level: 'info' | 'error' | 'warn' | 'debug',
   message: string, 
-  context?: { clientId?: string; path?: string; [key: string]: unknown },
+  context?: LogMetadata,
   device: string = 'web_server'
 ) => {
   if (isEdgeRuntime) {
