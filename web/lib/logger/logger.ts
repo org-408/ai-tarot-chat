@@ -65,29 +65,30 @@ class PrismaTransport extends Transport {
     callback: (error?: Error | null, success?: boolean) => void
   ) {
     try {
-      const { level, message, source, ...metadata } = info;
+      const { level, message, source, clientId, path, timestamp, ...metadata } =
+        info;
 
       // timestampの処理
-      let timestamp: Date;
-      if (metadata.timestamp) {
-        timestamp =
-          typeof metadata.timestamp === "string"
-            ? new Date(metadata.timestamp)
-            : metadata.timestamp instanceof Date
-            ? metadata.timestamp
+      let datedTimestamp: Date;
+      if (timestamp) {
+        datedTimestamp =
+          typeof timestamp === "string"
+            ? new Date(timestamp)
+            : timestamp instanceof Date
+            ? timestamp
             : new Date();
       } else {
-        timestamp = new Date();
+        datedTimestamp = new Date();
       }
 
       // Prismaを使ってログを保存
       await logService.createLog({
         level: level as string,
         message: message as string,
-        metadata: (metadata as LogMetadata) || {},
-        clientId: (metadata as LogMetadata).clientId || null,
-        path: (metadata as LogMetadata).path || null,
-        timestamp,
+        metadata,
+        clientId,
+        path,
+        timestamp: datedTimestamp,
         source: (source as string) || "web_server",
       });
       callback(null, true);
