@@ -2,18 +2,24 @@ import type { Log } from "@/../shared/lib/types";
 import { Prisma } from "@prisma/client";
 import { BaseRepository } from "./base";
 
-interface LogMetadata {
-  [key: string]: unknown;
-}
-
 export class LogRepository extends BaseRepository {
-  private convertPrismaLogToLog(prismaLog: Log): Log {
+  private convertPrismaLogToLog(prismaLog: {
+    id: string;
+    level: string;
+    message: string;
+    metadata: Prisma.JsonValue | null;
+    clientId: string | null;
+    path: string | null;
+    timestamp: Date;
+    source: string;
+    createdAt: Date;
+  }): Log {
     return {
       id: prismaLog.id,
       level: prismaLog.level,
       message: prismaLog.message,
       metadata: prismaLog.metadata
-        ? (prismaLog.metadata as unknown as LogMetadata)
+        ? (JSON.parse(JSON.stringify(prismaLog.metadata)) as Prisma.JsonObject)
         : undefined,
       clientId: prismaLog.clientId || undefined,
       path: prismaLog.path || "", // nullの場合は空文字列に変換

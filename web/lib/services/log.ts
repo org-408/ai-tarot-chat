@@ -8,7 +8,13 @@ export class LogService {
     const { clientId } = log;
     if (clientId) {
       const clientExists = await clientRepository.getClientById(clientId);
-      log.clientId = clientExists ? clientId : null;
+      if (!clientExists) {
+        log.metadata = {
+          ...log.metadata,
+          invalidClientId: clientId,
+        };
+        log.clientId = null;
+      }
     }
     return logRepository.createLog(log);
   }

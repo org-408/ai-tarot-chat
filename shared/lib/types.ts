@@ -532,7 +532,7 @@ export type Log = {
   id: string;
   level: string; // "info", "error", "warn", "debug"
   message: string;
-  metadata?: Object | null; // JSON文字列化されたメタ情報
+  metadata?: Record<string, unknown>; // ←ここを修正
   clientId?: string | null;
   client?: Client | null;
   path?: string | null; // 発生箇所のパス
