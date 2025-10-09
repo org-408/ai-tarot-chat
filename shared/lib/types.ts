@@ -301,6 +301,7 @@ export type PlanChangeHistory = {
 // タロット占い師モデル
 export type Tarotist = {
   id: string;
+  order: number; // 並び順
   name: string;
   title: string; // 占い師の肩書き
   icon: string; // 占い師のアイコン絵文字

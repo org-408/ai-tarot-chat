@@ -634,6 +634,7 @@ async function importTarotists() {
     const [titleLine, ...lines] = csvContent.split("\n");
     const keywords = titleLine.split(",").map((key) => key.trim());
 
+    let order = 0;
     for (const line of lines) {
       // キーワードと値を連想配列に変換
       const values = line.split(",").map((val) => val.trim());
@@ -646,6 +647,7 @@ async function importTarotists() {
       );
 
       const update = {
+        order: order++,
         title: tarotist.title.trim(),
         icon: tarotist.icon.trim(),
         trait: tarotist.trait.trim(),

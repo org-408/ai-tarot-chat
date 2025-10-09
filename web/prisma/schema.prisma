@@ -365,6 +365,7 @@ enum ProviderKey {
 // タロット占い師モデル
 model Tarotist {
   id          String    @id @default(cuid())
+  order       Int       @default(0) // 並び順
   name        String    @unique // 占い師の名前 Claudia, Luna, lily, ...
   title       String    // 占い師の肩書き
   icon        String    // 占い師のアイコン絵文字

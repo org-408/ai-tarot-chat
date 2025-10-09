@@ -18,7 +18,7 @@ export async function getTarotists(soft: boolean = true): Promise<Tarotist[]> {
   return await prisma.tarotist.findMany({
     where: soft ? { deletedAt: null } : undefined,
     include: { plan: true },
-    orderBy: { createdAt: "asc" },
+    orderBy: { order: "asc" },
   });
 }
 
