@@ -540,3 +540,30 @@ export type Log = {
   source: string; // 'web', 'mobile' など
   createdAt: Date;
 };
+
+// アプリ側状態チェック
+export type AppStateCheckRequest = {
+  token?: string;
+  deviceId?: string;
+  clientId?: string;
+  userId?: string;
+  platform?: string; // "ios", "android", "web"
+  appVersion?: string; // "1.0.0" など
+};
+
+export type AppStateCheckLog = {
+  event:
+    | "server_check_start"
+    | "server_check_response"
+    | "state_action_start"
+    | "state_action_complete"
+    | "state_check_error"
+    | "state_action_error";
+  hasToken: boolean;
+  deviceId?: string;
+  clientId?: string;
+  userId?: string;
+  platform?: string;
+  appVersion?: string;
+  path?: string;
+};

@@ -1,4 +1,5 @@
 import {
+  AppStateCheckRequest,
   JWTPayload,
   Plan,
   type Client,
@@ -580,11 +581,14 @@ export class AuthService {
    * @returns { payload } または { error: NextResponse }
    */
   async verifyApiRequest(
-    request: NextRequest
+    request: NextRequest | string
   ): Promise<
     { payload: JWTPayload & { exp?: number } } | { error: NextResponse }
   > {
-    const authHeader = request.headers.get("authorization");
+    const authHeader =
+      request instanceof NextRequest
+        ? request.headers.get("authorization")
+        : (request as string);
     if (!authHeader?.startsWith("Bearer ")) {
       return {
         error: NextResponse.json({ error: "認証が必要です" }, { status: 401 }),
@@ -603,6 +607,28 @@ export class AuthService {
         error: NextResponse.json({ error: "認証失敗" }, { status: 401 }),
       };
     }
+  }
+
+  /**
+   * モバイルアプリ側の状態をチェックする
+   */
+  async checkAppStatus(
+    body: AppStateCheckRequest
+  ): Promise<AppStateCheckRequest | { error: NextResponse }> {
+    logWithContext("info", "🔄 checkAppStatus called", { body });
+    // token ありのケース
+    if (body.token) {
+      const verifyJwt = await this.verifyApiRequest(body.token); // error を throw しない
+      if ("error" in verifyJwt) return verifyJwt; // { error: NextResponse }
+      // token 検証開始
+      const {
+        payload: { t, deviceId, clientId, user, planCode, provider },
+      } = verifyJwt;
+      // 正常ケース
+      if (t === "app" && deviceId === body.deviceId && clientId && planCode) {
+      }
+    }
+    return body;
   }
 
   async createAppleClientSecret(opts: {

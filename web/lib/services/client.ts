@@ -166,6 +166,16 @@ export class ClientService {
       })),
     });
   }
+
+  async readingDone(clientId: string, category: string, spreadId: string) {
+    // トランザクションで処理
+    await prisma.$transaction(async (tx) => {
+      const clientRepo = clientRepository.withTransaction(tx);
+
+      const client = await clientRepo.getClientById(clientId);
+      if (!client) throw new Error("Client not found");
+    });
+  }
 }
 
 export const clientService = new ClientService();

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   let clientId = "";
   try {
     logWithContext("info", "ユーザー(client)のユーザー利用状況を取得", {
-      path: "/api/clients/usage",
+      path: "/api/clients/reading",
     });
 
     // sessionチェック
@@ -17,12 +17,21 @@ export async function GET(request: NextRequest) {
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
+    const { category, spreadId } = await request.json();
     if (!clientId) return new Response("unauthorized", { status: 401 });
-    logWithContext("info", "Client ID", { clientId });
+    logWithContext("info", "Client ID, category, spreadId", {
+      clientId,
+      category,
+      spreadId,
+    });
 
     // ユーザー利用状況の取得
-    const userStats = await clientService.getUsageAndReset(clientId);
-    logWithContext("info", "ユーザー利用状況取得完了", {
+    const userStats = await clientService.readingDone(
+      clientId,
+      category,
+      spreadId
+    );
+    logWithContext("info", "占い開始", {
       clientId,
       userStats,
     });

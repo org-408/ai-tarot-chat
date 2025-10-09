@@ -75,24 +75,6 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // useEffect(() => {
-  //   console.log("[App] State changed", { masterData, usageStats, payload });
-  //   if (!masterData) {
-  //     console.log("[App] マスターデータ取得中...");
-  //     queryClient.invalidateQueries({ queryKey: ["master", true, true] });
-  //     return;
-  //   }
-  //   if (!usageStats && clientId) {
-  //     console.log("[App] 利用状況取得中...");
-  //     queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
-  //     return;
-  //   }
-  //   if (!payload) {
-  //     console.log("[App] ユーザーデータ取得中...");
-  //     return;
-  //   }
-  // }, [masterData, usageStats, payload, clientId]);
-
   // 🔥 日付変更時の通知とキャッシュ更新
   useEffect(() => {
     if (dateChanged) {
