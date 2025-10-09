@@ -1,5 +1,14 @@
+import type { UIMessage } from "ai";
+import type { DrawnCard } from "../../../shared/lib/types";
+
 export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
-export type PageType = "salon" | "reading" | "plans" | "history" | "settings";
+export type PageType =
+  | "salon"
+  | "reading"
+  | "plans"
+  | "tarotist"
+  | "history"
+  | "settings";
 
 export interface NavigationItem {
   id: PageType;
@@ -14,3 +23,12 @@ export interface SpreadRecommendation {
   description: string;
   reason: string;
 }
+
+export type ReadingRequest = {
+  messages: UIMessage[];
+  spreadId: string;
+  categoryId?: string; // categoryId または userInput のどちらかが必須
+  userInput?: string;
+  drawnCards: DrawnCard[];
+  provider?: "gemini" | "groq" | "claude" | "moonshot" | "mistral" | "jamba";
+};

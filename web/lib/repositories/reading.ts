@@ -43,7 +43,7 @@ export class ReadingRepository extends BaseRepository {
   }
 
   async getReadingById(id: string): Promise<Reading | null> {
-    return await this.db.reading.findUnique({
+    return (await this.db.reading.findUnique({
       where: { id },
       include: {
         client: true,
@@ -51,9 +51,10 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: { include: { card: true } },
+        cards: true,
+        chatMessages: true,
       },
-    });
+    })) as unknown as Reading | null; // 型アサーションを追加
   }
 
   async getReadingsByClientId(
@@ -61,16 +62,21 @@ export class ReadingRepository extends BaseRepository {
     limit = 20,
     offset = 0
   ): Promise<Reading[]> {
-    return await this.db.reading.findMany({
+    return (await this.db.reading.findMany({
       where: { clientId },
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
       include: {
+        client: true,
+        device: true,
+        tarotist: true,
         spread: true,
         category: true,
+        cards: true,
+        chatMessages: true,
       },
-    });
+    })) as unknown as Reading[]; // 型アサーションを追加
   }
 
   async getReadingsByDeviceId(
@@ -78,30 +84,53 @@ export class ReadingRepository extends BaseRepository {
     limit = 20,
     offset = 0
   ): Promise<Reading[]> {
-    return await this.db.reading.findMany({
+    return (await this.db.reading.findMany({
       where: { deviceId },
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
       include: {
+        client: true,
+        device: true,
+        tarotist: true,
         spread: true,
         category: true,
+        cards: true,
+        chatMessages: true,
       },
-    });
+    })) as unknown as Reading[]; // 型アサーションを追加
   }
 
   async getReadingsBySpreadId(spreadId: string): Promise<Reading[]> {
-    return await this.db.reading.findMany({
+    return (await this.db.reading.findMany({
       where: { spreadId },
       orderBy: { createdAt: "desc" },
-    });
+      include: {
+        client: true,
+        device: true,
+        tarotist: true,
+        spread: true,
+        category: true,
+        cards: true,
+        chatMessages: true,
+      },
+    })) as unknown as Reading[]; // 型アサーションを追加
   }
 
   async getReadingsByCategoryId(categoryId: string): Promise<Reading[]> {
-    return await this.db.reading.findMany({
+    return (await this.db.reading.findMany({
       where: { categoryId },
       orderBy: { createdAt: "desc" },
-    });
+      include: {
+        client: true,
+        device: true,
+        tarotist: true,
+        spread: true,
+        category: true,
+        cards: true,
+        chatMessages: true,
+      },
+    })) as unknown as Reading[]; // 型アサーションを追加
   }
 
   async deleteReading(id: string): Promise<void> {
@@ -129,11 +158,11 @@ export class ReadingRepository extends BaseRepository {
   }
 
   async getDrawnCardsByReadingId(readingId: string): Promise<DrawnCard[]> {
-    return await this.db.drawnCard.findMany({
+    return (await this.db.drawnCard.findMany({
       where: { readingId },
       orderBy: { order: "asc" },
       include: { card: true },
-    });
+    })) as unknown as DrawnCard[]; // 型アサーションを追加
   }
 
   async deleteDrawnCardsByReadingId(readingId: string): Promise<void> {

@@ -24,6 +24,8 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
         }
       case "plans":
         return "💎 プラン選択";
+      case "tarotist":
+        return "🔮 タロット占い師";
       case "history":
         return "📋 占い履歴";
       case "settings":
@@ -50,6 +52,8 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
         }
       case "plans":
         return "最適なプランを選択してください";
+      case "tarotist":
+        return "あなたに合った占い師を見つけよう";
       case "history":
         return "過去の占い結果を確認";
       case "settings":

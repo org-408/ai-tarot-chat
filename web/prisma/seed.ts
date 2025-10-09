@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, ProviderKey } from "@prisma/client";
 import fs from "fs";
 import path from "path";
 
@@ -347,14 +347,6 @@ const cells: Prisma.SpreadCellCreateInput[] = [
   { x: 5, y: 5, vLabel: "位置36", vOrder: 36 },
 ];
 
-const tarotists: Prisma.TarotistCreateInput[] = [
-  {
-    name: "Ariadne",
-    bio: "経験豊富なタロットリーダーで、深い洞察力を持つ",
-    avatarUrl: "/images/ariadne.webp",
-  },
-];
-
 // プラン名を正規化する関数
 function normalizePlan(plan: string): string {
   const planMap: Record<string, string> = {
@@ -590,11 +582,95 @@ async function importTarotDeck() {
       }
 
       console.log(
-        `${language} で ${Object.keys(tarotData.cards).length} 枚のカードをインポートしました`
+        `${language} で ${
+          Object.keys(tarotData.cards).length
+        } 枚のカードをインポートしました`
       );
     }
   } catch (error) {
     console.error("タロットデータのインポート中にエラーが発生しました:", error);
+  }
+}
+
+export function toProviderKey(input: string): ProviderKey {
+  // ProviderKey の有効な値をすべて大文字で取得
+  const validValues: string[] = Object.values(ProviderKey);
+
+  // 入力を正規化（トリミングして大文字に）
+  const normalized = input.trim().toUpperCase();
+
+  // 有効な値に含まれるかチェック
+  if (validValues.includes(normalized)) {
+    return normalized as ProviderKey;
+  }
+
+  // 小文字でもチェック（大文字小文字を区別しない比較）
+  const match = validValues.find(
+    (v) => v.toLowerCase() === normalized.toLowerCase()
+  );
+  if (match) {
+    return match as ProviderKey;
+  }
+
+  // デフォルト値を返す（または例外をスロー）
+  return "GPT" as ProviderKey; // または適切なデフォルト値
+}
+
+async function importTarotists() {
+  try {
+    console.log("🌱 タロット占い師のインポートを開始します...");
+
+    // CSVファイルの読み込み
+    const mdPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "docs",
+      "tarotist_data.csv"
+    );
+    const csvContent = fs.readFileSync(mdPath, "utf-8");
+
+    // 行分割
+    const [titleLine, ...lines] = csvContent.split("\n");
+    const keywords = titleLine.split(",").map((key) => key.trim());
+
+    for (const line of lines) {
+      // キーワードと値を連想配列に変換
+      const values = line.split(",").map((val) => val.trim());
+      if (values.length === 0 || !values[0]) {
+        continue; // 空行をスキップ
+      }
+
+      const tarotist = Object.fromEntries(
+        keywords.map((key, index) => [key, values[index] || ""])
+      );
+
+      const update = {
+        title: tarotist.title.trim(),
+        icon: tarotist.icon.trim(),
+        trait: tarotist.trait.trim(),
+        bio: tarotist.bio.trim(),
+        provider: toProviderKey(tarotist.provider.trim()),
+        plan: { connect: { code: tarotist.planCode } },
+        cost: tarotist.cost.trim(),
+        quality: parseFloat(tarotist.quality) || 0,
+      };
+
+      const create = { name: tarotist.name, ...update };
+
+      // スプレッドをupsert
+      await prisma.tarotist.upsert({
+        where: {
+          name: tarotist.name, // name をユニーク制約として使用
+        },
+        update,
+        create,
+      });
+    }
+  } catch (error) {
+    console.error("❌ インポート中にエラーが発生しました:", error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -618,9 +694,7 @@ export async function main() {
   }
 
   // tarotists
-  for (const tarotist of tarotists) {
-    await prisma.tarotist.create({ data: tarotist });
-  }
+  await importTarotists();
 
   await importSpreads();
 

@@ -327,6 +327,7 @@ model Plan {
   spreads     Spread[]  // このプランで利用可能なスプレッド
   fromPlanChangeHistories PlanChangeHistory[] @relation("FromPlan")
   toPlanChangeHistories   PlanChangeHistory[] @relation("ToPlan")
+  tarotists  Tarotist[]
 }
 
 // ==========================================
@@ -351,15 +352,35 @@ model PlanChangeHistory {
   @@index([toPlanId])
 }
 
+enum ProviderKey {
+  CLAUDE
+  GEMINI
+  GEMINI_PRO
+  GPT
+  GROQ
+  MISTRAL
+  XAI  
+}
+
 // タロット占い師モデル
 model Tarotist {
   id          String    @id @default(cuid())
-  name        String    // 占い師の名前 default: Ariadne
-  bio         String    @db.Text
+  name        String    @unique // 占い師の名前 Claudia, Luna, lily, ...
+  title       String    // 占い師の肩書き
+  icon        String    // 占い師のアイコン絵文字
+  trait       String    @db.Text // 占い師の特徴や性格
+  bio         String    @db.Text // 占い師の紹介文
   avatarUrl   String?
+  provider    ProviderKey?   // 生成AIプロバイダー(将来的には人(null or PRO)も？)
+  cost        String    // 占い師の料金 "1回500円"など
+  quality     Int       @default(1) // 占い師の品質スコア（1-5の範囲）
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+
+  // プランと紐付け
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id])
 
   // 関連
   readings    Reading[]
@@ -369,16 +390,16 @@ model Tarotist {
 // リーディングモデル
 model Reading {
   id            String    @id @default(cuid())
-  clientId      String?
-  client        Client?     @relation(fields: [clientId], references: [id])
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id])
   deviceId      String
   device        Device    @relation(fields: [deviceId], references: [id])
   tarotistId    String
   tarotist      Tarotist  @relation(fields: [tarotistId], references: [id])
   spreadId      String
   spread        Spread    @relation(fields: [spreadId], references: [id])
-  categoryId    String
-  category      ReadingCategory @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  category      ReadingCategory? @relation(fields: [categoryId], references: [id])
   cards         DrawnCard[]  // 選択されたカード配列
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -396,10 +417,11 @@ model Reading {
 // リーディングで引いたカードモデル
 model DrawnCard {
   id        String   @id @default(cuid())
-  readingId String
-  reading   Reading  @relation(fields: [readingId], references: [id])
+  readingId String?   // リーディング作成時に一時的にnull許容
+  reading   Reading?  @relation(fields: [readingId], references: [id])
   cardId    String
   card      TarotCard @relation(fields: [cardId], references: [id])
+  keywords  String[]  // 選択されたキーワード配列
   x Int
   y Int
   isReversed Boolean

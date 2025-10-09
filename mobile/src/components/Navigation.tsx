@@ -17,6 +17,12 @@ const Navigation: React.FC<NavigationProps> = ({
       available: true,
     },
     {
+      id: "tarotist",
+      label: "占い師",
+      icon: "👤",
+      available: true,
+    },
+    {
       id: "plans",
       label: "プラン",
       icon: "💎",

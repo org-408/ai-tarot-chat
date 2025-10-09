@@ -5,6 +5,7 @@ import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
 import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
+import TarotistPage from "./components/TarotistPage";
 import { useAuth } from "./lib/hooks/useAuth";
 import { useLifecycle } from "./lib/hooks/useLifecycle";
 import { useMaster } from "./lib/hooks/useMaster";
@@ -308,6 +309,17 @@ function App() {
             isLoggingIn={isLoggingIn}
           />
         );
+      case "tarotist":
+        return (
+          <TarotistPage
+            payload={payload}
+            isAuthenticated={isAuthenticated}
+            masterData={masterData}
+            onLogin={handleLogin}
+            onUpgrade={handleUpgrade}
+            isLoggingIn={isLoggingIn}
+          />
+        );
       case "history":
         return (
           <div className="main-container">
@@ -449,6 +461,15 @@ function App() {
               >
                 💎 Plan
               </button>
+              <button
+                onClick={() => {
+                  setDevMenuOpen(false);
+                  setPageType("tarotist");
+                }}
+                className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
+              >
+                🔮 Tarotist
+              </button>
               <hr className="my-1 border-gray-300" />
               {isAuthenticated ? (
                 <button
@@ -468,7 +489,7 @@ function App() {
                   }}
                   className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
                 >
-                  🔐 Login
+                  🔑 Login
                 </button>
               )}
             </div>

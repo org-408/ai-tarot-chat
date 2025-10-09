@@ -2,7 +2,11 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
-import { ChatRole, ChatType } from "../../web/node_modules/@prisma/client";
+import {
+  ChatRole,
+  ChatType,
+  ProviderKey,
+} from "../../web/node_modules/@prisma/client";
 
 export type Account = {
   id: string;
@@ -298,12 +302,23 @@ export type PlanChangeHistory = {
 export type Tarotist = {
   id: string;
   name: string;
+  title: string; // 占い師の肩書き
+  icon: string; // 占い師のアイコン絵文字
+  trait: string;
   bio: string;
   avatarUrl?: string | null;
+  provider?: ProviderKey | null; // 生成AIプロバイダー(将来的には人(null)も？)
+  cost: string; // 占いコスト（APIコスト目安）
+  quality: number; // 占いの質（５段階評価）
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
 
+  // plan と紐付け
+  planId: string;
+  plan?: Plan;
+
+  // 関連
   readings?: Reading[];
   chatMessages?: ChatMessage[];
 };
@@ -311,17 +326,17 @@ export type Tarotist = {
 // リーディング履歴モデル
 export type Reading = {
   id: string;
-  clientId?: string | null;
+  clientId: string;
   client?: Client | null;
   deviceId: string;
   device?: Device | null;
   tarotistId: string;
-  tarotist?: Tarotist;
+  tarotist?: Tarotist | null;
   spreadId: string;
-  spread?: Spread;
-  categoryId: string;
-  category?: ReadingCategory;
-  cards?: DrawnCard[];
+  spread?: Spread | null;
+  categoryId?: string | null;
+  category?: ReadingCategory | null;
+  cards: DrawnCard[];
   createdAt: Date;
   updatedAt: Date;
 
@@ -331,10 +346,11 @@ export type Reading = {
 // リーディングで引いたカードの型
 export type DrawnCard = {
   id: string;
-  readingId: string;
+  readingId?: string;
   reading?: Reading;
   cardId: string;
   card?: TarotCard;
+  keywords: string[]; // その時点でのキーワードのスナップショット
   x: number;
   y: number;
   isReversed: boolean;

@@ -168,6 +168,11 @@ export class ClientService {
   }
 
   async readingDone(clientId: string, category: string, spreadId: string) {
+    logWithContext("info", "Marking reading as done", {
+      clientId,
+      category,
+      spreadId,
+    });
     // トランザクションで処理
     await prisma.$transaction(async (tx) => {
       const clientRepo = clientRepository.withTransaction(tx);

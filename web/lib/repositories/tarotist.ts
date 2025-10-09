@@ -11,8 +11,15 @@ export class TarotistRepository extends BaseRepository {
     const created = await this.db.tarotist.create({
       data: {
         name: tarotist.name,
+        title: tarotist.title,
+        icon: tarotist.icon,
+        trait: tarotist.trait,
         bio: tarotist.bio,
         avatarUrl: tarotist.avatarUrl,
+        provider: tarotist.provider,
+        cost: tarotist.cost,
+        quality: tarotist.quality,
+        planId: tarotist.planId,
         deletedAt: tarotist.deletedAt,
       },
     });
@@ -38,13 +45,20 @@ export class TarotistRepository extends BaseRepository {
     updates: Partial<
       Omit<
         Tarotist,
-        "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages"
+        "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages" | "plan"
       >
-    >
+    > & {
+      planId?: string;
+    }
   ): Promise<void> {
+    const { planId, ...restUpdates } = updates;
+
     await this.db.tarotist.update({
       where: { id },
-      data: updates,
+      data: {
+        ...restUpdates,
+        ...(planId ? { plan: { connect: { id: planId } } } : {}),
+      },
     });
   }
 
