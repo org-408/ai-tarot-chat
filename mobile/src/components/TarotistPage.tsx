@@ -82,15 +82,15 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                 }`}
               >
                 {/* おすすめバッジ */}
-                {tarotist.quality >= 5 && (
+                {/* {tarotist.quality >= 5 && (
                   <div className="absolute -top-2 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
                     おすすめ
                   </div>
-                )}
+                )} */}
 
                 {/* プランバッジ */}
                 <div className="absolute -top-2 right-4 bg-purple-500 text-white text-xs px-2 py-1 rounded">
-                  {tarotist.plan!.code}
+                  {tarotist.plan!.name}
                 </div>
 
                 <div className="flex gap-4">
@@ -160,7 +160,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                 {/* アップグレード説明 */}
                 {requiresUpgrade && (
                   <div className="mt-2 text-xs text-gray-500 text-center">
-                    この占い師を利用するには{tarotist.plan!.code}
+                    この占い師を利用するには{tarotist.plan!.name}
                     プラン以上が必要です
                   </div>
                 )}

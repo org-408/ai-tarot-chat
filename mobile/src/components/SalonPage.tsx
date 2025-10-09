@@ -7,9 +7,11 @@ import type {
   ReadingCategory,
   Spread,
   SpreadToCategory,
+  Tarotist,
   UsageStats,
 } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
+import ScrollableRadioSelector from "./ScrollableRadioSelector";
 
 interface SalonPageProps {
   payload: JWTPayload;
@@ -30,14 +32,15 @@ const SalonPage: React.FC<SalonPageProps> = ({
   usageStats,
   onLogin,
   onUpgrade,
-  // onDowngrade,
   onStartReading,
   isLoggingIn,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSpread, setSelectedSpread] = useState<string>("");
+  const [selectedTarotist, setSelectedTarotist] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
   const [aiMode, setAiMode] = useState<string>("ai-auto");
+  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 
   const user = payload?.user || null;
   const currentPlan = payload?.planCode || "GUEST";
@@ -57,6 +60,19 @@ const SalonPage: React.FC<SalonPageProps> = ({
   const availablePlansFromPlanNo = masterData!.plans.filter(
     (p: Plan) => p.no <= (checkNo || 0)
   );
+
+  // 占い師の取得とフィルタリング
+  const availableTarotists = useMemo(() => {
+    if (!masterData.tarotists) return [];
+
+    return masterData.tarotists.filter((tarotist: Tarotist) => {
+      // 現在のプラン番号以下の占い師のみ表示
+      const tarotistPlan = masterData.plans?.find(
+        (p: Plan) => p.code === tarotist.plan!.code
+      );
+      return tarotistPlan && tarotistPlan.no <= (currentPlanData?.no || 0);
+    });
+  }, [masterData, currentPlanData]);
 
   const getAvailableSpreads = () => {
     if (!masterData!.spreads) return [];
@@ -84,24 +100,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const availableSpreads = getAvailableSpreads();
 
-  // コンポーネント内
-  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-  // const freePlan = masterData!.plans?.find(
-  //   (p: { code: string }) => p.code === "FREE"
-  // );
-  // const standardPlan = masterData!.plans?.find(
-  //   (p: { code: string }) => p.code === "STANDARD"
-  // );
-  // const premiumPlan = masterData!.plans?.find(
-  //   (p: { code: string }) => p.code === "PREMIUM"
-  // );
-
-  // 上位プラン取得
   const upgradablePlans = masterData!.plans
     ?.filter((p: Plan) => p.no > (currentPlanData?.no || 0))
     .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
-  // プランごとの色設定を動的に決定
   const getPlanColors = (planCode: string) => {
     switch (planCode) {
       case "PREMIUM":
@@ -122,7 +124,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
           button: "bg-blue-500 hover:bg-blue-600",
           icon: "💎",
         };
-      default: // FREE
+      default:
         return {
           border: "border-gray-200",
           bg: "bg-gray-50",
@@ -140,10 +142,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
       usageStats,
     });
   }, [masterData, usageStats]);
-  console.log("[SalonPage] masterData or usageStats changed", {
-    masterData,
-    usageStats,
-  });
 
   useEffect(() => {
     if (availableCategories.length > 0 && !selectedCategory) {
@@ -156,6 +154,12 @@ const SalonPage: React.FC<SalonPageProps> = ({
       setSelectedSpread(availableSpreads[0].id);
     }
   }, [availableSpreads, selectedSpread]);
+
+  useEffect(() => {
+    if (availableTarotists.length > 0 && !selectedTarotist) {
+      setSelectedTarotist(availableTarotists[0].id);
+    }
+  }, [availableTarotists, selectedTarotist]);
 
   const handleStartReading = () => {
     if (!selectedSpread || !selectedCategory) return;
@@ -193,6 +197,26 @@ const SalonPage: React.FC<SalonPageProps> = ({
         return "👤";
     }
   };
+
+  // ScrollableRadioSelector用のデータ変換
+  const categoryItems = categoriesToShow.map((category: ReadingCategory) => ({
+    id: category.id,
+    label: category.name,
+    description: category.description,
+  }));
+
+  const spreadItems = availableSpreads.map((spread: Spread) => ({
+    id: spread.id,
+    label: spread.name,
+    description: `${spread.category} (${spread.cells?.length || 0}枚)`,
+  }));
+
+  const tarotistItems = availableTarotists.map((tarotist: Tarotist) => ({
+    id: tarotist.id,
+    label: tarotist.name,
+    description: tarotist.bio || tarotist.trait,
+    icon: tarotist.icon || "🔮",
+  }));
 
   return (
     <div className="main-container">
@@ -305,96 +329,46 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {(!isPremium || aiMode !== "ai-auto") && (
-        <div className="mb-6">
-          <div className="section-title">
-            🎯{" "}
-            {isPremium || isStandard
-              ? "占いたいジャンルを選択："
-              : "どのジャンルを占いますか？"}
-          </div>
-          <div className="space-y-2">
-            {categoriesToShow.map((category: ReadingCategory) => (
-              <div
-                key={category.id}
-                className={`option-item ${
-                  selectedCategory === category.id ? "selected" : ""
-                }`}
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                <div
-                  className={`radio-button ${
-                    selectedCategory === category.id ? "selected" : ""
-                  }`}
-                ></div>
-                <div>
-                  <div>{category.name}</div>
-                  <div className="text-xs text-gray-500">
-                    {category.description}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* 占い師選択 */}
+      {availableTarotists.length > 0 && (
+        <ScrollableRadioSelector
+          title="🔮 占い師を選択："
+          items={tarotistItems}
+          selectedId={selectedTarotist}
+          onSelect={setSelectedTarotist}
+          maxVisibleItems={3}
+        />
       )}
 
-      <div className="mb-6">
-        <div className="section-title">
-          {isPremium ? "🎴 スプレッドを選択：" : "🎴 占い方："}
-        </div>
-        <div className="space-y-2">
-          {availableSpreads.map((spread: Spread) => {
-            const cardCount = spread.cells?.length || 0;
-            return (
-              <div
-                key={spread.id}
-                className={`option-item ${
-                  selectedSpread === spread.id ? "selected" : ""
-                }`}
-                onClick={() => setSelectedSpread(spread.id)}
-              >
-                <div
-                  className={`radio-button ${
-                    selectedSpread === spread.id ? "selected" : ""
-                  }`}
-                ></div>
-                <div>
-                  <div>{spread.name}</div>
-                  <div className="text-xs text-gray-500">
-                    {spread.category} ({cardCount}枚)
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* カテゴリー選択 */}
+      {(!isPremium || aiMode !== "ai-auto") && (
+        <ScrollableRadioSelector
+          title={`🎯 ${
+            isPremium || isStandard
+              ? "占いたいジャンルを選択："
+              : "どのジャンルを占いますか？"
+          }`}
+          items={categoryItems}
+          selectedId={selectedCategory}
+          onSelect={setSelectedCategory}
+          maxVisibleItems={3}
+        />
+      )}
+
+      {/* スプレッド選択 */}
+      <ScrollableRadioSelector
+        title={isPremium ? "🎴 スプレッドを選択：" : "🎴 占い方："}
+        items={spreadItems}
+        selectedId={selectedSpread}
+        onSelect={setSelectedSpread}
+        maxVisibleItems={3}
+      />
 
       <div className="mt-6 space-y-3">
         <div className="text-center text-sm text-gray-600 mb-3">
           💡 もっと詳しく占うなら
           {upgradablePlans && upgradablePlans.length > 0 && (
             <div className="mt-6 space-y-3">
-              {/* ゲストの場合のみ無料登録CTA */}
-              {/* {isGuest && freePlan && (
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="text-sm font-bold text-blue-800 mb-1">
-                      🔓 無料登録で回数{freePlan.maxReadings}倍
-                    </div>
-                    <div className="text-xs text-blue-600 mb-2">
-                      1日{freePlan.maxReadings}回まで + {freePlan.hasHistory ? '履歴保存' : ''}
-                    </div>
-                    <button
-                      onClick={onLogin}
-                      disabled={isLoggingIn}
-                      className="w-full py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors disabled:opacity-50"
-                    >
-                      {isLoggingIn ? "認証中..." : "無料でユーザー登録"}
-                    </button>
-                  </div>
-                )} */}
-
               <div className="text-xs text-center text-gray-500">
                 💡{" "}
                 {isGuest
