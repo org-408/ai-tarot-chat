@@ -1,7 +1,6 @@
 import "@/components/providers";
 import { Providers } from "@/components/providers";
 import { ReactNode } from "react";
-// @ts-expect-error: 未対応のため無視
 import "./globals.css";
 
 export const metadata = { title: "Tarot Admin" };
