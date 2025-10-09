@@ -8,28 +8,28 @@ import { Prisma } from "@prisma/client";
 
 // デフォルトのタロット占い師情報を取得
 export async function getDefaultTarotist(): Promise<Tarotist | null> {
-  return await prisma.tarotist.findFirst({
+  return (await prisma.tarotist.findFirst({
     include: { plan: true },
-  });
+  })) as Tarotist | null;
 }
 
 // タロット占い師リストを取得
 export async function getTarotists(soft: boolean = true): Promise<Tarotist[]> {
-  return await prisma.tarotist.findMany({
+  return (await prisma.tarotist.findMany({
     where: soft ? { deletedAt: null } : undefined,
     include: { plan: true },
     orderBy: { order: "asc" },
-  });
+  })) as Tarotist[];
 }
 
 export async function getTarotistById(
   id: string,
   soft: boolean = true
 ): Promise<Tarotist | null> {
-  return await prisma.tarotist.findFirst({
+  return (await prisma.tarotist.findFirst({
     where: soft ? { id, deletedAt: null } : { id },
     include: { plan: true },
-  });
+  })) as Tarotist | null;
 }
 
 // タロティスト情報を作成

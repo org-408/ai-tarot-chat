@@ -270,6 +270,7 @@ export type Plan = {
   name: string;
   description: string;
   price: number;
+  requiresAuth: boolean;
   isActive: boolean;
   features: string[];
   maxReadings: number;

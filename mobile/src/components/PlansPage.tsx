@@ -24,14 +24,12 @@ const PlansPage: React.FC<PlansPageProps> = ({
 }) => {
   const currentPlan = payload.planCode || "GUEST";
   const planData = masterData.plans.reduce((acc, plan) => {
-    let requiresAuth = true;
-    if (plan.code === "FREE") requiresAuth = false;
-    if (plan.code === "GUEST") requiresAuth = false;
     acc[plan.code as UserPlan] = {
       no: plan.no,
       code: plan.code,
       name: plan.name,
       price: plan.price,
+      requiresAuth: plan.requiresAuth,
       description: plan.description,
       features: plan.features,
       isActive: plan.isActive,
@@ -49,10 +47,9 @@ const PlansPage: React.FC<PlansPageProps> = ({
           ? "from-yellow-400 to-orange-500"
           : "from-gray-400 to-gray-600",
       popular: plan.code === "STANDARD", // スタンダードを人気に設定
-      requiresAuth,
     };
     return acc;
-  }, {} as Record<string, PlanInput & { requiresAuth: boolean; popular: boolean; color: string }>);
+  }, {} as Record<string, PlanInput & { popular: boolean; color: string }>);
 
   const handlePlanChange = (planKey: keyof typeof planData) => {
     const plan = planData[planKey];
@@ -112,7 +109,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
             {/* 認証必須バッジ */}
             {plan.requiresAuth && (
               <div className="absolute -top-2 right-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
-                認証必須
+                認証必要
               </div>
             )}
 
@@ -167,7 +164,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
                           : "プレミアム登録"
                       }`
                     : planKey === "FREE"
-                    ? "フリープランに変更"
+                    ? "ログインしてフリープランに変更"
                     : currentPlan === "FREE"
                     ? "アップグレード"
                     : planKey === "STANDARD" && currentPlan === "PREMIUM"

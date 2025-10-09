@@ -312,6 +312,7 @@ model Plan {
   name        String    // "ゲスト", "フリー", "スタンダード", "プレミアム"
   description String    @db.Text
   price       Int       @default(0)  // 月額価格または1回あたりの価格
+  requiresAuth Boolean   @default(false) // 認証必須かどうか
   isActive    Boolean   @default(true)
   features    String[]  // 含まれる機能の配列
   maxReadings Int       @default(0) // 1ヶ月の最大リーディング回数

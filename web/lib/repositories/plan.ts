@@ -21,6 +21,7 @@ export class PlanRepository extends BaseRepository {
         name: plan.name,
         description: plan.description,
         price: plan.price,
+        requiresAuth: plan.requiresAuth,
         isActive: plan.isActive,
         features: plan.features,
         maxReadings: plan.maxReadings,

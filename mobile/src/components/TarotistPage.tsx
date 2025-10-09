@@ -67,7 +67,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
       {/* 占い師カード一覧 */}
       <div className="space-y-4">
         {masterData.tarotists
-          ?.sort((a, b) => (b.quality || 0) - (a.quality || 0))
+          ?.sort((a, b) => (a.order || 0) - (b.order || 0))
           .map((tarotist) => {
             const isAvailable = canUseTarotist(tarotist.plan?.code || "GUEST");
             const requiresUpgrade = !isAvailable;
@@ -89,17 +89,15 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                 )}
 
                 {/* プランバッジ */}
-                {tarotist.plan!.code !== "FREE" && (
-                  <div className="absolute -top-2 right-4 bg-purple-500 text-white text-xs px-2 py-1 rounded">
-                    {tarotist.plan!.code}
-                  </div>
-                )}
+                <div className="absolute -top-2 right-4 bg-purple-500 text-white text-xs px-2 py-1 rounded">
+                  {tarotist.plan!.code}
+                </div>
 
                 <div className="flex gap-4">
                   {/* 占い師画像 */}
                   <div className="flex-shrink-0">
                     <img
-                      src={`/tarotist/${tarotist.name}.png`}
+                      src={`/tarotists/${tarotist.name}.png`}
                       alt={tarotist.title}
                       className={`w-24 h-24 rounded-lg object-cover ${
                         !isAvailable ? "opacity-50 grayscale" : ""
@@ -124,7 +122,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     </div>
 
                     {/* プロフィール */}
-                    <div className="text-sm text-gray-700 mb-2 line-clamp-2">
+                    <div className="text-sm text-gray-700 mb-2 line-clamp-4">
                       {tarotist.bio}
                     </div>
 
@@ -141,7 +139,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                       <button
                         onClick={() => handleUpgrade(tarotist.plan!.code)}
                         disabled={isLoggingIn}
-                        className="w-full py-2 px-4 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-lg text-sm font-bold hover:opacity-90 disabled:opacity-50 transition-colors"
+                        className="w-full py-1 px-3 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-lg text-xs hover:opacity-90 disabled:opacity-50 transition-colors"
                       >
                         {isLoggingIn
                           ? "認証中..."
@@ -178,7 +176,9 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           <ul className="space-y-1">
             <li>• 各占い師は異なるAIモデルを使用しています</li>
             <li>• プランによって利用できる占い師が異なります</li>
-            <li>• おすすめ度は精度と人気度を総合評価したものです</li>
+            <li>
+              • おすすめ度はAIモデルの回答の質や信頼性を総合評価したものです
+            </li>
             <li>• より高度な占い師はPREMIUMプランで利用可能</li>
           </ul>
         </div>

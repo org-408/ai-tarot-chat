@@ -11,6 +11,7 @@ const plans: Prisma.PlanCreateInput[] = [
     name: "ゲスト",
     description: "簡単なタロットリーディングを無料で体験",
     price: 0,
+    requiresAuth: false,
     features: [
       "ユーザー登録なしでお気軽に体験",
       "1日1回のみ利用可能",
@@ -25,6 +26,7 @@ const plans: Prisma.PlanCreateInput[] = [
     name: "フリー",
     description: "占い回数が少し増え、占った履歴も残せます",
     price: 0,
+    requiresAuth: true,
     features: [
       "ユーザー登録でさらに楽しめます",
       "1日3回まで利用可能",
@@ -41,6 +43,7 @@ const plans: Prisma.PlanCreateInput[] = [
     name: "スタンダード",
     description: "多彩な占いカテゴリとスプレッドを体験。広告なしで快適に",
     price: 480,
+    requiresAuth: true,
     features: [
       "多彩な占いカテゴリ",
       "1日3回7枚以内スプレッドが利用可能",
@@ -57,6 +60,7 @@ const plans: Prisma.PlanCreateInput[] = [
     name: "プレミアム",
     description: "占う内容の入力と詳細な解説、簡単な対話を提供",
     price: 980,
+    requiresAuth: true,
     features: [
       "多彩な占いカテゴリ",
       "1日3回まですべてのスプレッドが利用可能",
@@ -76,6 +80,7 @@ const plans: Prisma.PlanCreateInput[] = [
     name: "マスター",
     description: "詳細な解説と全スプレッド、詳細な対話を提供",
     price: 1980,
+    requiresAuth: true,
     features: [
       "最上級レベルまでのすべてのスプレッド",
       "多彩な占いカテゴリ",
