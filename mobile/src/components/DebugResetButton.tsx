@@ -159,13 +159,13 @@ export function DebugResetButton() {
             >
               閉じる
             </button>
-          </div>
 
-          {error && (
-            <div className="mt-2 text-xs text-red-500 bg-red-50 p-2 rounded">
-              エラー: {error.message}
-            </div>
-          )}
+            {error && (
+              <div className="mt-2 text-xs text-red-500 bg-red-50 p-2 rounded">
+                エラー: {error.message}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

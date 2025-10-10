@@ -487,7 +487,7 @@ export type FavoriteSpreadInput = Omit<
 // その他の型定義
 // ==========================================
 
-export interface AppJWTPayload extends JWTPayload {
+export interface AppJWTPayload {
   t: string; // "app"
   deviceId: string;
   clientId: string;
@@ -500,6 +500,8 @@ export interface AppJWTPayload extends JWTPayload {
     name?: string;
     image?: string;
   };
+  exp?: number; // 有効期限（UNIXタイムスタンプ）
+  iat?: number; // 発行日時（UNIXタイムスタンプ）
 }
 
 export interface TicketData extends JWTPayload {

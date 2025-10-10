@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { BuildModeChecker } from "./components/BuildModeChecker";
 import { DebugResetButton } from "./components/DebugResetButton";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -390,7 +389,7 @@ function App() {
       )}
 
       {/* ビルドモードチェッカー */}
-      <BuildModeChecker />
+      {/* <BuildModeChecker /> */}
 
       <Header currentPlan={planCode as UserPlan} currentPage={pageType} />
 
