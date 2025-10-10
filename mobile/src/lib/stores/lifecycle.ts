@@ -1,18 +1,18 @@
 import { App as CapacitorApp } from "@capacitor/app";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { logWithContext } from "../logger/logger";
+import { storeRepository } from "../repositories/store";
 import { queryClient } from "../services/queryClient";
 import { useAuthStore } from "./auth";
-import { useDailyLimitStore } from "./dailyLimit";
 
 interface LifecycleState {
-  // 状態（外から見える）
+  // 状態
   isInitialized: boolean;
   isRefreshing: boolean;
-  dateChanged: boolean; // 日付が変わった時にtrue
+  dateChanged: boolean;
   lastResumedAt: Date | null;
   error: Error | null;
-  isInitLocked: boolean; // 初期化中に二重initを防止するためのフラグ
 
   // アクション
   init: () => Promise<void>;
@@ -20,198 +20,245 @@ interface LifecycleState {
   cleanup: () => void;
   onResume: () => Promise<void>;
   onPause: () => Promise<void>;
-  clearDateChanged: () => void; // 通知を消すため
+  clearDateChanged: () => void;
   clearError: () => void;
-  reset: () => void; // ストアをリセット（テスト用）
+  reset: () => void;
 }
 
 import type { PluginListenerHandle } from "@capacitor/core";
 
 let appStateListener: PluginListenerHandle | null = null;
-// let resumeListener: PluginListenerHandle | null = null;
-// let visibilityHandler: (() => void) | null = null;
 
-export const useLifecycleStore = create<LifecycleState>((set, get) => ({
-  isInitialized: false,
-  isRefreshing: false,
-  dateChanged: false,
-  lastResumedAt: null,
-  error: null,
-  isInitLocked: false, // 初期化中に二重initを防止するためのフラグ
+// ✅ メモリ上のPromiseキャッシュ（競合状態を完全に防ぐ）
+let initPromise: Promise<void> | null = null;
 
-  init: async () => {
-    const isInitLocked = get().isInitLocked;
-    const isInitialized = get().isInitialized;
-    if (isInitialized || isInitLocked) {
-      logWithContext("info", "[Lifecycle] Already initialized, skipping", {
-        isInitLocked,
-        isInitialized,
-      });
-      return;
-    }
-    logWithContext("info", "[Lifecycle] Initializing...", {
-      isInitLocked,
-      isInitialized,
-    });
-    set({ isInitLocked: true, isRefreshing: true, error: null });
-
-    try {
-      // 1. 認証初期化
-      logWithContext("info", "[Lifecycle] Initializing AuthStore...");
-      await useAuthStore.getState().init();
-
-      // 2. マスターデータの取得
-      logWithContext("info", "[Lifecycle] Fetching master data...");
-      await queryClient.invalidateQueries({ queryKey: ["master", true, true] });
-
-      // 3. ユーザー利用状況の取得
-      logWithContext("info", "[Lifecycle] Fetching usage stats...");
-      const clientId = useAuthStore.getState().payload?.clientId || null;
-      if (clientId) {
-        await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
-      } else {
-        logWithContext(
-          "info",
-          "[Lifecycle] No clientId available, skipping usage fetch"
-        );
-      }
-
-      set({
-        isInitialized: true,
-        isRefreshing: false,
-        lastResumedAt: new Date(),
-      });
-      logWithContext("info", "[Lifecycle] Initialization complete");
-    } catch (error) {
-      logWithContext("error", "[Lifecycle] Initialization failed:", { error });
-      set({
-        isInitialized: true,
-        isRefreshing: false,
-        error: error as Error,
-      });
-    } finally {
-      set({ isInitLocked: false });
-    }
-  },
-
-  setup: () => {
-    logWithContext("info", "[Lifecycle] Setting up listeners");
-    get().cleanup();
-
-    // 1. appStateChange
-    CapacitorApp.addListener("appStateChange", async (state) => {
-      if (state.isActive) {
-        await get().onResume();
-      } else {
-        await get().onPause();
-      }
-    }).then((listener) => {
-      appStateListener = listener;
-    });
-
-    // // 2. resume
-    // CapacitorApp.addListener("resume", async () => {
-    //   await get().onResume();
-    // }).then((listener) => {
-    //   resumeListener = listener;
-    // });
-
-    // // 3. visibilitychange
-    // visibilityHandler = async () => {
-    //   if (document.visibilityState === "visible") {
-    //     await get().onResume();
-    //   } else {
-    //     await get().onPause();
-    //   }
-    // };
-    // document.addEventListener("visibilitychange", visibilityHandler);
-  },
-
-  cleanup: () => {
-    logWithContext("info", "[Lifecycle] Cleaning up listeners");
-
-    if (appStateListener) {
-      appStateListener.remove();
-      appStateListener = null;
-    }
-
-    // if (resumeListener) {
-    //   resumeListener.remove();
-    //   resumeListener = null;
-    // }
-
-    // if (visibilityHandler) {
-    //   document.removeEventListener("visibilitychange", visibilityHandler);
-    //   visibilityHandler = null;
-    // }
-  },
-
-  onResume: async () => {
-    logWithContext("info", "[Lifecycle] App resumed");
-    if (get().isInitLocked) {
-      logWithContext("info", "[Lifecycle] Init in progress, skipping onResume");
-      return;
-    }
-    if (!get().isInitialized) {
-      logWithContext("info", "[Lifecycle] Not initialized, running init()");
-      await get().init();
-      return;
-    }
-    set({
-      isRefreshing: true,
-      dateChanged: false,
-      error: null,
-    });
-
-    try {
-      // 1. 認証トークンのリフレッシュ
-      await useAuthStore.getState().refresh();
-
-      // 2. 日付変更チェック & 自動リセット
-      const wasReset = await useDailyLimitStore.getState().checkDateAndReset();
-
-      set({
-        isRefreshing: false,
-        dateChanged: wasReset,
-        lastResumedAt: new Date(),
-      });
-
-      if (wasReset) {
-        logWithContext("info", "[Lifecycle] Daily limits were reset");
-      }
-
-      logWithContext("info", "[Lifecycle] Resume complete");
-    } catch (error) {
-      logWithContext("error", "[Lifecycle] Resume failed:", { error });
-      set({
-        isRefreshing: false,
-        error: error as Error,
-      });
-    }
-  },
-
-  onPause: async () => {
-    logWithContext("info", "[Lifecycle] App paused");
-    // 必要なら状態保存
-  },
-
-  clearDateChanged: () => {
-    set({ dateChanged: false });
-  },
-
-  clearError: () => {
-    set({ error: null });
-  },
-
-  reset: () => {
-    logWithContext("info", "[Lifecycle] Resetting store to initial state");
-    set({
+export const useLifecycleStore = create<LifecycleState>()(
+  persist(
+    (set, get) => ({
       isInitialized: false,
       isRefreshing: false,
       dateChanged: false,
       lastResumedAt: null,
       error: null,
-      isInitLocked: false,
-    });
-  },
-}));
+
+      /**
+       * アプリ起動時の初期化
+       *
+       * ✅ Promiseキャッシュで競合状態を完全に防止
+       * - 最初の呼び出しでPromiseを作成
+       * - 2回目以降は即座に同じPromiseを返す（チェックと返却がアトミック）
+       */
+      init: async () => {
+        // ✅ 既にPromiseがある場合は即座に返す（アトミック操作）
+        if (initPromise) {
+          logWithContext(
+            "info",
+            "[Lifecycle] Init already in progress, reusing promise"
+          );
+          return initPromise;
+        }
+
+        // ✅ 既に初期化完了している場合
+        if (get().isInitialized) {
+          logWithContext("info", "[Lifecycle] Already initialized, skipping");
+          return;
+        }
+
+        logWithContext("info", "[Lifecycle] Initializing...");
+
+        // ✅ Promiseを作成して即座に代入（これがロック）
+        initPromise = (async () => {
+          try {
+            set({
+              isRefreshing: true,
+              error: null,
+            });
+
+            // ========================================
+            // 認証初期化のみ実行
+            // ========================================
+            logWithContext("info", "[Lifecycle] Initializing auth");
+            await useAuthStore.getState().init();
+
+            // ✅ 初期化完了
+            set({
+              isInitialized: true,
+              isRefreshing: false,
+              lastResumedAt: new Date(),
+            });
+
+            logWithContext("info", "[Lifecycle] Initialization complete", {
+              isReady: useAuthStore.getState().isReady,
+              clientId: useAuthStore.getState().payload?.clientId,
+            });
+          } catch (error) {
+            logWithContext("error", "[Lifecycle] Initialization failed", {
+              error,
+            });
+
+            set({
+              isInitialized: true,
+              isRefreshing: false,
+              error: error as Error,
+            });
+          } finally {
+            // ✅ Promiseを解放（次回起動時に再初期化可能に）
+            initPromise = null;
+          }
+        })();
+
+        return initPromise;
+      },
+
+      setup: () => {
+        logWithContext("info", "[Lifecycle] Setting up listeners");
+        get().cleanup();
+
+        CapacitorApp.addListener("appStateChange", async (state) => {
+          if (state.isActive) {
+            await get().onResume();
+          } else {
+            await get().onPause();
+          }
+        }).then((listener) => {
+          appStateListener = listener;
+        });
+      },
+
+      cleanup: () => {
+        logWithContext("info", "[Lifecycle] Cleaning up listeners");
+
+        if (appStateListener) {
+          appStateListener.remove();
+          appStateListener = null;
+        }
+      },
+
+      onResume: async () => {
+        logWithContext("info", "[Lifecycle] App resumed");
+
+        const { isInitialized } = get();
+
+        // 初期化中の場合はスキップ
+        if (initPromise) {
+          logWithContext(
+            "info",
+            "[Lifecycle] Init in progress, skipping onResume"
+          );
+          return;
+        }
+
+        // まだ初期化されていない
+        if (!isInitialized) {
+          logWithContext("info", "[Lifecycle] Not initialized, running init()");
+          await get().init();
+          return;
+        }
+
+        const previousDate = get().lastResumedAt;
+        const currentDate = new Date();
+
+        set({
+          isRefreshing: true,
+          dateChanged: false,
+          error: null,
+        });
+
+        try {
+          const authStore = useAuthStore.getState();
+
+          // ========================================
+          // 1. 認証トークンのリフレッシュ
+          // ========================================
+          logWithContext("info", "[Lifecycle] Refreshing auth token");
+          await authStore.refresh();
+
+          // ========================================
+          // 2. ReactQueryキャッシュの無効化
+          // ========================================
+          const authPayload = authStore.payload;
+
+          if (authStore.isReady && authPayload?.clientId) {
+            logWithContext("info", "[Lifecycle] Invalidating data cache");
+
+            // Usageキャッシュを無効化（ReactQueryが自動で再取得）
+            await queryClient.invalidateQueries({
+              queryKey: ["usage", authPayload.clientId],
+            });
+          }
+
+          // 日付変更の検出
+          const dateChanged =
+            previousDate !== null &&
+            previousDate.toDateString() !== currentDate.toDateString();
+
+          if (dateChanged) {
+            logWithContext("info", "[Lifecycle] Date changed detected", {
+              previousDate: previousDate.toDateString(),
+              currentDate: currentDate.toDateString(),
+            });
+          }
+
+          set({
+            isRefreshing: false,
+            dateChanged,
+            lastResumedAt: currentDate,
+          });
+
+          logWithContext("info", "[Lifecycle] Resume complete");
+        } catch (error) {
+          logWithContext("error", "[Lifecycle] Resume failed", { error });
+          set({
+            isRefreshing: false,
+            error: error as Error,
+          });
+        }
+      },
+
+      onPause: async () => {
+        logWithContext("info", "[Lifecycle] App paused");
+      },
+
+      clearDateChanged: () => {
+        set({ dateChanged: false });
+      },
+
+      clearError: () => {
+        set({ error: null });
+      },
+
+      reset: () => {
+        logWithContext("info", "[Lifecycle] Resetting store to initial state");
+
+        // ✅ Promiseキャッシュをリセット
+        initPromise = null;
+
+        set({
+          isInitialized: false,
+          isRefreshing: false,
+          dateChanged: false,
+          lastResumedAt: null,
+          error: null,
+        });
+      },
+    }),
+    {
+      name: "lifecycle-storage",
+      // ✅ 何も永続化しない（全てメモリ管理）
+      partialize: () => ({}),
+      storage: createJSONStorage(() => ({
+        getItem: async (name: string) => {
+          const value = await storeRepository.get(name);
+          return value ? JSON.stringify(value) : null;
+        },
+        setItem: async (name: string, value: string) => {
+          const parsed = JSON.parse(value);
+          await storeRepository.set(name, parsed);
+        },
+        removeItem: async (name: string) => {
+          await storeRepository.delete(name);
+        },
+      })),
+    }
+  )
+);

@@ -1,6 +1,6 @@
 import {
+  AppJWTPayload,
   AppStateCheckRequest,
-  JWTPayload,
   Plan,
   type Client,
   type TicketData,
@@ -17,7 +17,6 @@ import { logWithContext } from "../logger/logger";
 import { planRepository } from "../repositories";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
-logWithContext("info", "🔑 AuthService initialized:", { JWT_SECRET });
 if (!JWT_SECRET) {
   logWithContext("error", "❌ AUTH_SECRET is not defined", { status: 500 });
   throw new Error("AUTH_SECRET environment variable is required");
@@ -80,7 +79,7 @@ export class AuthService {
       logWithContext("info", "👤 Associated user:", { user });
 
       // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
-      const token = await generateJWT<JWTPayload>(
+      const token = await generateJWT<AppJWTPayload>(
         {
           t: "app",
           deviceId: device.deviceId,
@@ -263,7 +262,7 @@ export class AuthService {
       }
 
       // アプリ用JWT生成（既存パターンに合わせて）
-      const jwt = await generateJWT<JWTPayload>(
+      const jwt = await generateJWT<AppJWTPayload>(
         {
           t: "app",
           deviceId: device.deviceId,
@@ -515,11 +514,11 @@ export class AuthService {
    * JWTペイロード更新（プラン変更時など）
    */
   async refreshJwtPayload(
-    payload: JWTPayload & { exp?: number },
+    payload: AppJWTPayload & { exp?: number },
     planCode?: string
   ): Promise<string> {
     // アプリ用JWT生成（既存パターンに合わせて）
-    return await generateJWT<JWTPayload>(
+    return await generateJWT<AppJWTPayload>(
       {
         t: "app",
         deviceId: payload.deviceId,
@@ -546,7 +545,7 @@ export class AuthService {
       logWithContext("info", "🔑 decodeJWT token:", {
         token: authHeader.substring(7),
       });
-      const payload = await decodeJWT<JWTPayload>(
+      const payload = await decodeJWT<AppJWTPayload>(
         authHeader.substring(7),
         JWT_SECRET,
         true
@@ -583,7 +582,7 @@ export class AuthService {
   async verifyApiRequest(
     request: NextRequest | string
   ): Promise<
-    { payload: JWTPayload & { exp?: number } } | { error: NextResponse }
+    { payload: AppJWTPayload & { exp?: number } } | { error: NextResponse }
   > {
     const authHeader =
       request instanceof NextRequest
@@ -596,7 +595,7 @@ export class AuthService {
     }
 
     try {
-      const payload = await decodeJWT<JWTPayload>(
+      const payload = await decodeJWT<AppJWTPayload>(
         authHeader.substring(7),
         JWT_SECRET
       );

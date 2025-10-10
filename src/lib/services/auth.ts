@@ -1,5 +1,5 @@
 // lib/services/auth.ts
-import type { JWTPayload } from "@/../shared/lib/types";
+import type { AppJWTPayload } from "@/../shared/lib/types";
 import { getVersion } from "@tauri-apps/api/app";
 import { version as osVersion, platform } from "@tauri-apps/plugin-os";
 import { authenticate } from "tauri-plugin-web-auth-api";
@@ -23,7 +23,7 @@ export class AuthService {
   /**
    * デバイス登録 - 起動時に必ず実行
    */
-  async registerDevice(): Promise<JWTPayload> {
+  async registerDevice(): Promise<AppJWTPayload> {
     console.log("registerDevice:デバイス登録開始");
 
     // デバイスIDを取得（なければ新規作成してストア登録）
@@ -58,7 +58,7 @@ export class AuthService {
 
       console.log("デバイス登録成功:", result);
       const { token } = result;
-      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
       if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
         throw new Error("不正なトークンが返却されました");
       }
@@ -81,7 +81,7 @@ export class AuthService {
   /**
    * OAuth認証 - ユーザーとデバイスを紐付け
    */
-  async signInWithWeb(): Promise<JWTPayload> {
+  async signInWithWeb(): Promise<AppJWTPayload> {
     const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
     const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
     const callbackScheme =
@@ -123,7 +123,7 @@ export class AuthService {
 
       console.log("✅ JWT取得成功 result:", result);
       const { token } = result;
-      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
       if (
         !payload ||
         !payload.deviceId ||

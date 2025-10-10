@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type {
-  JWTPayload,
+  AppJWTPayload,
   MasterData,
   Plan,
   ReadingCategory,
@@ -14,7 +14,7 @@ import type { UserPlan } from "../types";
 import ScrollableRadioSelector from "./ScrollableRadioSelector";
 
 interface SalonPageProps {
-  payload: JWTPayload;
+  payload: AppJWTPayload;
   isAuthenticated: boolean;
   masterData: MasterData;
   usageStats: UsageStats;

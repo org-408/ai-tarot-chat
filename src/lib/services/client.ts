@@ -1,4 +1,4 @@
-import { JWTPayload, UsageStats } from "../../../shared/lib/types";
+import { AppJWTPayload, UsageStats } from "../../../shared/lib/types";
 import { apiClient } from "../utils/apiClient";
 import { decodeJWT } from "../utils/jwt";
 import { authService } from "./auth";
@@ -25,7 +25,7 @@ export class ClientService {
    */
   async changePlan(
     newPlanCode: string
-  ): Promise<{ success: boolean; payload: JWTPayload }> {
+  ): Promise<{ success: boolean; payload: AppJWTPayload }> {
     console.log("Changing client plan to:", newPlanCode);
     const result = await apiClient.post<{ success: boolean; token: string }>(
       "/api/plans/change",
@@ -43,7 +43,7 @@ export class ClientService {
       throw new Error("VITE_AUTH_SECRET environment variable is required");
     }
     console.log("changePlan: Decoding new JWT token", JWT_SECRET);
-    const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+    const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
     if (
       !payload ||
       !payload.deviceId ||

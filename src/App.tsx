@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { JWTPayload, UsageStats } from "../shared/lib/types";
+import { AppJWTPayload, UsageStats } from "../shared/lib/types";
 import AdBanner from "./components/AdBanner";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -20,7 +20,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [usageStats, setUsageStats] = useState<UsageStats>();
-  const [jwtPayload, setJwtPayload] = useState<null | JWTPayload>(null);
+  const [jwtPayload, setJwtPayload] = useState<null | AppJWTPayload>(null);
   const [currentPlan, setCurrentPlan] = useState<UserPlan>("GUEST");
   const [message, setMessage] = useState("読み込み中...");
 
@@ -204,7 +204,7 @@ function App() {
     console.log("ユーザー利用状況の取得:", usage);
   };
 
-  const handleChangePayload = (payload: JWTPayload) => {
+  const handleChangePayload = (payload: AppJWTPayload) => {
     setJwtPayload(payload);
     setCurrentPlan(payload.planCode as UserPlan);
     console.log("handleChangePayload: ", payload, payload.planCode);

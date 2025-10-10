@@ -487,6 +487,21 @@ model FavoriteSpread {
 }
 
 // ==========================================
+// マスターデータバージョン管理
+// ==========================================
+
+/// マスターデータの全体バージョンを管理
+/// マスターデータ（カード、スプレッド等）の変更時に version を更新
+model MasterConfig {
+  id          String   @id @default(cuid())
+  key         String   // "MASTER_VERSION"
+  version     String   // "1.0.0", "1.1.0" など（セマンティックバージョニング）
+  description String?  @db.Text // 変更内容の説明
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================
 // Logging関連モデル
 // ==========================================
 // schema.prisma に追加するモデル

@@ -1,7 +1,9 @@
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
+import type { PluginListenerHandle } from "@capacitor/core";
 import { Device } from "@capacitor/device";
-import type { JWTPayload } from "../../../../shared/lib/types";
+import type { AppJWTPayload } from "../../../../shared/lib/types";
+import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { decodeJWT } from "../utils/jwt";
@@ -19,28 +21,68 @@ export class AuthService {
     USER_ID: "userId",
   } as const;
 
+  // ============================================
+  // 公開メソッド: Zustand Store から呼ばれる
+  // ============================================
+
+  /**
+   * 保存済みトークン情報を取得
+   * Store の init() から呼ばれる
+   */
+  async getStoredPayload(): Promise<{
+    token: string | null;
+    deviceId: string | null;
+    clientId: string | null;
+    userId: string | null;
+  }> {
+    const [token, deviceId, clientId, userId] = await Promise.all([
+      storeRepository.get<string>(this.KEYS.ACCESS_TOKEN),
+      storeRepository.get<string>(this.KEYS.DEVICE_ID),
+      storeRepository.get<string>(this.KEYS.CLIENT_ID),
+      storeRepository.get<string>(this.KEYS.USER_ID),
+    ]);
+
+    return { token, deviceId, clientId, userId };
+  }
+
+  /**
+   * トークンをデコードしてペイロードを返す
+   */
+  async decodeStoredToken(token: string): Promise<AppJWTPayload> {
+    return await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
+  }
+
+  /**
+   * トークンの有効期限をチェック
+   */
+  isTokenExpired(payload: AppJWTPayload): boolean {
+    if (!payload.exp) {
+      return true;
+    }
+    return Date.now() >= payload.exp * 1000;
+  }
+
+  // ============================================
+  // 認証フロー
+  // ============================================
+
   /**
    * デバイス登録 - 起動時に必ず実行
    */
-  async registerDevice(): Promise<JWTPayload> {
-    console.log("registerDevice:デバイス登録開始");
-
-    // デバイスIDを取得（なければ新規作成してストア登録）
-    const deviceId = await this.ensureDeviceId();
-    console.log("デバイスID:", deviceId);
-
-    // Capacitorから情報取得
-    const [platformName, osVersionStr, appVersionStr] = await Promise.all([
-      Device.getInfo().then((info) => info.platform),
-      Device.getInfo().then((info) => info.osVersion),
-      App.getInfo().then((info) => info.version),
-    ]);
-
-    console.log(
-      `プラットフォーム: ${platformName}, OS: ${osVersionStr}, アプリ: ${appVersionStr}`
-    );
+  async registerDevice(): Promise<AppJWTPayload> {
+    logWithContext("info", "[AuthService] Device registration started");
 
     try {
+      // デバイスIDを取得（なければ新規作成してストア登録）
+      const deviceId = await this.ensureDeviceId();
+
+      // Capacitorから情報取得
+      const [platformName, osVersionStr, appVersionStr] = await Promise.all([
+        Device.getInfo().then((info) => info.platform),
+        Device.getInfo().then((info) => info.osVersion),
+        App.getInfo().then((info) => info.version),
+      ]);
+
       const result = await apiClient.post<{ token: string }>(
         "/api/device/register",
         {
@@ -48,16 +90,16 @@ export class AuthService {
           platform: platformName,
           appVersion: appVersionStr,
           osVersion: osVersionStr,
-          // pushToken は将来的に追加
         }
       );
+
       if (!result || "error" in result) {
         throw new Error("デバイス登録に失敗しました");
       }
 
-      console.log("デバイス登録成功:", result);
       const { token } = result;
-      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
+
       if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
         throw new Error("不正なトークンが返却されました");
       }
@@ -67,14 +109,20 @@ export class AuthService {
       await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
 
       if (payload.user?.id) {
-        console.log("ユーザーID:", payload.user.id);
         await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
       }
 
-      console.log("デバイス登録完了:", payload);
+      logWithContext("info", "[AuthService] Device registration successful", {
+        clientId: payload.clientId,
+        planCode: payload.planCode,
+        platform: platformName,
+      });
+
       return payload;
     } catch (error) {
-      console.error("デバイス登録エラー:", error);
+      logWithContext("error", "[AuthService] Device registration failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -82,35 +130,113 @@ export class AuthService {
   /**
    * OAuth認証 - ユーザーとデバイスを紐付け
    */
-  async signInWithWeb(): Promise<JWTPayload> {
+  async signInWithWeb(): Promise<AppJWTPayload> {
+    logWithContext("info", "[AuthService] OAuth signin started");
+
     const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
     const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
+
+    // Deep link の scheme（capacitor.config.ts と一致させる）
     const callbackScheme =
       import.meta.env.VITE_DEEP_LINK_SCHEME || "aitarotchat";
-    console.log("🔐 Web認証開始:", url, callbackScheme);
+
+    logWithContext("info", "[AuthService] Opening browser for OAuth", {
+      url,
+      callbackScheme,
+    });
 
     try {
-      // Capacitor版のauthenticate実装
       const auth = await new Promise<{ callbackUrl: string }>(
         (resolve, reject) => {
+          let isResolved = false; // フラグ：既にresolve済みかどうか
+          let appUrlListener: PluginListenerHandle | null = null;
+          let browserFinishedListener: PluginListenerHandle | null = null;
+          let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+          // リスナーを全てクリーンアップする関数
+          const cleanup = () => {
+            if (appUrlListener) {
+              appUrlListener.remove();
+              appUrlListener = null;
+            }
+            if (browserFinishedListener) {
+              browserFinishedListener.remove();
+              browserFinishedListener = null;
+            }
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+              timeoutId = null;
+            }
+          };
+
+          // appUrlOpen リスナー（deep link受信）
           App.addListener("appUrlOpen", async (event) => {
+            if (isResolved) return; // 既に解決済みならスキップ
+
+            // ✅ Scheme チェック（セキュリティ）
+            if (!event.url.startsWith(`${callbackScheme}://`)) {
+              logWithContext("warn", "[AuthService] Invalid callback scheme", {
+                expected: callbackScheme,
+                received: event.url,
+              });
+              isResolved = true;
+              cleanup();
+              reject(new Error("不正なコールバックURLです"));
+              return;
+            }
+
+            // ✅ 正常な deep link として記録
+            logWithContext("info", "[AuthService] Valid deep link received", {
+              scheme: callbackScheme,
+            });
+
+            isResolved = true;
+            cleanup();
             await Browser.close();
             resolve({ callbackUrl: event.url });
           }).then((listener) => {
-            // ブラウザを開く
-            Browser.open({ url, windowName: "_self" }).catch(reject);
+            appUrlListener = listener;
+          });
 
-            // タイムアウト設定（オプション）
-            setTimeout(() => {
-              listener.remove();
-              reject(new Error("認証タイムアウト"));
-            }, 120000); // 2分
+          // browserFinished リスナー（ブラウザが閉じられた）
+          Browser.addListener("browserFinished", () => {
+            if (isResolved) return; // 既にresolve済みなら何もしない
+
+            logWithContext(
+              "info",
+              "[AuthService] Browser closed before deep link"
+            );
+
+            isResolved = true;
+            cleanup();
+            reject(new Error("ユーザーが認証をキャンセルしました"));
+          }).then((listener) => {
+            browserFinishedListener = listener;
+          });
+
+          // タイムアウト
+          timeoutId = setTimeout(() => {
+            if (isResolved) return;
+
+            logWithContext("warn", "[AuthService] OAuth timeout");
+
+            isResolved = true;
+            cleanup();
+            reject(new Error("認証タイムアウト"));
+          }, 120000);
+
+          // ブラウザを開く
+          Browser.open({ url, windowName: "_self" }).catch((error) => {
+            if (isResolved) return;
+
+            isResolved = true;
+            cleanup();
+            reject(error);
           });
         }
       );
 
       if (!auth || "error" in auth) {
-        console.log("❌ 認証キャンセルまたはエラー:", auth);
         throw new Error("認証に失敗しました");
       }
 
@@ -121,25 +247,22 @@ export class AuthService {
         throw new Error("認証トークンが取得できませんでした");
       }
 
-      console.log("🎫 チケット取得成功");
-
       const deviceId = await this.getDeviceId();
       if (!deviceId) {
         throw new Error("デバイスIDが存在しません");
       }
-      console.log("デバイスID:", deviceId);
 
       const result = await apiClient.post<{
         token: string;
       }>("/api/auth/exchange", { ticket, deviceId });
+
       if (!result || "error" in result) {
-        console.log("❌ チケット交換エラー:", result);
         throw new Error("トークン交換に失敗しました");
       }
 
-      console.log("✅ JWT取得成功 result:", result);
       const { token } = result;
-      const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
+
       if (
         !payload ||
         !payload.deviceId ||
@@ -147,18 +270,23 @@ export class AuthService {
         !payload.user ||
         !payload.user.id
       ) {
-        console.error("❌ JWTペイロードエラー:", payload);
         throw new Error("不正なトークンが返却されました");
       }
-      console.log("ユーザー紐付け成功:", payload);
 
       await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
       await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
 
-      console.log("🔐 Web認証完了:", payload);
+      logWithContext("info", "[AuthService] OAuth signin successful", {
+        clientId: payload.clientId,
+        userId: payload.user.id,
+        provider: payload.provider,
+      });
+
       return payload;
     } catch (error) {
-      console.error("❌ Web認証エラー:", error);
+      logWithContext("error", "[AuthService] OAuth signin failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -166,48 +294,75 @@ export class AuthService {
   /**
    * トークン更新
    */
-  async refreshToken(): Promise<JWTPayload> {
-    try {
-      console.log("[AuthService] Refreshing token");
+  async refreshToken(): Promise<AppJWTPayload> {
+    logWithContext("info", "[AuthService] Token refresh started");
 
+    try {
       const response = await apiClient.post<{ token: string }>(
         "/api/auth/refresh"
       );
 
-      // 新しいトークンを保存
-      await storeRepository.set("accessToken", response.token);
+      await storeRepository.set(this.KEYS.ACCESS_TOKEN, response.token);
 
-      // デコードして返す
-      const payload = await decodeJWT<JWTPayload>(response.token, JWT_SECRET);
+      const payload = await decodeJWT<AppJWTPayload>(
+        response.token,
+        JWT_SECRET
+      );
 
-      // デバイスID等も保存
       if (payload.deviceId) {
-        await storeRepository.set("deviceId", payload.deviceId);
+        await storeRepository.set(this.KEYS.DEVICE_ID, payload.deviceId);
       }
       if (payload.clientId) {
-        await storeRepository.set("clientId", payload.clientId);
+        await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
       }
       if (payload.user?.id) {
-        await storeRepository.set("userId", payload.user.id);
+        await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
       }
 
-      console.log("[AuthService] Token refresh successful:", payload);
+      logWithContext("info", "[AuthService] Token refresh successful", {
+        clientId: payload.clientId,
+      });
+
       return payload;
     } catch (error) {
-      console.error("[AuthService] Token refresh failed:", error);
+      logWithContext("error", "[AuthService] Token refresh failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
 
+  /**
+   * ログアウト
+   */
+  async logout(): Promise<void> {
+    logWithContext("info", "[AuthService] Logout started");
+
+    try {
+      await storeRepository.delete(this.KEYS.ACCESS_TOKEN);
+      await storeRepository.delete(this.KEYS.CLIENT_ID);
+      await storeRepository.delete(this.KEYS.USER_ID);
+
+      logWithContext("info", "[AuthService] Logout successful");
+    } catch (error) {
+      logWithContext("error", "[AuthService] Logout failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  // ============================================
+  // プライベートメソッド
+  // ============================================
+
   private async ensureDeviceId(): Promise<string> {
-    console.log("ensureDeviceId:デバイスID確認");
     let deviceId = await storeRepository.get<string>(this.KEYS.DEVICE_ID);
-    console.log("現在のデバイスID:", deviceId);
 
     if (!deviceId) {
-      console.log("デバイスIDが存在しないため新規作成");
       deviceId = crypto.randomUUID();
       await storeRepository.set(this.KEYS.DEVICE_ID, deviceId);
+      logWithContext("info", "[AuthService] New device ID created");
     }
 
     return deviceId;
@@ -231,12 +386,6 @@ export class AuthService {
 
   async getUserId(): Promise<string | null> {
     return await storeRepository.get<string>(this.KEYS.USER_ID);
-  }
-
-  async logout(): Promise<void> {
-    await storeRepository.delete(this.KEYS.ACCESS_TOKEN);
-    await storeRepository.delete(this.KEYS.CLIENT_ID);
-    await storeRepository.delete(this.KEYS.USER_ID);
   }
 }
 

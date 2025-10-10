@@ -1,69 +1,126 @@
-import type { JWTPayload, UsageStats } from "../../../../shared/lib/types";
+import type { AppJWTPayload, UsageStats } from "../../../../shared/lib/types";
+import { logWithContext } from "../logger/logger";
+import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
 import { decodeJWT } from "../utils/jwt";
-import { authService } from "./auth";
+
+const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("VITE_AUTH_SECRET environment variable is required");
+}
+
+const LAST_FETCHED_DATE_KEY = "usage_last_fetched_date";
 
 /**
- * ユーザー情報の管理
+ * Client（ユーザー）に関する操作を管理
+ * - Usage（利用状況）
+ * - Plan（プラン変更）
  */
 export class ClientService {
+  // ============================================
+  // Usage 関連
+  // ============================================
+
   /**
-   * ユーザーの利用状況を取得
+   * 利用状況を取得 & 必要なら日次リセット
+   * サーバー側で日付判定を行い、日が変わっていればリセットされる
    */
   async getUsageAndReset(): Promise<UsageStats> {
-    console.log("Fetching client usage stats...");
-    const data = await apiClient.get<UsageStats>("/api/clients/usage");
-    console.log("Client usage stats fetched:", data);
-    if (!data || "error" in data) {
-      throw new Error("Failed to fetch remaining readings");
+    logWithContext(
+      "info",
+      "[ClientService] Fetching usage stats (and reset if needed)"
+    );
+
+    try {
+      const data = await apiClient.get<UsageStats>("/api/clients/usage");
+
+      logWithContext("info", "[ClientService] Usage stats fetched", {
+        planCode: data.planCode,
+        remainingReadings: data.remainingReadings,
+        remainingCeltics: data.remainingCeltics,
+        remainingPersonal: data.remainingPersonal,
+      });
+
+      return data;
+    } catch (error) {
+      logWithContext("error", "[ClientService] Failed to fetch usage", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     }
-    return data;
   }
+
+  /**
+   * 最後に取得した日付を保存
+   */
+  async saveLastFetchedDate(date: string): Promise<void> {
+    await storeRepository.set(LAST_FETCHED_DATE_KEY, date);
+  }
+
+  /**
+   * 最後に取得した日付を取得
+   */
+  async getLastFetchedDate(): Promise<string | null> {
+    return await storeRepository.get<string>(LAST_FETCHED_DATE_KEY);
+  }
+
+  // ============================================
+  // Plan 関連
+  // ============================================
 
   /**
    * プランを変更する
    */
   async changePlan(
     newPlanCode: string
-  ): Promise<{ success: boolean; payload: JWTPayload }> {
-    console.log("Changing client plan to:", newPlanCode);
-    const result = await apiClient.post<{ success: boolean; token: string }>(
-      "/api/plans/change",
-      { code: newPlanCode }
-    );
-    const { success, token } = result;
-    console.log("Plan change response:", success, token);
-    if (!result || !success || !token || "error" in result) {
-      throw new Error("Failed to change plan");
-    }
+  ): Promise<{ success: boolean; payload: AppJWTPayload }> {
+    logWithContext("info", "[ClientService] Changing plan", {
+      newPlanCode,
+    });
 
-    // トークンをデコードして新しいペイロードを取得
-    const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
-    if (!JWT_SECRET) {
-      throw new Error("VITE_AUTH_SECRET environment variable is required");
-    }
-    console.log("changePlan: Decoding new JWT token", JWT_SECRET);
-    const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
-    if (
-      !payload ||
-      !payload.deviceId ||
-      !payload.clientId ||
-      payload.t !== "app" ||
-      !payload.planCode ||
-      !payload.user ||
-      !payload.provider ||
-      payload.planCode !== newPlanCode
-    ) {
-      throw new Error("Failed to decode new JWT token");
-    }
-    // ペイロードの検証成功
-    console.log("New JWT payload decoded and verified:", payload);
-    // アクセストークンを保存
-    await authService.saveAccessToken(token);
+    try {
+      const result = await apiClient.post<{ success: boolean; token: string }>(
+        "/api/plans/change",
+        { code: newPlanCode }
+      );
 
-    return { success, payload };
+      const { success, token } = result;
+
+      if (!result || !success || !token || "error" in result) {
+        throw new Error("Failed to change plan");
+      }
+
+      // トークンをデコード
+      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
+
+      if (
+        !payload ||
+        !payload.deviceId ||
+        !payload.clientId ||
+        payload.t !== "app" ||
+        !payload.planCode ||
+        payload.planCode !== newPlanCode
+      ) {
+        throw new Error("Invalid JWT token received");
+      }
+
+      // アクセストークンを保存
+      await storeRepository.set("accessToken", token);
+
+      logWithContext("info", "[ClientService] Plan changed successfully", {
+        newPlan: newPlanCode,
+        clientId: payload.clientId,
+      });
+
+      return { success, payload };
+    } catch (error) {
+      logWithContext("error", "[ClientService] Failed to change plan", {
+        newPlanCode,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   }
 }
 
-// シングルトンインスタンス
 export const clientService = new ClientService();

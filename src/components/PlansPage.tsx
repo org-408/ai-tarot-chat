@@ -1,8 +1,8 @@
-import { JWTPayload, Plan, PlanInput } from "../../shared/lib/types";
+import { AppJWTPayload, Plan, PlanInput } from "../../shared/lib/types";
 import { UserPlan } from "../types";
 
 interface PlansPageProps {
-  payload: JWTPayload | null;
+  payload: AppJWTPayload | null;
   plans: Plan[];
   onChangePlan: (plan: UserPlan) => void;
   isAuthenticated: boolean;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BuildModeChecker } from "./components/BuildModeChecker";
 import { DebugResetButton } from "./components/DebugResetButton";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -7,10 +8,10 @@ import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
 import TarotistPage from "./components/TarotistPage";
 import { useAuth } from "./lib/hooks/useAuth";
+import { useClient } from "./lib/hooks/useClient";
 import { useLifecycle } from "./lib/hooks/useLifecycle";
 import { useMaster } from "./lib/hooks/useMaster";
 import { useUsage } from "./lib/hooks/useUsage";
-import { queryClient } from "./lib/services/queryClient";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
@@ -19,7 +20,6 @@ function App() {
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // 占いセッション用
   const [readingData, setReadingData] = useState<{
     spreadId: string;
     categoryId: string;
@@ -38,32 +38,34 @@ function App() {
     clearError,
   } = useLifecycle();
 
-  // 🔥 認証状態（広告・ヘッダー用）
+  // 🔥 認証状態
   const {
     payload,
-    plan,
+    isReady: authIsReady,
     isAuthenticated,
-    clientId,
-    userId,
     login: authLogin,
     logout: authLogout,
-    changePlan,
   } = useAuth();
 
+  // 🔥 クライアント情報
+  const { planCode, userId, clientId, changePlan } = useClient();
+
   // 🔥 マスターデータ取得
-  const { data: masterData } = useMaster(isInitialized);
+  // 条件: lifecycle.init()完了 && auth.isReady
+  const { masterData, isLoading: isMasterLoading } = useMaster(
+    isInitialized && authIsReady
+  );
 
   // 🔥 利用状況取得
-  const { data: usageStats } = useUsage(clientId);
+  // 条件: lifecycle.init()完了 && auth.isReady && clientIdあり
+  const { usage: usageStats, isLoading: isUsageLoading } = useUsage(
+    isInitialized && authIsReady && !!clientId
+  );
 
-  // 🔥 初期化処理（アプリ起動時に1回だけ実行）
+  // 🔥 初期化処理
   useEffect(() => {
     console.log("[App] 初期化開始");
-    // React.StrictMode 対応のため2回目以降のinitを防止
-    if (isInitialized) {
-      console.log("[App] すでに初期化中または完了しているためスキップ");
-      return;
-    }
+
     init().then(() => {
       console.log("[App] 初期化完了");
       setup();
@@ -76,66 +78,170 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔥 日付変更時の通知とキャッシュ更新
+  // 🔥 日付変更時の通知表示
   useEffect(() => {
     if (dateChanged) {
-      console.log("[App] 日付が変わりました - 利用状況を再取得");
-
-      // 利用状況のキャッシュを無効化して再取得
-      queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
-
-      // TODO: トースト通知を表示
-      // showNotification('新しい日になりました！占い回数がリセットされました🎉');
-
-      // 3秒後に通知をクリア
+      console.log("[App] 日付が変わりました");
       setTimeout(() => {
         clearDateChanged();
       }, 3000);
     }
-  }, [dateChanged, clearDateChanged, clientId]);
+  }, [dateChanged, clearDateChanged]);
 
   // 🔥 エラーハンドリング
   useEffect(() => {
     if (error) {
       console.error("[App] Lifecycle error:", error);
-      // TODO: エラー通知を表示
-      // showErrorNotification(error.message);
-
       setTimeout(() => {
         clearError();
       }, 5000);
     }
   }, [error, clearError]);
 
-  // 🔥 サインイン完了後の自動アップグレード処理他
+  const handleLogin = async () => {
+    try {
+      setIsLoggingIn(true);
+      console.log("ログイン開始");
+
+      await authLogin();
+      console.log("ログイン成功");
+    } catch (err) {
+      console.error("ログイン失敗:", err);
+      alert(err instanceof Error ? err.message : "ログインに失敗しました");
+      sessionStorage.removeItem("pendingUpgrade");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      console.log("ログアウト開始");
+      await authLogout();
+      console.log("ログアウト成功");
+
+      setPageType("salon");
+      setReadingData(null);
+    } catch (err) {
+      console.error("ログアウトエラー:", err);
+    }
+  };
+
+  const handlePlanChange = async (newPlan: UserPlan) => {
+    console.log(`プラン変更リクエスト: ${planCode} → ${newPlan}`);
+
+    if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
+      console.log("認証が必要です。");
+      alert("このプランにはログインが必要です");
+      return;
+    }
+
+    try {
+      await changePlan(newPlan);
+      console.log("プラン変更成功");
+    } catch (err) {
+      console.error("プラン変更エラー:", err);
+      alert(err instanceof Error ? err.message : "プラン変更に失敗しました");
+    }
+  };
+
+  const handleUpgrade = (targetPlan: UserPlan) => {
+    console.log(`アップグレードリクエスト: ${targetPlan}`);
+    handlePlanChange(targetPlan);
+  };
+
+  const handleDowngrade = (targetPlan: UserPlan) => {
+    console.log(`ダウングレードリクエスト: ${targetPlan}`);
+    if (confirm(`本当に ${targetPlan} プランにダウングレードしますか?`)) {
+      handlePlanChange(targetPlan);
+    }
+  };
+
+  const handlePageChange = (page: PageType) => {
+    console.log("ページ変更:", page);
+    setPageType(page);
+  };
+
+  const handleStartReading = (spreadId: string, categoryId: string) => {
+    console.log(`占い開始: spread=${spreadId}, category=${categoryId}`);
+    setReadingData({ spreadId, categoryId });
+    setPageType("reading");
+  };
+
+  const handleBackFromReading = () => {
+    console.log("占いから戻る");
+    setReadingData(null);
+    setPageType("salon");
+  };
+
+  // 🔥 サインイン完了後の自動アップグレード処理
   useEffect(() => {
     if (isAuthenticated && isInitialized) {
       console.log(
-        `[App] サインイン検出 - 現在のプラン: ${plan}, ユーザーID: ${userId}`
+        `[App] サインイン検出 - 現在のプラン: ${planCode}, ユーザーID: ${userId}`
       );
+
       const pendingUpgrade = sessionStorage.getItem("pendingUpgrade");
-      if (pendingUpgrade && pendingUpgrade !== plan) {
+      if (pendingUpgrade && pendingUpgrade !== planCode) {
         console.log(`[App] 保留中のアップグレードを実行: ${pendingUpgrade}`);
         sessionStorage.removeItem("pendingUpgrade");
-        // handlePlanChange(pendingUpgrade as UserPlan);
+        handlePlanChange(pendingUpgrade as UserPlan);
       }
     }
-  }, [isAuthenticated, isInitialized, plan, userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isInitialized, planCode, userId]);
 
-  // 初期化中
-  if (!isInitialized || !masterData || !usageStats || !payload) {
+  // 🔥 起動シーケンスのデバッグログ
+  useEffect(() => {
+    console.log("[App] Startup Status:", {
+      isInitialized,
+      authIsReady,
+      clientId,
+      isMasterLoading,
+      isUsageLoading,
+      hasMasterData: !!masterData,
+      hasUsageStats: !!usageStats,
+      hasPayload: !!payload,
+    });
+  }, [
+    isInitialized,
+    authIsReady,
+    clientId,
+    isMasterLoading,
+    isUsageLoading,
+    masterData,
+    usageStats,
+    payload,
+  ]);
+
+  // 初期化中またはデータロード中
+  if (
+    !isInitialized ||
+    !authIsReady ||
+    isMasterLoading ||
+    isUsageLoading ||
+    !masterData ||
+    !usageStats ||
+    !payload
+  ) {
     return (
       <TarotSplashScreen
         message={
           !isInitialized
             ? "アプリを初期化中..."
+            : !authIsReady
+            ? "認証情報を確認中..."
+            : isMasterLoading
+            ? "マスターデータを読み込み中..."
+            : isUsageLoading
+            ? "利用状況を読み込み中..."
             : !masterData
             ? "マスターデータを読み込み中..."
             : !usageStats
             ? "利用状況を読み込み中..."
             : !payload
             ? "ユーザーデータを読み込み中..."
-            : "利用状況を読み込み中..."
+            : "読み込み中..."
         }
       />
     );
@@ -159,117 +265,6 @@ function App() {
       </div>
     );
   }
-
-  /**
-   * ログイン処理（複数ページから呼ばれる）
-   */
-  const handleLogin = async () => {
-    try {
-      setIsLoggingIn(true);
-      console.log("ログイン開始");
-
-      await authLogin();
-      console.log("ログイン成功");
-
-      // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
-    } catch (err) {
-      console.error("ログイン失敗:", err);
-      alert(err instanceof Error ? err.message : "ログインに失敗しました");
-      // ログイン失敗時は保留中のアップグレードをクリア
-      sessionStorage.removeItem("pendingUpgrade");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  /**
-   * ログアウト処理
-   */
-  const handleLogout = async () => {
-    try {
-      console.log("ログアウト開始");
-      await authLogout();
-      console.log("ログアウト成功");
-
-      setPageType("salon");
-      setReadingData(null);
-
-      // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
-      console.log("利用状況を再取得");
-    } catch (err) {
-      console.error("ログアウトエラー:", err);
-    }
-  };
-
-  /**
-   * プラン変更（複数ページから呼ばれる）
-   */
-  const handlePlanChange = async (newPlan: UserPlan) => {
-    console.log(`プラン変更リクエスト: ${plan} → ${newPlan}`);
-
-    if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
-      console.log("認証が必要です。");
-      alert("このプランにはログインが必要です");
-      return;
-    }
-
-    try {
-      await changePlan(newPlan);
-
-      // 利用状況を再取得
-      await queryClient.invalidateQueries({ queryKey: ["usage", clientId] });
-      console.log("利用状況を再取得");
-    } catch (err) {
-      console.error("プラン変更エラー:", err);
-      alert(err instanceof Error ? err.message : "プラン変更に失敗しました");
-    }
-  };
-
-  /**
-   * アップグレード処理
-   */
-  const handleUpgrade = (targetPlan: UserPlan) => {
-    console.log(`アップグレードリクエスト: ${targetPlan}`);
-    handlePlanChange(targetPlan);
-  };
-
-  /**
-   * ダウングレード処理
-   */
-  const handleDowngrade = (targetPlan: UserPlan) => {
-    console.log(`ダウングレードリクエスト: ${targetPlan}`);
-    if (confirm(`本当に ${targetPlan} プランにダウングレードしますか？`)) {
-      handlePlanChange(targetPlan);
-    }
-  };
-
-  /**
-   * ページ変更
-   */
-  const handlePageChange = (page: PageType) => {
-    console.log("ページ変更:", page);
-    setPageType(page);
-  };
-
-  /**
-   * 占い開始
-   */
-  const handleStartReading = (spreadId: string, categoryId: string) => {
-    console.log(`占い開始: spread=${spreadId}, category=${categoryId}`);
-    setReadingData({ spreadId, categoryId });
-    setPageType("reading");
-  };
-
-  /**
-   * 占いから戻る
-   */
-  const handleBackFromReading = () => {
-    console.log("占いから戻る");
-    setReadingData(null);
-    setPageType("salon");
-  };
 
   // ページレンダリング
   const renderPage = () => {
@@ -383,7 +378,7 @@ function App() {
       {/* 🔥 日付変更通知 */}
       {dateChanged && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
-          ✨ 新しい日になりました！
+          ✨ 新しい日になりました!
         </div>
       )}
 
@@ -394,7 +389,10 @@ function App() {
         </div>
       )}
 
-      <Header currentPlan={plan} currentPage={pageType} />
+      {/* ビルドモードチェッカー */}
+      <BuildModeChecker />
+
+      <Header currentPlan={planCode as UserPlan} currentPage={pageType} />
 
       {/* 開発メニュー */}
       <div className="fixed top-2 right-2 z-50">
@@ -417,7 +415,7 @@ function App() {
                   setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  plan === "FREE"
+                  planCode === "FREE"
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -431,7 +429,7 @@ function App() {
                   setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  plan === "STANDARD"
+                  planCode === "STANDARD"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -445,7 +443,7 @@ function App() {
                   setPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
-                  plan === "PREMIUM"
+                  planCode === "PREMIUM"
                     ? "bg-yellow-500 text-white"
                     : "bg-gray-200 hover:bg-gray-300"
                 }`}
@@ -489,7 +487,7 @@ function App() {
                   }}
                   className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
                 >
-                  🔑 Login
+                  🔐 Login
                 </button>
               )}
             </div>

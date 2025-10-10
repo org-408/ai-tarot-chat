@@ -1,12 +1,12 @@
 import type {
-  JWTPayload,
+  AppJWTPayload,
   MasterData,
   PlanInput,
 } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 
 interface PlansPageProps {
-  payload: JWTPayload;
+  payload: AppJWTPayload;
   isAuthenticated: boolean;
   masterData: MasterData; // マスターデータを親から受け取る
   onLogin: () => void;

@@ -1,14 +1,14 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type {
-  JWTPayload,
+  AppJWTPayload,
   MasterData,
   SpreadCell,
   TarotCard,
 } from "../../../shared/lib/types";
 
 interface ReadingPageProps {
-  payload: JWTPayload;
+  payload: AppJWTPayload;
   masterData: MasterData; // マスターデータを親から受け取る
   spreadId: string;
   categoryId: string;

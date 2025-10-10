@@ -1,99 +1,173 @@
-import { IonAlert, IonButton } from "@ionic/react";
-import React, { useState } from "react";
-import { Reset } from "../lib/plugins/resetPlugin";
-import { resetAppData } from "../lib/utils/resetApp";
+import { App } from "@capacitor/app";
+import { useState } from "react";
+import { useResetApp } from "../lib/hooks/useResetApp";
 
 /**
- * Capacitor専用のアプリデータリセットボタン
- * 開発環境またはデバッグ設定がオンの場合のみ表示
+ * デバッグ用リセットボタンコンポーネント
+ * - 完全リセット（終了 or 再起動）
+ * - マスターデータのみリセット
+ * - Usageのみリセット
  */
-export const DebugResetButton: React.FC = () => {
-  const [showAlert, setShowAlert] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
-  const [resetComplete, setResetComplete] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function DebugResetButton() {
+  const { resetApp, resetMaster, resetUsage, isResetting, error } =
+    useResetApp();
+  const [showMenu, setShowMenu] = useState(false);
 
-  // 開発環境または特定の条件でのみ表示
-  const isDebugMode =
-    import.meta.env.NODE_ENV !== "production" ||
-    localStorage.getItem("debug_mode") === "true";
-  if (!isDebugMode) return null;
+  /**
+   * 完全リセット → アプリ終了
+   */
+  const handleFullResetAndExit = async () => {
+    if (
+      confirm(
+        "⚠️ 全データをリセットします。\n認証情報も削除され、アプリが終了します。\n\n本当によろしいですか？"
+      )
+    ) {
+      const success = await resetApp();
+      if (success) {
+        alert("✅ リセット完了！\nアプリを終了します。");
 
-  const handleReset = async () => {
-    try {
-      setIsResetting(true);
-      setError(null);
-
-      // JS層のデータリセット
-      await resetAppData();
-
-      // ネイティブ層のキャッシュクリア（もし実装されていれば）
-      try {
-        await Reset.clearAppCache();
-      } catch (e) {
-        console.warn("Native cache clearing not available", e);
+        // アプリを終了（Android/iOS対応）
+        try {
+          await App.exitApp();
+        } catch (error) {
+          // exitApp が使えない環境（Webなど）の場合はリロード
+          console.warn("App.exitApp() not available, reloading instead", error);
+          window.location.reload();
+        }
+      } else {
+        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
       }
-
-      setResetComplete(true);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "不明なエラー";
-      setError(errorMessage);
-    } finally {
-      setIsResetting(false);
     }
   };
 
-  const handleRestart = async () => {
-    try {
-      // アプリを再起動（可能な場合）
-      await Reset.restartApp();
-    } catch (e) {
-      // 再起動できない場合はリロード
-      console.warn("App restart not available, reloading instead", e);
-      window.location.reload();
+  /**
+   * 完全リセット → 再起動
+   */
+  const handleFullResetAndReload = async () => {
+    if (
+      confirm(
+        "⚠️ 全データをリセットします。\n認証情報も削除され、アプリが再起動します。\n\n本当によろしいですか？"
+      )
+    ) {
+      const success = await resetApp();
+      if (success) {
+        alert("✅ リセット完了！\nアプリを再起動します。");
+        window.location.reload();
+      } else {
+        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
+      }
+    }
+  };
+
+  const handleMasterReset = async () => {
+    if (
+      confirm(
+        "マスターデータのみをリセットします。\n認証情報は保持されます。\n\n実行しますか？"
+      )
+    ) {
+      const success = await resetMaster();
+      if (success) {
+        alert("✅ マスターデータをリセットしました！\nアプリを再起動します。");
+        window.location.reload();
+      } else {
+        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
+      }
+    }
+  };
+
+  const handleUsageReset = async () => {
+    if (
+      confirm(
+        "利用状況のみをリセットします。\n認証情報は保持されます。\n\n実行しますか？"
+      )
+    ) {
+      const success = await resetUsage();
+      if (success) {
+        alert("✅ 利用状況をリセットしました！\nアプリを再起動します。");
+        window.location.reload();
+      } else {
+        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
+      }
     }
   };
 
   return (
-    <>
-      <IonButton
-        color="danger"
-        onClick={() => handleReset()}
+    <div className="mt-8 relative">
+      <button
+        onClick={() => setShowMenu(!showMenu)}
         disabled={isResetting}
+        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        🔄 Debug: リセット
-      </IonButton>
+        {isResetting ? "🔄 処理中..." : "🧹 リセットメニュー"}
+      </button>
 
-      <IonAlert
-        isOpen={showAlert}
-        header="アプリデータのリセット"
-        message={
-          resetComplete
-            ? "✅ リセット完了。アプリを再起動してください。"
-            : "全てのアプリデータをリセットします。この操作は元に戻せません。続行しますか？"
-        }
-        buttons={
-          resetComplete
-            ? [{ text: "再起動", handler: handleRestart }]
-            : [
-                { text: "キャンセル", role: "cancel" },
-                { text: "リセット実行", handler: handleReset },
-              ]
-        }
-        onDidDismiss={() => {
-          if (!resetComplete) setShowAlert(false);
-        }}
-      />
+      {showMenu && (
+        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[280px]">
+          <div className="text-xs text-gray-500 mb-2 font-bold">
+            開発用リセットメニュー
+          </div>
 
-      {error && (
-        <IonAlert
-          isOpen={!!error}
-          header="エラー"
-          message={error}
-          buttons={[{ text: "OK" }]}
-          onDidDismiss={() => setError(null)}
-        />
+          <div className="flex flex-col gap-2">
+            {/* 完全リセット → 終了 */}
+            <button
+              onClick={handleFullResetAndExit}
+              disabled={isResetting}
+              className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50 text-left"
+            >
+              <div className="font-bold">🚨 完全リセット → 終了</div>
+              <div className="text-xs opacity-80">全削除してアプリ終了</div>
+            </button>
+
+            {/* 完全リセット → 再起動 */}
+            <button
+              onClick={handleFullResetAndReload}
+              disabled={isResetting}
+              className="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors disabled:opacity-50 text-left"
+            >
+              <div className="font-bold">🔄 完全リセット → 再起動</div>
+              <div className="text-xs opacity-80">全削除して即座に再起動</div>
+            </button>
+
+            {/* マスターデータのみリセット */}
+            <button
+              onClick={handleMasterReset}
+              disabled={isResetting}
+              className="px-4 py-2 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-colors disabled:opacity-50 text-left"
+            >
+              <div className="font-bold">📦 マスターデータ</div>
+              <div className="text-xs opacity-80">
+                カード・スプレッドデータのみ
+              </div>
+            </button>
+
+            {/* Usageのみリセット */}
+            <button
+              onClick={handleUsageReset}
+              disabled={isResetting}
+              className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 text-left"
+            >
+              <div className="font-bold">📊 利用状況</div>
+              <div className="text-xs opacity-80">
+                占い回数などの利用データのみ
+              </div>
+            </button>
+
+            {/* 閉じる */}
+            <button
+              onClick={() => setShowMenu(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+            >
+              閉じる
+            </button>
+          </div>
+
+          {error && (
+            <div className="mt-2 text-xs text-red-500 bg-red-50 p-2 rounded">
+              エラー: {error.message}
+            </div>
+          )}
+        </div>
       )}
-    </>
+    </div>
   );
-};
+}

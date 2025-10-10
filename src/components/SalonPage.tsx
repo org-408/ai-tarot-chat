@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
-import { JWTPayload, Plan, Spread, UsageStats } from "../../shared/lib/types";
+import {
+  AppJWTPayload,
+  Plan,
+  Spread,
+  UsageStats,
+} from "../../shared/lib/types";
 import { MasterData, UserPlan } from "../types";
 
 interface SalonPageProps {
-  payload: JWTPayload | null;
+  payload: AppJWTPayload | null;
   masterData: MasterData;
   isAuthenticated: boolean;
   onLogin: () => void;

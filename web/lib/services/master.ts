@@ -1,9 +1,11 @@
 import type {
   MasterData,
+  MasterDataUpdateResponse,
   Plan,
   ReadingCategory,
   SpreadLevel,
 } from "@/../shared/lib/types";
+import { masterConfigRepository } from "@/lib/repositories/master";
 import { getSpreads } from "@/lib/services/spread";
 import { getAllDecks } from "@/lib/services/tarot";
 import { getTarotists } from "@/lib/services/tarotist";
@@ -12,6 +14,14 @@ import { logWithContext } from "../logger/logger";
 import { planService } from "./plan";
 
 // 型定義（シンプルに boolean のみ返す）
+
+// マスターバージョン取得
+export async function getMasterVersion(): Promise<string> {
+  const config = await masterConfigRepository.getMasterConfigByKey(
+    "MASTER_VERSION"
+  );
+  return config?.version || "1.0.0";
+}
 
 // プラン一覧を取得
 export async function getPlans(): Promise<Plan[]> {
@@ -34,8 +44,9 @@ export async function getReadingCategories(): Promise<ReadingCategory[]> {
 
 // 全マスタデータを一括取得
 export async function getAllMasterData(): Promise<MasterData> {
-  const [plans, levels, categories, spreads, decks, tarotists] =
+  const [version, plans, levels, categories, spreads, decks, tarotists] =
     await Promise.all([
+      getMasterVersion(),
       getPlans(),
       getSpreadLevels(),
       getReadingCategories(),
@@ -45,6 +56,7 @@ export async function getAllMasterData(): Promise<MasterData> {
     ]);
 
   return {
+    version,
     plans,
     levels,
     categories,
@@ -56,57 +68,26 @@ export async function getAllMasterData(): Promise<MasterData> {
 
 /**
  * マスターデータの更新をチェック
- * @param lastUpdatedAt - クライアントが保持している最終更新日時（ISO文字列）
+ * @param version - クライアントが保持している最終更新日時（ISO文字列）
  * @returns 更新が必要な場合 true
  */
 export async function checkMasterDataUpdates(
-  lastUpdatedAt?: string
-): Promise<boolean> {
-  const clientLastUpdate = lastUpdatedAt
-    ? new Date(lastUpdatedAt)
-    : new Date(0);
+  version?: string
+): Promise<MasterDataUpdateResponse> {
+  logWithContext("info", "マスターデータ更新チェック:", { version });
 
-  logWithContext("info", "マスターデータ更新チェック:", {
-    clientLastUpdate: clientLastUpdate.toISOString(),
-  });
+  const latest = await masterConfigRepository.getLatestMasterConfig();
 
-  // 各テーブルの最新更新日時を取得
-  const [latestPlan, latestLevel, latestCategory] = await Promise.all([
-    prisma.plan.findFirst({
-      select: { updatedAt: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.spreadLevel.findFirst({
-      select: { updatedAt: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.readingCategory.findFirst({
-      select: { updatedAt: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-  ]);
+  const needsUpdate = version !== latest?.version;
 
-  // 最新の更新日時を特定
-  const updates = [
-    latestPlan?.updatedAt,
-    latestLevel?.updatedAt,
-    latestCategory?.updatedAt,
-  ].filter((date): date is Date => date !== null && date !== undefined);
-
-  if (updates.length === 0) {
-    // データが1件もない場合
-    return true;
-  }
-
-  const serverLastUpdate = new Date(
-    Math.max(...updates.map((d) => d.getTime()))
-  );
-  const needsUpdate = serverLastUpdate > clientLastUpdate;
-
-  logWithContext("info", "更新チェック結果:", {
-    serverLastUpdate: serverLastUpdate.toISOString(),
+  const response: MasterDataUpdateResponse = {
     needsUpdate,
-  });
+    latestVersion: latest?.version || "1.0.0",
+    clientVersion: version || "unknown",
+    updatedAt: latest?.updatedAt || new Date(0),
+  };
 
-  return needsUpdate;
+  logWithContext("info", "更新チェック結果:", { ...response });
+
+  return response;
 }

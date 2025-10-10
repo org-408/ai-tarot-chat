@@ -21,17 +21,22 @@ export async function POST(request: NextRequest) {
     }
 
     // リクエストボディ取得
-    const { lastUpdatedAt } = await request.json();
+    const {
+      body: { version },
+    } = await request.json();
 
     // 更新チェック
-    const needsUpdate = await checkMasterDataUpdates(lastUpdatedAt);
     logWithContext(
       "info",
-      "📍 /api/masters/check-updates - マスターデータ更新チェック完了",
-      { needsUpdate }
+      "📍 /api/masters/check-updates - マスターデータ更新チェック開始",
+      { clientVersion: version }
     );
 
-    return NextResponse.json({ needsUpdate });
+    const result = await checkMasterDataUpdates(version);
+
+    logWithContext("info", "✅ マスターデータ更新チェック完了", { result });
+
+    return NextResponse.json({ result }, { status: 200 });
   } catch (error) {
     logWithContext("error", "❌ 更新チェックエラー", {
       error,

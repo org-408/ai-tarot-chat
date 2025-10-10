@@ -1,20 +1,17 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { JWTPayload } from "../../../../shared/lib/types";
+import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
-import { decodeJWT } from "../../lib/utils/jwt";
 import type { UserPlan } from "../../types";
 import { logWithContext } from "../logger/logger";
 import { clientService } from "../services/client";
 import { apiClient } from "../utils/apiClient";
 
-const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
-
 interface AuthState {
   // 状態
   isReady: boolean;
-  payload: JWTPayload | null;
+  payload: AppJWTPayload | null;
   plan: UserPlan;
   isAuthenticated: boolean;
 
@@ -23,13 +20,14 @@ interface AuthState {
   login: () => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  setPayload: (payload: JWTPayload) => void;
+  setPayload: (payload: AppJWTPayload) => void;
   changePlan: (newPlanCode: string) => Promise<void>;
   reset: () => void;
 }
 
 /**
- * 認証ストア（ライフサイクル処理を削除）
+ * 認証ストア
+ * ⚠️ ストレージアクセスは authService 経由で行う
  */
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -43,19 +41,13 @@ export const useAuthStore = create<AuthState>()(
         try {
           logWithContext("info", "[AuthStore] Initialization started");
           set({ isReady: false });
-          const token = await storeRepository.get<string>("accessToken");
-          const storedDeviceId = await storeRepository.get<string>("deviceId");
-          const storedClientId = await storeRepository.get<string>("clientId");
-          const storedUserId = await storeRepository.get<string>("userId");
-          logWithContext("info", "[AuthStore] Stored values:", {
-            token,
-            storedDeviceId,
-            storedClientId,
-            storedUserId,
-          });
+
+          // ✅ authService 経由でストレージにアクセス
+          const stored = await authService.getStoredPayload();
+          logWithContext("info", "[AuthStore] Stored values:", { stored });
 
           // アプリがダウンロードされた直後から順を追って実装
-          if (!token) {
+          if (!stored.token) {
             // ダウンロード直後・トークン破損状態を想定
             // サーバー側で新規デバイス登録 or 既存デバイス認識を行い、新しいトークンを発行
             logWithContext(
@@ -74,18 +66,21 @@ export const useAuthStore = create<AuthState>()(
               { planCode: payload.planCode }
             );
           } else {
-            const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
+            // ✅ authService 経由でデコード
+            const payload = await authService.decodeStoredToken(stored.token);
             logWithContext("info", "[AuthStore] Decoded token payload:", {
               payload,
             });
+
+            // トークンの整合性チェック
             if (
               (payload && payload.t !== "app") ||
-              payload.deviceId !== storedDeviceId ||
-              payload.clientId !== storedClientId ||
-              (payload.user != null && payload.user.id !== storedUserId)
+              payload.deviceId !== stored.deviceId ||
+              payload.clientId !== stored.clientId ||
+              (payload.user != null && payload.user.id !== stored.userId)
             ) {
               // 一致しない場合は、異常ケースとして、再登録の処理へ
-              // TODO: ユーザーのデータ引き継ぎ・復元に対する機能を検討
+              // TODO: ユーザーのデータ引継ぎ・復元に対する機能を検討
               logWithContext(
                 "info",
                 "[AuthStore] Device ID mismatch, re-registering device"
@@ -161,15 +156,18 @@ export const useAuthStore = create<AuthState>()(
       refresh: async () => {
         try {
           logWithContext("info", "[AuthStore] Refresh started");
-          const token = await storeRepository.get<string>("accessToken");
 
-          if (!token) {
+          // ✅ authService 経由でトークン取得
+          const stored = await authService.getStoredPayload();
+
+          if (!stored.token) {
             logWithContext("info", "[AuthStore] No token to refresh");
             return;
           }
 
-          const payload = await decodeJWT<JWTPayload>(token, JWT_SECRET);
-          const isExpired = payload.exp && Date.now() >= payload.exp * 1000;
+          // ✅ authService 経由でデコード
+          const payload = await authService.decodeStoredToken(stored.token);
+          const isExpired = authService.isTokenExpired(payload);
 
           if (isExpired) {
             logWithContext(
@@ -197,7 +195,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      setPayload: (payload: JWTPayload) => {
+      setPayload: (payload: AppJWTPayload) => {
         set({
           payload,
           plan: payload.planCode as UserPlan,
@@ -245,6 +243,7 @@ export const useAuthStore = create<AuthState>()(
 
     {
       name: "auth-storage",
+      // ⚠️ Persist middleware だけは storeRepository を直接使う（これはOK）
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
           const value = await storeRepository.get(name);

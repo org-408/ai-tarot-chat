@@ -2,6 +2,7 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
+import type { JWTPayload } from "jose";
 import {
   ChatRole,
   ChatType,
@@ -486,7 +487,7 @@ export type FavoriteSpreadInput = Omit<
 // その他の型定義
 // ==========================================
 
-export interface JWTPayload {
+export interface AppJWTPayload extends JWTPayload {
   t: string; // "app"
   deviceId: string;
   clientId: string;
@@ -501,7 +502,7 @@ export interface JWTPayload {
   };
 }
 
-export interface TicketData {
+export interface TicketData extends JWTPayload {
   t: string; // "ticket"
   sub: string; // userId
   email: string;
@@ -509,6 +510,36 @@ export interface TicketData {
   image?: string;
   provider?: string;
 }
+
+// ==========================================
+// マスターデータ型定義
+// ==========================================
+
+export interface MasterData {
+  version: string; // バージョン番号 "1.0.0"
+  plans: Plan[];
+  levels: SpreadLevel[];
+  categories: ReadingCategory[];
+  spreads: Spread[];
+  decks: TarotDeck[];
+  tarotists?: Tarotist[];
+}
+
+export type MasterConfig = {
+  id: string;
+  key: string;
+  version: string;
+  description?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type MasterDataUpdateResponse = {
+  needsUpdate: boolean;
+  latestVersion: string;
+  clientVersion: string;
+  updatedAt: Date;
+};
 
 export type UsageStats = {
   // totalReadings: number;
@@ -535,15 +566,6 @@ export type UsageStats = {
   lastCelticReadingDate?: Date | null;
   lastPersonalReadingDate?: Date | null;
 };
-
-export interface MasterData {
-  plans: Plan[];
-  levels: SpreadLevel[];
-  categories: ReadingCategory[];
-  spreads?: Spread[];
-  decks?: TarotDeck[];
-  tarotists?: Tarotist[];
-}
 
 // ログモデル
 export type Log = {

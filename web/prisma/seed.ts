@@ -681,6 +681,16 @@ async function importTarotists() {
   }
 }
 
+async function setupMasterVersion() {
+  await prisma.masterConfig.create({
+    data: {
+      key: "MASTER_VERSION",
+      version: "1.0.0",
+      description: "Initial master data version",
+    },
+  });
+}
+
 export async function main() {
   // plans
   for (const plan of plans) {
@@ -706,6 +716,8 @@ export async function main() {
   await importSpreads();
 
   await importTarotDeck();
+
+  await setupMasterVersion();
 
   console.log("Seeding completed.");
 }

@@ -1,8 +1,8 @@
-import type { JWTPayload, MasterData } from "../../../shared/lib/types";
+import type { AppJWTPayload, MasterData } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 
 interface TarotistPageProps {
-  payload: JWTPayload;
+  payload: AppJWTPayload;
   isAuthenticated: boolean;
   masterData: MasterData;
   onLogin: () => void;

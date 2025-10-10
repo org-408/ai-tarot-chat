@@ -1,39 +1,39 @@
 import { useAuthStore } from "../stores/auth";
 
 /**
- * 認証フック（エイリアス）
- * useAuthStore から直接インポートしてもOK
+ * 認証フック
+ *
+ * 純粋に認証に関する情報のみ
+ * Client情報は useClient() を使う
  */
 export function useAuth() {
   const {
     isReady,
     payload,
-    plan,
     isAuthenticated,
     init,
     login,
     logout,
     refresh,
     setPayload,
-    changePlan,
     reset,
   } = useAuthStore();
 
   return {
+    // 認証の状態
     isReady,
-    payload,
-    plan,
     isAuthenticated,
-    clientId: payload?.clientId || null,
-    userId: payload?.user?.id || null,
-    email: payload?.user?.email || null,
-    image: payload?.user?.image || null,
+
+    // トークン情報（主にデバッグ用）
+    payload,
+    deviceId: payload?.deviceId || null,
+
+    // 認証のアクション
     init,
     login,
     logout,
     refresh,
     setPayload,
-    changePlan,
     reset,
   };
 }
