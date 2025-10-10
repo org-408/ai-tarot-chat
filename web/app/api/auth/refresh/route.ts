@@ -42,8 +42,11 @@ export async function POST(request: NextRequest) {
       errorMessage,
       status: 500,
     });
-    return NextResponse.json(`session validation failed :${errorMessage}`, {
-      status: 500,
-    });
+    return NextResponse.json(
+      { error: `session validation failed :${errorMessage}` },
+      {
+        status: 500,
+      }
+    );
   }
 }

@@ -105,15 +105,23 @@ export const useAuthStore = create<AuthState>()(
               try {
                 await get().refresh();
               } catch (refreshError) {
+                logWithContext("error", "[AuthStore] Refresh error in init:", {
+                  error: refreshError,
+                });
+
                 const error = refreshError as HttpError;
                 const status = error.status || error.response?.status;
 
-                // ✅ 401 または 500 → 再登録で救済
-                if (status === 401 || status === 500) {
+                logWithContext("warn", "[AuthStore] Refresh failed, status:", {
+                  status,
+                });
+
+                // ✅ status が取れない場合も再登録（安全側に倒す）
+                if (!status || status === 401 || status === 500) {
                   logWithContext(
                     "warn",
-                    `[AuthStore] Server returned ${status}, re-registering device`,
-                    { status }
+                    "[AuthStore] Token verification failed, re-registering device",
+                    { status: status || "unknown" }
                   );
 
                   // APIクライアントのキャッシュをクリア
@@ -132,11 +140,11 @@ export const useAuthStore = create<AuthState>()(
                     "[AuthStore] Device re-registered successfully"
                   );
                 } else {
-                  // ✅ その他のエラー（ネットワークエラーなど） → ログのみ（初期化は継続）
+                  // ✅ 明確なネットワークエラー（502, 503など）→ ログのみ
                   logWithContext(
                     "warn",
                     "[AuthStore] Network error during init, continuing with stored token",
-                    { error: error.message }
+                    { error: error.message, status }
                   );
 
                   // 既存のトークンで継続

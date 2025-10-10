@@ -73,7 +73,7 @@ export class AuthService {
     logWithContext("info", "[AuthService] Device registration started");
 
     try {
-      // デバイスIDを取得（なければ新規作成してストア登録）
+      // デバイスIDを取得(なければ新規作成してストア登録)
       const deviceId = await this.ensureDeviceId();
 
       // Capacitorから情報取得
@@ -83,7 +83,8 @@ export class AuthService {
         App.getInfo().then((info) => info.version),
       ]);
 
-      const result = await apiClient.post<{ token: string }>(
+      // ✅ トークンなしで呼ぶ (デバイス登録は認証前の処理)
+      const result = await apiClient.postWithoutAuth<{ token: string }>(
         "/api/device/register",
         {
           deviceId,
