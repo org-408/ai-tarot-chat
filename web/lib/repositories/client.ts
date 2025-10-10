@@ -46,6 +46,14 @@ export class ClientRepository extends BaseRepository {
     })) as Client | null;
   }
 
+  async getClientByDeviceId(deviceId: string): Promise<Client | null> {
+    const device = await this.db.device.findUnique({
+      where: { deviceId },
+      include: { client: { include: { plan: true, user: true } } },
+    });
+    return device?.client as Client | null;
+  }
+
   async getClientByUserId(userId: string): Promise<Client | null> {
     return (await this.db.client.findUnique({
       where: { userId, deletedAt: null },

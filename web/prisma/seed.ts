@@ -648,27 +648,30 @@ async function importTarotists() {
       }
 
       const tarotist = Object.fromEntries(
-        keywords.map((key, index) => [key, values[index] || ""])
+        keywords.map((key, index) => [key, values[index].trim() || ""])
       );
 
+      const { name, provider, quality, planCode, ...rest } = tarotist;
+
       const update = {
+        // order は自動インクリメント
         order: order++,
-        title: tarotist.title.trim(),
-        icon: tarotist.icon.trim(),
-        trait: tarotist.trait.trim(),
-        bio: tarotist.bio.trim(),
-        provider: toProviderKey(tarotist.provider.trim()),
-        plan: { connect: { code: tarotist.planCode } },
-        cost: tarotist.cost.trim(),
-        quality: parseFloat(tarotist.quality) || 0,
+        // provider は列挙型なので変換が必要
+        provider: toProviderKey(provider.trim()),
+        // quality は数値に変換
+        quality: parseFloat(quality) || 0,
+        // plan は正規化
+        plan: { connect: { code: planCode } },
+        // その他は展開
+        ...rest,
       };
 
-      const create = { name: tarotist.name, ...update };
+      const create = { name, ...update } as Prisma.TarotistCreateInput;
 
       // スプレッドをupsert
       await prisma.tarotist.upsert({
         where: {
-          name: tarotist.name, // name をユニーク制約として使用
+          name, // name をユニーク制約として使用
         },
         update,
         create,

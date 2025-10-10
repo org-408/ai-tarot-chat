@@ -15,6 +15,7 @@ import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { logWithContext } from "../logger/logger";
 import { planRepository } from "../repositories";
+import { clientService } from "./client";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
 if (!JWT_SECRET) {
@@ -556,6 +557,16 @@ export class AuthService {
         payload,
       });
 
+      // DBからClient情報を取得
+      const client = await clientService.getClientByDeviceId(payload.deviceId);
+      if (!client || client.id !== payload.clientId || !client.plan) {
+        logWithContext("error", "❌ Client or Device not found for payload:", {
+          payload,
+        });
+        throw new Error("Client not found for payload");
+      }
+      logWithContext("info", "✅ Client for payload:", { clientId: client.id });
+
       // OAuth認証時は auth() を呼んで認証期限切れを検出
       if (payload.user && payload.provider) {
         const session = await auth();
@@ -621,7 +632,7 @@ export class AuthService {
       if ("error" in verifyJwt) return verifyJwt; // { error: NextResponse }
       // token 検証開始
       const {
-        payload: { t, deviceId, clientId, user, planCode, provider },
+        payload: { t, deviceId, clientId, planCode },
       } = verifyJwt;
       // 正常ケース
       if (t === "app" && deviceId === body.deviceId && clientId && planCode) {

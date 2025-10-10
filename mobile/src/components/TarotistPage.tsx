@@ -26,6 +26,9 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
   );
+  const [imageViewTarotist, setImageViewTarotist] = useState<Tarotist | null>(
+    null
+  );
   const currentPlan = payload.planCode || "GUEST";
 
   const handleUpgrade = (requiredPlan: string) => {
@@ -51,6 +54,23 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
 
   const renderStars = (quality: number) => {
     return "⭐️".repeat(quality);
+  };
+
+  // 占い師ごとのカラーを取得（DBから、なければデフォルト）
+  const getTarotistColor = (tarotist: Tarotist) => {
+    // MasterDataから色情報を取得（primary/secondary/accent）
+    const primary = tarotist.primaryColor || "#E0D0FF"; // デフォルト: 淡いパープル
+    const secondary = tarotist.secondaryColor || "#C8A2E0"; // デフォルト: 中間パープル
+    const accent = tarotist.accentColor || "#B794D6"; // デフォルト: 濃いパープル
+
+    return {
+      primary, // 背景色（一番淡い）
+      secondary, // サブカラー（中間）
+      accent, // アクセント色（一番濃い）
+      // 後方互換性のため
+      bg: primary,
+      button: accent,
+    };
   };
 
   return (
@@ -79,15 +99,19 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           .map((tarotist) => {
             const isAvailable = canUseTarotist(tarotist.plan?.code || "GUEST");
             const requiresUpgrade = !isAvailable;
+            const colors = getTarotistColor(tarotist);
 
             return (
               <div
                 key={tarotist.name}
                 className={`relative p-4 rounded-lg border-2 transition-all cursor-pointer ${
                   isAvailable
-                    ? "border-purple-200 bg-white hover:border-purple-300"
-                    : "border-gray-200 bg-gray-50"
+                    ? "border-purple-200 hover:border-purple-300"
+                    : "border-gray-300 opacity-80"
                 }`}
+                style={{
+                  backgroundColor: colors.bg,
+                }}
                 onClick={() => setSelectedTarotist(tarotist)}
               >
                 {/* プランバッジ */}
@@ -113,9 +137,17 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
 
                   {/* 占い師情報（簡易版） */}
                   <div className="flex-1">
+                    {/* 名前（筆記体で強調） */}
+                    <div
+                      className="font-bold text-2xl mb-1"
+                      style={{ fontFamily: "'Brush Script MT', cursive" }}
+                    >
+                      {tarotist.icon} {tarotist.name}
+                    </div>
+
                     {/* タイトル */}
-                    <div className="font-bold text-lg mb-1">
-                      {tarotist.icon} {tarotist.title}
+                    <div className="text-sm text-gray-600 mb-2">
+                      {tarotist.title}
                     </div>
 
                     {/* 特徴 */}
@@ -148,6 +180,27 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     )}
                   </div>
                 </div>
+
+                {/* アップグレードボタン（カード下部） */}
+                {requiresUpgrade && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUpgrade(tarotist.plan!.code);
+                    }}
+                    disabled={isLoggingIn}
+                    className="w-full mt-3 py-2 px-4 text-white rounded-lg text-sm font-medium hover:opacity-80 disabled:opacity-50 transition-all shadow-md"
+                    style={{
+                      backgroundColor: colors.button,
+                    }}
+                  >
+                    {isLoggingIn
+                      ? "認証中..."
+                      : !isAuthenticated
+                      ? `ログイン＆${tarotist.plan!.name}にアップグレード`
+                      : `${tarotist.plan!.name}にアップグレード`}
+                  </button>
+                )}
               </div>
             );
           })}
@@ -160,11 +213,14 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           <ul className="space-y-1">
             <li>• 各占い師は異なるAIモデルを使用しています</li>
             <li>• プランによって利用できる占い師が異なります</li>
+            <li>• おすすめ度は各占い師の特性に基づいて独自評価したものです</li>
             <li>
-              • おすすめ度はAIモデルの回答の質や信頼性を総合評価したものです
+              （感じ方には個人差がありますので実際に体験してみてください）
             </li>
-            <li>• より高度な占い師はPREMIUMプランで利用可能</li>
-            <li>• カードをタップすると詳細プロフィールが表示されます</li>
+            <li>
+              •
+              プロフィールカードをタップすると拡大したプロフィールが表示されます
+            </li>
           </ul>
         </div>
       </div>
@@ -178,6 +234,11 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           <div
             className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              background: `linear-gradient(to bottom, ${
+                getTarotistColor(selectedTarotist).bg
+              } 0%, white 40%)`,
+            }}
           >
             {/* プランバッジ */}
             <div className="flex justify-center mb-4">
@@ -191,7 +252,11 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
               <img
                 src={`/tarotists/${selectedTarotist.name}.png`}
                 alt={selectedTarotist.title}
-                className="w-48 h-48 rounded-xl object-cover shadow-lg"
+                className="w-48 h-48 rounded-xl object-cover shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setImageViewTarotist(selectedTarotist);
+                }}
                 onError={(e) => {
                   e.currentTarget.src =
                     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='80'%3E🔮%3C/text%3E%3C/svg%3E";
@@ -199,10 +264,18 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
               />
             </div>
 
-            {/* タイトル */}
-            <h3 className="text-xl font-bold text-purple-900 text-center mb-2">
-              {selectedTarotist.icon} {selectedTarotist.title}
+            {/* 名前（筆記体で強調） */}
+            <h3
+              className="text-3xl font-bold text-purple-900 text-center mb-1"
+              style={{ fontFamily: "'Brush Script MT', cursive" }}
+            >
+              {selectedTarotist.icon} {selectedTarotist.name}
             </h3>
+
+            {/* タイトル */}
+            <div className="text-center text-gray-600 mb-2">
+              {selectedTarotist.title}
+            </div>
 
             {/* 特徴 */}
             <div className="text-center text-purple-600 font-semibold mb-4">
@@ -231,7 +304,10 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   setSelectedTarotist(null);
                 }}
                 disabled={isLoggingIn}
-                className="w-full py-3 px-4 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-all mb-3"
+                className="w-full py-3 px-4 text-white rounded-lg font-medium hover:opacity-80 disabled:opacity-50 transition-all mb-3 shadow-md"
+                style={{
+                  backgroundColor: getTarotistColor(selectedTarotist).button,
+                }}
               >
                 {isLoggingIn
                   ? "認証中..."
@@ -240,7 +316,14 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   : `${selectedTarotist.plan!.name}にアップグレード`}
               </button>
             ) : (
-              <div className="w-full py-3 px-4 bg-green-50 border-2 border-green-500 text-green-700 rounded-lg font-bold text-center mb-3">
+              <div
+                className="w-full py-3 px-4 border-2 text-center rounded-lg font-bold mb-3"
+                style={{
+                  borderColor: getTarotistColor(selectedTarotist).button,
+                  color: getTarotistColor(selectedTarotist).button,
+                  backgroundColor: `${getTarotistColor(selectedTarotist).bg}80`,
+                }}
+              >
                 ✓ この占い師は利用可能です
               </div>
             )}
@@ -252,6 +335,57 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
             >
               閉じる
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 画像全画面表示ダイアログ */}
+      {imageViewTarotist && (
+        <div
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60]"
+          onClick={() => setImageViewTarotist(null)}
+        >
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-4">
+            {/* 閉じるボタン */}
+            <button
+              onClick={() => setImageViewTarotist(null)}
+              className="absolute top-8 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-2xl transition-colors z-10"
+            >
+              ×
+            </button>
+
+            {/* タイトル表示 */}
+            <div className="absolute top-8 left-4 right-16 text-white z-10">
+              <div
+                className="text-2xl font-bold mb-1"
+                style={{ fontFamily: "'Brush Script MT', cursive" }}
+              >
+                {imageViewTarotist.icon} {imageViewTarotist.name}
+              </div>
+              <div className="text-sm opacity-90">
+                {imageViewTarotist.title}
+              </div>
+              <div className="text-sm opacity-80">
+                {imageViewTarotist.trait}
+              </div>
+            </div>
+
+            {/* 画像 */}
+            <img
+              src={`/tarotists/${imageViewTarotist.name}.png`}
+              alt={imageViewTarotist.title}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              onError={(e) => {
+                e.currentTarget.src =
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='120'%3E🔮%3C/text%3E%3C/svg%3E";
+              }}
+            />
+
+            {/* タップで閉じるヒント */}
+            <div className="absolute bottom-8 text-white/60 text-sm">
+              タップで閉じる
+            </div>
           </div>
         </div>
       )}

@@ -26,19 +26,22 @@ export async function POST(request: NextRequest) {
     // 既存パターンに合わせたエラーハンドリング
     if (
       errorMessage.includes("Invalid") ||
-      errorMessage.includes("not found")
+      errorMessage.includes("not found") ||
+      errorMessage.includes("expired")
     ) {
       logWithContext("warn", "❌ セッション検証リクエストが無効", {
         errorMessage,
         status: 401,
       });
-      return new Response("invalid", { status: 401 });
+      return NextResponse.json("invalid", { status: 401 });
     }
 
     logWithContext("error", "❌ セッション検証リクエストで予期せぬエラー", {
       errorMessage,
       status: 500,
     });
-    return new Response("session validation failed", { status: 500 });
+    return NextResponse.json(`session validation failed :${errorMessage}`, {
+      status: 500,
+    });
   }
 }

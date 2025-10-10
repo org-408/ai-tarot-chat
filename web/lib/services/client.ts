@@ -131,6 +131,10 @@ export class ClientService {
     return clientRepository.getClientById(clientId);
   }
 
+  async getClientByDeviceId(deviceId: string) {
+    return clientRepository.getClientByDeviceId(deviceId);
+  }
+
   async getClientByUserId(userId: string) {
     return clientRepository.getClientByUserId(userId);
   }

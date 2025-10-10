@@ -372,6 +372,9 @@ model Tarotist {
   icon        String    // 占い師のアイコン絵文字
   trait       String    @db.Text // 占い師の特徴や性格
   bio         String    @db.Text // 占い師の紹介文
+  primaryColor     String    // 占い師のテーマ色（16進数カラーコード）
+  secondaryColor   String    // 占い師のサブテーマ色（16進数カラーコード）
+  accentColor      String    // 占い師のアクセント色（16進数カラーコード）
   avatarUrl   String?
   provider    ProviderKey?   // 生成AIプロバイダー(将来的には人(null or PRO)も？)
   cost        String    // 占い師の料金 "1回500円"など

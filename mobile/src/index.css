@@ -26,7 +26,7 @@ body {
 /* メインコンテンツエリア */
 .main-content-area {
   position: fixed;
-  top: calc(60px + env(safe-area-inset-top));
+  top: calc(50px + env(safe-area-inset-top));
   left: 0;
   right: 0;
   bottom: calc(34px + env(safe-area-inset-bottom));
@@ -50,13 +50,13 @@ body {
 .header-container {
   max-width: 400px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   text-align: center;
 }
 
 .header-title {
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: bold;
   margin: 0;
   line-height: 1.2;
@@ -65,7 +65,7 @@ body {
 .header-subtitle {
   color: rgba(255, 255, 255, 0.8);
   font-size: 0.75rem;
-  margin: 0.25rem 0 0 0;
+  margin: 0.125rem 0 0 0;
   line-height: 1;
 }
 

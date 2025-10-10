@@ -308,6 +308,9 @@ export type Tarotist = {
   icon: string; // 占い師のアイコン絵文字
   trait: string;
   bio: string;
+  primaryColor: string; // 占い師のテーマ色（16進数カラーコード）
+  secondaryColor: string; // 占い師のサブテーマ色（16進数カラーコード）
+  accentColor: string; // 占い師のアクセント色（16進数カラーコード）
   avatarUrl?: string | null;
   provider?: ProviderKey | null; // 生成AIプロバイダー(将来的には人(null)も？)
   cost: string; // 占いコスト（APIコスト目安）

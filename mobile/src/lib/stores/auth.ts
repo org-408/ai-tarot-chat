@@ -8,6 +8,13 @@ import { logWithContext } from "../logger/logger";
 import { clientService } from "../services/client";
 import { apiClient } from "../utils/apiClient";
 
+interface HttpError extends Error {
+  status?: number;
+  response?: {
+    status?: number;
+  };
+}
+
 interface AuthState {
   // 状態
   isReady: boolean;
@@ -42,14 +49,11 @@ export const useAuthStore = create<AuthState>()(
           logWithContext("info", "[AuthStore] Initialization started");
           set({ isReady: false });
 
-          // ✅ authService 経由でストレージにアクセス
           const stored = await authService.getStoredPayload();
           logWithContext("info", "[AuthStore] Stored values:", { stored });
 
-          // アプリがダウンロードされた直後から順を追って実装
           if (!stored.token) {
-            // ダウンロード直後・トークン破損状態を想定
-            // サーバー側で新規デバイス登録 or 既存デバイス認識を行い、新しいトークンを発行
+            // トークンなし → デバイス登録
             logWithContext(
               "info",
               "[AuthStore] No token found, registering device"
@@ -63,27 +67,27 @@ export const useAuthStore = create<AuthState>()(
             logWithContext(
               "info",
               "[AuthStore] Device registration successful:",
-              { planCode: payload.planCode }
+              {
+                planCode: payload.planCode,
+              }
             );
           } else {
-            // ✅ authService 経由でデコード
+            // トークンあり → デコード & 整合性チェック
             const payload = await authService.decodeStoredToken(stored.token);
             logWithContext("info", "[AuthStore] Decoded token payload:", {
               payload,
             });
 
-            // トークンの整合性チェック
             if (
-              (payload && payload.t !== "app") ||
+              payload.t !== "app" ||
               payload.deviceId !== stored.deviceId ||
               payload.clientId !== stored.clientId ||
               (payload.user != null && payload.user.id !== stored.userId)
             ) {
-              // 一致しない場合は、異常ケースとして、再登録の処理へ
-              // TODO: ユーザーのデータ引継ぎ・復元に対する機能を検討
+              // 整合性エラー → 再登録
               logWithContext(
                 "info",
-                "[AuthStore] Device ID mismatch, re-registering device"
+                "[AuthStore] Token mismatch, re-registering device"
               );
               const newPayload = await authService.registerDevice();
               set({
@@ -91,30 +95,23 @@ export const useAuthStore = create<AuthState>()(
                 plan: newPayload.planCode as UserPlan,
                 isAuthenticated: !!newPayload.user,
               });
-              logWithContext(
-                "info",
-                "[AuthStore] Device re-registration successful:",
-                { planCode: newPayload.planCode }
-              );
             } else {
-              // デバイス情報OK、トークン有効期限チェック
+              // ✅ 整合性OK → 必ずサーバーに検証リクエスト
               logWithContext(
                 "info",
-                "[AuthStore] Valid token found, checking expiration"
+                "[AuthStore] Token valid, verifying with server"
               );
               await get().refresh();
-              logWithContext(
-                "info",
-                "[AuthStore] Token refresh (if needed) completed"
-              );
             }
           }
+
           set({ isReady: true });
           logWithContext("info", "[AuthStore] Initialization completed");
         } catch (error) {
           logWithContext("error", "[AuthStore] Initialization failed:", {
             error,
           });
+          set({ isReady: true }); // エラーでも isReady は true にする
         }
       },
 
@@ -157,7 +154,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           logWithContext("info", "[AuthStore] Refresh started");
 
-          // ✅ authService 経由でトークン取得
           const stored = await authService.getStoredPayload();
 
           if (!stored.token) {
@@ -165,33 +161,42 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          // ✅ authService 経由でデコード
-          const payload = await authService.decodeStoredToken(stored.token);
-          const isExpired = authService.isTokenExpired(payload);
+          // ✅ 常にサーバーに検証リクエスト
+          logWithContext("info", "[AuthStore] Refreshing token from server");
 
-          if (isExpired) {
-            logWithContext(
-              "info",
-              "[AuthStore] Token expired, refreshing from server"
-            );
+          try {
             const newPayload = await authService.refreshToken();
             set({
               payload: newPayload,
               plan: newPayload.planCode as UserPlan,
               isAuthenticated: !!newPayload.user,
             });
-          } else {
-            set({
-              payload,
-              plan: payload.planCode as UserPlan,
-              isAuthenticated: !!payload.user,
+            logWithContext("info", "[AuthStore] Token refreshed successfully");
+          } catch (refreshError) {
+            const error = refreshError as HttpError;
+
+            // ✅ 401エラー（Device not found）→ 例外をスロー
+            if (error.status === 401 || error.response?.status === 401) {
+              logWithContext(
+                "error",
+                "[AuthStore] Token invalid (401), need to re-register"
+              );
+              throw new Error("Token invalid, device not found on server");
+            }
+
+            // ✅ その他のエラー（ネットワークエラーなど）→ 例外をスロー
+            logWithContext("error", "[AuthStore] Server unavailable", {
+              error: error.message,
+              status: error.status,
             });
+
+            throw new Error("Network error: unable to verify token");
           }
 
-          logWithContext("info", "[AuthStore] Refresh successful");
+          logWithContext("info", "[AuthStore] Refresh completed");
         } catch (error) {
           logWithContext("error", "[AuthStore] Refresh failed:", { error });
-          throw error;
+          throw error; // ✅ 上位（init）に伝播
         }
       },
 
@@ -211,10 +216,6 @@ export const useAuthStore = create<AuthState>()(
           logWithContext("info", "[AuthStore] Change plan started:", {
             newPlanCode,
           });
-          // TODO: 認証必須にする場合はコメントアウトを外す
-          // if (!get().isAuthenticated) {
-          //   throw new Error('Authentication required to change plan');
-          // }
           const result = await clientService.changePlan(newPlanCode);
           set({
             payload: result.payload,
@@ -243,7 +244,6 @@ export const useAuthStore = create<AuthState>()(
 
     {
       name: "auth-storage",
-      // ⚠️ Persist middleware だけは storeRepository を直接使う（これはOK）
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
           const value = await storeRepository.get(name);
