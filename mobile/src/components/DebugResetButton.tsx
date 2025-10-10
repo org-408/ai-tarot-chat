@@ -4,7 +4,7 @@ import { useResetApp } from "../lib/hooks/useResetApp";
 
 /**
  * デバッグ用リセットボタンコンポーネント
- * - 完全リセット（終了 or 再起動）
+ * - 完全リセット（サーバー+クライアント）
  * - マスターデータのみリセット
  * - Usageのみリセット
  */
