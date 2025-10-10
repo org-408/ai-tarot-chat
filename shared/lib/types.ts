@@ -2,7 +2,6 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
-import type { JWTPayload } from "jose";
 import {
   ChatRole,
   ChatType,
@@ -504,13 +503,15 @@ export interface AppJWTPayload {
   iat?: number; // 発行日時（UNIXタイムスタンプ）
 }
 
-export interface TicketData extends JWTPayload {
+export interface TicketData {
   t: string; // "ticket"
   sub: string; // userId
   email: string;
   name?: string;
   image?: string;
   provider?: string;
+  exp?: number; // 有効期限（UNIXタイムスタンプ）
+  iat?: number; // 発行日時（UNIXタイムスタンプ）
 }
 
 // ==========================================
