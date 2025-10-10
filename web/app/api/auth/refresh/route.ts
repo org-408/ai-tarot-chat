@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ token });
   } catch (error) {
-    logWithContext("error", "❌ セッション検証エラー", { error });
-
     const errorMessage =
       error instanceof Error ? error.message : "session validation failed";
+
+    logWithContext("error", "❌ セッション検証エラー", { errorMessage });
 
     // 既存パターンに合わせたエラーハンドリング
     if (
