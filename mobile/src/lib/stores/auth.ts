@@ -101,7 +101,52 @@ export const useAuthStore = create<AuthState>()(
                 "info",
                 "[AuthStore] Token valid, verifying with server"
               );
-              await get().refresh();
+
+              try {
+                await get().refresh();
+              } catch (refreshError) {
+                const error = refreshError as HttpError;
+                const status = error.status || error.response?.status;
+
+                // ✅ 401 または 500 → 再登録で救済
+                if (status === 401 || status === 500) {
+                  logWithContext(
+                    "warn",
+                    `[AuthStore] Server returned ${status}, re-registering device`,
+                    { status }
+                  );
+
+                  // APIクライアントのキャッシュをクリア
+                  apiClient.clearTokenCache();
+
+                  // デバイス再登録（自動的にストレージが上書きされる）
+                  const newPayload = await authService.registerDevice();
+                  set({
+                    payload: newPayload,
+                    plan: newPayload.planCode as UserPlan,
+                    isAuthenticated: !!newPayload.user,
+                  });
+
+                  logWithContext(
+                    "info",
+                    "[AuthStore] Device re-registered successfully"
+                  );
+                } else {
+                  // ✅ その他のエラー（ネットワークエラーなど） → ログのみ（初期化は継続）
+                  logWithContext(
+                    "warn",
+                    "[AuthStore] Network error during init, continuing with stored token",
+                    { error: error.message }
+                  );
+
+                  // 既存のトークンで継続
+                  set({
+                    payload,
+                    plan: payload.planCode as UserPlan,
+                    isAuthenticated: !!payload.user,
+                  });
+                }
+              }
             }
           }
 
@@ -162,41 +207,38 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // ✅ 常にサーバーに検証リクエスト
-          logWithContext("info", "[AuthStore] Refreshing token from server");
+          logWithContext(
+            "info",
+            "[AuthStore] 🔒 Calling authService.refreshToken()"
+          );
 
-          try {
-            const newPayload = await authService.refreshToken();
-            set({
-              payload: newPayload,
-              plan: newPayload.planCode as UserPlan,
-              isAuthenticated: !!newPayload.user,
-            });
-            logWithContext("info", "[AuthStore] Token refreshed successfully");
-          } catch (refreshError) {
-            const error = refreshError as HttpError;
+          const newPayload = await authService.refreshToken();
 
-            // ✅ 401エラー（Device not found）→ 例外をスロー
-            if (error.status === 401 || error.response?.status === 401) {
-              logWithContext(
-                "error",
-                "[AuthStore] Token invalid (401), need to re-register"
-              );
-              throw new Error("Token invalid, device not found on server");
+          // ✅ APIクライアントのトークンキャッシュをクリア
+          logWithContext(
+            "info",
+            "[AuthStore] 🔒 Clearing API client token cache"
+          );
+          apiClient.clearTokenCache();
+
+          set({
+            payload: newPayload,
+            plan: newPayload.planCode as UserPlan,
+            isAuthenticated: !!newPayload.user,
+          });
+          logWithContext(
+            "info",
+            "[AuthStore] ✅ Token refreshed successfully",
+            {
+              clientId: newPayload.clientId,
+              planCode: newPayload.planCode,
             }
-
-            // ✅ その他のエラー（ネットワークエラーなど）→ 例外をスロー
-            logWithContext("error", "[AuthStore] Server unavailable", {
-              error: error.message,
-              status: error.status,
-            });
-
-            throw new Error("Network error: unable to verify token");
-          }
+          );
 
           logWithContext("info", "[AuthStore] Refresh completed");
         } catch (error) {
           logWithContext("error", "[AuthStore] Refresh failed:", { error });
-          throw error; // ✅ 上位（init）に伝播
+          throw error; // ✅ 上位(init/onResume)に伝播
         }
       },
 

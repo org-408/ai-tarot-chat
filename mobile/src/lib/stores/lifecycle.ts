@@ -3,8 +3,17 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
+import { authService } from "../services/auth";
 import { queryClient } from "../services/queryClient";
+import { apiClient } from "../utils/apiClient";
 import { useAuthStore } from "./auth";
+
+interface HttpError extends Error {
+  status?: number;
+  response?: {
+    status?: number;
+  };
+}
 
 interface LifecycleState {
   // 状態
@@ -29,7 +38,7 @@ import type { PluginListenerHandle } from "@capacitor/core";
 
 let appStateListener: PluginListenerHandle | null = null;
 
-// ✅ メモリ上のPromiseキャッシュ（競合状態を完全に防ぐ）
+// ✅ メモリ上のPromiseキャッシュ(競合状態を完全に防ぐ)
 let initPromise: Promise<void> | null = null;
 
 export const useLifecycleStore = create<LifecycleState>()(
@@ -46,10 +55,10 @@ export const useLifecycleStore = create<LifecycleState>()(
        *
        * ✅ Promiseキャッシュで競合状態を完全に防止
        * - 最初の呼び出しでPromiseを作成
-       * - 2回目以降は即座に同じPromiseを返す（チェックと返却がアトミック）
+       * - 2回目以降は即座に同じPromiseを返す(チェックと返却がアトミック)
        */
       init: async () => {
-        // ✅ 既にPromiseがある場合は即座に返す（アトミック操作）
+        // ✅ 既にPromiseがある場合は即座に返す(アトミック操作)
         if (initPromise) {
           logWithContext(
             "info",
@@ -66,7 +75,7 @@ export const useLifecycleStore = create<LifecycleState>()(
 
         logWithContext("info", "[Lifecycle] Initializing...");
 
-        // ✅ Promiseを作成して即座に代入（これがロック）
+        // ✅ Promiseを作成して即座に代入(これがロック)
         initPromise = (async () => {
           try {
             set({
@@ -102,7 +111,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               error: error as Error,
             });
           } finally {
-            // ✅ Promiseを解放（次回起動時に再初期化可能に）
+            // ✅ Promiseを解放(次回起動時に再初期化可能に)
             initPromise = null;
           }
         })();
@@ -171,7 +180,41 @@ export const useLifecycleStore = create<LifecycleState>()(
           // 1. 認証トークンのリフレッシュ
           // ========================================
           logWithContext("info", "[Lifecycle] Refreshing auth token");
-          await authStore.refresh();
+
+          try {
+            await authStore.refresh();
+          } catch (refreshError) {
+            const error = refreshError as HttpError;
+            const status = error.status || error.response?.status;
+
+            // ✅ 401 または 500 → 再登録で救済
+            if (status === 401 || status === 500) {
+              logWithContext(
+                "warn",
+                `[Lifecycle] Server returned ${status}, re-registering device`,
+                { status }
+              );
+
+              // APIクライアントのキャッシュをクリア
+              apiClient.clearTokenCache();
+
+              // デバイス再登録（自動的にストレージが上書きされる）
+              const newPayload = await authService.registerDevice();
+              authStore.setPayload(newPayload);
+
+              logWithContext(
+                "info",
+                "[Lifecycle] Device re-registered successfully"
+              );
+            } else {
+              // ✅ その他のエラー（ネットワークエラーなど） → ログのみでスキップ
+              logWithContext(
+                "warn",
+                "[Lifecycle] Failed to refresh token, but continuing",
+                { error: error.message }
+              );
+            }
+          }
 
           // ========================================
           // 2. ReactQueryキャッシュの無効化
@@ -181,7 +224,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           if (authStore.isReady && authPayload?.clientId) {
             logWithContext("info", "[Lifecycle] Invalidating data cache");
 
-            // Usageキャッシュを無効化（ReactQueryが自動で再取得）
+            // Usageキャッシュを無効化(ReactQueryが自動で再取得)
             await queryClient.invalidateQueries({
               queryKey: ["usage", authPayload.clientId],
             });
@@ -244,7 +287,7 @@ export const useLifecycleStore = create<LifecycleState>()(
     }),
     {
       name: "lifecycle-storage",
-      // ✅ 何も永続化しない（全てメモリ管理）
+      // ✅ 何も永続化しない(全てメモリ管理)
       partialize: () => ({}),
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
