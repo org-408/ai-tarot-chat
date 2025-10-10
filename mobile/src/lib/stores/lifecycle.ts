@@ -188,7 +188,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             const status = error.status || error.response?.status;
 
             // ✅ 401 または 500 → 再登録で救済
-            if (status === 401 || status === 500) {
+            if (!status || status === 401 || status === 500) {
               logWithContext(
                 "warn",
                 `[Lifecycle] Server returned ${status}, re-registering device`,
