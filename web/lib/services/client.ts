@@ -141,6 +141,10 @@ export class ClientService {
     });
   }
 
+  async deleteClientByDeviceId(deviceId: string): Promise<void> {
+    await clientRepository.hardDeleteClientByDeviceId(deviceId);
+  }
+
   async drawRandomCards(
     readingId: string,
     cards: TarotCard[],

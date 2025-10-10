@@ -22,6 +22,9 @@ export const resetAppData = async () => {
   try {
     logWithContext("info", "[ResetApp] App data reset started");
 
+    const deviceId = await storeRepository.get("deviceId");
+    logWithContext("info", "[ResetApp] Current deviceId", { deviceId });
+
     // ========================================
     // 1. Zustandストアをリセット
     // ========================================
@@ -83,6 +86,32 @@ export const resetAppData = async () => {
     // ========================================
     logWithContext("info", "[ResetApp] Clearing all Capacitor Preferences");
     await Preferences.clear();
+
+    // ========================================
+    // 7. Webサーバー側のデータを削除
+    // ========================================
+    if (deviceId) {
+      logWithContext("info", "[ResetApp] Deleting server-side data", {
+        deviceId,
+      });
+      try {
+        await apiClient.post("/api/device/reset", { deviceId });
+        logWithContext("info", "[ResetApp] Server-side data deleted");
+      } catch (error) {
+        logWithContext(
+          "error",
+          "[ResetApp] Failed to delete server-side data",
+          {
+            error,
+          }
+        );
+      }
+    } else {
+      logWithContext(
+        "warn",
+        "[ResetApp] No deviceId found, skipping server reset"
+      );
+    }
 
     logWithContext("info", "[ResetApp] App data reset completed successfully");
     return true;
