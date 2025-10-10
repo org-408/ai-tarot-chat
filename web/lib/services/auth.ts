@@ -536,54 +536,51 @@ export class AuthService {
    * 期限切れ・OAuth認証時は認証期限切れの検出とJWTペイロード更新
    */
   async detectTokenExpirationAndRefresh(request: NextRequest): Promise<string> {
+    // エラー処理は route 側で行う
     logWithContext("info", "🔑 Detecting token expiration and refreshing...");
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       throw new Error("認証が必要です");
     }
 
-    try {
-      logWithContext("info", "🔑 decodeJWT token:", {
-        token: authHeader.substring(7),
-      });
-      const payload = await decodeJWT<AppJWTPayload>(
-        authHeader.substring(7),
-        JWT_SECRET,
-        true
-      );
+    logWithContext("info", "🔑 decodeJWT token:", {
+      token: authHeader.substring(7),
+    });
+    const payload = await decodeJWT<AppJWTPayload>(
+      authHeader.substring(7),
+      JWT_SECRET,
+      true
+    );
 
-      // 期限切れでもpayloadを取得できるため、ここでログ出力
-      logWithContext("info", "🔑 Token payload (not check expiration):", {
+    // 期限切れでもpayloadを取得できるため、ここでログ出力
+    logWithContext("info", "🔑 Token payload (not check expiration):", {
+      payload,
+    });
+
+    // DBからClient情報を取得
+    const client = await clientService.getClientByDeviceId(payload.deviceId);
+    if (!client || client.id !== payload.clientId || !client.plan) {
+      logWithContext("error", "❌ Client or Device not found for payload:", {
         payload,
       });
-
-      // DBからClient情報を取得
-      const client = await clientService.getClientByDeviceId(payload.deviceId);
-      if (!client || client.id !== payload.clientId || !client.plan) {
-        logWithContext("error", "❌ Client or Device not found for payload:", {
-          payload,
-        });
-        throw new Error("Client not found for payload");
-      }
-      logWithContext("info", "✅ Client for payload:", { clientId: client.id });
-
-      // OAuth認証時は auth() を呼んで認証期限切れを検出
-      if (payload.user && payload.provider) {
-        const session = await auth();
-        if (!session?.user?.id || !session?.user?.email) {
-          logWithContext("warn", "⚠️ OAuth認証期限切れ検出");
-          throw new Error("OAuth session expired");
-        }
-      }
-
-      logWithContext("info", "✅ Token valid, refreshing JWT payload:", {
-        payload,
-      });
-      return this.refreshJwtPayload(payload);
-    } catch (error) {
-      logWithContext("error", "❌ APIリクエスト認証エラー:", { error });
-      throw new Error("認証リフレッシュ失敗");
+      throw new Error("Client not found for payload");
     }
+    logWithContext("info", "✅ Client for payload:", { clientId: client.id });
+
+    // OAuth認証時は auth() を呼んで認証期限切れを検出
+    if (payload.user && payload.provider) {
+      const session = await auth();
+      if (!session?.user?.id || !session?.user?.email) {
+        logWithContext("warn", "⚠️ OAuth認証期限切れ検出");
+        throw new Error("OAuth session expired");
+      }
+    }
+
+    logWithContext("info", "✅ Token valid, refreshing JWT payload:", {
+      payload,
+    });
+
+    return this.refreshJwtPayload(payload);
   }
 
   /**
