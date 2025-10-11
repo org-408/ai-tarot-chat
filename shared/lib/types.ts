@@ -269,6 +269,9 @@ export type Plan = {
   code: string;
   name: string;
   description: string;
+  primaryColor: string; // プランのテーマ色（16進数カラーコード）
+  secondaryColor: string; // プランのサブテーマ色（16進数カラーコード）
+  accentColor: string; // プランのアクセント色（16進数カラーコード）
   price: number;
   requiresAuth: boolean;
   isActive: boolean;
@@ -313,8 +316,8 @@ export type Tarotist = {
   accentColor: string; // 占い師のアクセント色（16進数カラーコード）
   avatarUrl?: string | null;
   provider?: ProviderKey | null; // 生成AIプロバイダー(将来的には人(null)も？)
-  cost: string; // 占いコスト（APIコスト目安）
-  quality: number; // 占いの質（５段階評価）
+  cost?: string | null; // 占いコスト（APIコスト目安）
+  quality?: number | null; // 占いの質（５段階評価）
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
@@ -414,14 +417,16 @@ export type ClientInput = Omit<
 export type TarotDeckInput = Omit<
   TarotDeck,
   "id" | "createdAt" | "updatedAt" | "cards"
->;
+> & { cards: TarotCardInput[] };
+
 export type TarotCardInput = Omit<
   TarotCard,
-  "id" | "createdAt" | "updatedAt" | "deck" | "meanings"
->;
+  "id" | "createdAt" | "updatedAt" | "deck" | "deckId" | "meanings"
+> & { meanings: CardMeaningInput[] };
+
 export type CardMeaningInput = Omit<
   CardMeaning,
-  "id" | "createdAt" | "updatedAt" | "card"
+  "id" | "createdAt" | "updatedAt" | "card" | "cardId"
 >;
 
 // スプレッド関連
@@ -442,7 +447,18 @@ export type SpreadInput = Omit<
   cells: SpreadCellInput[];
   categoryIds: string[];
 };
-export type SpreadCellInput = Omit<SpreadCell, "id" | "spread">;
+
+export type SpreadWithLevelPlanCategories = Omit<
+  SpreadInput,
+  "levelId" | "planId"
+> & {
+  levelCode: string;
+  planCode: string;
+  categories: string[];
+};
+
+export type SpreadCellInput = Omit<SpreadCell, "id" | "spread" | "spreadId">;
+
 export type ReadingCategoryInput = Omit<
   ReadingCategory,
   "id" | "createdAt" | "updatedAt" | "spreads" | "reading"
@@ -468,18 +484,26 @@ export type TarotistInput = Omit<
   Tarotist,
   "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages"
 >;
+
+export type TarotistWithPlanCode = Omit<TarotistInput, "planId"> & {
+  planCode: string;
+};
+
 export type ReadingInput = Omit<
   Reading,
   "id" | "createdAt" | "updatedAt" | "client" | "spread" | "category"
 >;
+
 export type DrawnCardInput = Omit<
   DrawnCard,
   "id" | "createdAt" | "reading" | "card"
 >;
+
 export type ChatMessageInput = Omit<
   ChatMessage,
   "id" | "createdAt" | "client" | "device" | "tarotist" | "reading"
 >;
+
 export type FavoriteSpreadInput = Omit<
   FavoriteSpread,
   "id" | "createdAt" | "client" | "spread"

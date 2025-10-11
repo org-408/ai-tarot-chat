@@ -2,10 +2,10 @@
   "metadata": {
     "version": "1.0",
     "purpose": "AI-powered tarot interpretation system",
-    "total_cards": 78,
+    "totalCards": 78,
     "sources": ["Biddy Tarot", "Labyrinthos Academy"],
-    "optimized_for": "prompt_generation",
-    "primary_focus": "love_readings",
+    "optimizedFor": "prompt_generation",
+    "primaryFocus": "love_readings",
     "categories": ["love", "career", "money", "health"],
     "updated": "2025-09-14",
     "status": "complete"
@@ -19,7 +19,7 @@
       "suit": null,
       "element": null,
       "zodiac": "Uranus",
-      "upright_keywords": [
+      "uprightKeywords": [
         "beginnings",
         "innocence",
         "spontaneity",
@@ -27,7 +27,7 @@
         "leap of faith",
         "potential"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "recklessness",
         "holding back",
         "poor judgment",
@@ -51,7 +51,7 @@
           "reversed": "Neglecting health needs or taking dangerous health risks. Need more careful planning with wellness decisions."
         }
       },
-      "prompt_context": "The Fool represents new beginnings and unlimited potential. In readings, emphasize the energy of fresh starts and trusting the journey ahead."
+      "promptContext": "The Fool represents new beginnings and unlimited potential. In readings, emphasize the energy of fresh starts and trusting the journey ahead."
     },
 
     "1_magician": {
@@ -61,7 +61,7 @@
       "suit": null,
       "element": "Air",
       "zodiac": "Mercury",
-      "upright_keywords": [
+      "uprightKeywords": [
         "manifestation",
         "willpower",
         "skill",
@@ -69,7 +69,7 @@
         "power",
         "action"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "manipulation",
         "trickery",
         "unused potential",
@@ -93,7 +93,7 @@
           "reversed": "Ignoring health issues or unrealistic health goals. Ineffective treatments or health-related deception."
         }
       },
-      "prompt_context": "The Magician represents personal power and the ability to manifest desires. Focus on taking action and using available resources."
+      "promptContext": "The Magician represents personal power and the ability to manifest desires. Focus on taking action and using available resources."
     },
 
     "2_high_priestess": {
@@ -103,14 +103,14 @@
       "suit": null,
       "element": "Water",
       "zodiac": "Moon",
-      "upright_keywords": [
+      "uprightKeywords": [
         "intuition",
         "mystery",
         "subconscious",
         "inner wisdom",
         "spirituality"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "disconnected intuition",
         "secrets",
         "repressed feelings",
@@ -134,7 +134,7 @@
           "reversed": "Ignoring body signals or symptoms. Disconnected from physical needs. Suppressed health issues requiring attention."
         }
       },
-      "prompt_context": "The High Priestess represents inner wisdom and intuition. Encourage the querent to look within and trust their instincts."
+      "promptContext": "The High Priestess represents inner wisdom and intuition. Encourage the querent to look within and trust their instincts."
     },
 
     "3_empress": {
@@ -144,7 +144,7 @@
       "suit": null,
       "element": "Earth",
       "zodiac": "Venus",
-      "upright_keywords": [
+      "uprightKeywords": [
         "fertility",
         "femininity",
         "abundance",
@@ -152,7 +152,7 @@
         "nurturing",
         "creativity"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "dependence",
         "smothering",
         "creative blocks",
@@ -177,7 +177,7 @@
           "reversed": "Neglecting self-care and physical needs. Fertility or feminine health issues. Health problems from lack of nurturing."
         }
       },
-      "prompt_context": "The Empress represents abundance, creativity, and nurturing energy. Emphasize growth and the power of feminine energy."
+      "promptContext": "The Empress represents abundance, creativity, and nurturing energy. Emphasize growth and the power of feminine energy."
     },
 
     "4_emperor": {
@@ -187,7 +187,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Aries",
-      "upright_keywords": [
+      "uprightKeywords": [
         "authority",
         "structure",
         "control",
@@ -195,7 +195,7 @@
         "fatherhood",
         "stability"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "tyranny",
         "rigidity",
         "abuse of power",
@@ -220,7 +220,7 @@
           "reversed": "Ignoring medical authority or health advice. Overly rigid health approaches. Control issues affecting physical well-being."
         }
       },
-      "prompt_context": "The Emperor represents structure, authority, and masculine energy. Focus on stability and taking control."
+      "promptContext": "The Emperor represents structure, authority, and masculine energy. Focus on stability and taking control."
     },
 
     "5_hierophant": {
@@ -230,7 +230,7 @@
       "suit": null,
       "element": "Earth",
       "zodiac": "Taurus",
-      "upright_keywords": [
+      "uprightKeywords": [
         "tradition",
         "conformity",
         "spiritual guidance",
@@ -238,7 +238,7 @@
         "institutions",
         "mentorship"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "rebellion",
         "unconventional",
         "challenging norms",
@@ -263,7 +263,7 @@
           "reversed": "Alternative health methods or questioning medical authority. Unconventional healing approaches. Personal health beliefs."
         }
       },
-      "prompt_context": "The Hierophant represents tradition and spiritual guidance. Consider both conventional wisdom and the need for personal truth."
+      "promptContext": "The Hierophant represents tradition and spiritual guidance. Consider both conventional wisdom and the need for personal truth."
     },
 
     "6_lovers": {
@@ -273,7 +273,7 @@
       "suit": null,
       "element": "Air",
       "zodiac": "Gemini",
-      "upright_keywords": [
+      "uprightKeywords": [
         "love",
         "union",
         "partnership",
@@ -282,7 +282,7 @@
         "attraction",
         "soul mates"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "disharmony",
         "imbalance",
         "misalignment",
@@ -307,7 +307,7 @@
           "reversed": "Poor health choices or conflicting wellness advice. Imbalanced approach to physical and mental health needs."
         }
       },
-      "prompt_context": "The Lovers represents important choices and partnerships. Focus on harmony, attraction, and alignment of values."
+      "promptContext": "The Lovers represents important choices and partnerships. Focus on harmony, attraction, and alignment of values."
     },
 
     "7_chariot": {
@@ -317,7 +317,7 @@
       "suit": null,
       "element": "Water",
       "zodiac": "Cancer",
-      "upright_keywords": [
+      "uprightKeywords": [
         "victory",
         "willpower",
         "determination",
@@ -325,7 +325,7 @@
         "journey",
         "triumph"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of control",
         "lack of direction",
         "aggression",
@@ -349,7 +349,7 @@
           "reversed": "Health control issues or scattered wellness efforts. Aggressive health approach. Lack of clear direction for recovery."
         }
       },
-      "prompt_context": "The Chariot represents victory through determination and control. Emphasize forward momentum and overcoming obstacles."
+      "promptContext": "The Chariot represents victory through determination and control. Emphasize forward momentum and overcoming obstacles."
     },
 
     "8_strength": {
@@ -359,7 +359,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Leo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "inner strength",
         "courage",
         "compassion",
@@ -367,7 +367,7 @@
         "gentle control",
         "resilience"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "self-doubt",
         "weakness",
         "insecurity",
@@ -392,7 +392,7 @@
           "reversed": "Health insecurity and lack of healing confidence. Weak immune system. Poor confidence in recovery abilities."
         }
       },
-      "prompt_context": "Strength represents inner power and gentle control. Focus on compassion, patience, and emotional resilience."
+      "promptContext": "Strength represents inner power and gentle control. Focus on compassion, patience, and emotional resilience."
     },
 
     "9_hermit": {
@@ -402,7 +402,7 @@
       "suit": null,
       "element": "Earth",
       "zodiac": "Virgo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "introspection",
         "soul searching",
         "inner guidance",
@@ -410,7 +410,7 @@
         "solitude",
         "meditation"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "isolation",
         "loneliness",
         "withdrawal",
@@ -435,7 +435,7 @@
           "reversed": "Health isolation or avoiding medical help. Lost wellness direction. Withdrawing from healing opportunities."
         }
       },
-      "prompt_context": "The Hermit represents inner wisdom and soul searching. Emphasize the need for introspection and finding inner truth."
+      "promptContext": "The Hermit represents inner wisdom and soul searching. Emphasize the need for introspection and finding inner truth."
     },
 
     "10_wheel_fortune": {
@@ -445,7 +445,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Jupiter",
-      "upright_keywords": [
+      "uprightKeywords": [
         "fate",
         "destiny",
         "cycles",
@@ -454,7 +454,7 @@
         "karma",
         "change"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "bad luck",
         "lack of control",
         "negative cycles",
@@ -478,7 +478,7 @@
           "reversed": "Health bad luck or negative wellness cycles. Resisting necessary health changes. Chronic health conditions."
         }
       },
-      "prompt_context": "The Wheel of Fortune represents fate and cycles of change. Focus on destiny, timing, and karmic influences."
+      "promptContext": "The Wheel of Fortune represents fate and cycles of change. Focus on destiny, timing, and karmic influences."
     },
 
     "11_justice": {
@@ -488,7 +488,7 @@
       "suit": null,
       "element": "Air",
       "zodiac": "Libra",
-      "upright_keywords": [
+      "uprightKeywords": [
         "fairness",
         "truth",
         "cause and effect",
@@ -496,7 +496,7 @@
         "legal matters",
         "karma"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "unfairness",
         "lack of accountability",
         "bias",
@@ -521,7 +521,7 @@
           "reversed": "Unfair health treatment or dishonest medical advice. Imbalanced wellness approach. Avoiding health responsibility."
         }
       },
-      "prompt_context": "Justice represents truth, fairness, and karma. Focus on balance, accountability, and the consequences of actions."
+      "promptContext": "Justice represents truth, fairness, and karma. Focus on balance, accountability, and the consequences of actions."
     },
 
     "12_hanged_man": {
@@ -531,7 +531,7 @@
       "suit": null,
       "element": "Water",
       "zodiac": "Neptune",
-      "upright_keywords": [
+      "uprightKeywords": [
         "sacrifice",
         "waiting",
         "new perspective",
@@ -539,7 +539,7 @@
         "patience",
         "surrender"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "delays",
         "resistance",
         "stalling",
@@ -563,7 +563,7 @@
           "reversed": "Avoiding health sacrifice or refusing treatment. Impatient with healing process. Stalling necessary wellness changes."
         }
       },
-      "prompt_context": "The Hanged Man represents sacrifice and new perspectives. Emphasize patience, surrender, and the wisdom in waiting."
+      "promptContext": "The Hanged Man represents sacrifice and new perspectives. Emphasize patience, surrender, and the wisdom in waiting."
     },
 
     "13_death": {
@@ -573,7 +573,7 @@
       "suit": null,
       "element": "Water",
       "zodiac": "Scorpio",
-      "upright_keywords": [
+      "uprightKeywords": [
         "transformation",
         "endings",
         "new beginnings",
@@ -581,7 +581,7 @@
         "change",
         "release"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "resistance to change",
         "fear of endings",
         "stagnation",
@@ -605,7 +605,7 @@
           "reversed": "Resisting necessary health changes. Fear of wellness transformation. Clinging to unhealthy or limiting physical patterns."
         }
       },
-      "prompt_context": "Death represents transformation and new beginnings. Focus on necessary endings leading to rebirth and positive change."
+      "promptContext": "Death represents transformation and new beginnings. Focus on necessary endings leading to rebirth and positive change."
     },
 
     "14_temperance": {
@@ -615,7 +615,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Sagittarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "balance",
         "moderation",
         "patience",
@@ -623,7 +623,7 @@
         "synthesis",
         "middle path"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "imbalance",
         "extremes",
         "lack of patience",
@@ -648,7 +648,7 @@
           "reversed": "Imbalanced health habits or impatient healing approach. Extreme wellness behavior. Health discord and excess."
         }
       },
-      "prompt_context": "Temperance represents balance and moderation. Focus on patience, harmony, and finding the middle path."
+      "promptContext": "Temperance represents balance and moderation. Focus on patience, harmony, and finding the middle path."
     },
 
     "15_devil": {
@@ -658,7 +658,7 @@
       "suit": null,
       "element": "Earth",
       "zodiac": "Capricorn",
-      "upright_keywords": [
+      "uprightKeywords": [
         "bondage",
         "addiction",
         "materialism",
@@ -666,7 +666,7 @@
         "restriction",
         "obsession"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "freedom",
         "release",
         "breaking chains",
@@ -691,7 +691,7 @@
           "reversed": "Breaking health addictions. Overcoming body obsessions. Healing relationship with physical self and habits."
         }
       },
-      "prompt_context": "The Devil represents bondage and temptation. When reversed, focus on liberation and breaking free from limitations."
+      "promptContext": "The Devil represents bondage and temptation. When reversed, focus on liberation and breaking free from limitations."
     },
 
     "16_tower": {
@@ -701,7 +701,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Mars",
-      "upright_keywords": [
+      "uprightKeywords": [
         "sudden change",
         "upheaval",
         "revelation",
@@ -709,7 +709,7 @@
         "liberation",
         "awakening"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "avoiding disaster",
         "fear of change",
         "delayed upheaval",
@@ -733,7 +733,7 @@
           "reversed": "Avoiding health problems or delaying medical changes. Fear of health truth. Resisting necessary wellness transformations."
         }
       },
-      "prompt_context": "The Tower represents sudden change and revelation. Focus on necessary destruction leading to liberation and truth."
+      "promptContext": "The Tower represents sudden change and revelation. Focus on necessary destruction leading to liberation and truth."
     },
 
     "17_star": {
@@ -743,7 +743,7 @@
       "suit": null,
       "element": "Air",
       "zodiac": "Aquarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "hope",
         "faith",
         "inspiration",
@@ -752,7 +752,7 @@
         "guidance",
         "wishes"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "despair",
         "lack of faith",
         "disconnection",
@@ -777,7 +777,7 @@
           "reversed": "Lost health hope or wellness despair. Lack of faith in healing. Disconnected from recovery inspiration and guidance."
         }
       },
-      "prompt_context": "The Star represents hope and divine guidance. Focus on faith, inspiration, and the power of wishes coming true."
+      "promptContext": "The Star represents hope and divine guidance. Focus on faith, inspiration, and the power of wishes coming true."
     },
 
     "18_moon": {
@@ -787,7 +787,7 @@
       "suit": null,
       "element": "Water",
       "zodiac": "Pisces",
-      "upright_keywords": [
+      "uprightKeywords": [
         "illusion",
         "intuition",
         "dreams",
@@ -796,7 +796,7 @@
         "deception",
         "mystery"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "clarity",
         "truth revealed",
         "overcoming fear",
@@ -820,7 +820,7 @@
           "reversed": "Health clarity and overcoming medical fears. Wellness truth revealed. Trusting body intuition and healing wisdom."
         }
       },
-      "prompt_context": "The Moon represents illusion and intuition. Focus on navigating confusion and trusting inner wisdom."
+      "promptContext": "The Moon represents illusion and intuition. Focus on navigating confusion and trusting inner wisdom."
     },
 
     "19_sun": {
@@ -830,7 +830,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Sun",
-      "upright_keywords": [
+      "uprightKeywords": [
         "joy",
         "success",
         "vitality",
@@ -839,7 +839,7 @@
         "celebration",
         "enlightenment"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "temporary setbacks",
         "lack of enthusiasm",
         "delayed success",
@@ -863,7 +863,7 @@
           "reversed": "Temporary health setbacks or lack of wellness enthusiasm. Need to find inner healing joy and body appreciation."
         }
       },
-      "prompt_context": "The Sun represents joy and success. Focus on positivity, achievement, and the celebration of life's blessings."
+      "promptContext": "The Sun represents joy and success. Focus on positivity, achievement, and the celebration of life's blessings."
     },
 
     "20_judgement": {
@@ -873,7 +873,7 @@
       "suit": null,
       "element": "Fire",
       "zodiac": "Pluto",
-      "upright_keywords": [
+      "uprightKeywords": [
         "rebirth",
         "inner calling",
         "absolution",
@@ -881,7 +881,7 @@
         "second chances",
         "forgiveness"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "self-doubt",
         "harsh judgment",
         "lack of forgiveness",
@@ -905,7 +905,7 @@
           "reversed": "Health self-doubt or harsh body judgment. Missing wellness calling. Lack of forgiveness in physical matters."
         }
       },
-      "prompt_context": "Judgement represents rebirth and spiritual calling. Focus on forgiveness, second chances, and answering your higher purpose."
+      "promptContext": "Judgement represents rebirth and spiritual calling. Focus on forgiveness, second chances, and answering your higher purpose."
     },
 
     "21_world": {
@@ -915,7 +915,7 @@
       "suit": null,
       "element": "Earth",
       "zodiac": "Saturn",
-      "upright_keywords": [
+      "uprightKeywords": [
         "completion",
         "accomplishment",
         "fulfillment",
@@ -923,7 +923,7 @@
         "wholeness",
         "integration"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "incomplete",
         "lack of closure",
         "stagnation",
@@ -947,7 +947,7 @@
           "reversed": "Incomplete health fulfillment or wellness stagnation. Lack of healing closure. Unfulfilled recovery goals."
         }
       },
-      "prompt_context": "The World represents completion and fulfillment. Focus on success, wholeness, and the achievement of long-term goals."
+      "promptContext": "The World represents completion and fulfillment. Focus on success, wholeness, and the achievement of long-term goals."
     },
 
     "ace_wands": {
@@ -957,7 +957,7 @@
       "number": 1,
       "element": "Fire",
       "zodiac": "Fire signs",
-      "upright_keywords": [
+      "uprightKeywords": [
         "inspiration",
         "creative spark",
         "new opportunity",
@@ -965,7 +965,7 @@
         "energy",
         "passion"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "creative blocks",
         "lack of energy",
         "delays",
@@ -989,7 +989,7 @@
           "reversed": "Low energy or health delays. Lack of wellness inspiration. Blocked life force and vitality."
         }
       },
-      "prompt_context": "Ace of Wands represents new creative beginnings. Focus on inspiration, potential, and taking the first step."
+      "promptContext": "Ace of Wands represents new creative beginnings. Focus on inspiration, potential, and taking the first step."
     },
 
     "two_wands": {
@@ -999,14 +999,14 @@
       "number": 2,
       "element": "Fire",
       "zodiac": "Mars in Aries",
-      "upright_keywords": [
+      "uprightKeywords": [
         "planning",
         "making decisions",
         "leaving comfort zone",
         "personal power",
         "control"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "fear of unknown",
         "lack of planning",
         "bad decisions",
@@ -1030,7 +1030,7 @@
           "reversed": "Fear of health changes or lack of wellness planning. Poor health decisions. Staying in comfortable but limiting health routine."
         }
       },
-      "prompt_context": "Two of Wands represents planning and personal power. Focus on making important decisions and expanding horizons."
+      "promptContext": "Two of Wands represents planning and personal power. Focus on making important decisions and expanding horizons."
     },
 
     "three_wands": {
@@ -1040,14 +1040,14 @@
       "number": 3,
       "element": "Fire",
       "zodiac": "Sun in Aries",
-      "upright_keywords": [
+      "uprightKeywords": [
         "expansion",
         "foresight",
         "overseas opportunities",
         "leadership",
         "planning"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of foresight",
         "delays",
         "lack of planning",
@@ -1071,7 +1071,7 @@
           "reversed": "Health delays or lack of wellness foresight. Missing health opportunities. Playing small with fitness goals."
         }
       },
-      "prompt_context": "Three of Wands represents expansion and foresight. Focus on growth, planning ahead, and expanding horizons."
+      "promptContext": "Three of Wands represents expansion and foresight. Focus on growth, planning ahead, and expanding horizons."
     },
 
     "four_wands": {
@@ -1081,7 +1081,7 @@
       "number": 4,
       "element": "Fire",
       "zodiac": "Venus in Aries",
-      "upright_keywords": [
+      "uprightKeywords": [
         "celebration",
         "harmony",
         "homecoming",
@@ -1089,7 +1089,7 @@
         "achievement",
         "community"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "instability",
         "lack of support",
         "broken relationships",
@@ -1113,7 +1113,7 @@
           "reversed": "Health instability or lack of wellness support. Cancelled health plans. Broken physical harmony."
         }
       },
-      "prompt_context": "Four of Wands represents celebration and stability. Focus on harmony, achievement, and community support."
+      "promptContext": "Four of Wands represents celebration and stability. Focus on harmony, achievement, and community support."
     },
 
     "five_wands": {
@@ -1123,7 +1123,7 @@
       "number": 5,
       "element": "Fire",
       "zodiac": "Saturn in Leo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "competition",
         "conflict",
         "rivalry",
@@ -1131,7 +1131,7 @@
         "struggle",
         "tension"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "avoiding conflict",
         "inner conflict",
         "agreement",
@@ -1155,7 +1155,7 @@
           "reversed": "Avoiding health conflict or inner wellness struggle. Finding physical balance. Resolving body disagreements."
         }
       },
-      "prompt_context": "Five of Wands represents competition and conflict. Focus on healthy rivalry, creative tension, and resolving disagreements."
+      "promptContext": "Five of Wands represents competition and conflict. Focus on healthy rivalry, creative tension, and resolving disagreements."
     },
 
     "six_wands": {
@@ -1165,7 +1165,7 @@
       "number": 6,
       "element": "Fire",
       "zodiac": "Jupiter in Leo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "victory",
         "public recognition",
         "success",
@@ -1173,7 +1173,7 @@
         "leadership",
         "confidence"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of recognition",
         "failure",
         "losing",
@@ -1198,7 +1198,7 @@
           "reversed": "Lack of health recognition or wellness failure. Fitness disappointment. Arrogance affecting healing success."
         }
       },
-      "prompt_context": "Six of Wands represents victory and recognition. Focus on success, achievement, and positive acknowledgment."
+      "promptContext": "Six of Wands represents victory and recognition. Focus on success, achievement, and positive acknowledgment."
     },
 
     "seven_wands": {
@@ -1208,14 +1208,14 @@
       "number": 7,
       "element": "Fire",
       "zodiac": "Mars in Leo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "challenge",
         "competition",
         "perseverance",
         "defensive",
         "standing ground"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "giving up",
         "overwhelmed",
         "lack of courage",
@@ -1239,7 +1239,7 @@
           "reversed": "Giving up on health or overwhelmed by wellness challenges. Feeling defeated physically. Lack of courage with healing."
         }
       },
-      "prompt_context": "Seven of Wands represents defending your position. Focus on perseverance, courage, and standing your ground."
+      "promptContext": "Seven of Wands represents defending your position. Focus on perseverance, courage, and standing your ground."
     },
 
     "eight_wands": {
@@ -1249,7 +1249,7 @@
       "number": 8,
       "element": "Fire",
       "zodiac": "Mercury in Sagittarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "speed",
         "action",
         "movement",
@@ -1257,7 +1257,7 @@
         "communication",
         "travel"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "delays",
         "frustration",
         "resisting change",
@@ -1281,7 +1281,7 @@
           "reversed": "Health delays or frustrated with recovery pace. Resisting wellness changes. Internal conflict about healing speed."
         }
       },
-      "prompt_context": "Eight of Wands represents speed and rapid movement. Focus on quick progress, communication, and swift action."
+      "promptContext": "Eight of Wands represents speed and rapid movement. Focus on quick progress, communication, and swift action."
     },
 
     "nine_wands": {
@@ -1291,14 +1291,14 @@
       "number": 9,
       "element": "Fire",
       "zodiac": "Moon in Sagittarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "persistence",
         "test of faith",
         "resilience",
         "boundaries",
         "last stand"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "exhaustion",
         "giving up",
         "lack of persistence",
@@ -1322,7 +1322,7 @@
           "reversed": "Health exhaustion or giving up on wellness goals. Lack of physical persistence. Paranoid about health conditions."
         }
       },
-      "prompt_context": "Nine of Wands represents persistence near the end. Focus on resilience, boundaries, and the final push to success."
+      "promptContext": "Nine of Wands represents persistence near the end. Focus on resilience, boundaries, and the final push to success."
     },
 
     "ten_wands": {
@@ -1332,14 +1332,14 @@
       "number": 10,
       "element": "Fire",
       "zodiac": "Saturn in Sagittarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "burden",
         "responsibility",
         "hard work",
         "completion",
         "accomplishment"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "release",
         "delegate",
         "burden sharing",
@@ -1363,7 +1363,7 @@
           "reversed": "Releasing health burdens or sharing wellness responsibilities. Physical burnout. Collapsing from health overwork."
         }
       },
-      "prompt_context": "Ten of Wands represents burdens and responsibilities. Focus on hard work leading to accomplishment or the need to delegate."
+      "promptContext": "Ten of Wands represents burdens and responsibilities. Focus on hard work leading to accomplishment or the need to delegate."
     },
 
     "page_wands": {
@@ -1373,14 +1373,14 @@
       "number": 11,
       "element": "Fire",
       "zodiac": "Earth of Fire",
-      "upright_keywords": [
+      "uprightKeywords": [
         "enthusiasm",
         "exploration",
         "discovery",
         "free spirit",
         "good news"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of direction",
         "procrastination",
         "lack of commitment",
@@ -1404,7 +1404,7 @@
           "reversed": "Lack of health direction or procrastinating with wellness. Fitness commitment issues. Bad news about health opportunities."
         }
       },
-      "prompt_context": "Page of Wands represents youthful enthusiasm and exploration. Focus on new beginnings and discovering possibilities."
+      "promptContext": "Page of Wands represents youthful enthusiasm and exploration. Focus on new beginnings and discovering possibilities."
     },
 
     "knight_wands": {
@@ -1414,14 +1414,14 @@
       "number": 12,
       "element": "Fire",
       "zodiac": "Air of Fire",
-      "upright_keywords": [
+      "uprightKeywords": [
         "adventure",
         "impulsiveness",
         "action",
         "passion",
         "recklessness"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "recklessness",
         "impatience",
         "lack of planning",
@@ -1445,7 +1445,7 @@
           "reversed": "Reckless health behavior or impatient with wellness. Lack of fitness planning. Passive approach to physical improvement."
         }
       },
-      "prompt_context": "Knight of Wands represents impulsive action and adventure. Focus on passionate pursuit while warning about recklessness."
+      "promptContext": "Knight of Wands represents impulsive action and adventure. Focus on passionate pursuit while warning about recklessness."
     },
 
     "queen_wands": {
@@ -1455,14 +1455,14 @@
       "number": 13,
       "element": "Fire",
       "zodiac": "Water of Fire",
-      "upright_keywords": [
+      "uprightKeywords": [
         "confidence",
         "independence",
         "social butterfly",
         "determination",
         "warmth"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "selfishness",
         "jealousy",
         "insecurity",
@@ -1487,7 +1487,7 @@
           "reversed": "Selfish about health or wellness jealousy. Fitness insecurity. Demanding about body needs. Low confidence in physical abilities."
         }
       },
-      "prompt_context": "Queen of Wands represents confident feminine fire energy. Focus on independence, warmth, and social leadership."
+      "promptContext": "Queen of Wands represents confident feminine fire energy. Focus on independence, warmth, and social leadership."
     },
 
     "king_wands": {
@@ -1497,14 +1497,14 @@
       "number": 14,
       "element": "Fire",
       "zodiac": "Fire of Fire",
-      "upright_keywords": [
+      "uprightKeywords": [
         "natural leader",
         "vision",
         "entrepreneur",
         "honor",
         "big picture thinking"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "impulsiveness",
         "haste",
         "ruthless",
@@ -1529,7 +1529,7 @@
           "reversed": "Impulsive about health or hasty wellness decisions. Ruthless fitness expectations. Forceful approach to physical goals."
         }
       },
-      "prompt_context": "King of Wands represents mature masculine fire energy. Focus on visionary leadership and entrepreneurial spirit."
+      "promptContext": "King of Wands represents mature masculine fire energy. Focus on visionary leadership and entrepreneurial spirit."
     },
 
     "ace_cups": {
@@ -1539,14 +1539,14 @@
       "number": 1,
       "element": "Water",
       "zodiac": "Water signs",
-      "upright_keywords": [
+      "uprightKeywords": [
         "new love",
         "emotional beginning",
         "spiritual awakening",
         "intuition",
         "compassion"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "emotional blocks",
         "lack of love",
         "emptiness",
@@ -1570,7 +1570,7 @@
           "reversed": "Blocked emotional healing or wellness emptiness. Lack of self-compassion. Repressed health emotions."
         }
       },
-      "prompt_context": "Ace of Cups represents new emotional beginnings. Focus on love, compassion, and spiritual awakening."
+      "promptContext": "Ace of Cups represents new emotional beginnings. Focus on love, compassion, and spiritual awakening."
     },
 
     "two_cups": {
@@ -1580,14 +1580,14 @@
       "number": 2,
       "element": "Water",
       "zodiac": "Venus in Cancer",
-      "upright_keywords": [
+      "uprightKeywords": [
         "partnership",
         "mutual attraction",
         "unity",
         "connection",
         "balanced relationship"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "imbalance",
         "broken relationship",
         "lack of harmony",
@@ -1611,7 +1611,7 @@
           "reversed": "Health imbalance or broken wellness harmony. Disconnection from body needs. Unequal physical dynamics."
         }
       },
-      "prompt_context": "Two of Cups represents partnership and mutual attraction. Focus on connection, balance, and harmony."
+      "promptContext": "Two of Cups represents partnership and mutual attraction. Focus on connection, balance, and harmony."
     },
 
     "three_cups": {
@@ -1621,14 +1621,14 @@
       "number": 3,
       "element": "Water",
       "zodiac": "Mercury in Cancer",
-      "upright_keywords": [
+      "uprightKeywords": [
         "friendship",
         "celebration",
         "community",
         "creativity",
         "collaboration"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "gossip",
         "isolation",
         "broken friendships",
@@ -1652,7 +1652,7 @@
           "reversed": "Health gossip or isolation from wellness community. Broken fitness friendships. Creative blocks in healing."
         }
       },
-      "prompt_context": "Three of Cups represents celebration and community. Focus on friendship, creativity, and group support."
+      "promptContext": "Three of Cups represents celebration and community. Focus on friendship, creativity, and group support."
     },
 
     "four_cups": {
@@ -1662,14 +1662,14 @@
       "number": 4,
       "element": "Water",
       "zodiac": "Moon in Cancer",
-      "upright_keywords": [
+      "uprightKeywords": [
         "apathy",
         "boredom",
         "missed opportunities",
         "introspection",
         "meditation"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "awareness",
         "accepting opportunities",
         "renewed interest",
@@ -1693,7 +1693,7 @@
           "reversed": "Health awareness or accepting new wellness opportunities. Renewed fitness interest. Motivation in healing."
         }
       },
-      "prompt_context": "Four of Cups represents apathy and missed opportunities. Focus on awareness and accepting new possibilities."
+      "promptContext": "Four of Cups represents apathy and missed opportunities. Focus on awareness and accepting new possibilities."
     },
 
     "five_cups": {
@@ -1703,14 +1703,14 @@
       "number": 5,
       "element": "Water",
       "zodiac": "Mars in Scorpio",
-      "upright_keywords": [
+      "uprightKeywords": [
         "disappointment",
         "loss",
         "grief",
         "regret",
         "emotional pain"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "recovery",
         "forgiveness",
         "moving on",
@@ -1735,7 +1735,7 @@
           "reversed": "Recovery from health loss. Forgiveness with body. Moving on from wellness disappointment. Healing physical wounds."
         }
       },
-      "prompt_context": "Five of Cups represents loss and disappointment. When reversed, focus on recovery and moving forward."
+      "promptContext": "Five of Cups represents loss and disappointment. When reversed, focus on recovery and moving forward."
     },
 
     "six_cups": {
@@ -1745,14 +1745,14 @@
       "number": 6,
       "element": "Water",
       "zodiac": "Sun in Scorpio",
-      "upright_keywords": [
+      "uprightKeywords": [
         "nostalgia",
         "childhood memories",
         "innocence",
         "reunion",
         "past connections"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "living in past",
         "unrealistic expectations",
         "lack of progress"
@@ -1775,7 +1775,7 @@
           "reversed": "Living in health past or unrealistic wellness expectations. Lack of physical progress. Stuck in old healing patterns."
         }
       },
-      "prompt_context": "Six of Cups represents nostalgia and innocence. Focus on past connections while encouraging forward movement."
+      "promptContext": "Six of Cups represents nostalgia and innocence. Focus on past connections while encouraging forward movement."
     },
 
     "seven_cups": {
@@ -1785,14 +1785,14 @@
       "number": 7,
       "element": "Water",
       "zodiac": "Venus in Scorpio",
-      "upright_keywords": [
+      "uprightKeywords": [
         "illusion",
         "choices",
         "wishful thinking",
         "unrealistic",
         "fantasy"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "clarity",
         "making decisions",
         "reality check",
@@ -1816,7 +1816,7 @@
           "reversed": "Health clarity and making wellness decisions. Reality check about physical needs. Focus on realistic healing goals."
         }
       },
-      "prompt_context": "Seven of Cups represents illusion and too many choices. Focus on clarity and realistic decision-making."
+      "promptContext": "Seven of Cups represents illusion and too many choices. Focus on clarity and realistic decision-making."
     },
 
     "eight_cups": {
@@ -1826,14 +1826,14 @@
       "number": 8,
       "element": "Water",
       "zodiac": "Saturn in Pisces",
-      "upright_keywords": [
+      "uprightKeywords": [
         "walking away",
         "seeking meaning",
         "spiritual journey",
         "abandonment",
         "moving on"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "avoiding problems",
         "fear of commitment",
         "stagnation",
@@ -1857,7 +1857,7 @@
           "reversed": "Avoiding health problems or fear of wellness commitment. Physical stagnation. Staying stuck in unfulfilling healing approach."
         }
       },
-      "prompt_context": "Eight of Cups represents walking away to find deeper meaning. Focus on spiritual growth and moving beyond the superficial."
+      "promptContext": "Eight of Cups represents walking away to find deeper meaning. Focus on spiritual growth and moving beyond the superficial."
     },
 
     "nine_cups": {
@@ -1867,14 +1867,14 @@
       "number": 9,
       "element": "Water",
       "zodiac": "Jupiter in Pisces",
-      "upright_keywords": [
+      "uprightKeywords": [
         "satisfaction",
         "contentment",
         "emotional fulfillment",
         "wishes granted",
         "luxury"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "greed",
         "dissatisfaction",
         "smugness",
@@ -1899,7 +1899,7 @@
           "reversed": "Health greed or dissatisfaction with wellness. Smugness about fitness. Materialism affecting healing. Unfulfilled physical wishes."
         }
       },
-      "prompt_context": "Nine of Cups represents emotional fulfillment and satisfaction. Focus on gratitude while warning against smugness."
+      "promptContext": "Nine of Cups represents emotional fulfillment and satisfaction. Focus on gratitude while warning against smugness."
     },
 
     "ten_cups": {
@@ -1909,14 +1909,14 @@
       "number": 10,
       "element": "Water",
       "zodiac": "Mars in Pisces",
-      "upright_keywords": [
+      "uprightKeywords": [
         "emotional fulfillment",
         "happiness",
         "harmony",
         "family",
         "blessed"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "broken family",
         "disharmony",
         "disconnection",
@@ -1940,7 +1940,7 @@
           "reversed": "Broken health family or wellness disharmony. Disconnection from physical happiness. Unfulfilled healing completion."
         }
       },
-      "prompt_context": "Ten of Cups represents complete emotional fulfillment. Focus on happiness, harmony, and family connections."
+      "promptContext": "Ten of Cups represents complete emotional fulfillment. Focus on happiness, harmony, and family connections."
     },
 
     "page_cups": {
@@ -1950,14 +1950,14 @@
       "number": 11,
       "element": "Water",
       "zodiac": "Earth of Water",
-      "upright_keywords": [
+      "uprightKeywords": [
         "emotional messenger",
         "intuitive",
         "artistic",
         "sensitive",
         "dreamy"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "emotional immaturity",
         "moodiness",
         "escapism",
@@ -1981,7 +1981,7 @@
           "reversed": "Health emotional immaturity or moody wellness behavior. Escapism from physical reality. Unrealistic healing expectations."
         }
       },
-      "prompt_context": "Page of Cups represents emotional sensitivity and intuition. Focus on artistic expression while encouraging emotional maturity."
+      "promptContext": "Page of Cups represents emotional sensitivity and intuition. Focus on artistic expression while encouraging emotional maturity."
     },
 
     "knight_cups": {
@@ -1991,14 +1991,14 @@
       "number": 12,
       "element": "Water",
       "zodiac": "Air of Water",
-      "upright_keywords": [
+      "uprightKeywords": [
         "romance",
         "charm",
         "idealism",
         "following heart",
         "proposals"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "unrealistic",
         "jealousy",
         "moodiness",
@@ -2022,7 +2022,7 @@
           "reversed": "Unrealistic health expectations or wellness jealousy. Moody physical behavior. Health disappointment and broken promises."
         }
       },
-      "prompt_context": "Knight of Cups represents romantic idealism and following the heart. Focus on charm while warning about unrealistic expectations."
+      "promptContext": "Knight of Cups represents romantic idealism and following the heart. Focus on charm while warning about unrealistic expectations."
     },
 
     "queen_cups": {
@@ -2032,14 +2032,14 @@
       "number": 13,
       "element": "Water",
       "zodiac": "Water of Water",
-      "upright_keywords": [
+      "uprightKeywords": [
         "emotional security",
         "intuitive",
         "compassionate",
         "calm",
         "comfort"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "insecurity",
         "giving too much",
         "martyrdom",
@@ -2063,7 +2063,7 @@
           "reversed": "Health insecurity or giving too much to wellness. Martyrdom with healing. Codependent physical patterns."
         }
       },
-      "prompt_context": "Queen of Cups represents emotional mastery and compassion. Focus on intuitive wisdom while warning about codependency."
+      "promptContext": "Queen of Cups represents emotional mastery and compassion. Focus on intuitive wisdom while warning about codependency."
     },
 
     "king_cups": {
@@ -2073,14 +2073,14 @@
       "number": 14,
       "element": "Water",
       "zodiac": "Fire of Water",
-      "upright_keywords": [
+      "uprightKeywords": [
         "emotional balance",
         "wisdom",
         "diplomacy",
         "compassion",
         "control"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "emotional manipulation",
         "moodiness",
         "volatility",
@@ -2104,7 +2104,7 @@
           "reversed": "Health emotional manipulation or moody wellness behavior. Volatile physical dynamics. Suppressing healing emotions."
         }
       },
-      "prompt_context": "King of Cups represents emotional mastery and wise compassion. Focus on balanced leadership while warning about manipulation."
+      "promptContext": "King of Cups represents emotional mastery and wise compassion. Focus on balanced leadership while warning about manipulation."
     },
 
     "ace_swords": {
@@ -2114,7 +2114,7 @@
       "number": 1,
       "element": "Air",
       "zodiac": "Air signs",
-      "upright_keywords": [
+      "uprightKeywords": [
         "breakthrough",
         "clarity",
         "new ideas",
@@ -2122,7 +2122,7 @@
         "truth",
         "communication"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "confusion",
         "miscommunication",
         "lack of clarity",
@@ -2146,7 +2146,7 @@
           "reversed": "Health confusion or medical miscommunication. Lack of wellness clarity. Mental blocks affecting healing."
         }
       },
-      "prompt_context": "Ace of Swords represents mental breakthroughs. Focus on clarity, truth, and the power of clear communication."
+      "promptContext": "Ace of Swords represents mental breakthroughs. Focus on clarity, truth, and the power of clear communication."
     },
 
     "two_swords": {
@@ -2156,14 +2156,14 @@
       "number": 2,
       "element": "Air",
       "zodiac": "Moon in Libra",
-      "upright_keywords": [
+      "uprightKeywords": [
         "indecision",
         "stalemate",
         "avoiding truth",
         "difficult choice",
         "blocked"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "clarity",
         "making decisions",
         "truth revealed",
@@ -2187,7 +2187,7 @@
           "reversed": "Health clarity and making wellness decisions. Truth revealed in healing. Movement forward in physical care."
         }
       },
-      "prompt_context": "Two of Swords represents difficult decisions and mental blocks. Focus on finding clarity and making necessary choices."
+      "promptContext": "Two of Swords represents difficult decisions and mental blocks. Focus on finding clarity and making necessary choices."
     },
 
     "three_swords": {
@@ -2197,14 +2197,14 @@
       "number": 3,
       "element": "Air",
       "zodiac": "Saturn in Libra",
-      "upright_keywords": [
+      "uprightKeywords": [
         "heartbreak",
         "betrayal",
         "grief",
         "sorrow",
         "emotional pain"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "healing",
         "forgiveness",
         "recovery",
@@ -2229,7 +2229,7 @@
           "reversed": "Healing from health heartbreak. Forgiveness with body. Recovery from wellness betrayal. Moving on from physical loss."
         }
       },
-      "prompt_context": "Three of Swords represents heartbreak and emotional pain. When reversed, focus on healing and forgiveness."
+      "promptContext": "Three of Swords represents heartbreak and emotional pain. When reversed, focus on healing and forgiveness."
     },
 
     "four_swords": {
@@ -2239,14 +2239,14 @@
       "number": 4,
       "element": "Air",
       "zodiac": "Jupiter in Libra",
-      "upright_keywords": [
+      "uprightKeywords": [
         "rest",
         "recovery",
         "meditation",
         "peace",
         "mental break"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "restlessness",
         "burnout",
         "lack of progress",
@@ -2270,7 +2270,7 @@
           "reversed": "Health restlessness or wellness burnout. Lack of physical progress. Avoiding necessary healing rest."
         }
       },
-      "prompt_context": "Four of Swords represents rest and recovery. Focus on the need for mental breaks and peaceful reflection."
+      "promptContext": "Four of Swords represents rest and recovery. Focus on the need for mental breaks and peaceful reflection."
     },
 
     "five_swords": {
@@ -2280,14 +2280,14 @@
       "number": 5,
       "element": "Air",
       "zodiac": "Venus in Aquarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "conflict",
         "defeat",
         "betrayal",
         "winning at all costs",
         "hostility"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "reconciliation",
         "making amends",
         "forgiveness",
@@ -2311,7 +2311,7 @@
           "reversed": "Health reconciliation and making wellness amends. Forgiveness with body. Moving on from physical conflict."
         }
       },
-      "prompt_context": "Five of Swords represents conflict and hollow victory. Focus on the cost of winning and the value of reconciliation."
+      "promptContext": "Five of Swords represents conflict and hollow victory. Focus on the cost of winning and the value of reconciliation."
     },
 
     "six_swords": {
@@ -2321,14 +2321,14 @@
       "number": 6,
       "element": "Air",
       "zodiac": "Mercury in Aquarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "transition",
         "moving forward",
         "leaving behind",
         "journey",
         "progress"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "stuck in past",
         "resistance to change",
         "rough waters",
@@ -2352,7 +2352,7 @@
           "reversed": "Stuck in health past or resisting wellness change. Rough healing waters. Delayed progress in physical recovery."
         }
       },
-      "prompt_context": "Six of Swords represents transition and moving forward. Focus on leaving troubles behind and making progress."
+      "promptContext": "Six of Swords represents transition and moving forward. Focus on leaving troubles behind and making progress."
     },
 
     "seven_swords": {
@@ -2362,14 +2362,14 @@
       "number": 7,
       "element": "Air",
       "zodiac": "Moon in Aquarius",
-      "upright_keywords": [
+      "uprightKeywords": [
         "deception",
         "strategy",
         "getting away with something",
         "stealth",
         "theft"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "confession",
         "coming clean",
         "honesty",
@@ -2393,7 +2393,7 @@
           "reversed": "Health confession and coming clean with wellness. Honesty about physical needs. Getting caught in healing deception."
         }
       },
-      "prompt_context": "Seven of Swords represents deception and strategy. Focus on hidden agendas and the consequences of dishonesty."
+      "promptContext": "Seven of Swords represents deception and strategy. Focus on hidden agendas and the consequences of dishonesty."
     },
 
     "eight_swords": {
@@ -2403,14 +2403,14 @@
       "number": 8,
       "element": "Air",
       "zodiac": "Jupiter in Gemini",
-      "upright_keywords": [
+      "uprightKeywords": [
         "restriction",
         "limitation",
         "trapped",
         "victim mentality",
         "helplessness"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "freedom",
         "empowerment",
         "breaking free",
@@ -2434,7 +2434,7 @@
           "reversed": "Health freedom and breaking free from wellness restrictions. Self-liberation in healing. Empowerment with physical recovery."
         }
       },
-      "prompt_context": "Eight of Swords represents feeling trapped by limiting beliefs. Focus on self-liberation and recognizing personal power."
+      "promptContext": "Eight of Swords represents feeling trapped by limiting beliefs. Focus on self-liberation and recognizing personal power."
     },
 
     "nine_swords": {
@@ -2444,14 +2444,14 @@
       "number": 9,
       "element": "Air",
       "zodiac": "Mars in Gemini",
-      "upright_keywords": [
+      "uprightKeywords": [
         "anxiety",
         "worry",
         "nightmares",
         "mental anguish",
         "guilt"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "recovery",
         "overcoming fear",
         "healing",
@@ -2476,7 +2476,7 @@
           "reversed": "Recovery from health anxiety. Overcoming wellness fears. Healing physical worry. Hope returning to body recovery."
         }
       },
-      "prompt_context": "Nine of Swords represents anxiety and mental anguish. Focus on addressing fears and finding hope in difficult times."
+      "promptContext": "Nine of Swords represents anxiety and mental anguish. Focus on addressing fears and finding hope in difficult times."
     },
 
     "ten_swords": {
@@ -2486,14 +2486,14 @@
       "number": 10,
       "element": "Air",
       "zodiac": "Sun in Gemini",
-      "upright_keywords": [
+      "uprightKeywords": [
         "betrayal",
         "backstabbing",
         "defeat",
         "rock bottom",
         "ending"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "recovery",
         "regeneration",
         "resisting ending",
@@ -2517,7 +2517,7 @@
           "reversed": "Recovery from health betrayal. Regenerating from wellness defeat. Surviving physical disaster. Resisting healing ending."
         }
       },
-      "prompt_context": "Ten of Swords represents rock bottom and painful endings. When reversed, focus on recovery and the dawn of new beginnings."
+      "promptContext": "Ten of Swords represents rock bottom and painful endings. When reversed, focus on recovery and the dawn of new beginnings."
     },
 
     "page_swords": {
@@ -2527,14 +2527,14 @@
       "number": 11,
       "element": "Air",
       "zodiac": "Earth of Air",
-      "upright_keywords": [
+      "uprightKeywords": [
         "curiosity",
         "restless energy",
         "communication",
         "learning",
         "spying"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "haste",
         "unfocused energy",
         "all talk no action",
@@ -2558,7 +2558,7 @@
           "reversed": "Hasty health decisions or unfocused wellness energy. All talk no action in healing. Defensiveness about physical needs."
         }
       },
-      "prompt_context": "Page of Swords represents youthful curiosity and communication. Focus on learning while encouraging focused action."
+      "promptContext": "Page of Swords represents youthful curiosity and communication. Focus on learning while encouraging focused action."
     },
 
     "knight_swords": {
@@ -2568,14 +2568,14 @@
       "number": 12,
       "element": "Air",
       "zodiac": "Air of Air",
-      "upright_keywords": [
+      "uprightKeywords": [
         "action",
         "impulsiveness",
         "rushed decisions",
         "brave",
         "direct"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "reckless",
         "unfocused",
         "lack of planning",
@@ -2599,7 +2599,7 @@
           "reversed": "Reckless health behavior or unfocused wellness energy. Lack of healing planning. Aggressive approach to physical recovery."
         }
       },
-      "prompt_context": "Knight of Swords represents impulsive action and directness. Focus on courage while warning about recklessness."
+      "promptContext": "Knight of Swords represents impulsive action and directness. Focus on courage while warning about recklessness."
     },
 
     "queen_swords": {
@@ -2609,14 +2609,14 @@
       "number": 13,
       "element": "Air",
       "zodiac": "Water of Air",
-      "upright_keywords": [
+      "uprightKeywords": [
         "independent",
         "direct communication",
         "honest",
         "perceptive",
         "witty"
       ],
-      "reversed_keywords": ["harsh", "bitter", "cold", "cruel", "cutting"],
+      "reversedKeywords": ["harsh", "bitter", "cold", "cruel", "cutting"],
       "meanings": {
         "love": {
           "upright": "Independent in love and direct romantic communication. Honest relationship approach. Perceptive and witty in partnership.",
@@ -2635,7 +2635,7 @@
           "reversed": "Harsh with health or bitter wellness attitude. Cold healing approach. Cruel and cutting words about physical condition."
         }
       },
-      "prompt_context": "Queen of Swords represents independent thinking and clear communication. Focus on honesty while avoiding harshness."
+      "promptContext": "Queen of Swords represents independent thinking and clear communication. Focus on honesty while avoiding harshness."
     },
 
     "king_swords": {
@@ -2645,14 +2645,14 @@
       "number": 14,
       "element": "Air",
       "zodiac": "Fire of Air",
-      "upright_keywords": [
+      "uprightKeywords": [
         "intellectual",
         "analytical",
         "ethical",
         "truth",
         "authority"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "manipulative",
         "tyrannical",
         "abusive",
@@ -2677,7 +2677,7 @@
           "reversed": "Manipulative health behavior or tyrannical wellness control. Abusive physical dynamics. Ruthless and controlling with body."
         }
       },
-      "prompt_context": "King of Swords represents intellectual authority and ethical leadership. Focus on truth and justice while avoiding tyranny."
+      "promptContext": "King of Swords represents intellectual authority and ethical leadership. Focus on truth and justice while avoiding tyranny."
     },
 
     "ace_pentacles": {
@@ -2687,14 +2687,14 @@
       "number": 1,
       "element": "Earth",
       "zodiac": "Earth signs",
-      "upright_keywords": [
+      "uprightKeywords": [
         "new financial opportunity",
         "manifestation",
         "abundance",
         "material beginning",
         "prosperity"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "missed opportunity",
         "financial delays",
         "scarcity mindset",
@@ -2718,7 +2718,7 @@
           "reversed": "Missing health opportunities or wellness delays. Scarcity mindset in physical care. Material blocks to healing abundance."
         }
       },
-      "prompt_context": "Ace of Pentacles represents new material opportunities and the beginning of abundance. Focus on manifestation, prosperity, and practical beginnings."
+      "promptContext": "Ace of Pentacles represents new material opportunities and the beginning of abundance. Focus on manifestation, prosperity, and practical beginnings."
     },
 
     "two_pentacles": {
@@ -2728,14 +2728,14 @@
       "number": 2,
       "element": "Earth",
       "zodiac": "Jupiter in Capricorn",
-      "upright_keywords": [
+      "uprightKeywords": [
         "balance",
         "adaptability",
         "juggling priorities",
         "flexibility",
         "multitasking"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "imbalance",
         "overwhelmed",
         "disorganized",
@@ -2759,7 +2759,7 @@
           "reversed": "Health imbalance or overwhelmed by wellness demands. Disorganized healing approach. Poor self-care management."
         }
       },
-      "prompt_context": "Two of Pentacles represents balance and adaptability. Focus on managing multiple priorities while maintaining flexibility."
+      "promptContext": "Two of Pentacles represents balance and adaptability. Focus on managing multiple priorities while maintaining flexibility."
     },
 
     "three_pentacles": {
@@ -2769,14 +2769,14 @@
       "number": 3,
       "element": "Earth",
       "zodiac": "Mars in Capricorn",
-      "upright_keywords": [
+      "uprightKeywords": [
         "teamwork",
         "collaboration",
         "skill building",
         "learning",
         "community"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of teamwork",
         "disharmony",
         "working alone",
@@ -2800,7 +2800,7 @@
           "reversed": "Lack of health teamwork or wellness disharmony. Working alone with healing. Lack of fitness skills."
         }
       },
-      "prompt_context": "Three of Pentacles represents teamwork and skill building. Focus on collaboration and learning from others."
+      "promptContext": "Three of Pentacles represents teamwork and skill building. Focus on collaboration and learning from others."
     },
 
     "four_pentacles": {
@@ -2810,14 +2810,14 @@
       "number": 4,
       "element": "Earth",
       "zodiac": "Sun in Capricorn",
-      "upright_keywords": [
+      "uprightKeywords": [
         "security",
         "control",
         "conservatism",
         "hoarding",
         "possessiveness"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "generosity",
         "sharing",
         "letting go",
@@ -2842,7 +2842,7 @@
           "reversed": "Health generosity and sharing wellness knowledge. Letting go of healing control. Openness to new physical approaches."
         }
       },
-      "prompt_context": "Four of Pentacles represents security and control. Focus on finding balance between saving and sharing."
+      "promptContext": "Four of Pentacles represents security and control. Focus on finding balance between saving and sharing."
     },
 
     "five_pentacles": {
@@ -2852,14 +2852,14 @@
       "number": 5,
       "element": "Earth",
       "zodiac": "Mercury in Taurus",
-      "upright_keywords": [
+      "uprightKeywords": [
         "financial loss",
         "poverty",
         "hardship",
         "isolation",
         "insecurity"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "recovery",
         "charity",
         "improvement",
@@ -2884,7 +2884,7 @@
           "reversed": "Recovery from health hardship. Receiving wellness charity and help. Improvement in physical security."
         }
       },
-      "prompt_context": "Five of Pentacles represents hardship and lack. When reversed, focus on recovery and accepting help."
+      "promptContext": "Five of Pentacles represents hardship and lack. When reversed, focus on recovery and accepting help."
     },
 
     "six_pentacles": {
@@ -2894,14 +2894,14 @@
       "number": 6,
       "element": "Earth",
       "zodiac": "Moon in Taurus",
-      "upright_keywords": [
+      "uprightKeywords": [
         "charity",
         "generosity",
         "sharing",
         "fairness",
         "reciprocity"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "strings attached",
         "inequality",
         "debt",
@@ -2925,7 +2925,7 @@
           "reversed": "Health with strings attached or wellness inequality. Physical debt. Selfishness with body care."
         }
       },
-      "prompt_context": "Six of Pentacles represents charity and fair exchange. Focus on balanced giving and receiving."
+      "promptContext": "Six of Pentacles represents charity and fair exchange. Focus on balanced giving and receiving."
     },
 
     "seven_pentacles": {
@@ -2935,14 +2935,14 @@
       "number": 7,
       "element": "Earth",
       "zodiac": "Saturn in Taurus",
-      "upright_keywords": [
+      "uprightKeywords": [
         "investment",
         "patience",
         "long-term view",
         "perseverance",
         "assessment"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "impatience",
         "lack of reward",
         "poor investment",
@@ -2966,7 +2966,7 @@
           "reversed": "Health impatience or lack of wellness reward. Poor physical investment. Giving up on healing too easily."
         }
       },
-      "prompt_context": "Seven of Pentacles represents patience and long-term investment. Focus on assessing progress and persevering."
+      "promptContext": "Seven of Pentacles represents patience and long-term investment. Focus on assessing progress and persevering."
     },
 
     "eight_pentacles": {
@@ -2976,14 +2976,14 @@
       "number": 8,
       "element": "Earth",
       "zodiac": "Sun in Virgo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "mastery",
         "skill development",
         "hard work",
         "dedication",
         "craftsmanship"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of focus",
         "mediocrity",
         "laziness",
@@ -3007,7 +3007,7 @@
           "reversed": "Lack of health focus or wellness mediocrity. Laziness with physical care. Taking shortcuts in healing development."
         }
       },
-      "prompt_context": "Eight of Pentacles represents mastery through dedicated practice. Focus on skill development and craftsmanship."
+      "promptContext": "Eight of Pentacles represents mastery through dedicated practice. Focus on skill development and craftsmanship."
     },
 
     "nine_pentacles": {
@@ -3017,14 +3017,14 @@
       "number": 9,
       "element": "Earth",
       "zodiac": "Venus in Virgo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "independence",
         "luxury",
         "self-reliance",
         "financial security",
         "discipline"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "financial dependence",
         "materialism",
         "work-life imbalance",
@@ -3048,7 +3048,7 @@
           "reversed": "Health dependence or materialistic wellness approach. Health-life imbalance. Lack of physical discipline."
         }
       },
-      "prompt_context": "Nine of Pentacles represents independence and self-reliance. Focus on enjoying the fruits of disciplined effort."
+      "promptContext": "Nine of Pentacles represents independence and self-reliance. Focus on enjoying the fruits of disciplined effort."
     },
 
     "ten_pentacles": {
@@ -3058,14 +3058,14 @@
       "number": 10,
       "element": "Earth",
       "zodiac": "Mercury in Virgo",
-      "upright_keywords": [
+      "uprightKeywords": [
         "legacy",
         "inheritance",
         "family wealth",
         "tradition",
         "long-term success"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "family disputes",
         "lack of stability",
         "short-term thinking",
@@ -3089,7 +3089,7 @@
           "reversed": "Health family disputes or lack of wellness stability. Short-term healing thinking. Loss of physical legacy."
         }
       },
-      "prompt_context": "Ten of Pentacles represents legacy and generational wealth. Focus on long-term success and family traditions."
+      "promptContext": "Ten of Pentacles represents legacy and generational wealth. Focus on long-term success and family traditions."
     },
 
     "page_pentacles": {
@@ -3099,14 +3099,14 @@
       "number": 11,
       "element": "Earth",
       "zodiac": "Earth of Earth",
-      "upright_keywords": [
+      "uprightKeywords": [
         "manifestation",
         "new opportunities",
         "skill development",
         "ambition",
         "study"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "lack of commitment",
         "procrastination",
         "laziness",
@@ -3130,7 +3130,7 @@
           "reversed": "Lack of health commitment or wellness procrastination. Lazy about physical development. Lack of healing progress."
         }
       },
-      "prompt_context": "Page of Pentacles represents new opportunities and skill development. Focus on practical learning and steady progress."
+      "promptContext": "Page of Pentacles represents new opportunities and skill development. Focus on practical learning and steady progress."
     },
 
     "knight_pentacles": {
@@ -3140,14 +3140,14 @@
       "number": 12,
       "element": "Earth",
       "zodiac": "Air of Earth",
-      "upright_keywords": [
+      "uprightKeywords": [
         "reliability",
         "responsibility",
         "hard work",
         "routine",
         "methodical"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "stubbornness",
         "laziness",
         "obsessiveness",
@@ -3172,7 +3172,7 @@
           "reversed": "Stubborn health behavior or lazy wellness approach. Obsessive about physical care. Workaholic fitness becoming boring."
         }
       },
-      "prompt_context": "Knight of Pentacles represents reliability and methodical progress. Focus on steady effort while avoiding stubbornness."
+      "promptContext": "Knight of Pentacles represents reliability and methodical progress. Focus on steady effort while avoiding stubbornness."
     },
 
     "queen_pentacles": {
@@ -3182,14 +3182,14 @@
       "number": 13,
       "element": "Earth",
       "zodiac": "Water of Earth",
-      "upright_keywords": [
+      "uprightKeywords": [
         "nurturing",
         "practical",
         "down-to-earth",
         "security",
         "abundance"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "self-centeredness",
         "jealousy",
         "materialistic",
@@ -3213,7 +3213,7 @@
           "reversed": "Self-centered health behavior or materialistic wellness approach. Jealous about fitness. Neglecting physical self-care."
         }
       },
-      "prompt_context": "Queen of Pentacles represents nurturing abundance and practical wisdom. Focus on caring for others while maintaining balance."
+      "promptContext": "Queen of Pentacles represents nurturing abundance and practical wisdom. Focus on caring for others while maintaining balance."
     },
 
     "king_pentacles": {
@@ -3223,14 +3223,14 @@
       "number": 14,
       "element": "Earth",
       "zodiac": "Fire of Earth",
-      "upright_keywords": [
+      "uprightKeywords": [
         "financial success",
         "leadership",
         "security",
         "generosity",
         "business acumen"
       ],
-      "reversed_keywords": [
+      "reversedKeywords": [
         "greed",
         "materialism",
         "financial instability",
@@ -3255,7 +3255,7 @@
           "reversed": "Greedy health behavior or materialistic wellness approach. Physical instability. Stubborn healing approach with body corruption."
         }
       },
-      "prompt_context": "King of Pentacles represents material mastery and generous leadership. Focus on success while avoiding greed and materialism."
+      "promptContext": "King of Pentacles represents material mastery and generous leadership. Focus on success while avoiding greed and materialism."
     }
   }
 }

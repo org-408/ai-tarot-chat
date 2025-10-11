@@ -1,0 +1,6 @@
+code,name,description,price,requiresAuth,maxReadings,maxCeltics,maxPersonal,hasPersonal,hasHistory,isActive,primaryColor,secondaryColor,accentColor,features
+GUEST,ゲスト,簡単なタロットリーディングを無料で体験,0,false,1,0,0,false,false,true,#FAFAFA,#F3F4F6,#9CA3AF,ユーザー登録なしでお気軽に体験;1日1回のみ利用可能;基本スプレッド(3種類);恋愛・仕事・今日の運勢;広告表示あり
+FREE,フリー,占い回数が少し増え、占った履歴も残せます,0,true,3,0,0,false,true,true,#F0FDF4,#86EFAC,#22C55E,ユーザー登録でさらに楽しめます;1日3回まで利用可能;占い履歴を保存可能;基本スプレッド(3種類);恋愛・仕事・今日の運勢;広告表示あり
+STANDARD,スタンダード,多彩な占いカテゴリとスプレッドを体験。広告なしで快適に,480,true,3,1,0,false,true,true,#EFF6FF,#BFDBFE,#3B82F6,多彩な占いカテゴリ;1日3回7枚以内スプレッドが利用可能;または、1日1回ケルト十字が利用可能;占い履歴を保存可能;広告表示なし
+PREMIUM,プレミアム,占う内容の入力と詳細な解説、簡単な対話を提供,980,true,3,3,1,true,true,true,#FEFCE8,#FDE047,#EAB308,多彩な占いカテゴリ;1日3回まですべてのスプレッドが利用可能;1日1回パーソナル占いが利用可能;*パーソナル占いでは、占う内容の入力、結果への質問が可能;占い履歴を保存可能;広告表示なし
+MASTER,マスター,詳細な解説と全スプレッド、詳細な対話を提供,1980,true,3,3,1,true,true,false,#FAF5FF,#E9D5FF,#A855F7,最上級レベルまでのすべてのスプレッド;多彩な占いカテゴリ;1日3回まですべてのスプレッドが利用可能;1日1回詳細パーソナル占いが利用可能(TBD);*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能;占い履歴を保存可能;広告表示なし

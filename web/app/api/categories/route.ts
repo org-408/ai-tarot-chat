@@ -1,5 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import { getReadingCategories } from "@/lib/services/master";
+import { spreadService } from "@/lib/services/spread";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
     { path: "/api/categories" }
   );
   try {
-    const categories = await getReadingCategories();
+    const categories = await spreadService.getAllReadingCategories();
     logWithContext("info", "📍 /api/categories - カテゴリ一覧取得完了", {
       categories,
     });

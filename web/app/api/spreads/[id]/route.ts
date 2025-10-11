@@ -1,9 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import {
-  deleteSpreadById,
-  getSpreadById,
-  updateSpreadById,
-} from "@/lib/services/spread";
+import { spreadService } from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -21,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     { path: `/api/spreads/${id}` }
   );
   try {
-    const spread = await getSpreadById(id);
+    const spread = await spreadService.getSpreadById(id);
     if (!spread) {
       logWithContext("error", `❌ スプレッド(${id})が見つかりません`, {
         status: 404,
@@ -55,7 +51,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   );
   try {
     const data = await request.json();
-    const spread = await updateSpreadById(id, data);
+    const spread = await spreadService.updateSpreadById(id, data);
     logWithContext("info", `✅ スプレッド(${id})更新完了`, { spread });
     return NextResponse.json(spread);
   } catch (error) {
@@ -79,7 +75,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     { path: `/api/spreads/${id}` }
   );
   try {
-    await deleteSpreadById(id);
+    await spreadService.deleteSpreadById(id);
     logWithContext("info", `✅ スプレッド(${id})削除完了`);
     return NextResponse.json({ success: true });
   } catch (error) {

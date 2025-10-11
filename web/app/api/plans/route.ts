@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
-import { getPlans } from "@/lib/services/master";
+import { planService } from "@/lib/services/plan";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     logWithContext("info", `✅ セッション検証完了`, { payload });
 
     // マスターデータからプラン一覧取得
-    const plans = await getPlans();
+    const plans = await planService.getPlans();
     logWithContext("info", "📍 /api/plans - プラン一覧取得完了", {
       plans,
     });

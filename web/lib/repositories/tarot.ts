@@ -1,75 +1,76 @@
-import type { CardMeaning, TarotCard, TarotDeck } from "@/../shared/lib/types";
+import type {
+  CardMeaning,
+  TarotCard,
+  TarotDeck,
+  TarotDeckInput,
+} from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class TarotRepository extends BaseRepository {
   // ==================== TarotDeck ====================
-  async createDeck(
-    deck: Omit<TarotDeck, "id" | "createdAt" | "updatedAt" | "cards">
-  ): Promise<string> {
+  async createDeck(deck: TarotDeckInput): Promise<TarotDeck> {
+    const { cards, ...deckRest } = deck;
     const created = await this.db.tarotDeck.create({
       data: {
-        name: deck.name,
-        version: deck.version,
-        purpose: deck.purpose,
-        totalCards: deck.totalCards,
-        sources: deck.sources,
-        optimizedFor: deck.optimizedFor,
-        primaryFocus: deck.primaryFocus,
-        categories: deck.categories,
-        status: deck.status,
+        ...deckRest,
+        cards: {
+          create: cards.map((card) => {
+            const { meanings, ...cardRest } = card;
+            return {
+              ...cardRest,
+              meanings: {
+                create: meanings.map((meaning) => ({
+                  ...meaning,
+                })),
+              },
+            };
+          }),
+        },
       },
+      include: { cards: { include: { meanings: true } } },
     });
 
-    return created.id;
+    return created;
   }
 
+  // Note: get 系は cards を含めない(別途 TarotCard は全取得する前提)
   async getDeckById(id: string): Promise<TarotDeck | null> {
     return await this.db.tarotDeck.findUnique({
       where: { id },
-      include: { cards: true },
     });
   }
 
-  async getAllDecks(all: boolean = false, language: string = "ja"): Promise<TarotDeck[]> {
+  async getAllDecks(
+    all: boolean = false,
+    language: string = "ja"
+  ): Promise<TarotDeck[]> {
     return await this.db.tarotDeck.findMany({
       where: all ? undefined : { language },
       orderBy: { createdAt: "desc" },
-      include: { cards: true },
     });
   }
 
   async getActiveDeck(): Promise<TarotDeck | null> {
     return await this.db.tarotDeck.findFirst({
       where: { status: "active" },
-      include: { cards: true },
     });
   }
 
   // ==================== TarotCard ====================
   async createCard(
-    card: Omit<
-      TarotCard,
-      "id" | "createdAt" | "updatedAt" | "deck" | "meanings"
-    >
-  ): Promise<string> {
+    card: Omit<TarotCard, "id" | "createdAt" | "updatedAt" | "deck">
+  ): Promise<TarotCard> {
+    const { meanings, ...data } = card;
     const created = await this.db.tarotCard.create({
       data: {
-        no: card.no,
-        code: card.code,
-        name: card.name,
-        type: card.type,
-        number: card.number,
-        suit: card.suit,
-        element: card.element,
-        zodiac: card.zodiac,
-        uprightKeywords: card.uprightKeywords,
-        reversedKeywords: card.reversedKeywords,
-        promptContext: card.promptContext,
-        deckId: card.deckId,
+        ...data,
+        meanings: {
+          create: meanings,
+        },
       },
     });
 
-    return created.id;
+    return created;
   }
 
   async getCardById(id: string): Promise<TarotCard | null> {
@@ -87,8 +88,12 @@ export class TarotRepository extends BaseRepository {
     });
   }
 
-  async getAllCards(): Promise<TarotCard[]> {
+  async getAllCards(
+    all: boolean = false,
+    language: string = "ja"
+  ): Promise<TarotCard[]> {
     return await this.db.tarotCard.findMany({
+      where: all ? undefined : { language },
       orderBy: { no: "asc" },
       include: { meanings: true },
     });

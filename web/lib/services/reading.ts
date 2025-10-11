@@ -1,12 +1,12 @@
-import type { Reading, Spread, TarotCard } from "@/../shared/lib/types";
+import type { Reading } from "@/../shared/lib/types";
 import { clientRepository } from "@/lib/repositories/client";
-import { prisma } from "@/lib/repositories/database";
 import { planRepository } from "@/lib/repositories/plan";
 import { readingRepository } from "@/lib/repositories/reading";
 
 export class ReadingService {
   /**
    * 占い履歴取得（ビジネスロジック）
+   * 読み取り専用のため、トランザクションは不要
    */
   async getReadingHistory(clientId: string, limit = 20): Promise<Reading[]> {
     const client = await clientRepository.getClientById(clientId);
@@ -21,32 +21,6 @@ export class ReadingService {
     }
 
     return await readingRepository.getReadingsByClientId(clientId, limit);
-  }
-
-  async drawRandomCards(
-    readingId: string,
-    cards: TarotCard[],
-    spread: Spread
-  ): Promise<void> {
-    if (!spread.cells) return;
-    const count = spread.cells.length;
-    // Fisher-Yatesシャッフル
-    const shuffled = [...cards];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    await prisma.drawnCard.createMany({
-      data: shuffled.slice(0, count).map((card, index) => ({
-        readingId,
-        cardId: card.id,
-        x: spread.cells![index].x,
-        y: spread.cells![index].y,
-        isReversed: Math.random() < 0.5,
-        order: index,
-      })),
-    });
   }
 }
 

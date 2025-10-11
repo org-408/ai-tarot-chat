@@ -1,5 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import { createSpread, getSpreads } from "@/lib/services/spread";
+import { spreadService } from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 // スプレッド一覧取得
@@ -8,7 +8,7 @@ export async function GET() {
     path: "/api/spreads",
   });
   try {
-    const spreads = await getSpreads();
+    const spreads = await spreadService.getAllSpreads();
     logWithContext("info", "✅ スプレッド一覧取得完了", { spreads });
     return NextResponse.json(spreads);
   } catch (error) {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   });
   try {
     const data = await request.json();
-    const spread = await createSpread(data);
+    const spread = await spreadService.createSpread(data);
     logWithContext("info", "✅ スプレッド作成完了", { spread });
     return NextResponse.json(spread);
   } catch (error) {

@@ -1,21 +1,32 @@
 import { Log } from "../../../shared/lib/types";
 import { clientRepository } from "../repositories";
+import { BaseRepository } from "../repositories/base";
 import { logRepository } from "../repositories/log";
 
 export class LogService {
   async createLog(log: Omit<Log, "id" | "createdAt">): Promise<string> {
     // clientIdが存在しない場合はnullをセット
     const { clientId } = log;
+
     if (clientId) {
-      const clientExists = await clientRepository.getClientById(clientId);
-      if (!clientExists) {
-        log.metadata = {
-          ...log.metadata,
-          invalidClientId: clientId,
-        };
-        log.clientId = null;
-      }
+      // clientの存在確認とログ作成をトランザクション化
+      return BaseRepository.transaction(
+        { client: clientRepository, log: logRepository },
+        async ({ client: clientRepo, log: logRepo }) => {
+          const clientExists = await clientRepo.getClientById(clientId);
+          if (!clientExists) {
+            log.metadata = {
+              ...log.metadata,
+              invalidClientId: clientId,
+            };
+            log.clientId = null;
+          }
+          return logRepo.createLog(log);
+        }
+      );
     }
+
+    // clientIdが存在しない場合は通常のログ作成
     return logRepository.createLog(log);
   }
 

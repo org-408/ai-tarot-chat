@@ -1,8 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import {
-  createSpreadCell,
-  getSpreadCellsBySpreadId,
-} from "@/lib/services/spread";
+import { spreadService } from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -20,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     { path: `/api/spreads/${id}/cells` }
   );
   try {
-    const cells = await getSpreadCellsBySpreadId(id);
+    const cells = await spreadService.getSpreadCellsBySpreadId(id);
     logWithContext("info", `✅ スプレッド(${id})のセル一覧取得完了`, { cells });
     return NextResponse.json(cells);
   } catch (error) {
@@ -45,7 +42,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   );
   try {
     const data = await request.json();
-    const cell = await createSpreadCell(id, data);
+    const cell = await spreadService.createSpreadCell(id, data);
     logWithContext("info", `✅ スプレッド(${id})へのセル追加完了`, { cell });
     return NextResponse.json(cell);
   } catch (error) {

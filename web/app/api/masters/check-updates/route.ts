@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
-import { checkMasterDataUpdates } from "@/lib/services/master";
+import { masterService } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       { clientVersion: version }
     );
 
-    const result = await checkMasterDataUpdates(version);
+    const result = await masterService.checkMasterDataUpdates(version);
 
     logWithContext("info", "✅ マスターデータ更新チェック完了", { result });
 

@@ -496,7 +496,7 @@ async function importSpreads() {
 
 // カードデータの型を定義
 interface CardData {
-  prompt_context: string;
+  promptContext: string;
   name: string;
   type: string;
   number: string;
@@ -504,8 +504,8 @@ interface CardData {
   element: string;
   zodiac: string;
   meanings: Record<string, { upright: string; reversed: string }>;
-  upright_keywords: string[];
-  reversed_keywords: string[];
+  uprightKeywords: string[];
+  reversedKeywords: string[];
 }
 
 // タロットデータのインポート
@@ -527,10 +527,10 @@ async function importTarotDeck() {
         name: "標準タロットデッキ",
         version: tarotData.metadata.version,
         purpose: tarotData.metadata.purpose,
-        totalCards: tarotData.metadata.total_cards,
+        totalCards: tarotData.metadata.totalCards,
         sources: tarotData.metadata.sources,
         optimizedFor: tarotData.metadata.optimized_for,
-        primaryFocus: tarotData.metadata.primary_focus,
+        primaryFocus: tarotData.metadata.primaryFocus,
         categories: tarotData.metadata.categories,
         status: tarotData.metadata.status,
       },
@@ -555,9 +555,9 @@ async function importTarotDeck() {
           suit: cardData.suit,
           element: cardData.element,
           zodiac: cardData.zodiac,
-          uprightKeywords: cardData.upright_keywords || [],
-          reversedKeywords: cardData.reversed_keywords || [],
-          promptContext: cardData.prompt_context,
+          uprightKeywords: cardData.uprightKeywords || [],
+          reversedKeywords: cardData.reversedKeywords || [],
+          promptContext: cardData.promptContext,
           deckId: deck.id,
           // meanings を CardMeaning の形式に変換して作成
           meanings: {

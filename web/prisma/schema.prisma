@@ -311,6 +311,9 @@ model Plan {
   code        String    @unique  // "GUEST", "FREE", "STANDARD", "PREMIUM"
   name        String    // "ゲスト", "フリー", "スタンダード", "プレミアム"
   description String    @db.Text
+  primaryColor   String    // プランのテーマ色（16進数カラーコード）
+  secondaryColor String    // プランのサブテーマ色（16進数カラーコード）
+  accentColor    String    // プランのアクセント色（16進数カラーコード）
   price       Int       @default(0)  // 月額価格または1回あたりの価格
   requiresAuth Boolean   @default(false) // 認証必須かどうか
   isActive    Boolean   @default(true)
@@ -360,7 +363,8 @@ enum ProviderKey {
   GPT
   GROQ
   MISTRAL
-  XAI  
+  XAI
+  OFFLINE
 }
 
 // タロット占い師モデル
@@ -377,8 +381,8 @@ model Tarotist {
   accentColor      String    // 占い師のアクセント色（16進数カラーコード）
   avatarUrl   String?
   provider    ProviderKey?   // 生成AIプロバイダー(将来的には人(null or PRO)も？)
-  cost        String    // 占い師の料金 "1回500円"など
-  quality     Int       @default(1) // 占い師の品質スコア（1-5の範囲）
+  cost        String?    // 占い師の料金 "1回500円"など
+  quality     Int?       @default(1) // 占い師の品質スコア（1-5の範囲）
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?

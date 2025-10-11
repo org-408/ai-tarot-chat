@@ -7,10 +7,9 @@ import {
 } from "@/../shared/lib/types";
 import { auth } from "@/auth";
 import { authRepository } from "@/lib/repositories/auth";
+import { BaseRepository } from "@/lib/repositories/base";
 import { clientRepository } from "@/lib/repositories/client";
-import { prisma } from "@/lib/repositories/database";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
-import { Prisma } from "@prisma/client";
 import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { logWithContext } from "../logger/logger";
@@ -25,7 +24,7 @@ if (!JWT_SECRET) {
 
 export class AuthService {
   /**
-   * デバイス登録・再登録（Tauri起動時）
+   * デバイス登録・再登録(Tauri起動時)
    */
   async registerOrUpdateDevice(params: {
     deviceId: string;
@@ -35,76 +34,78 @@ export class AuthService {
     pushToken?: string;
   }): Promise<string> {
     logWithContext("info", "🔄 registerOrUpdateDevice called", { params });
-    return await prisma.$transaction(async (tx) => {
-      // トランザクション付きRepositoryインスタンス作成
-      const clientRepo = clientRepository.withTransaction(tx);
 
-      // 既存デバイスを確認(include: client.plan)
-      let device = await clientRepo.getDeviceByDeviceId(params.deviceId);
+    return BaseRepository.transaction(
+      { client: clientRepository },
+      async ({ client }) => {
+        // 既存デバイスを確認(include: client.plan)
+        let device = await client.getDeviceByDeviceId(params.deviceId);
 
-      if (device) {
-        // デバイス情報を更新
-        device = await clientRepo.updateDevice(device.id, {
-          platform: params.platform,
-          appVersion: params.appVersion,
-          osVersion: params.osVersion,
-          pushToken: params.pushToken,
-          lastSeenAt: new Date(),
-        });
-        logWithContext("info", "✅ Device updated:", { device });
-      } else {
-        // 新規デバイス - 新規クライアント作成 （未登録ユーザー）
-        device = await clientRepo.createDevice({
-          deviceId: params.deviceId,
-          platform: params.platform,
-          appVersion: params.appVersion,
-          osVersion: params.osVersion,
-          pushToken: params.pushToken,
-          lastSeenAt: new Date(),
-          client: { create: { plan: { connect: { code: "GUEST" } } } },
-        });
-        logWithContext("info", "✅ Device created:", { device });
+        if (device) {
+          // デバイス情報を更新
+          device = await client.updateDevice(device.id, {
+            platform: params.platform,
+            appVersion: params.appVersion,
+            osVersion: params.osVersion,
+            pushToken: params.pushToken,
+            lastSeenAt: new Date(),
+          });
+          logWithContext("info", "✅ Device updated:", { device });
+        } else {
+          // 新規デバイス - 新規クライアント作成 (未登録ユーザー)
+          device = await client.createDevice({
+            deviceId: params.deviceId,
+            platform: params.platform,
+            appVersion: params.appVersion,
+            osVersion: params.osVersion,
+            pushToken: params.pushToken,
+            lastSeenAt: new Date(),
+            client: { create: { plan: { connect: { code: "GUEST" } } } },
+          });
+          logWithContext("info", "✅ Device created:", { device });
+        }
+
+        if (!device) throw new Error("Failed to create device");
+        logWithContext("info", "✅ Device registered/updated:", { device });
+
+        const clientData = device.client;
+        if (!clientData || !clientData.plan) {
+          logWithContext("error", "❌ Client not found for device", { device });
+          throw new Error("Client not found for device");
+        }
+
+        logWithContext("info", "✅ Client for device:", { client: clientData });
+
+        const user = clientData.user;
+        logWithContext("info", "👤 Associated user:", { user });
+
+        // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
+        const token = await generateJWT<AppJWTPayload>(
+          {
+            t: "app",
+            deviceId: device.deviceId,
+            clientId: clientData.id,
+            planCode: clientData.plan.code,
+            provider: clientData.provider || undefined,
+            user: user
+              ? {
+                  id: user.id,
+                  email: user.email || undefined,
+                  name: user.name || undefined,
+                  image: user.image || undefined,
+                }
+              : undefined,
+          },
+          JWT_SECRET
+        );
+
+        return token;
       }
-      if (!device) throw new Error("Failed to create device");
-      logWithContext("info", "✅ Device registered/updated:", { device });
-
-      const client = device.client;
-      if (!client || !client.plan) {
-        logWithContext("error", "❌ Client not found for device", { device });
-        throw new Error("Client not found for device");
-      }
-
-      logWithContext("info", "✅ Client for device:", { client });
-
-      const user = client.user;
-      logWithContext("info", "👤 Associated user:", { user });
-
-      // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
-      const token = await generateJWT<AppJWTPayload>(
-        {
-          t: "app",
-          deviceId: device.deviceId,
-          clientId: client.id,
-          planCode: client.plan.code,
-          provider: client.provider || undefined,
-          user: user
-            ? {
-                id: user.id,
-                email: user.email || undefined,
-                name: user.name || undefined,
-                image: user.image || undefined,
-              }
-            : undefined,
-        },
-        JWT_SECRET
-      );
-
-      return token;
-    });
+    );
   }
 
   /**
-   * チケット生成（Web認証後）
+   * チケット生成(Web認証後)
    */
   async generateTicket(): Promise<string> {
     logWithContext("info", "🔄 generateTicket called");
@@ -117,7 +118,7 @@ export class AuthService {
 
     logWithContext("info", "✅ チケット発行成功", { userId: session.user.id });
 
-    // 30秒間有効なチケットを発行（既存パターンに合わせて）
+    // 30秒間有効なチケットを発行(既存パターンに合わせて)
     const ticket = await generateJWT<TicketData>(
       {
         t: "ticket",
@@ -135,14 +136,15 @@ export class AuthService {
   }
 
   /**
-   * チケット交換＋ユーザー紐付け
+   * チケット交換+ユーザー紐付け
    */
   async exchangeTicket(params: {
     ticket: string;
     deviceId: string;
   }): Promise<string> {
     logWithContext("info", "🔄 exchangeTicket called", { params });
-    // チケット検証（既存パターンに合わせて）
+
+    // チケット検証(既存パターンに合わせて)
     let ticketData: TicketData;
     try {
       logWithContext("info", "🔑 チケット検証開始 secret", {
@@ -161,151 +163,159 @@ export class AuthService {
       throw new Error("Invalid ticket");
     }
 
-    return await prisma.$transaction(async (tx) => {
-      const clientRepo = clientRepository.withTransaction(tx);
-      const authRepo = authRepository.withTransaction(tx);
-      // デバイス取得
-      const device = await clientRepo.getDeviceByDeviceId(params.deviceId);
-      logWithContext("info", "🔍 デバイス検索", {
-        deviceId: params.deviceId,
-        device,
-      });
-      if (!device || !device.clientId || !device.client) {
-        logWithContext("error", "❌ Device not found or invalid:", {
+    return BaseRepository.transaction(
+      { client: clientRepository, auth: authRepository },
+      async ({ client, auth }) => {
+        // デバイス取得
+        const device = await client.getDeviceByDeviceId(params.deviceId);
+        logWithContext("info", "🔍 デバイス検索", {
           deviceId: params.deviceId,
           device,
         });
-        throw new Error("Device not found. Please register device first.");
-      }
-      const client = device.client;
-      if (!client.plan) {
-        logWithContext("error", "❌ Client or plan not found for device:", {
-          device,
-          client,
-          plan: client.plan,
+
+        if (!device || !device.clientId || !device.client) {
+          logWithContext("error", "❌ Device not found or invalid:", {
+            deviceId: params.deviceId,
+            device,
+          });
+          throw new Error("Device not found. Please register device first.");
+        }
+
+        const clientData = device.client;
+        if (!clientData.plan) {
+          logWithContext("error", "❌ Client or plan not found for device:", {
+            device,
+            client: clientData,
+            plan: clientData.plan,
+          });
+          throw new Error("Failed to get updated client");
+        }
+
+        // プロバイダーの設定
+        const provider = ticketData.provider;
+        if (!provider) {
+          // NOTE: OAuth認証以外を追加した場合には、ここを修正
+          logWithContext("error", "❌ Provider not found in ticket data:", {
+            ticketData,
+          });
+          throw new Error("Provider not found");
+        }
+
+        // プランコードの変更(GUEST → FREE など)
+        logWithContext("info", "🔄 プランコード確認", {
+          current: clientData.plan.code,
+          no: clientData.plan.no,
         });
-        throw new Error("Failed to get updated client");
-      }
+        const planCode =
+          clientData.plan.code === "GUEST" ? "FREE" : clientData.plan.code;
 
-      // プロバイダーの設定
-      const provider = ticketData.provider;
-      if (!provider) {
-        // NOTE: OAuth認証以外を追加した場合には、ここを修正
-        logWithContext("error", "❌ Provider not found in ticket data:", {
-          ticketData,
-        });
-        throw new Error("Provider not found");
-      }
-
-      // プランコードの変更（GUEST → FREE など）
-      logWithContext("info", "🔄 プランコード確認", {
-        current: client.plan.code,
-        no: client.plan.no,
-      });
-      const planCode = client.plan.code === "GUEST" ? "FREE" : client.plan.code;
-
-      // ユーザーのDBとの照合
-      const user = await authRepo.getUserById(ticketData.sub);
-      logWithContext("info", "🔍 ユーザー検索", {
-        userId: ticketData.sub,
-        user,
-      });
-      if (!user) {
-        logWithContext("error", "❌ User not found in DB:", {
+        // ユーザーのDBとの照合
+        const user = await auth.getUserById(ticketData.sub);
+        logWithContext("info", "🔍 ユーザー検索", {
           userId: ticketData.sub,
-        });
-        throw new Error("User not found in DB.");
-      }
-
-      const existingClient = user.client;
-      logWithContext("info", "🔍 既存Client", { existingClient });
-      let finalClient: Client;
-
-      // user と 別の Client が紐付いている場合は統合
-      if (existingClient && existingClient.id !== device.clientId) {
-        // 既存Clientがある場合：デバイスをそのClientに統合
-        finalClient = await this.mergeClients(
-          tx,
-          device.clientId,
-          existingClient.id,
-          provider, // provider は必ず更新
-          planCode
-        );
-        logWithContext("info", "✅ 既存Clientに統合", {
           user,
-          client: finalClient,
         });
-      } else {
-        // 既存Clientがない場合：現在のClientにユーザー情報を紐付け
-        finalClient = await clientRepo.updateClient(device.clientId, {
-          user: { connect: { id: user.id } },
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          provider, // provider を設定
-          plan: { connect: { code: planCode } },
-          isRegistered: true,
-          lastLoginAt: new Date(),
-        });
-        logWithContext("info", "✅ 新規ユーザー紐付け", {
-          user,
-          client: finalClient,
-        });
-      }
+        if (!user) {
+          logWithContext("error", "❌ User not found in DB:", {
+            userId: ticketData.sub,
+          });
+          throw new Error("User not found in DB.");
+        }
 
-      if (!finalClient || !finalClient.plan) {
-        logWithContext(
-          "error",
-          "❌ Failed to get final client or plan after merge/update",
-          { finalClient }
-        );
-        throw new Error("Failed to get final client or plan");
-      }
+        const existingClient = user.client;
+        logWithContext("info", "🔍 既存Client", { existingClient });
+        let finalClient: Client;
 
-      // アプリ用JWT生成（既存パターンに合わせて）
-      const jwt = await generateJWT<AppJWTPayload>(
-        {
-          t: "app",
-          deviceId: device.deviceId,
-          clientId: finalClient.id,
-          planCode: finalClient.plan.code,
-          provider,
-          user: {
-            id: user.id,
-            email: user.email!,
-            name: user.name || undefined,
-            image: user.image || undefined,
+        // user と 別の Client が紐付いている場合は統合
+        if (existingClient && existingClient.id !== device.clientId) {
+          // 既存Clientがある場合:デバイスをそのClientに統合
+          finalClient = await this.mergeClientsInTransaction(
+            { client, auth, plan: planRepository },
+            device.clientId,
+            existingClient.id,
+            provider, // provider は必ず更新
+            planCode
+          );
+          logWithContext("info", "✅ 既存Clientに統合", {
+            user,
+            client: finalClient,
+          });
+        } else {
+          // 既存Clientがない場合:現在のClientにユーザー情報を紐付け
+          finalClient = await client.updateClient(device.clientId, {
+            user: { connect: { id: user.id } },
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            provider, // provider を設定
+            plan: { connect: { code: planCode } },
+            isRegistered: true,
+            lastLoginAt: new Date(),
+          });
+          logWithContext("info", "✅ 新規ユーザー紐付け", {
+            user,
+            client: finalClient,
+          });
+        }
+
+        if (!finalClient || !finalClient.plan) {
+          logWithContext(
+            "error",
+            "❌ Failed to get final client or plan after merge/update",
+            { finalClient }
+          );
+          throw new Error("Failed to get final client or plan");
+        }
+
+        // アプリ用JWT生成(既存パターンに合わせて)
+        const jwt = await generateJWT<AppJWTPayload>(
+          {
+            t: "app",
+            deviceId: device.deviceId,
+            clientId: finalClient.id,
+            planCode: finalClient.plan.code,
+            provider,
+            user: {
+              id: user.id,
+              email: user.email!,
+              name: user.name || undefined,
+              image: user.image || undefined,
+            },
           },
-        },
-        JWT_SECRET
-      );
-      logWithContext("info", "🔑 JWT generated for device:", {
-        deviceId: device.deviceId,
-        jwt,
-      });
-      return jwt;
-    });
+          JWT_SECRET
+        );
+        logWithContext("info", "🔑 JWT generated for device:", {
+          deviceId: device.deviceId,
+          jwt,
+        });
+        return jwt;
+      }
+    );
   }
 
   // ** 重要!! **
-  // Client統合（ユーザーが複数Clientを持ってしまった場合の救済用）
+  // Client統合(ユーザーが複数Clientを持ってしまった場合の救済用)
   // planはより上位のものを適用
   // 利用回数は合算
-  // トランザクションの関係で、tx を受け取る
-  private async mergeClients(
-    tx: Prisma.TransactionClient,
+  // トランザクション内で呼ばれることを想定し、txRepos を受け取る
+  private async mergeClientsInTransaction(
+    txRepos: {
+      client: typeof clientRepository;
+      auth: typeof authRepository;
+      plan: typeof planRepository;
+    },
     fromClientId: string,
     toClientId: string,
     provider: string,
     newPlanCode: string
   ): Promise<Client> {
     logWithContext("info", "🔀 Merging clients", {
-      tx,
       from: fromClientId,
       to: toClientId,
     });
-    const clientRepo = clientRepository.withTransaction(tx);
-    const planRepo = planRepository.withTransaction(tx);
+
+    const { client: clientRepo, plan: planRepo } = txRepos;
+
     if (fromClientId === toClientId) {
       throw new Error("Cannot merge the same client");
     }
@@ -512,13 +522,13 @@ export class AuthService {
   }
 
   /**
-   * JWTペイロード更新（プラン変更時など）
+   * JWTペイロード更新(プラン変更時など)
    */
   async refreshJwtPayload(
     payload: AppJWTPayload & { exp?: number },
     planCode?: string
   ): Promise<string> {
-    // アプリ用JWT生成（既存パターンに合わせて）
+    // アプリ用JWT生成(既存パターンに合わせて)
     return await generateJWT<AppJWTPayload>(
       {
         t: "app",
@@ -558,14 +568,18 @@ export class AuthService {
     });
 
     // DBからClient情報を取得
-    const client = await clientService.getClientByDeviceId(payload.deviceId);
-    if (!client || client.id !== payload.clientId || !client.plan) {
+    const clientData = await clientService.getClientByDeviceId(
+      payload.deviceId
+    );
+    if (!clientData || clientData.id !== payload.clientId || !clientData.plan) {
       logWithContext("error", "❌ Client or Device not found for payload:", {
         payload,
       });
       throw new Error("Client not found for payload");
     }
-    logWithContext("info", "✅ Client for payload:", { clientId: client.id });
+    logWithContext("info", "✅ Client for payload:", {
+      clientId: clientData.id,
+    });
 
     // OAuth認証時は auth() を呼んで認証期限切れを検出
     if (payload.user && payload.provider) {
@@ -584,7 +598,7 @@ export class AuthService {
   }
 
   /**
-   * API リクエストの認証をチェック（ゲスト・ユーザー両対応）
+   * API リクエストの認証をチェック(ゲスト・ユーザー両対応)
    * @returns { payload } または { error: NextResponse }
    */
   async verifyApiRequest(
@@ -643,7 +657,7 @@ export class AuthService {
     keyId: string; // Key ID (.p8 に対応)
     clientId: string; // Service ID (例: com.example.web)
     privateKey: string; // .p8 の中身
-    expiresIn?: string | number; // 例: '30d'（最大180日）
+    expiresIn?: string | number; // 例: '30d'(最大180日)
   }): Promise<string> {
     const alg = "ES256";
     const ecKey = await importPKCS8(opts.privateKey, alg);

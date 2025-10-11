@@ -1,13 +1,12 @@
-import type { Tarotist } from "@/../shared/lib/types";
+import type {
+  Tarotist,
+  TarotistInput,
+  TarotistWithPlanCode,
+} from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class TarotistRepository extends BaseRepository {
-  async createTarotist(
-    tarotist: Omit<
-      Tarotist,
-      "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages"
-    >
-  ): Promise<string> {
+  async createTarotist(tarotist: TarotistInput): Promise<Tarotist> {
     const created = await this.db.tarotist.create({
       data: {
         name: tarotist.name,
@@ -27,48 +26,81 @@ export class TarotistRepository extends BaseRepository {
       },
     });
 
-    return created.id;
+    return created;
   }
 
-  async getTarotistById(id: string): Promise<Tarotist | null> {
-    return await this.db.tarotist.findUnique({
-      where: { id, deletedAt: null },
+  async createTarotistWithPlanCode(
+    tarotist: TarotistWithPlanCode
+  ): Promise<Tarotist> {
+    const { planCode, ...rest } = tarotist;
+    return await this.db.tarotist.create({
+      data: {
+        ...rest,
+        plan: { connect: { code: planCode } },
+      },
+      include: { plan: true },
     });
   }
 
-  async getAllTarotists(): Promise<Tarotist[]> {
+  async getTarotistById(
+    id: string,
+    soft: boolean = true
+  ): Promise<Tarotist | null> {
+    return await this.db.tarotist.findUnique({
+      where: soft ? { id, deletedAt: null } : { id },
+      include: { plan: true },
+    });
+  }
+
+  async getDefaultTarotist(): Promise<Tarotist | null> {
+    return await this.db.tarotist.findFirst({
+      include: { plan: true },
+    });
+  }
+
+  async getAllTarotists(soft: boolean = true): Promise<Tarotist[]> {
     return await this.db.tarotist.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: "asc" },
+      where: soft ? { deletedAt: null } : undefined,
+      include: { plan: true },
+      orderBy: { order: "asc" },
     });
   }
 
   async updateTarotist(
     id: string,
-    updates: Partial<
-      Omit<
-        Tarotist,
-        "id" | "createdAt" | "updatedAt" | "readings" | "chatMessages" | "plan"
-      >
-    > & {
-      planId?: string;
-    }
-  ): Promise<void> {
-    const { planId, ...restUpdates } = updates;
+    data: Partial<Tarotist>,
+    soft: boolean = true
+  ): Promise<Tarotist> {
+    // planプロパティを適切な形式に変換
+    const { planId, plan, ...rest } = data;
+    console.log(planId, plan);
 
-    await this.db.tarotist.update({
-      where: { id },
+    return await this.db.tarotist.update({
+      where: { id, ...(soft ? { deletedAt: null } : {}) },
       data: {
-        ...restUpdates,
-        ...(planId ? { plan: { connect: { id: planId } } } : {}),
+        ...(rest as Omit<
+          Tarotist,
+          | "id"
+          | "createdAt"
+          | "updatedAt"
+          | "readings"
+          | "chatMessages"
+          | "plan"
+          | "planId"
+        >),
+        plan: { connect: { id: planId } },
+      },
+      include: {
+        plan: true,
       },
     });
   }
 
-  async softDeleteTarotist(id: string): Promise<void> {
-    await this.db.tarotist.update({
-      where: { id },
+  async deleteTarotist(id: string, soft: boolean = true): Promise<Tarotist> {
+    return await this.db.tarotist.update({
+      where: { id, ...(soft ? { deletedAt: null } : {}) },
       data: { deletedAt: new Date() },
+      include: { plan: true },
     });
   }
 }

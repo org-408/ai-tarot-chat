@@ -1,5 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import { getSpreadLevels } from "@/lib/services/master";
+import { spreadService } from "@/lib/services/spread";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
     { path: "/api/spread-levels" }
   );
   try {
-    const levels = await getSpreadLevels();
+    const levels = await spreadService.getAllSpreadLevels();
     logWithContext("info", "✅ スプレッドレベル一覧取得完了", { levels });
     return NextResponse.json(levels);
   } catch (error) {

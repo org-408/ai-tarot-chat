@@ -1,5 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import { getSpreadsByCategory } from "@/lib/services/spread";
+import { spreadService } from "@/lib/services/spread";
 import { NextResponse } from "next/server";
 
 interface RouteParams {
@@ -17,7 +17,7 @@ export async function GET(request: Request, { params }: RouteParams) {
   );
   const { id } = await params;
   try {
-    const spreads = await getSpreadsByCategory(id);
+    const spreads = await spreadService.getSpreadsByCategory(id);
     logWithContext(
       "info",
       "📍 /api/categories/[id]/spreads - カテゴリ別スプレッド一覧取得完了",

@@ -1,9 +1,5 @@
 import { logWithContext } from "@/lib/logger/logger";
-import {
-  deleteSpreadCellById,
-  getSpreadCellById,
-  updateSpreadCellById,
-} from "@/lib/services/spread";
+import { spreadService } from "@/lib/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -21,7 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     { path: `/api/spread-cells/${id}` }
   );
   try {
-    const cell = await getSpreadCellById(id);
+    const cell = await spreadService.getSpreadCellById(id);
     if (!cell) {
       logWithContext("error", `❌ セル(${id})が見つかりません`, {
         status: 404,
@@ -52,7 +48,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   );
   try {
     const data = await request.json();
-    const cell = await updateSpreadCellById(id, data);
+    const cell = await spreadService.updateSpreadCellById(id, data);
     logWithContext("info", `✅ セル(${id})更新完了`, { cell });
     return NextResponse.json(cell);
   } catch (error) {
@@ -73,7 +69,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     { path: `/api/spread-cells/${id}` }
   );
   try {
-    await deleteSpreadCellById(id);
+    await spreadService.deleteSpreadCellById(id);
     logWithContext("info", `✅ セル(${id})削除完了`);
     return NextResponse.json({ success: true });
   } catch (error) {

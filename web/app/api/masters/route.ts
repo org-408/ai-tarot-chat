@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
-import { getAllMasterData } from "@/lib/services/master";
+import { masterService } from "@/lib/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     // マスターデータ取得
-    const masters = await getAllMasterData();
+    const masters = await masterService.getAllMasterData();
     logWithContext("info", "📍 /api/masters/ - マスタデータ取得完了");
 
     return NextResponse.json(masters);

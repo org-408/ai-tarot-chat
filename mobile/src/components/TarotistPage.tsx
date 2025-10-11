@@ -164,7 +164,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     <div className="flex items-center gap-2 mb-3">
                       <div className="text-sm text-gray-600">おすすめ度:</div>
                       <div className="text-base">
-                        {renderStars(tarotist.quality)}
+                        {renderStars(tarotist.quality!)}
                       </div>
                     </div>
 
@@ -281,7 +281,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
             <div className="flex items-center justify-center gap-2 mb-4 pb-4 border-b border-gray-200">
               <div className="text-sm text-gray-600">おすすめ度:</div>
               <div className="text-lg">
-                {renderStars(selectedTarotist.quality)}
+                {renderStars(selectedTarotist.quality!)}
               </div>
             </div>
 
