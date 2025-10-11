@@ -33,10 +33,10 @@ export class TarotRepository extends BaseRepository {
     return created;
   }
 
-  // Note: get 系は cards を含めない(別途 TarotCard は全取得する前提)
   async getDeckById(id: string): Promise<TarotDeck | null> {
     return await this.db.tarotDeck.findUnique({
       where: { id },
+      include: { cards: { include: { meanings: true } } },
     });
   }
 
@@ -47,12 +47,14 @@ export class TarotRepository extends BaseRepository {
     return await this.db.tarotDeck.findMany({
       where: all ? undefined : { language },
       orderBy: { createdAt: "desc" },
+      include: { cards: { include: { meanings: true } } },
     });
   }
 
   async getActiveDeck(): Promise<TarotDeck | null> {
     return await this.db.tarotDeck.findFirst({
       where: { status: "active" },
+      include: { cards: { include: { meanings: true } } },
     });
   }
 
