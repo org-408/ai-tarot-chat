@@ -198,6 +198,7 @@ export type CardMeaning = {
 // スプレッドレベルの型
 export type SpreadLevel = {
   id: string;
+  no: number; // 並び順
   code: string;
   name: string;
   description: string;
@@ -209,6 +210,7 @@ export type SpreadLevel = {
 // スプレッドの型
 export type Spread = {
   id: string;
+  no: number; // 並び順
   code: string;
   name: string;
   category: string;
@@ -241,6 +243,7 @@ export type SpreadCell = {
 // カテゴリモデル
 export type ReadingCategory = {
   id: string;
+  no: number; // 並び順
   name: string;
   description: string;
   createdAt: Date;
@@ -305,7 +308,7 @@ export type PlanChangeHistory = {
 // タロット占い師モデル
 export type Tarotist = {
   id: string;
-  order: number; // 並び順
+  no: number; // 並び順
   name: string;
   title: string; // 占い師の肩書き
   icon: string; // 占い師のアイコン絵文字
@@ -454,7 +457,7 @@ export type SpreadWithLevelPlanCategories = Omit<
 > & {
   levelCode: string;
   planCode: string;
-  categories: string[];
+  categories: ReadingCategoryInput[];
 };
 
 export type SpreadCellInput = Omit<SpreadCell, "id" | "spread" | "spreadId">;
@@ -552,7 +555,7 @@ export interface MasterData {
   categories: ReadingCategory[];
   spreads: Spread[];
   decks: TarotDeck[];
-  tarotists?: Tarotist[];
+  tarotists: Tarotist[];
 }
 
 export type MasterConfig = {

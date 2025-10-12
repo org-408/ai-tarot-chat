@@ -1,4 +1,3 @@
-import { App } from "@capacitor/app";
 import { useState } from "react";
 import { useResetApp } from "../lib/hooks/useResetApp";
 
@@ -12,33 +11,6 @@ export function DebugResetButton() {
   const { resetApp, resetMaster, resetUsage, isResetting, error } =
     useResetApp();
   const [showMenu, setShowMenu] = useState(false);
-
-  /**
-   * 完全リセット → アプリ終了
-   */
-  const handleFullResetAndExit = async () => {
-    if (
-      confirm(
-        "⚠️ 全データをリセットします。\n認証情報も削除され、アプリが終了します。\n\n本当によろしいですか？"
-      )
-    ) {
-      const success = await resetApp();
-      if (success) {
-        alert("✅ リセット完了！\nアプリを終了します。");
-
-        // アプリを終了（Android/iOS対応）
-        try {
-          await App.exitApp();
-        } catch (error) {
-          // exitApp が使えない環境（Webなど）の場合はリロード
-          console.warn("App.exitApp() not available, reloading instead", error);
-          window.location.reload();
-        }
-      } else {
-        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
-      }
-    }
-  };
 
   /**
    * 完全リセット → 再起動
@@ -108,16 +80,6 @@ export function DebugResetButton() {
           </div>
 
           <div className="flex flex-col gap-2">
-            {/* 完全リセット → 終了 */}
-            <button
-              onClick={handleFullResetAndExit}
-              disabled={isResetting}
-              className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors disabled:opacity-50 text-left"
-            >
-              <div className="font-bold">🚨 完全リセット → 終了</div>
-              <div className="text-xs opacity-80">全削除してアプリ終了</div>
-            </button>
-
             {/* 完全リセット → 再起動 */}
             <button
               onClick={handleFullResetAndReload}

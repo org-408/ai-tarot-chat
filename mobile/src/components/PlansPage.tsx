@@ -38,18 +38,14 @@ const PlansPage: React.FC<PlansPageProps> = ({
       maxPersonal: plan.maxPersonal,
       hasPersonal: plan.hasPersonal,
       hasHistory: plan.hasHistory,
-      color:
-        plan.code === "FREE"
-          ? "from-green-400 to-green-600"
-          : plan.code === "STANDARD"
-          ? "from-blue-400 to-blue-600"
-          : plan.code === "PREMIUM"
-          ? "from-yellow-400 to-orange-500"
-          : "from-gray-400 to-gray-600",
+      // データベースから色情報を取得
+      primaryColor: plan.primaryColor,
+      secondaryColor: plan.secondaryColor,
+      accentColor: plan.accentColor,
       popular: plan.code === "STANDARD", // スタンダードを人気に設定
     };
     return acc;
-  }, {} as Record<string, PlanInput & { popular: boolean; color: string }>);
+  }, {} as Record<string, PlanInput & { popular: boolean; primaryColor?: string; secondaryColor?: string; accentColor?: string }>);
 
   const handlePlanChange = (planKey: keyof typeof planData) => {
     const plan = planData[planKey];
@@ -70,7 +66,14 @@ const PlansPage: React.FC<PlansPageProps> = ({
       <div className="page-title pt-3">💎 プラン選択</div>
 
       {/* 認証状態表示 */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
+      <div
+        className="mb-6 p-4 rounded-lg text-center"
+        style={{
+          backgroundColor: planData[currentPlan].primaryColor,
+          borderColor: planData[currentPlan].secondaryColor,
+          borderWidth: "2px",
+        }}
+      >
         <div className="text-sm text-gray-600">現在の状態</div>
         <div className="font-bold text-lg">{planData[currentPlan].name}</div>
         <div className="text-sm text-gray-500">
@@ -78,7 +81,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
         </div>
         {!isAuthenticated && (
           <div className="text-xs text-orange-600 mt-1">
-            ⚠️ 未認証（有料プラン選択時に自動ログイン）
+            ⚠️ 未認証(有料プラン選択時に自動ログイン)
           </div>
         )}
       </div>
@@ -95,13 +98,28 @@ const PlansPage: React.FC<PlansPageProps> = ({
             key={planKey}
             className={`relative p-4 rounded-lg border-2 transition-all ${
               currentPlan === planKey
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white hover:border-gray-300"
+                ? `ring-2 ring-offset-2 ${
+                    plan.accentColor
+                      ? `ring-[${plan.accentColor}]`
+                      : "ring-blue-500"
+                  }`
+                : "hover:shadow-md"
             }`}
+            style={{
+              backgroundColor:
+                currentPlan === planKey ? plan.primaryColor : "white",
+              borderColor:
+                currentPlan === planKey
+                  ? plan.accentColor
+                  : plan.secondaryColor,
+            }}
           >
             {/* 人気バッジ */}
             {plan.popular && (
-              <div className="absolute -top-2 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
+              <div
+                className="absolute -top-2 left-4 text-white text-xs px-2 py-1 rounded"
+                style={{ backgroundColor: plan.accentColor }}
+              >
                 おすすめ
               </div>
             )}
@@ -122,7 +140,12 @@ const PlansPage: React.FC<PlansPageProps> = ({
               <div className="text-right">
                 <div className="font-bold text-xl">¥{plan.price}</div>
                 {currentPlan === planKey && (
-                  <div className="text-xs text-blue-600 font-bold">利用中</div>
+                  <div
+                    className="text-xs font-bold"
+                    style={{ color: plan.accentColor }}
+                  >
+                    利用中
+                  </div>
                 )}
               </div>
             </div>
@@ -146,19 +169,27 @@ const PlansPage: React.FC<PlansPageProps> = ({
             {/* アクションボタン */}
             <div className="flex gap-2">
               {currentPlan === planKey ? (
-                <div className="w-full py-2 px-4 bg-gray-200 text-gray-600 rounded-lg text-center text-sm">
+                <div
+                  className="w-full py-2 px-4 text-gray-600 rounded-lg text-center text-sm"
+                  style={{
+                    backgroundColor: plan.secondaryColor,
+                  }}
+                >
                   現在利用中
                 </div>
               ) : (
                 <button
                   onClick={() => handlePlanChange(planKey)}
                   disabled={isLoggingIn}
-                  className={`w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-colors bg-gradient-to-r ${plan.color} hover:opacity-90 disabled:opacity-50`}
+                  className="w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{
+                    backgroundColor: plan.accentColor,
+                  }}
                 >
                   {isLoggingIn
                     ? "認証中..."
                     : plan.requiresAuth && !isAuthenticated
-                    ? `ログイン＆${
+                    ? `ログイン&${
                         planKey === "STANDARD"
                           ? "アップグレード"
                           : "プレミアム登録"
@@ -205,13 +236,13 @@ const PlansPage: React.FC<PlansPageProps> = ({
           <div className="font-bold text-sm mb-2">💰 他社との比較</div>
           <div className="text-xs text-gray-600 space-y-1">
             <div>
-              📊 LINE占い（¥2,550）より <strong>62%安い</strong>
+              📊 LINE占い(¥2,550)より <strong>62%安い</strong>
             </div>
             <div>
-              🎯 Rint（¥400/¥960）に <strong>AI対話付きで差別化</strong>
+              🎯 Rint(¥400/¥960)に <strong>AI対話付きで差別化</strong>
             </div>
             <div>
-              ✨ 神秘のタロット（買い切り）より <strong>継続的体験</strong>
+              ✨ 神秘のタロット(買い切り)より <strong>継続的体験</strong>
             </div>
           </div>
         </div>

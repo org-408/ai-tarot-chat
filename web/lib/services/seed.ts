@@ -1,6 +1,7 @@
 import type {
   CardMeaningInput,
   PlanInput,
+  ReadingCategoryInput,
   SpreadCellInput,
   SpreadInput,
   SpreadLevelInput,
@@ -274,14 +275,24 @@ export class SeedService {
    * Planデータを取得
    */
   getPlanData(): PlanInput[] {
-    return this.getDBData<PlanInput>("plans_data.csv");
+    return this.getDBData<PlanInput>("plans_data.csv").map(
+      (plan: Omit<PlanInput, "no">, index) => ({
+        no: index + 1,
+        ...plan,
+      })
+    );
   }
 
   /**
    * SpreadLevelデータを取得
    */
   getSpreadLevelData(): SpreadLevelInput[] {
-    return this.getDBData<SpreadLevelInput>("levels_data.csv");
+    return this.getDBData<SpreadLevelInput>("levels_data.csv").map(
+      (level: Omit<SpreadLevelInput, "no">, index) => ({
+        no: index + 1,
+        ...level,
+      })
+    );
   }
 
   /**
@@ -289,14 +300,10 @@ export class SeedService {
    */
   getTarotistData(): TarotistWithPlanCode[] {
     return this.getDBData<TarotistWithPlanCode>("tarotists_data.csv").map(
-      (tarotist, index) => {
-        const { order, ...rest } = tarotist;
-
-        return {
-          order: index + 1 || order,
-          ...rest,
-        };
-      }
+      (tarotist: Omit<TarotistWithPlanCode, "no">, index) => ({
+        no: index + 1,
+        ...tarotist,
+      })
     );
   }
 
@@ -304,18 +311,33 @@ export class SeedService {
    * Spreadデータを取得
    */
   getSpreadData(): SpreadWithLevelPlanCategories[] {
-    const spreads = this.getDBData<SpreadCsv>("spreads_data.csv");
+    const categories = {} as Record<string, number>;
+    let catIndex = 1;
+
     const cells = this.getDBData<SpreadCellInput>("cells_data.csv");
-    let index = 0;
-    return spreads.map((spread) => {
-      const { cardCount, ...spreadRest } = spread;
-      const spreadCells = cells.slice(index, index + cardCount);
-      index += cardCount;
-      return {
-        ...spreadRest,
-        cells: spreadCells,
-      };
-    });
+
+    let cellindex = 0;
+    return this.getDBData<SpreadCsv>("spreads_data.csv").map(
+      (spread: SpreadCsv) => {
+        const { cardCount, ...rest } = spread;
+        const spreadCells = cells.slice(cellindex, (cellindex += cardCount));
+        const cats: ReadingCategoryInput[] = spread.categories.map((cat) => {
+          return {
+            name: cat,
+            no: !Object.keys(categories).includes(cat)
+              ? (categories[cat] = catIndex++)
+              : categories[cat],
+            description: `${cat}に関するタロットリーディング`,
+          };
+        });
+
+        return {
+          ...rest,
+          cells: spreadCells,
+          categories: cats,
+        };
+      }
+    );
   }
 
   /**

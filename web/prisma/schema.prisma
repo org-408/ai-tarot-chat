@@ -227,6 +227,7 @@ model CardMeaning {
 // スプレッドレベルマスター
 model SpreadLevel {
   id          String    @id @default(cuid())
+  no          Int       @unique // 並び順
   code        String    @unique  // "BEGINNER", "MEDIUM", "ADVANCED", "EXPERT"
   name        String    // "初心者", "中級者", "上級者", "最上級"
   description String    @db.Text
@@ -238,6 +239,7 @@ model SpreadLevel {
 // スプレッドモデル
 model Spread {
   id          String       @id @default(cuid())
+  no          Int          @unique // 並び順
   code        String       @unique  // "CROSS", "CelticCross", "ThreeCard", "Horseshoe"など
   name        String
   category    String       // 簡易表示用のカテゴリ名
@@ -277,6 +279,7 @@ model SpreadCell {
 // カテゴリモデル
 model ReadingCategory {
   id          String                @id @default(cuid())
+  no          Int                   @unique // 並び順
   name        String                @unique // 表示名: 総合、恋愛、仕事など
   description String                // カテゴリの説明（オプション）
   createdAt   DateTime              @default(now())
@@ -307,7 +310,7 @@ model SpreadToCategory {
 // プランモデル
 model Plan {
   id          String    @id @default(cuid())
-  no          Int       @unique @default(autoincrement())  // 並び順
+  no          Int       @unique // 並び順
   code        String    @unique  // "GUEST", "FREE", "STANDARD", "PREMIUM"
   name        String    // "ゲスト", "フリー", "スタンダード", "プレミアム"
   description String    @db.Text
@@ -370,7 +373,7 @@ enum ProviderKey {
 // タロット占い師モデル
 model Tarotist {
   id          String    @id @default(cuid())
-  order       Int       @default(0) // 並び順
+  no          Int       @unique // 並び順
   name        String    @unique // 占い師の名前 Claudia, Luna, lily, ...
   title       String    // 占い師の肩書き
   icon        String    // 占い師のアイコン絵文字

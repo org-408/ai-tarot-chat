@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { ReadingCategory, Spread, Tarotist } from "../../shared/lib/types";
 import { DebugResetButton } from "./components/DebugResetButton";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -20,8 +21,9 @@ function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const [readingData, setReadingData] = useState<{
-    spreadId: string;
-    categoryId: string;
+    tarotist: Tarotist;
+    spread: Spread;
+    category: ReadingCategory;
   } | null>(null);
 
   // 🔥 ライフサイクル管理
@@ -161,9 +163,13 @@ function App() {
     setPageType(page);
   };
 
-  const handleStartReading = (spreadId: string, categoryId: string) => {
-    console.log(`占い開始: spread=${spreadId}, category=${categoryId}`);
-    setReadingData({ spreadId, categoryId });
+  const handleStartReading = (
+    tarotist: Tarotist,
+    spread: Spread,
+    category: ReadingCategory
+  ) => {
+    console.log(`占い開始: spread=${spread}, category=${category}`);
+    setReadingData({ tarotist, spread, category });
     setPageType("reading");
   };
 
@@ -287,8 +293,9 @@ function App() {
           <ReadingPage
             payload={payload}
             masterData={masterData}
-            spreadId={readingData?.spreadId || ""}
-            categoryId={readingData?.categoryId || ""}
+            tarotist={readingData?.tarotist || ({} as Tarotist)}
+            spread={readingData?.spread || ({} as Spread)}
+            category={readingData?.category || ({} as ReadingCategory)}
             onBack={handleBackFromReading}
           />
         );

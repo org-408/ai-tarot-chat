@@ -21,7 +21,11 @@ interface SalonPageProps {
   onLogin: () => void;
   onUpgrade: (plan: UserPlan) => void;
   onDowngrade: (plan: UserPlan) => void;
-  onStartReading: (spreadId: string, categoryId: string) => void;
+  onStartReading: (
+    tarotist: Tarotist,
+    spread: Spread,
+    category: ReadingCategory
+  ) => void;
   isLoggingIn: boolean;
 }
 
@@ -35,105 +39,117 @@ const SalonPage: React.FC<SalonPageProps> = ({
   onStartReading,
   isLoggingIn,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedSpread, setSelectedSpread] = useState<string>("");
-  const [selectedTarotist, setSelectedTarotist] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] =
+    useState<ReadingCategory | null>(null);
+  const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
+  const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>();
   const [userInput, setUserInput] = useState<string>("");
   const [aiMode, setAiMode] = useState<string>("ai-auto");
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 
   const user = payload?.user || null;
-  const currentPlan = payload?.planCode || "GUEST";
 
-  const currentPlanData = masterData!.plans?.find(
-    (p: Plan) => p.code === currentPlan
+  const currentPlan = masterData.plans.find(
+    (p: Plan) => p.code === payload?.planCode || "GUEST"
   );
 
-  const availableCategories = masterData.categories;
-  const categoriesToShow =
-    currentPlan === "GUEST" || currentPlan === "FREE"
-      ? availableCategories.slice(0, 3)
-      : availableCategories;
-
-  const checkNo =
-    currentPlanData!.code === "GUEST" ? 2 : currentPlanData!.no + 1;
-  const availablePlansFromPlanNo = masterData!.plans.filter(
-    (p: Plan) => p.no <= (checkNo || 0)
-  );
-
-  // 占い師の取得とフィルタリング
+  // 1. 占い師の取得とフィルタリング
   const availableTarotists = useMemo(() => {
-    if (!masterData.tarotists) return [];
+    if (!masterData.tarotists || !currentPlan) return [];
 
     return masterData.tarotists.filter((tarotist: Tarotist) => {
       // 現在のプラン番号以下の占い師のみ表示
       const tarotistPlan = masterData.plans?.find(
         (p: Plan) => p.code === tarotist.plan!.code
       );
-      return tarotistPlan && tarotistPlan.no <= (currentPlanData?.no || 0);
+      return (
+        tarotistPlan &&
+        tarotistPlan.no <= (currentPlan!.no || 0) &&
+        tarotistPlan.code !== "OFFLINE" // TODO:OFFLINEプランの占い師は除外
+      );
     });
-  }, [masterData, currentPlanData]);
+  }, [masterData, currentPlan]);
 
-  const getAvailableSpreads = () => {
-    if (!masterData!.spreads) return [];
+  // 2 カテゴリーの取得とフィルタリング
+  const availableCategories = useMemo(() => {
+    if (!masterData.categories) return [];
 
-    return masterData!.spreads.filter((spread: Spread) => {
-      if (
-        !availablePlansFromPlanNo
-          .map((p: Plan) => p.code)
-          .includes(spread.plan!.code)
-      ) {
-        return false;
-      }
-
-      if (selectedCategory) {
-        const spreadCategoryIds =
-          spread.categories?.map((sc: SpreadToCategory) => sc.categoryId) || [];
-        if (!spreadCategoryIds.includes(selectedCategory)) {
-          return false;
+    return masterData.categories
+      .filter((category: ReadingCategory) => {
+        // GUESTとFREEは、恋愛・健康・金運を除外
+        if (
+          (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") &&
+          ["恋愛", "健康", "金運"].includes(category.name)
+        ) {
+          return true;
         }
-      }
+        return false;
+      })
+      .map((category: ReadingCategory) => ({
+        ...category,
+        bio: category.description,
+      }));
+  }, [masterData, currentPlan]);
 
-      return true;
-    });
-  };
+  // 3 スプレッドの取得とフィルタリング
+  const availableSpreads = useMemo(() => {
+    if (!masterData.spreads || !currentPlan || !masterData.categories)
+      return [];
 
-  const availableSpreads = getAvailableSpreads();
+    return masterData.spreads
+      .filter((spread: Spread) => {
+        console.log("[SalonPage] スプレッドフィルタリング", {
+          spreads: masterData.spreads,
+          selectedCategory,
+        });
+        // spread.plan, spread.categoriesが存在しない場合はfalse(データ破損)
+        if (!spread.plan || !spread.categories) return false;
+        // スプレッド内のカテゴリー一覧にselectedCategoryが含まれているか
+        // (TODO: カテゴリー一覧は目安として全選択すべきか検討)
+        const spreadCatetories = spread.categories.map(
+          (stc: SpreadToCategory) => stc.category?.name
+        );
+        if (
+          currentPlan.no >= spread.plan!.no &&
+          spreadCatetories.includes(selectedCategory?.name || "")
+        ) {
+          return true;
+        }
+      })
+      .map((spread: Spread) => ({ ...spread, bio: spread.guide }));
+  }, [
+    currentPlan,
+    masterData.categories,
+    masterData.spreads,
+    selectedCategory,
+  ]);
 
   const upgradablePlans = masterData!.plans
-    ?.filter((p: Plan) => p.no > (currentPlanData?.no || 0))
+    ?.filter((p: Plan) => p.no > (currentPlan?.no || 0))
     .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
+  // masterDataから色情報を取得する関数
   const getPlanColors = (planCode: string) => {
-    switch (planCode) {
-      case "PREMIUM":
-        return {
-          border: "border-yellow-300",
-          bg: "bg-yellow-50",
-          text: "text-yellow-800",
-          subText: "text-yellow-600",
-          button: "bg-yellow-500 hover:bg-yellow-600",
-          icon: "👑",
-        };
-      case "STANDARD":
-        return {
-          border: "border-blue-200",
-          bg: "bg-blue-50",
-          text: "text-blue-800",
-          subText: "text-blue-600",
-          button: "bg-blue-500 hover:bg-blue-600",
-          icon: "💎",
-        };
-      default:
-        return {
-          border: "border-gray-200",
-          bg: "bg-gray-50",
-          text: "text-gray-800",
-          subText: "text-gray-600",
-          button: "bg-gray-500 hover:bg-gray-600",
-          icon: "🆓",
-        };
+    const plan = masterData.plans.find((p: Plan) => p.code === planCode);
+    if (
+      !plan ||
+      !plan.primaryColor ||
+      !plan.secondaryColor ||
+      !plan.accentColor
+    ) {
+      // フォールバック: デフォルトの色
+      return {
+        primary: "#F9FAFB",
+        secondary: "#E5E7EB",
+        accent: "#6B7280",
+      };
     }
+
+    return {
+      primary: plan.primaryColor,
+      secondary: plan.secondaryColor,
+      accent: plan.accentColor,
+    };
   };
 
   useMemo(() => {
@@ -144,48 +160,48 @@ const SalonPage: React.FC<SalonPageProps> = ({
   }, [masterData, usageStats]);
 
   useEffect(() => {
+    if (availableTarotists.length > 0 && !selectedTarotist) {
+      setSelectedTarotist(availableTarotists[0]);
+    }
+  }, [availableTarotists, selectedTarotist]);
+
+  useEffect(() => {
     if (availableCategories.length > 0 && !selectedCategory) {
-      setSelectedCategory(availableCategories[0].id);
+      setSelectedCategory(availableCategories[0]);
     }
   }, [availableCategories, selectedCategory]);
 
   useEffect(() => {
     if (availableSpreads.length > 0 && !selectedSpread) {
-      setSelectedSpread(availableSpreads[0].id);
+      setSelectedSpread(availableSpreads[0]);
     }
   }, [availableSpreads, selectedSpread]);
 
-  useEffect(() => {
-    if (availableTarotists.length > 0 && !selectedTarotist) {
-      setSelectedTarotist(availableTarotists[0].id);
-    }
-  }, [availableTarotists, selectedTarotist]);
-
   const handleStartReading = () => {
-    if (!selectedSpread || !selectedCategory) return;
-    onStartReading(selectedSpread, selectedCategory);
+    if (!selectedTarotist || !selectedSpread || !selectedCategory) return;
+    onStartReading(selectedTarotist!, selectedSpread, selectedCategory);
   };
 
   const handleUpgradeClick = (targetPlan: UserPlan) => {
     if (!isAuthenticated) {
       console.log(
-        `[SalonPage] 未認証：${targetPlan}へのアップグレードを保留してサインイン`
+        `[SalonPage] 未認証:${targetPlan}へのアップグレードを保留してサインイン`
       );
       sessionStorage.setItem("pendingUpgrade", targetPlan);
       onLogin();
     } else {
-      console.log(`[SalonPage] 認証済み：${targetPlan}へ直接アップグレード`);
+      console.log(`[SalonPage] 認証済み:${targetPlan}へ直接アップグレード`);
       onUpgrade(targetPlan);
     }
   };
 
-  const isPremium = currentPlan === "PREMIUM";
-  const isStandard = currentPlan === "STANDARD";
-  const isFree = currentPlan === "FREE" || currentPlan === "GUEST";
-  const isGuest = currentPlan === "GUEST";
+  const isPremium = currentPlan!.code === "PREMIUM";
+  const isStandard = currentPlan!.code === "STANDARD";
+  const isFree = currentPlan!.code === "FREE" || currentPlan!.code === "GUEST";
+  const isGuest = currentPlan!.code === "GUEST";
 
   const getPlanIcon = () => {
-    switch (currentPlan) {
+    switch (currentPlan!.code) {
       case "PREMIUM":
         return "👑";
       case "STANDARD":
@@ -198,58 +214,22 @@ const SalonPage: React.FC<SalonPageProps> = ({
     }
   };
 
-  // ScrollableRadioSelector用のデータ変換
-  const categoryItems = categoriesToShow.map((category: ReadingCategory) => ({
-    id: category.id,
-    label: category.name,
-    description: category.description,
-  }));
-
-  const spreadItems = availableSpreads.map((spread: Spread) => ({
-    id: spread.id,
-    label: spread.name,
-    description: `${spread.category} (${spread.cells?.length || 0}枚)`,
-  }));
-
-  const tarotistItems = availableTarotists.map((tarotist: Tarotist) => ({
-    id: tarotist.id,
-    label: tarotist.name,
-    description: tarotist.bio || tarotist.trait,
-    icon: tarotist.icon || "🔮",
-  }));
+  const currentColors = getPlanColors(currentPlan!.code);
 
   return (
     <div className="main-container">
       <div
-        className={`mb-4 p-3 rounded-lg border ${
-          isPremium
-            ? "bg-yellow-50 border-yellow-200"
-            : isStandard
-            ? "bg-blue-50 border-blue-200"
-            : "bg-gray-50 border-gray-200"
-        }`}
+        className="mb-4 p-3 rounded-lg border-2"
+        style={{
+          backgroundColor: currentColors.primary,
+          borderColor: currentColors.secondary,
+        }}
       >
         <div className="text-center">
-          <div
-            className={`font-bold ${
-              isPremium
-                ? "text-yellow-800"
-                : isStandard
-                ? "text-blue-800"
-                : "text-gray-700"
-            }`}
-          >
-            {getPlanIcon()} {currentPlanData?.name}
+          <div className="font-bold" style={{ color: currentColors.accent }}>
+            {getPlanIcon()} {currentPlan?.name}
           </div>
-          <div
-            className={`text-sm ${
-              isPremium
-                ? "text-yellow-600"
-                : isStandard
-                ? "text-blue-600"
-                : "text-gray-600"
-            }`}
-          >
+          <div className="text-sm text-gray-600">
             {isAuthenticated && user
               ? `認証済み: ${user.email}`
               : "未登録・ゲストモード"}
@@ -278,22 +258,22 @@ const SalonPage: React.FC<SalonPageProps> = ({
         </div>
       )}
 
-      {isPremium && currentPlanData?.hasPersonal && (
+      {isPremium && currentPlan?.hasPersonal && (
         <div className="mb-6">
-          <div className="section-title">📝 どんなことを占いたいですか？</div>
+          <div className="section-title">📝 どんなことを占いたいですか?</div>
           <input
             type="text"
             className="text-input"
-            placeholder="例：彼との関係がうまくいくか知りたい"
+            placeholder="例:彼との関係がうまくいくか知りたい"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
           />
         </div>
       )}
 
-      {isPremium && currentPlanData?.hasPersonal && (
+      {isPremium && currentPlan?.hasPersonal && (
         <div className="mb-6">
-          <div className="section-title">🎴 占い方を選んでください：</div>
+          <div className="section-title">🎴 占い方を選んでください:</div>
           <div className="space-y-2">
             <div
               className={`option-item ${
@@ -332,9 +312,9 @@ const SalonPage: React.FC<SalonPageProps> = ({
       {/* 占い師選択 */}
       {availableTarotists.length > 0 && (
         <ScrollableRadioSelector
-          title="🔮 占い師を選択："
-          items={tarotistItems}
-          selectedId={selectedTarotist}
+          title="🔮 占い師を選択:"
+          items={availableTarotists}
+          selected={selectedTarotist || null}
           onSelect={setSelectedTarotist}
           maxVisibleItems={3}
         />
@@ -345,11 +325,11 @@ const SalonPage: React.FC<SalonPageProps> = ({
         <ScrollableRadioSelector
           title={`🎯 ${
             isPremium || isStandard
-              ? "占いたいジャンルを選択："
-              : "どのジャンルを占いますか？"
+              ? "占いたいジャンルを選択:"
+              : "どのジャンルを占いますか?"
           }`}
-          items={categoryItems}
-          selectedId={selectedCategory}
+          items={availableCategories}
+          selected={selectedCategory}
           onSelect={setSelectedCategory}
           maxVisibleItems={3}
         />
@@ -357,9 +337,9 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       {/* スプレッド選択 */}
       <ScrollableRadioSelector
-        title={isPremium ? "🎴 スプレッドを選択：" : "🎴 占い方："}
-        items={spreadItems}
-        selectedId={selectedSpread}
+        title={isPremium ? "🎴 スプレッドを選択:" : "🎴 占い方:"}
+        items={availableSpreads}
+        selected={selectedSpread}
         onSelect={setSelectedSpread}
         maxVisibleItems={3}
       />
@@ -396,40 +376,49 @@ const SalonPage: React.FC<SalonPageProps> = ({
                   return (
                     <div
                       key={plan.id}
-                      className={`border ${colors.border} rounded-lg overflow-hidden transition-all`}
+                      className="border-2 rounded-lg overflow-hidden transition-all"
+                      style={{ borderColor: colors.secondary }}
                     >
                       {/* アコーディオンヘッダー */}
                       <button
                         onClick={() =>
                           setExpandedPlan(isExpanded ? null : plan.code)
                         }
-                        className={`w-full p-3 ${colors.bg} flex items-center justify-between transition-colors`}
+                        className="w-full p-3 flex items-center justify-between transition-colors"
+                        style={{ backgroundColor: colors.primary }}
                       >
                         <div className="text-left flex-1">
                           <div
-                            className={`font-bold ${colors.text} flex items-center gap-1`}
+                            className="font-bold flex items-center gap-1"
+                            style={{ color: colors.accent }}
                           >
-                            <span>{colors.icon}</span>
+                            <span>
+                              {plan.code === "PREMIUM"
+                                ? "👑"
+                                : plan.code === "STANDARD"
+                                ? "💎"
+                                : "🆓"}
+                            </span>
                             <span>{plan.name}</span>
                           </div>
-                          <div className={`text-xs ${colors.subText} mt-0.5`}>
+                          <div className="text-xs text-gray-600 mt-0.5">
                             ¥{plan.price.toLocaleString()}/月 -{" "}
                             {plan.description}
                           </div>
                         </div>
                         <ChevronDown
-                          className={`w-4 h-4 ${
-                            colors.text
-                          } transition-transform flex-shrink-0 ml-2 ${
+                          className={`w-4 h-4 transition-transform flex-shrink-0 ml-2 ${
                             isExpanded ? "rotate-180" : ""
                           }`}
+                          style={{ color: colors.accent }}
                         />
                       </button>
 
                       {/* アコーディオンコンテンツ */}
                       {isExpanded && (
                         <div
-                          className={`p-3 bg-white border-t ${colors.border} space-y-2`}
+                          className="p-3 bg-white border-t-2 space-y-2"
+                          style={{ borderColor: colors.secondary }}
                         >
                           {/* 機能リスト */}
                           <div className="space-y-1">
@@ -456,7 +445,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
                               }
                             }}
                             disabled={isLoggingIn}
-                            className={`w-full mt-2 py-2 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 ${colors.button}`}
+                            className="w-full mt-2 py-2 text-white rounded text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50"
+                            style={{ backgroundColor: colors.accent }}
                           >
                             {isLoggingIn
                               ? "処理中..."
@@ -479,7 +469,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       <div className="fixed-action-button">
         <button
-          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg shadow-2xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 bg-gradient-to-r
+          from-purple-500 to-pink-500 text-white rounded-xl
+            font-bold text-lg shadow-2xl hover:from-purple-600
+          hover:to-pink-600 active:scale-95 transition-all disabled:opacity-80 disabled:cursor-not-allowed"
           onClick={handleStartReading}
           disabled={
             (isFree && usageStats.remainingReadings <= 0) ||

@@ -1,29 +1,34 @@
-import React from "react";
+import React, { type JSX } from "react";
 
-interface RadioItem {
+interface SelectorItem {
   id: string;
-  label: string;
+  name?: string;
+  icon?: React.ReactNode;
+  bio?: string;
   description?: string;
-  icon?: string;
 }
 
-interface ScrollableRadioSelectorProps {
+interface ScrollableRadioSelectorProps<T extends SelectorItem> {
   title: string;
-  items: RadioItem[];
-  selectedId: string;
-  onSelect: (id: string) => void;
+  items: T[];
+  selected: T | null;
+  onSelect: (tarotist: T) => void;
   maxVisibleItems?: number;
 }
 
-const ScrollableRadioSelector: React.FC<ScrollableRadioSelectorProps> = ({
+function ScrollableRadioSelector<T extends SelectorItem>({
   title,
   items,
-  selectedId,
+  selected,
   onSelect,
   maxVisibleItems = 3,
-}) => {
+}: ScrollableRadioSelectorProps<T>): JSX.Element {
   const needsScroll = items.length > maxVisibleItems;
   const maxHeight = needsScroll ? `${maxVisibleItems * 4.5}rem` : "auto";
+
+  if (!selected || items.length === 0) {
+    return <div>読み込み中...</div>;
+  }
 
   return (
     <div className="mb-6">
@@ -40,24 +45,22 @@ const ScrollableRadioSelector: React.FC<ScrollableRadioSelectorProps> = ({
           <div
             key={item.id}
             className={`option-item ${
-              selectedId === item.id ? "selected" : ""
+              selected!.id === item.id ? "selected" : ""
             }`}
-            onClick={() => onSelect(item.id)}
+            onClick={() => onSelect(item)}
           >
             <div
               className={`radio-button ${
-                selectedId === item.id ? "selected" : ""
+                selected!.id === item.id ? "selected" : ""
               }`}
             ></div>
             <div className="flex-1">
               <div className="flex items-center gap-1">
                 {item.icon && <span>{item.icon}</span>}
-                <span>{item.label}</span>
+                <span>{item.name}</span>
               </div>
-              {item.description && (
-                <div className="text-xs text-gray-500 mt-0.5">
-                  {item.description}
-                </div>
+              {item.bio && (
+                <div className="text-xs text-gray-500 mt-0.5">{item.bio}</div>
               )}
             </div>
           </div>
@@ -70,6 +73,6 @@ const ScrollableRadioSelector: React.FC<ScrollableRadioSelectorProps> = ({
       )}
     </div>
   );
-};
+}
 
 export default ScrollableRadioSelector;

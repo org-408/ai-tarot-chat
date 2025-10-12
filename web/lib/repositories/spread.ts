@@ -4,20 +4,17 @@ import type {
   SpreadCell,
   SpreadInput,
   SpreadLevel,
+  SpreadLevelInput,
   SpreadWithLevelPlanCategories,
 } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class SpreadRepository extends BaseRepository {
   // ==================== SpreadLevel ====================
-  async createSpreadLevel(
-    level: Omit<SpreadLevel, "id" | "createdAt" | "updatedAt" | "spreads">
-  ): Promise<string> {
+  async createSpreadLevel(level: SpreadLevelInput): Promise<string> {
     const created = await this.db.spreadLevel.create({
       data: {
-        code: level.code,
-        name: level.name,
-        description: level.description,
+        ...level,
       },
     });
 
@@ -60,6 +57,7 @@ export class SpreadRepository extends BaseRepository {
   ): Promise<Spread> {
     const created = await this.db.spread.create({
       data: {
+        no: spread.no,
         code: spread.code,
         name: spread.name,
         category: spread.category,
@@ -102,6 +100,7 @@ export class SpreadRepository extends BaseRepository {
     const { levelCode, planCode } = spread;
     return await this.db.spread.create({
       data: {
+        no: spread.no,
         code: spread.code,
         name: spread.name,
         category: spread.category,
@@ -125,13 +124,15 @@ export class SpreadRepository extends BaseRepository {
         ...(spread.categories &&
           spread.categories.length > 0 && {
             categories: {
-              create: spread.categories.map((cat: string) => ({
+              create: spread.categories.map((cat) => ({
                 category: {
                   connectOrCreate: {
-                    where: { name: cat },
+                    where: { name: cat.name },
                     create: {
-                      name: cat,
-                      description: `${cat}に関するタロットリーディング`,
+                      no: cat.no,
+                      name: cat.name,
+                      description:
+                        cat.description || `${cat}に関するタロットリーディング`,
                     },
                   },
                 },
@@ -346,6 +347,7 @@ export class SpreadRepository extends BaseRepository {
   ): Promise<string> {
     const created = await this.db.readingCategory.create({
       data: {
+        no: category.no,
         name: category.name,
         description: category.description,
       },

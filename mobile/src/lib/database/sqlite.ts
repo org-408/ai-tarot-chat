@@ -1,14 +1,23 @@
 /**
  * SQLite Database Setup for Offline Support
- * 
+ *
  * Capacitor SQLite を使用したオフラインデータベース管理
  * @capacitor-community/sqlite を使用
  */
 
-import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
-import { Capacitor } from '@capacitor/core';
+import {
+  CapacitorSQLite,
+  SQLiteConnection,
+  SQLiteDBConnection,
+} from "@capacitor-community/sqlite";
+import { Capacitor } from "@capacitor/core";
 
-const DB_NAME = 'tarot_offline.db';
+// jeep-sqliteのカスタム要素の型定義を追加
+interface JeepSQLiteElement extends HTMLElement {
+  initWebStore: () => Promise<void>;
+}
+
+const DB_NAME = "tarot_offline.db";
 const DB_VERSION = 1;
 
 let sqliteConnection: SQLiteConnection | null = null;
@@ -25,23 +34,25 @@ export async function initSQLite(): Promise<SQLiteDBConnection> {
   try {
     // プラットフォームチェック
     const platform = Capacitor.getPlatform();
-    
-    if (platform === 'web') {
+
+    if (platform === "web") {
       // Web版は jeep-sqlite を使用
-      const jeepSqlite = document.createElement('jeep-sqlite');
+      const jeepSqlite = document.createElement(
+        "jeep-sqlite"
+      ) as JeepSQLiteElement;
       document.body.appendChild(jeepSqlite);
-      await customElements.whenDefined('jeep-sqlite');
+      await customElements.whenDefined("jeep-sqlite");
       await jeepSqlite.initWebStore();
     }
 
     // SQLite接続を作成
     sqliteConnection = new SQLiteConnection(CapacitorSQLite);
-    
+
     // データベースを開く
     db = await sqliteConnection.createConnection(
       DB_NAME,
       false, // encrypted
-      'no-encryption',
+      "no-encryption",
       DB_VERSION,
       false // readonly
     );
@@ -51,10 +62,10 @@ export async function initSQLite(): Promise<SQLiteDBConnection> {
     // スキーマを初期化
     await initializeSchema();
 
-    console.log('✅ SQLite initialized successfully');
+    console.log("✅ SQLite initialized successfully");
     return db;
   } catch (error) {
-    console.error('❌ Failed to initialize SQLite:', error);
+    console.error("❌ Failed to initialize SQLite:", error);
     throw error;
   }
 }
@@ -63,7 +74,7 @@ export async function initSQLite(): Promise<SQLiteDBConnection> {
  * データベーススキーマを初期化
  */
 async function initializeSchema(): Promise<void> {
-  if (!db) throw new Error('Database not initialized');
+  if (!db) throw new Error("Database not initialized");
 
   const schemas = [
     // Plans テーブル
@@ -245,7 +256,7 @@ async function initializeSchema(): Promise<void> {
     await db.execute(schema);
   }
 
-  console.log('✅ Database schema initialized');
+  console.log("✅ Database schema initialized");
 }
 
 /**
@@ -284,9 +295,9 @@ export async function resetDatabase(): Promise<void> {
       }
       db = null;
       await initSQLite();
-      console.log('✅ Database reset successfully');
+      console.log("✅ Database reset successfully");
     } catch (error) {
-      console.error('❌ Failed to reset database:', error);
+      console.error("❌ Failed to reset database:", error);
       throw error;
     }
   }

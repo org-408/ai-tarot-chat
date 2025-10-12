@@ -3,15 +3,19 @@ import { useEffect, useRef, useState } from "react";
 import type {
   AppJWTPayload,
   MasterData,
+  ReadingCategory,
+  Spread,
   SpreadCell,
   TarotCard,
+  Tarotist,
 } from "../../../shared/lib/types";
 
 interface ReadingPageProps {
   payload: AppJWTPayload;
   masterData: MasterData; // マスターデータを親から受け取る
-  spreadId: string;
-  categoryId: string;
+  tarotist: Tarotist;
+  spread: Spread;
+  category: ReadingCategory;
   onBack: () => void;
 }
 
@@ -1355,8 +1359,9 @@ const TEMP_CARDS: TarotCard[] = [
 
 const ReadingPage: React.FC<ReadingPageProps> = ({
   masterData,
-  spreadId,
-  // categoryId,
+  tarotist,
+  spread,
+  category,
   // onBack,
 }) => {
   const [messages, setMessages] = useState([
@@ -1368,13 +1373,15 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     },
     {
       role: "user",
-      content: "最近、仕事で悩んでいます。転職すべきか迷っています。",
+      content: `最近、${category.name}で悩んでいます。転職すべきか迷っています。`,
       isTyping: false,
     },
     {
       role: "assistant",
-      content:
-        "お仕事のことでお悩みなのですね。カードがあなたの状況を教えてくれます。現在のあなたには「愚者」のカードが出ています。これは新しい始まりと可能性を示しています。",
+      content: `お仕事のことでお悩みなのですね。<br>
+      それでは${spread.name}というスプレッドで占いましょう。<br>
+      カード達があなたの状況を教えてくれます。<br>
+      現在のあなたには「愚者」のカードが出ています。これは新しい始まりと可能性を示しています。`,
       isTyping: false,
     },
     {
@@ -1466,10 +1473,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     // eslint-disable-next-line
   }, [drawnCards]);
 
-  const selectedSpread = masterData.spreads?.find((s) => s.id === spreadId);
-  // const selectedCategory = masterData.categories?.find(
-  //   (c) => c.id === categoryId
-  // );
+  const selectedSpread = masterData.spreads?.find((s) => s.id === spread.id);
 
   // MasterDataからカード情報を取得（decks[0].cards）、なければTEMP_CARDSを使用
   const availableCards = masterData.decks?.[0]?.cards || TEMP_CARDS;
@@ -1774,8 +1778,10 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               👸
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-xs">Claudia</h3>
-              <p className="text-[9px] text-gray-500">タロット占い師</p>
+              <h3 className="font-semibold text-gray-900 text-xs">
+                {tarotist.name}
+              </h3>
+              <p className="text-[9px] text-gray-500">{tarotist.title}</p>
             </div>
           </div>
         </div>
