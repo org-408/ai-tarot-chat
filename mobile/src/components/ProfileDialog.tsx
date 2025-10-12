@@ -4,36 +4,33 @@ interface ProfileDialogProps {
   // for profile
   selectedTarotist: Tarotist | null;
   setSelectedTarotist: (tarotist: Tarotist | null) => void;
-  getTarotistColor: (tarotist: Tarotist) => {
-    bg: string;
-    accent: string;
-    button: string;
-  };
-  renderStars: (quality: number) => string;
-  hasButton?: boolean;
-  canUseTarotist: (planCode: string) => boolean;
-  handleUpgrade: (planCode: string) => void;
-  isAuthenticated: boolean;
-  isLoggingIn: boolean;
   // for image view
   imageViewTarotist?: Tarotist | null;
   setImageViewTarotist: (tarotist: Tarotist | null) => void;
+  hasButton?: boolean;
+  canUseTarotist?: (planCode: string) => boolean;
+  handleUpgrade?: (planCode: string) => void;
+  isAuthenticated?: boolean;
+  isLoggingIn?: boolean;
 }
 
 const ProfileDialog: React.FC<ProfileDialogProps> = ({
   selectedTarotist,
   setSelectedTarotist,
-  getTarotistColor,
-  renderStars,
-  hasButton = false,
-  canUseTarotist,
-  handleUpgrade,
-  isAuthenticated,
-  isLoggingIn,
   imageViewTarotist,
   setImageViewTarotist,
+  hasButton = false,
+  canUseTarotist = () => false,
+  handleUpgrade = () => {},
+  isAuthenticated,
+  isLoggingIn,
 }) => {
   console.log(`[ProfileDialog] `);
+
+  const renderStars = (quality: number) => {
+    return "⭐️".repeat(quality);
+  };
+
   return (
     <>
       {/* プロフィール拡大ダイアログ */}
@@ -46,9 +43,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
             className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: `linear-gradient(to bottom, ${
-                getTarotistColor(selectedTarotist).bg
-              } 0%, white 40%)`,
+              background: `linear-gradient(to bottom, ${selectedTarotist.primaryColor} 0%, white 40%)`,
             }}
           >
             {/* プランバッジ */}
@@ -85,7 +80,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
               className="text-3xl font-bold text-center mb-1"
               style={{
                 fontFamily: "'Brush Script MT', cursive",
-                color: getTarotistColor(selectedTarotist).accent,
+                color: selectedTarotist.accentColor,
               }}
             >
               {selectedTarotist.icon} {selectedTarotist.name}
@@ -99,7 +94,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
             {/* 特徴 */}
             <div
               className="text-center text-sm font-semibold mb-4"
-              style={{ color: getTarotistColor(selectedTarotist).accent }}
+              style={{ color: selectedTarotist.accentColor }}
             >
               {selectedTarotist.trait}
             </div>
@@ -142,11 +137,9 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 <div
                   className="w-full py-3 px-4 border-2 text-center rounded-lg font-bold mb-3"
                   style={{
-                    borderColor: getTarotistColor(selectedTarotist).button,
-                    color: getTarotistColor(selectedTarotist).button,
-                    backgroundColor: `${
-                      getTarotistColor(selectedTarotist).bg
-                    }80`,
+                    borderColor: selectedTarotist.accentColor,
+                    color: selectedTarotist.accentColor,
+                    backgroundColor: `${selectedTarotist.primaryColor}80`,
                   }}
                 >
                   ✓ この占い師は利用可能です

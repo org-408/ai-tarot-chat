@@ -2,11 +2,7 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
-import {
-  ChatRole,
-  ChatType,
-  ProviderKey,
-} from "../../web/node_modules/@prisma/client";
+import { ChatRole, ChatType } from "../../web/node_modules/@prisma/client";
 
 export type Account = {
   id: string;
@@ -304,6 +300,15 @@ export type PlanChangeHistory = {
   note?: string | null;
   changedAt: Date;
 };
+
+export type ProviderKey =
+  | "GROQ"
+  | "GEMINI"
+  | "MISTRAL"
+  | "GEMINI_PRO"
+  | "GPT"
+  | "XAI"
+  | "CLAUDE";
 
 // タロット占い師モデル
 export type Tarotist = {

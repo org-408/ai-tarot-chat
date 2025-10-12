@@ -295,8 +295,6 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
         isAuthenticated={isAuthenticated}
         handleUpgrade={handleUpgrade}
         isLoggingIn={isLoggingIn}
-        getTarotistColor={getTarotistColor}
-        renderStars={renderStars}
         setImageViewTarotist={setImageViewTarotist}
         imageViewTarotist={imageViewTarotist}
         hasButton

@@ -1,3 +1,6 @@
+"use client";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type {
@@ -9,6 +12,7 @@ import type {
   TarotCard,
   Tarotist,
 } from "../../../shared/lib/types";
+import ProfileDialog from "./ProfileDialog";
 
 interface ReadingPageProps {
   payload: AppJWTPayload;
@@ -1364,48 +1368,69 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   category,
   // onBack,
 }) => {
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "こんにちは。私はClaudia、あなたの運命を読み解く占い師です。今日はどのようなことを占いましょうか?",
-      isTyping: false,
-    },
-    {
-      role: "user",
-      content: `最近、${category.name}で悩んでいます。転職すべきか迷っています。`,
-      isTyping: false,
-    },
-    {
-      role: "assistant",
-      content: `お仕事のことでお悩みなのですね。<br>
-      それでは${spread.name}というスプレッドで占いましょう。<br>
-      カード達があなたの状況を教えてくれます。<br>
-      現在のあなたには「愚者」のカードが出ています。これは新しい始まりと可能性を示しています。`,
-      isTyping: false,
-    },
-    {
-      role: "user",
-      content: "新しい始まり...確かに変化が必要な気がしています。",
-      isTyping: false,
-    },
-    {
-      role: "assistant",
-      content:
-        "そうですね。課題として「魔術師」が横向きに現れています。これは現在のスキルをどう活用するかが鍵となることを示しています。転職する・しないよりも、あなた自身の能力をどう発揮するかが重要なポイントです。",
-      isTyping: false,
-    },
-    {
-      role: "user",
-      content: "なるほど...もう少し詳しく教えてください。",
-      isTyping: false,
-    },
-  ]);
+  // const [messages, setMessages] = useState([
+  //   {
+  //     role: "assistant",
+  //     content: `こんにちは。私は${tarotist.name}、あなたの運命を読み解く占い師です。今日はどのようなことを占いましょうか?`,
+  //     isTyping: false,
+  //   },
+  //   {
+  //     role: "user",
+  //     content: `最近、${category.name}で悩んでいます。`,
+  //     isTyping: false,
+  //   },
+  //   {
+  //     role: "assistant",
+  //     content: `お仕事のことでお悩みなのですね。\n
+  //     それでは${spread.name}というスプレッドで占いましょう。\n
+  //     カード達があなたの状況を教えてくれます。\n
+  //     現在のあなたには「愚者」のカードが出ています。これは新しい始まりと可能性を示しています。`,
+  //     isTyping: false,
+  //   },
+  //   {
+  //     role: "user",
+  //     content: "新しい始まり...確かに変化が必要な気がしています。",
+  //     isTyping: false,
+  //   },
+  //   {
+  //     role: "assistant",
+  //     content:
+  //       "そうですね。課題として「魔術師」が横向きに現れています。これは現在のスキルをどう活用するかが鍵となることを示しています。転職する・しないよりも、あなた自身の能力をどう発揮するかが重要なポイントです。",
+  //     isTyping: false,
+  //   },
+  //   {
+  //     role: "user",
+  //     content: "なるほど...もう少し詳しく教えてください。",
+  //     isTyping: false,
+  //   },
+  // ]);
+  const { messages, sendMessage } = useChat({
+    id: "ai-tarot-chat",
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+
+      // リクエストをカスタマイズ
+      prepareSendMessagesRequest: ({ messages, id }) => {
+        return {
+          body: {
+            id,
+            messages,
+            tarotist,
+            spread,
+            category,
+          },
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+      },
+    }),
+  });
   const [inputValue, setInputValue] = useState("");
   const [crossFlipped, setCrossFlipped] = useState(false);
   const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
-  const [typingMessage, setTypingMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  // const [typingMessage, setTypingMessage] = useState("");
+  // const [isTyping, setIsTyping] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [drawnCards, setDrawnCards] = useState<CardPlacement[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1505,7 +1530,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typingMessage]);
+  }, [messages]);
 
   const gridCols =
     drawnCards.length > 0 ? Math.max(...drawnCards.map((c) => c.gridX)) + 1 : 4;
@@ -1520,44 +1545,44 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const visibleAreaWidth = cardSize * visibleCols + colGap * (visibleCols + 1);
   const visibleAreaHeight = cardSize * visibleRows + rowGap * (visibleRows + 1);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      setMessages([
-        ...messages,
-        {
-          role: "user",
-          content: inputValue,
-          isTyping: false,
-        },
-      ]);
-      setInputValue("");
+  // const handleSendMessage = () => {
+  //   if (inputValue.trim()) {
+  //     setMessages([
+  //       ...messages,
+  //       {
+  //         role: "user",
+  //         content: inputValue,
+  //         isTyping: false,
+  //       },
+  //     ]);
+  //     setInputValue("");
 
-      const responseText =
-        "カードが示しています...素晴らしいエネルギーを感じます。あなたの直感に従うことが大切です。";
-      setIsTyping(true);
-      setTypingMessage("");
+  //     const responseText =
+  //       "カードが示しています...素晴らしいエネルギーを感じます。あなたの直感に従うことが大切です。";
+  //     setIsTyping(true);
+  //     setTypingMessage("");
 
-      let index = 0;
-      const typingInterval = setInterval(() => {
-        if (index < responseText.length) {
-          setTypingMessage(responseText.slice(0, index + 1));
-          index++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTyping(false);
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: responseText,
-              isTyping: false,
-            },
-          ]);
-          setTypingMessage("");
-        }
-      }, 30);
-    }
-  };
+  //     let index = 0;
+  //     const typingInterval = setInterval(() => {
+  //       if (index < responseText.length) {
+  //         setTypingMessage(responseText.slice(0, index + 1));
+  //         index++;
+  //       } else {
+  //         clearInterval(typingInterval);
+  //         setIsTyping(false);
+  //         setMessages((prev) => [
+  //           ...prev,
+  //           {
+  //             role: "assistant",
+  //             content: responseText,
+  //             isTyping: false,
+  //           },
+  //         ]);
+  //         setTypingMessage("");
+  //       }
+  //     }, 30);
+  //   }
+  // };
 
   const getZIndex = (cardNumber: number) => {
     const crossCards = drawnCards.filter(
@@ -1632,6 +1657,33 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       </div>
     );
   };
+
+  const [avatarExists, setAvatarExists] = useState<boolean | null>(null);
+  const avatarPath = `/tarotists/${tarotist.name}.png`;
+  useEffect(() => {
+    fetch(avatarPath, { method: "HEAD" })
+      .then((res) => setAvatarExists(res.ok))
+      .catch(() => setAvatarExists(false));
+    console.log("avatarPath", avatarPath);
+  }, [avatarPath, tarotist]);
+
+  const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
+    null
+  );
+  const [imageViewTarotist, setImageViewTarotist] = useState<Tarotist | null>(
+    null
+  );
+
+  const avatar =
+    tarotist.avatarUrl || avatarExists ? (
+      <img
+        src={tarotist.avatarUrl || avatarPath}
+        alt={tarotist.name}
+        className="w-full h-full object-cover rounded-full"
+      />
+    ) : (
+      "👸"
+    );
 
   return (
     <div className="main-container">
@@ -1774,8 +1826,13 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       >
         <div className="p-2 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-sm border border-purple-300 shadow-sm">
-              👸
+            <div
+              className="w-7 h-7 rounded-full bg-gradient-to-br
+              from-purple-400 to-pink-400 flex items-center justify-center
+                text-sm border border-purple-300 shadow-sm"
+              onClick={() => setSelectedTarotist(tarotist)}
+            >
+              {avatar}
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 text-xs">
@@ -1792,7 +1849,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               <div className="flex-shrink-0">
                 {message.role === "assistant" ? (
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-xs border border-purple-300">
-                    👸
+                    {avatar}
                   </div>
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-xs border border-blue-300">
@@ -1802,13 +1859,17 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               </div>
               <div className="flex-1">
                 <div className="text-xs text-gray-800 leading-relaxed">
-                  {message.content}
+                  {message.parts.map((part, i) =>
+                    part.type === "text" ? (
+                      <span key={i}>{part.text}</span>
+                    ) : null
+                  )}
                 </div>
               </div>
             </div>
           ))}
 
-          {isTyping && (
+          {/* {isTyping && (
             <div className="flex gap-2">
               <div className="flex-shrink-0">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-xs border border-purple-300">
@@ -1822,7 +1883,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                 </div>
               </div>
             </div>
-          )}
+          )} */}
           <div ref={messagesEndRef} />
         </div>
 
@@ -1837,7 +1898,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               onKeyUp={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  handleSendMessage();
+                  sendMessage();
                 }
               }}
               placeholder="メッセージを入力..."
@@ -1845,7 +1906,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               className="flex-1 resize-none bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-400 focus:border-transparent shadow-lg p-4 focus:shadow-xl"
             />
             <button
-              onClick={handleSendMessage}
+              onClick={() => sendMessage()}
               disabled={!inputValue.trim()}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-lg p-1.5 transition-colors flex-shrink-0"
             >
@@ -1854,6 +1915,14 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 占い師ダイアログ */}
+      <ProfileDialog
+        selectedTarotist={selectedTarotist}
+        setSelectedTarotist={setSelectedTarotist}
+        imageViewTarotist={imageViewTarotist}
+        setImageViewTarotist={setImageViewTarotist}
+      />
     </div>
   );
 };

@@ -160,18 +160,21 @@ const SalonPage: React.FC<SalonPageProps> = ({
   }, [masterData, usageStats]);
 
   useEffect(() => {
+    console.log("[SalonPage] availableTarotists changed", availableTarotists);
     if (availableTarotists.length > 0 && !selectedTarotist) {
       setSelectedTarotist(availableTarotists[0]);
     }
   }, [availableTarotists, selectedTarotist]);
 
   useEffect(() => {
+    console.log("[SalonPage] availableCategories changed", availableCategories);
     if (availableCategories.length > 0 && !selectedCategory) {
       setSelectedCategory(availableCategories[0]);
     }
   }, [availableCategories, selectedCategory]);
 
   useEffect(() => {
+    console.log("[SalonPage] availableSpreads changed", availableSpreads);
     if (availableSpreads.length > 0 && !selectedSpread) {
       setSelectedSpread(availableSpreads[0]);
     }
