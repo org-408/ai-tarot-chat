@@ -25,8 +25,6 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
   isAuthenticated,
   isLoggingIn,
 }) => {
-  console.log(`[ProfileDialog] `);
-
   const renderStars = (quality: number) => {
     return "⭐️".repeat(quality);
   };
@@ -166,12 +164,12 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
         >
           <div className="relative w-full h-full flex flex-col items-center justify-center p-4">
             {/* 閉じるボタン */}
-            <button
+            {/* <button
               onClick={() => setImageViewTarotist(null)}
               className="absolute top-32 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-2xl transition-colors z-10"
             >
               ×
-            </button>
+            </button> */}
 
             {/* タイトル表示 */}
             <div className="absolute top-32 left-4 right-16 text-white z-10">
@@ -203,7 +201,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
             {/* タップで閉じるヒント */}
             <div className="absolute bottom-32 text-white/60 text-sm">
-              画面タップで閉じる
+              背景タップで閉じる
             </div>
           </div>
         </div>

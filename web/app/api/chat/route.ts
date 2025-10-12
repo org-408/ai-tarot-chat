@@ -33,9 +33,11 @@ export async function POST(req: Request) {
   logWithContext("info", "[chat/route] POST req", {
     id,
     messages,
+    length: messages.length,
     tarotist,
     spread,
     category,
+    path: "/api/chat",
   });
   console.log(`[chat/route] `, { id, messages, tarotist, spread, category });
   const provider =

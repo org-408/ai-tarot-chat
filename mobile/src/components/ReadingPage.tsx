@@ -1,6 +1,6 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { convertToModelMessages, DefaultChatTransport } from "ai";
 import { ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type {
@@ -1404,17 +1404,84 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   //     isTyping: false,
   //   },
   // ]);
-  const { messages, sendMessage } = useChat({
+  const domain = import.meta.env.VITE_BFF_URL;
+  const { messages, sendMessage, status } = useChat({
     id: "ai-tarot-chat",
     transport: new DefaultChatTransport({
-      api: "/api/chat",
+      api: `${domain}/api/chat`,
 
       // リクエストをカスタマイズ
       prepareSendMessagesRequest: ({ messages, id }) => {
+        // 初回（messagesが1件＝ユーザーの最初の入力のみ）の場合
+        let modelMessages = convertToModelMessages(messages);
+
+        if (modelMessages.length === 1) {
+          modelMessages = [
+            {
+              role: "system",
+              content:
+                `あなたは熟練したタロット占い師です。` +
+                `以下の制約条件と入力文をもとに、` +
+                `タロットカードのリーディングを行い、` +
+                `相談者にわかりやすく丁寧に説明してください。` +
+                `相談者の質問に対して、` +
+                `タロットカードの意味を踏まえた上で回答してください。` +
+                `相談者が質問していない場合でも、` +
+                `タロットカードの意味を踏まえた上で回答してください。` +
+                `相談者の質問に対して、` +
+                `タロットカードの意味を踏まえた上で回答してください。` +
+                `相談者が質問していない場合でも、` +
+                `タロットカードの意味を踏まえた上で回答してください。` +
+                `* あなたは、${tarotist.title}${tarotist.name}です。` +
+                `* 占いたいジャンルは${category.name}です。` +
+                `* スプレッドは${spread.name}です。` +
+                `* カードは以下の通りです。\n` +
+                drawnCards
+                  .map(
+                    (placement) =>
+                      `- ${placement.position}(${placement.card.name}${
+                        placement.isReversed ? "逆位置" : "正位置"
+                      }): ${
+                        placement.isReversed
+                          ? placement.card.reversedKeywords.join(", ")
+                          : placement.card.uprightKeywords.join(", ")
+                      }`
+                  )
+                  .join("\n")
+                  .trim() +
+                `\n\n` +
+                `【フォーマット】\n` +
+                `- 箇条書きでわかりやすく説明すること\n` +
+                `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
+                `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
+                `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
+                `- ですます調で話すこと\n` +
+                `- 絵文字や顔文字は使わないこと\n` +
+                `- 1回の回答は200文字以上300文字以内とすること\n` +
+                `- 回答の最後に「他に知りたいことはありますか？」と付け加えること\n` +
+                `\n` +
+                `【制約条件】\n` +
+                `- タロットカードの意味に基づいて回答すること\n` +
+                `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
+                `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
+                `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
+                `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
+                `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
+                `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
+                `- 絵文字や顔文字を使わないこと\n` +
+                `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
+                `- ですます調で話すこと\n` +
+                `- 1回の回答は200文字以上300文字以内とすること\n` +
+                `- 回答の最後に「他に知りたいことはありますか？」と付け加えること\n`,
+            },
+            ...modelMessages,
+          ];
+        }
+
         return {
           body: {
             id,
-            messages,
+            messages: convertToModelMessages(messages), // ←ここで変換
             tarotist,
             spread,
             category,
@@ -1425,7 +1492,15 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         };
       },
     }),
+    onError: (err) => {
+      console.error("Chat error:", err);
+    },
   });
+
+  useEffect(() => {
+    console.log("Chat status changed:", status);
+  }, [status]);
+
   const [inputValue, setInputValue] = useState("");
   const [crossFlipped, setCrossFlipped] = useState(false);
   const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
@@ -1545,6 +1620,15 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const visibleAreaWidth = cardSize * visibleCols + colGap * (visibleCols + 1);
   const visibleAreaHeight = cardSize * visibleRows + rowGap * (visibleRows + 1);
 
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("handleSendMessage", inputValue.trim());
+    if (inputValue.trim()) {
+      sendMessage({ text: inputValue });
+      console.log("sent message");
+      setInputValue("");
+    }
+  };
   // const handleSendMessage = () => {
   //   if (inputValue.trim()) {
   //     setMessages([
@@ -1898,7 +1982,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               onKeyUp={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  sendMessage();
+                  handleSendMessage(e);
                 }
               }}
               placeholder="メッセージを入力..."
@@ -1906,7 +1990,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
               className="flex-1 resize-none bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-400 focus:border-transparent shadow-lg p-4 focus:shadow-xl"
             />
             <button
-              onClick={() => sendMessage()}
+              onClick={handleSendMessage}
               disabled={!inputValue.trim()}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-lg p-1.5 transition-colors flex-shrink-0"
             >
