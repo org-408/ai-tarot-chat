@@ -55,8 +55,7 @@ export default function SpreadsPage() {
   //   ],
   //   []
   // );
-  const { spreads, loading, error, createSpread, updateSpread, deleteSpread } =
-    useSpreads();
+  const { spreads, createSpread } = useSpreads();
 
   // const [rows, setRows] = useState<Spread[]>(initialSpreads);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -103,14 +102,17 @@ export default function SpreadsPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleChange(updated: Spread) {
     // TODO:
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function upsertCell(next: SpreadCell[]) {
     // TODO:
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function removeCell(x: number, y: number) {
     // TODO:
   }
@@ -121,6 +123,7 @@ export default function SpreadsPage() {
 
   function newBlank() {
     createSpread({
+      no: spreads.length + 1,
       code: `spread-${today()}`,
       name: "新規スプレッド",
       category: "その他",
