@@ -308,7 +308,8 @@ export type ProviderKey =
   | "GEMINI_PRO"
   | "GPT"
   | "XAI"
-  | "CLAUDE";
+  | "CLAUDE"
+  | "OFFLINE";
 
 // タロット占い師モデル
 export type Tarotist = {

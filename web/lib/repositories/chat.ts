@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@/../shared/lib/types";
+import { convertFromPrismaProviderKey } from "../utils/prisma";
 import { BaseRepository } from "./base";
 
 export class ChatRepository extends BaseRepository {
@@ -24,13 +25,19 @@ export class ChatRepository extends BaseRepository {
   }
 
   async getMessagesByReadingId(readingId: string): Promise<ChatMessage[]> {
-    return await this.db.chatMessage.findMany({
-      where: { readingId },
-      orderBy: { createdAt: "asc" },
-      include: {
-        client: true,
-        tarotist: true,
-      },
+    return (
+      await this.db.chatMessage.findMany({
+        where: { readingId },
+        orderBy: { createdAt: "asc" },
+        include: {
+          client: true,
+          tarotist: true,
+        },
+      })
+    ).map((msg) => {
+      const { client, tarotist, ...rest } = msg;
+      tarotist.provider = convertFromPrismaProviderKey(tarotist.provider);
+      return { ...rest, tarotist, client };
     });
   }
 

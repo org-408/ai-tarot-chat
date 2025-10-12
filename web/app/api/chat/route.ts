@@ -1,9 +1,13 @@
-import { ReadingCategory, Spread, Tarotist } from "@/../../shared/lib/types";
 import { logWithContext } from "@/lib/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
 import { groq } from "@ai-sdk/groq";
 import { openai } from "@ai-sdk/openai";
 import { ModelMessage, streamText } from "ai";
+import {
+  ReadingCategory,
+  Spread,
+  Tarotist,
+} from "../../../../shared/lib/types";
 
 // プロバイダマッピング
 const providers = {
