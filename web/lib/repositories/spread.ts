@@ -37,7 +37,7 @@ export class SpreadRepository extends BaseRepository {
 
   async getAllSpreadLevels(): Promise<SpreadLevel[]> {
     return await this.db.spreadLevel.findMany({
-      orderBy: { createdAt: "asc" },
+      orderBy: { no: "asc" },
     });
   }
 
@@ -242,7 +242,7 @@ export class SpreadRepository extends BaseRepository {
 
   async getAllSpreads(): Promise<Spread[]> {
     return await this.db.spread.findMany({
-      orderBy: { createdAt: "asc" },
+      orderBy: { no: "asc" },
       include: {
         cells: true,
         level: true,
@@ -372,7 +372,7 @@ export class SpreadRepository extends BaseRepository {
 
   async getAllReadingCategories(): Promise<ReadingCategory[]> {
     return await this.db.readingCategory.findMany({
-      orderBy: { createdAt: "asc" },
+      orderBy: { no: "asc" },
     });
   }
 

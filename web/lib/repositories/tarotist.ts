@@ -9,6 +9,7 @@ export class TarotistRepository extends BaseRepository {
   async createTarotist(tarotist: TarotistInput): Promise<Tarotist> {
     const created = await this.db.tarotist.create({
       data: {
+        no: tarotist.no,
         name: tarotist.name,
         title: tarotist.title,
         icon: tarotist.icon,
@@ -62,7 +63,7 @@ export class TarotistRepository extends BaseRepository {
     return await this.db.tarotist.findMany({
       where: soft ? { deletedAt: null } : undefined,
       include: { plan: true },
-      orderBy: { order: "asc" },
+      orderBy: { no: "asc" },
     });
   }
 
