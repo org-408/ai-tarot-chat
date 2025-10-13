@@ -57,6 +57,57 @@ export class AuthRepository extends BaseRepository {
       where: { id },
     });
   }
+
+  /**
+   * 使用済みticketをチェック
+   */
+  async findUsedTicket(ticketHash: string) {
+    return await this.db.usedTicket.findUnique({
+      where: { ticketHash },
+    });
+  }
+
+  /**
+   * ticketを使用済みにマーク
+   */
+  async markTicketAsUsed(data: {
+    ticketHash: string;
+    userId: string;
+    deviceId?: string;
+    expiresAt: Date;
+  }) {
+    return await this.db.usedTicket.create({
+      data: {
+        ticketHash: data.ticketHash,
+        userId: data.userId,
+        deviceId: data.deviceId,
+        expiresAt: data.expiresAt,
+      },
+    });
+  }
+
+  /**
+   * 期限切れticketをクリーンアップ
+   */
+  async cleanupExpiredTickets() {
+    const result = await this.db.usedTicket.deleteMany({
+      where: {
+        expiresAt: { lt: new Date() },
+      },
+    });
+    return result.count;
+  }
+
+  /**
+   * ユーザーのticket使用履歴を取得（監査ログ用）
+   */
+  async getUserTicketHistory(userId: string, limit = 10) {
+    return await this.db.usedTicket.findMany({
+      where: { userId },
+      orderBy: { usedAt: "desc" },
+      take: limit,
+    });
+  }
 }
 
 export const authRepository = new AuthRepository();

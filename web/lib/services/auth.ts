@@ -10,6 +10,7 @@ import { authRepository } from "@/lib/repositories/auth";
 import { BaseRepository } from "@/lib/repositories/base";
 import { clientRepository } from "@/lib/repositories/client";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
+import { createHash } from "crypto";
 import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { logWithContext } from "../logger/logger";
@@ -112,7 +113,8 @@ export class AuthService {
     const session = await auth();
     logWithContext("info", "🔍 Current session:", { session });
 
-    if (!session?.user?.id || !session?.user?.email) {
+    if (!session?.user?.id || !session?.user?.email || !session?.provider) {
+      logWithContext("error", "❌ Not authenticated", { session });
       throw new Error("Not authenticated");
     }
 
@@ -137,23 +139,20 @@ export class AuthService {
 
   /**
    * チケット交換+ユーザー紐付け
+   * ✅ 修正: ticketの使い捨て実装
    */
   async exchangeTicket(params: {
     ticket: string;
     deviceId: string;
   }): Promise<string> {
-    logWithContext("info", "🔄 exchangeTicket called", { params });
+    logWithContext("info", "📄 exchangeTicket called", { params });
 
-    // チケット検証(既存パターンに合わせて)
+    // チケット検証
     let ticketData: TicketData;
     try {
-      logWithContext("info", "🔑 チケット検証開始 secret", {
-        secret: JWT_SECRET,
-      });
       const payload = await decodeJWT<TicketData>(params.ticket, JWT_SECRET);
 
       if (payload.t !== "ticket" || !payload.sub) {
-        logWithContext("error", "❌ Invalid ticket type:", { type: payload.t });
         throw new Error("Invalid ticket type");
       }
 
@@ -163,111 +162,90 @@ export class AuthService {
       throw new Error("Invalid ticket");
     }
 
+    // ✅ ticketのハッシュ生成（元の文字列は保存しない）
+    const ticketHash = createHash("sha256").update(params.ticket).digest("hex");
+
     return BaseRepository.transaction(
       { client: clientRepository, auth: authRepository },
       async ({ client, auth }) => {
+        // ✅ 使用済みticketチェック
+        const usedTicket = await auth.findUsedTicket(ticketHash);
+        if (usedTicket) {
+          logWithContext("error", "❌ Ticket already used", {
+            ticketHash,
+            usedAt: usedTicket.usedAt,
+            deviceId: usedTicket.deviceId,
+          });
+          throw new Error("Ticket already used");
+        }
+
         // デバイス取得
         const device = await client.getDeviceByDeviceId(params.deviceId);
-        logWithContext("info", "🔍 デバイス検索", {
-          deviceId: params.deviceId,
-          device,
-        });
-
         if (!device || !device.clientId || !device.client) {
-          logWithContext("error", "❌ Device not found or invalid:", {
-            deviceId: params.deviceId,
-            device,
-          });
           throw new Error("Device not found. Please register device first.");
         }
 
         const clientData = device.client;
         if (!clientData.plan) {
-          logWithContext("error", "❌ Client or plan not found for device:", {
-            device,
-            client: clientData,
-            plan: clientData.plan,
-          });
           throw new Error("Failed to get updated client");
         }
 
         // プロバイダーの設定
         const provider = ticketData.provider;
         if (!provider) {
-          // NOTE: OAuth認証以外を追加した場合には、ここを修正
-          logWithContext("error", "❌ Provider not found in ticket data:", {
-            ticketData,
-          });
+          // NOTE: OAuthèªè¨¼ä»¥å¤–ã‚'è¿½åŠ ã—ãŸå ´åˆã«ã¯ã€ã"ã"ã‚'ä¿®æ­£
           throw new Error("Provider not found");
         }
 
         // プランコードの変更(GUEST → FREE など)
-        logWithContext("info", "🔄 プランコード確認", {
-          current: clientData.plan.code,
-          no: clientData.plan.no,
-        });
         const planCode =
           clientData.plan.code === "GUEST" ? "FREE" : clientData.plan.code;
 
-        // ユーザーのDBとの照合
+        // ユーザーの照合
         const user = await auth.getUserById(ticketData.sub);
-        logWithContext("info", "🔍 ユーザー検索", {
-          userId: ticketData.sub,
-          user,
-        });
         if (!user) {
-          logWithContext("error", "❌ User not found in DB:", {
-            userId: ticketData.sub,
-          });
           throw new Error("User not found in DB.");
         }
 
         const existingClient = user.client;
-        logWithContext("info", "🔍 既存Client", { existingClient });
         let finalClient: Client;
 
         // user と 別の Client が紐付いている場合は統合
         if (existingClient && existingClient.id !== device.clientId) {
-          // 既存Clientがある場合:デバイスをそのClientに統合
           finalClient = await this.mergeClientsInTransaction(
             { client, auth, plan: planRepository },
             device.clientId,
             existingClient.id,
-            provider, // provider は必ず更新
+            provider,
             planCode
           );
-          logWithContext("info", "✅ 既存Clientに統合", {
-            user,
-            client: finalClient,
-          });
         } else {
-          // 既存Clientがない場合:現在のClientにユーザー情報を紐付け
           finalClient = await client.updateClient(device.clientId, {
             user: { connect: { id: user.id } },
             email: user.email,
             name: user.name,
             image: user.image,
-            provider, // provider を設定
+            provider,
             plan: { connect: { code: planCode } },
             isRegistered: true,
             lastLoginAt: new Date(),
           });
-          logWithContext("info", "✅ 新規ユーザー紐付け", {
-            user,
-            client: finalClient,
-          });
         }
 
         if (!finalClient || !finalClient.plan) {
-          logWithContext(
-            "error",
-            "❌ Failed to get final client or plan after merge/update",
-            { finalClient }
-          );
           throw new Error("Failed to get final client or plan");
         }
 
-        // アプリ用JWT生成(既存パターンに合わせて)
+        // ✅ ticketを使用済みにマーク（有効期限2分後）
+        await auth.markTicketAsUsed({
+          ticketHash,
+          userId: user.id,
+          deviceId: params.deviceId,
+          expiresAt: new Date(Date.now() + 2 * 60 * 1000),
+        });
+        logWithContext("info", "✅ Ticket marked as used", { ticketHash });
+
+        // アプリ用JWT生成
         const jwt = await generateJWT<AppJWTPayload>(
           {
             t: "app",
@@ -284,221 +262,146 @@ export class AuthService {
           },
           JWT_SECRET
         );
-        logWithContext("info", "🔑 JWT generated for device:", {
-          deviceId: device.deviceId,
-          jwt,
-        });
+
         return jwt;
       }
     );
   }
 
-  // ** 重要!! **
-  // Client統合(ユーザーが複数Clientを持ってしまった場合の救済用)
-  // planはより上位のものを適用
-  // 利用回数は合算
-  // トランザクション内で呼ばれることを想定し、txRepos を受け取る
+  /**
+   * ** 重要!! **
+   * Client統合(ユーザーが複数Clientを持ってしまった場合の救済用)
+   * planはより上位のものを適用
+   * 利用回数は合算
+   */
   private async mergeClientsInTransaction(
     txRepos: {
       client: typeof clientRepository;
       auth: typeof authRepository;
       plan: typeof planRepository;
     },
-    fromClientId: string,
-    toClientId: string,
+    deviceClientId: string, // デバイスのClient（統合元）
+    userClientId: string, // ユーザーのClient（統合先）
     provider: string,
     newPlanCode: string
   ): Promise<Client> {
     logWithContext("info", "🔀 Merging clients", {
-      from: fromClientId,
-      to: toClientId,
+      deviceClient: deviceClientId,
+      userClient: userClientId,
     });
 
     const { client: clientRepo, plan: planRepo } = txRepos;
 
-    if (fromClientId === toClientId) {
+    if (deviceClientId === userClientId) {
       throw new Error("Cannot merge the same client");
     }
 
-    let fromClient = await clientRepo.getClientWithAllRelations(fromClientId);
-    if (!fromClient) {
-      logWithContext("error", "❌ fromClient not found", { fromClientId });
-      throw new Error("fromClient not found");
+    const deviceClient = await clientRepo.getClientWithAllRelations(
+      deviceClientId
+    );
+    if (!deviceClient) {
+      throw new Error("Device client not found");
     }
 
-    let toClient = await clientRepo.getClientWithAllRelations(toClientId);
-    if (!toClient) {
-      logWithContext("error", "❌ toClient not found", { toClientId });
-      throw new Error("toClient not found");
+    const userClient = await clientRepo.getClientWithAllRelations(userClientId);
+    if (!userClient) {
+      throw new Error("User client not found");
     }
-    logWithContext("info", "🔍 fromClient, toClient", { fromClient, toClient });
 
-    // 先に作られたClientを優先
-    if (fromClient.createdAt < toClient.createdAt) {
-      [fromClient, toClient] = [toClient, fromClient];
-    }
-    logWithContext("info", "🔄 Swapped if needed from, to", {
-      fromClient,
-      toClient,
-    });
-
-    // 念の為、deletedAt チェック
-    if (fromClient.deletedAt || toClient.deletedAt) {
-      logWithContext("error", "❌ Cannot merge deleted clients", {
-        fromClient,
-        toClient,
-      });
+    // 削除済みチェック
+    if (deviceClient.deletedAt || userClient.deletedAt) {
       throw new Error("Cannot merge deleted clients");
     }
 
-    // 念の為、userId チェック(toClient.userId が優先)
-    const userId = toClient.userId || fromClient.userId;
-    if (!userId) {
-      logWithContext("error", "❌ Both clients have no userId", {
-        fromClient,
-        toClient,
-      });
-      throw new Error("Cannot merge clients with different userId");
+    // userClientは必ずuserIdを持つ
+    if (!userClient.userId) {
+      throw new Error("User client has no userId");
     }
-    logWithContext("info", "👤 Merging for userId:", {
-      userId,
-      toClientUserId: toClient.userId,
-      fromClientUserId: fromClient.userId,
-    });
 
-    // plan情報は、より上位のものを適用
+    // planは上位のものを使用
     const newPlan = await planRepo.getPlanByCode(newPlanCode);
-    const plans = [fromClient.plan, toClient.plan, newPlan].filter(
+    const plans = [deviceClient.plan, userClient.plan, newPlan].filter(
       Boolean
     ) as Plan[];
     const higherPlan = plans.reduce((prev, curr) =>
       curr.no > prev.no ? curr : prev
     );
 
-    if (!higherPlan) {
-      logWithContext("error", "❌ Both clients have no plan", {
-        fromClient,
-        toClient,
-      });
-      throw new Error("Both clients have no plan");
-    }
-    logWithContext("info", "🏆 Higher plan selected:", {
-      higherPlan,
-      fromClientPlan: fromClient.plan,
-      toClientPlan: toClient.plan,
-      newPlan,
-    });
-
     // 利用回数は合算
     const sumReadingsCount =
-      (fromClient.dailyReadingsCount || 0) + (toClient.dailyReadingsCount || 0);
+      (deviceClient.dailyReadingsCount || 0) +
+      (userClient.dailyReadingsCount || 0);
     const sumCelticsCount =
-      (fromClient.dailyCelticsCount || 0) + (toClient.dailyCelticsCount || 0);
+      (deviceClient.dailyCelticsCount || 0) +
+      (userClient.dailyCelticsCount || 0);
     const sumPersonalCount =
-      (fromClient.dailyPersonalCount || 0) + (toClient.dailyPersonalCount || 0);
+      (deviceClient.dailyPersonalCount || 0) +
+      (userClient.dailyPersonalCount || 0);
 
-    // 利用日は新しい方を適用
-    const lastReadingDate =
-      !fromClient.lastReadingDate || !toClient.lastReadingDate
-        ? fromClient.lastReadingDate || toClient.lastReadingDate
-        : fromClient.lastReadingDate > toClient.lastReadingDate
-        ? fromClient.lastReadingDate
-        : toClient.lastReadingDate;
+    // 最終利用日は新しい方
+    const lastReadingDate = [
+      deviceClient.lastReadingDate,
+      userClient.lastReadingDate,
+    ]
+      .filter(Boolean)
+      .sort((a, b) => b!.getTime() - a!.getTime())[0];
 
-    const lastCelticReadingDate =
-      !fromClient.lastCelticReadingDate || !toClient.lastCelticReadingDate
-        ? fromClient.lastCelticReadingDate || toClient.lastCelticReadingDate
-        : fromClient.lastCelticReadingDate > toClient.lastCelticReadingDate
-        ? fromClient.lastCelticReadingDate
-        : toClient.lastCelticReadingDate;
+    const lastCelticReadingDate = [
+      deviceClient.lastCelticReadingDate,
+      userClient.lastCelticReadingDate,
+    ]
+      .filter(Boolean)
+      .sort((a, b) => b!.getTime() - a!.getTime())[0];
 
-    const lastPersonalReadingDate =
-      !fromClient.lastPersonalReadingDate || !toClient.lastPersonalReadingDate
-        ? fromClient.lastPersonalReadingDate || toClient.lastPersonalReadingDate
-        : fromClient.lastPersonalReadingDate > toClient.lastPersonalReadingDate
-        ? fromClient.lastPersonalReadingDate
-        : toClient.lastPersonalReadingDate;
+    const lastPersonalReadingDate = [
+      deviceClient.lastPersonalReadingDate,
+      userClient.lastPersonalReadingDate,
+    ]
+      .filter(Boolean)
+      .sort((a, b) => b!.getTime() - a!.getTime())[0];
 
-    // fromClientのデバイスをすべてtoClientに移動
-    const devices =
-      fromClient.devices && toClient.devices
-        ? [
-            ...fromClient.devices,
-            ...toClient.devices.filter(
-              (d2) =>
-                !fromClient.devices?.some((d1) => d1.deviceId === d2.deviceId)
-            ),
-          ]
-        : fromClient.devices || toClient.devices || [];
-    logWithContext("info", "📱 Merging devices:", { devices });
-
-    const isRegistered = fromClient.isRegistered || toClient.isRegistered;
-    logWithContext("info", "🔍 isRegistered:", { isRegistered });
+    // デバイス統合（deviceIdで重複除去）
+    const allDevices = [
+      ...(deviceClient.devices || []),
+      ...(userClient.devices || []),
+    ];
+    const uniqueDevices = Array.from(
+      new Map(allDevices.map((d) => [d.deviceId, d])).values()
+    );
 
     const lastLoginAt =
-      fromClient.lastLoginAt && toClient.lastLoginAt
-        ? fromClient.lastLoginAt > toClient.lastLoginAt
-          ? fromClient.lastLoginAt
-          : toClient.lastLoginAt
-        : fromClient.lastLoginAt || toClient.lastLoginAt;
-    logWithContext("info", "🕒 lastLoginAt:", { lastLoginAt });
+      [deviceClient.lastLoginAt, userClient.lastLoginAt]
+        .filter(Boolean)
+        .sort((a, b) => b!.getTime() - a!.getTime())[0] || new Date();
 
-    const favoriteSpreads =
-      fromClient.favoriteSpreads && toClient.favoriteSpreads
-        ? [
-            ...fromClient.favoriteSpreads,
-            ...toClient.favoriteSpreads.filter(
-              (s2) =>
-                !fromClient.favoriteSpreads?.some(
-                  (s1) => s1.spreadId === s2.spreadId
-                )
-            ),
-          ]
-        : fromClient.favoriteSpreads || toClient.favoriteSpreads || [];
-    logWithContext("info", "⭐ Merging favoriteSpreads:", { favoriteSpreads });
+    // お気に入りスプレッド統合
+    const allFavoriteSpreads = [
+      ...(deviceClient.favoriteSpreads || []),
+      ...(userClient.favoriteSpreads || []),
+    ];
+    const uniqueFavoriteSpreads = Array.from(
+      new Map(allFavoriteSpreads.map((s) => [s.spreadId, s])).values()
+    );
 
-    const readings =
-      fromClient.readings && toClient.readings
-        ? [
-            ...fromClient.readings,
-            ...toClient.readings.filter(
-              (r2) => !fromClient.readings?.some((r1) => r1.id === r2.id)
-            ),
-          ]
-        : fromClient.readings || toClient.readings || [];
-    logWithContext("info", "🔮 Merging readings:", { readings });
+    const allReadings = [
+      ...(deviceClient.readings || []),
+      ...(userClient.readings || []),
+    ];
+    const allPlanChangeHistories = [
+      ...(deviceClient.planChangeHistories || []),
+      ...(userClient.planChangeHistories || []),
+    ];
+    const allChatMessages = [
+      ...(deviceClient.chatMessages || []),
+      ...(userClient.chatMessages || []),
+    ];
 
-    const planChangeHistories =
-      fromClient.planChangeHistories && toClient.planChangeHistories
-        ? [
-            ...fromClient.planChangeHistories,
-            ...toClient.planChangeHistories.filter(
-              (p2) =>
-                !fromClient.planChangeHistories?.some((p1) => p1.id === p2.id)
-            ),
-          ]
-        : fromClient.planChangeHistories || toClient.planChangeHistories || [];
-    logWithContext("info", "📈 Merging planChangeHistories:", {
-      planChangeHistories,
-    });
-
-    const chatMessages =
-      fromClient.chatMessages && toClient.chatMessages
-        ? [
-            ...fromClient.chatMessages,
-            ...toClient.chatMessages.filter(
-              (c2) => !fromClient.chatMessages?.some((c1) => c1.id === c2.id)
-            ),
-          ]
-        : fromClient.chatMessages || toClient.chatMessages || [];
-    logWithContext("info", "💬 Merging chatMessages:", { chatMessages });
-
-    // fromClientのデバイスをすべてtoClientに移動
-    const updatedClient = (await clientRepo.updateClient(toClient.id, {
-      user: { connect: { id: userId } },
-      name: toClient.name || fromClient.name,
-      email: toClient.email || fromClient.email,
-      image: toClient.image || fromClient.image,
+    // userClientを更新
+    const updatedClient = (await clientRepo.updateClient(userClient.id, {
+      user: { connect: { id: userClient.userId } },
+      name: userClient.name || deviceClient.name,
+      email: userClient.email || deviceClient.email,
+      image: userClient.image || deviceClient.image,
       provider,
       plan: { connect: { id: higherPlan.id } },
       dailyReadingsCount: Math.min(sumReadingsCount, higherPlan.maxReadings),
@@ -507,18 +410,27 @@ export class AuthService {
       lastReadingDate,
       lastCelticReadingDate,
       lastPersonalReadingDate,
-      devices: { connect: devices.map((d) => ({ id: d.id })) },
-      isRegistered,
-      lastLoginAt: new Date(), // ログイン直後なので更新
-      favoriteSpreads: { connect: favoriteSpreads.map((s) => ({ id: s.id })) },
-      readings: { connect: readings.map((r) => ({ id: r.id })) },
-      planChangeHistories: {
-        connect: planChangeHistories.map((p) => ({ id: p.id })),
+      devices: { connect: uniqueDevices.map((d) => ({ id: d.id })) },
+      isRegistered: true,
+      lastLoginAt,
+      favoriteSpreads: {
+        connect: uniqueFavoriteSpreads.map((s) => ({ id: s.id })),
       },
-      chatMessages: { connect: chatMessages.map((c) => ({ id: c.id })) },
+      readings: { connect: allReadings.map((r) => ({ id: r.id })) },
+      planChangeHistories: {
+        connect: allPlanChangeHistories.map((p) => ({ id: p.id })),
+      },
+      chatMessages: { connect: allChatMessages.map((c) => ({ id: c.id })) },
     })) as Client;
-    logWithContext("info", "✅ Clients merged into:", { updatedClient });
+
+    // deviceClientを論理削除
+    await clientRepo.softDeleteClient(deviceClient.id);
+
     return updatedClient;
+  }
+
+  async cleanupExpiredTickets(): Promise<number> {
+    return await authRepository.cleanupExpiredTickets();
   }
 
   /**

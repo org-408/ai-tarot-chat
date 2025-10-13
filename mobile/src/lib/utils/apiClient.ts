@@ -5,7 +5,6 @@ const BFF_URL = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
 
 /**
  * API エラークラス
- * status プロパティを持つエラーオブジェクト
  */
 class ApiError extends Error {
   public status: number;
@@ -20,29 +19,18 @@ class ApiError extends Error {
 }
 
 export class ApiClient {
-  private cachedToken: string | null = null;
-
   /**
-   * 現在のトークンを取得（シンプルにキャッシュから取るだけ）
+   * ✅ 改善: キャッシュを廃止
+   *
+   * 理由:
+   * 1. キャッシュクリアを手動で呼ぶのは設計ミス
+   * 2. authService が単一の真実の源（Single Source of Truth）
+   * 3. 毎回ストレージから取得してもパフォーマンス影響は無視できる
+   * 4. シンプル = バグが少ない
    */
   private async getToken(): Promise<string | null> {
-    // キャッシュがあればそれを返す
-    if (this.cachedToken) {
-      return this.cachedToken;
-    }
-
-    // なければストレージから取得してキャッシュ
-    const token = await authService.getAccessToken();
-    this.cachedToken = token;
-    return token;
-  }
-
-  /**
-   * キャッシュクリア（logout時、refresh後などに呼ぶ）
-   */
-  clearTokenCache(): void {
-    console.log("[ApiClient] clearTokenCache called");
-    this.cachedToken = null;
+    // ✅ 常に最新のトークンをストレージから取得
+    return await authService.getAccessToken();
   }
 
   async get<T>(path: string): Promise<T> {
@@ -73,11 +61,13 @@ export class ApiClient {
   }
 
   /**
-   * シンプルなリクエスト実行（リトライなし）
+   * リクエスト実行
+   * ✅ 毎回最新のトークンを取得
    */
   private async request<T>(
     requestFn: (token: string | null) => Promise<HttpResponse>
   ): Promise<T> {
+    // ✅ 毎回最新のトークンを取得（キャッシュなし）
     const token = await this.getToken();
     console.log("[ApiClient] Using token:", token ? "[HIDDEN]" : "null");
 
@@ -120,7 +110,6 @@ export class ApiClient {
     console.log("[ApiClient] handleResponse called, status:", response.status);
     if (response.status < 200 || response.status >= 300) {
       console.error(`[ApiClient] API Error ${response.status}`, response);
-      // ✅ status プロパティを持つエラーオブジェクトを throw
       throw new ApiError(
         response.status,
         `API Error ${response.status}`,

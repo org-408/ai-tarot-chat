@@ -536,3 +536,19 @@ model Log {
   @@index([path])
   @@index([timestamp])
 }
+
+// ==========================================
+// Ticket関連モデル
+// ==========================================
+// schema.prisma
+model UsedTicket {
+  id         String   @id @default(cuid())
+  ticketHash String   @unique @db.VarChar(64)
+  userId     String
+  deviceId   String?
+  usedAt     DateTime @default(now())
+  expiresAt  DateTime
+
+  @@index([expiresAt])
+  @@map("used_tickets")
+}
