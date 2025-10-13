@@ -85,7 +85,9 @@ export const resetAppData = async () => {
     logWithContext("info", "[ResetApp] Deleting server-side data");
     const secret = import.meta.env.VITE_AUTH_SECRET;
     try {
-      await apiClient.post("/api/reset", { secret });
+      await apiClient.postWithoutAuth<{ success: boolean }>("/api/reset", {
+        secret,
+      });
       logWithContext(
         "info",
         "[ResetApp] Server-side data(clients/devices/logs) deleted"

@@ -253,9 +253,10 @@ export class AuthService {
         throw new Error("デバイスIDが存在しません");
       }
 
-      const result = await apiClient.post<{
-        token: string;
-      }>("/api/auth/exchange", { ticket, deviceId });
+      const result = await apiClient.post<{ token: string }>(
+        "/api/auth/exchange",
+        { ticket, deviceId }
+      );
 
       if (!result || "error" in result) {
         throw new Error("トークン交換に失敗しました");

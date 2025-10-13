@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const secret = body.AUTH_SECRET;
+  const secret = body.secret;
 
   // 環境変数からシークレット取得
   const expectedSecret = process.env.AUTH_SECRET;
