@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       status: 500,
     });
     return NextResponse.json(
-      { error: "更新チェックに失敗しました" },
+      { error, errorMessage: "更新チェックに失敗しました" },
       { status: 500 }
     );
   }

@@ -19,6 +19,8 @@ class ApiError extends Error {
 }
 
 export class ApiClient {
+  private path?: string;
+  private method?: string;
   /**
    * ✅ 改善: キャッシュを廃止
    *
@@ -35,6 +37,8 @@ export class ApiClient {
 
   async get<T>(path: string): Promise<T> {
     console.log(`[ApiClient] GET request to: ${BFF_URL}${path}`);
+    this.path = path;
+    this.method = "GET";
     return this.request<T>(async (token) => {
       return CapacitorHttp.get({
         url: `${BFF_URL}${path}`,
@@ -48,6 +52,8 @@ export class ApiClient {
 
   async post<T>(path: string, body?: unknown): Promise<T> {
     console.log(`[ApiClient] POST request to: ${BFF_URL}${path}`);
+    this.path = path;
+    this.method = "GET";
     return this.request<T>(async (token) => {
       return CapacitorHttp.post({
         url: `${BFF_URL}${path}`,
@@ -112,7 +118,7 @@ export class ApiClient {
       console.error(`[ApiClient] API Error ${response.status}`, response);
       throw new ApiError(
         response.status,
-        `API Error ${response.status}`,
+        `API Error ${response.status} ${this.method} ${this.path}`,
         response
       );
     }

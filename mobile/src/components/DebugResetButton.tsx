@@ -68,7 +68,7 @@ export function DebugResetButton() {
       <button
         onClick={() => setShowMenu(!showMenu)}
         disabled={isResetting}
-        className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
       >
         {isResetting ? "🔄 処理中..." : "🧹 リセットメニュー"}
       </button>

@@ -9,9 +9,12 @@ import { useClientStore } from "../stores/client";
 export function useClient() {
   const { payload } = useAuthStore();
   const {
+    isReady,
+    currentPlan,
     usage,
     isChangingPlan,
     planChangeError,
+    init,
     changePlan,
     refreshUsage,
     checkAndResetIfNeeded,
@@ -37,6 +40,8 @@ export function useClient() {
     // ============================================
     // 利用状況（Client Store から取得）
     // ============================================
+    isReady,
+    currentPlan,
     usage,
     remainingReadings: usage?.remainingReadings ?? 0,
     remainingCeltics: usage?.remainingCeltics ?? 0,
@@ -51,6 +56,7 @@ export function useClient() {
     // ============================================
     // アクション
     // ============================================
+    init,
     refreshUsage,
     checkAndResetIfNeeded,
     decrementOptimistic,

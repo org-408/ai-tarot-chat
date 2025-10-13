@@ -82,29 +82,19 @@ export const resetAppData = async () => {
     // ========================================
     // 7. Webサーバー側のデータを削除
     // ========================================
-    if (deviceId) {
-      logWithContext("info", "[ResetApp] Deleting server-side data", {
-        deviceId,
-      });
-      try {
-        await apiClient.post("/api/device/reset", { deviceId });
-        logWithContext("info", "[ResetApp] Server-side data deleted");
-      } catch (error) {
-        logWithContext(
-          "error",
-          "[ResetApp] Failed to delete server-side data",
-          {
-            error,
-          }
-        );
-      }
-    } else {
+    logWithContext("info", "[ResetApp] Deleting server-side data");
+    const secret = import.meta.env.VITE_AUTH_SECRET;
+    try {
+      await apiClient.post("/api/reset", { secret });
       logWithContext(
-        "warn",
-        "[ResetApp] No deviceId found, skipping server reset"
+        "info",
+        "[ResetApp] Server-side data(clients/devices/logs) deleted"
       );
+    } catch (error) {
+      logWithContext("error", "[ResetApp] Failed to delete server-side data", {
+        error,
+      });
     }
-
     logWithContext("info", "[ResetApp] App data reset completed successfully");
     return true;
   } catch (error) {

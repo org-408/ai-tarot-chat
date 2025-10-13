@@ -2,6 +2,7 @@ import type { Client, Plan } from "@/../shared/lib/types";
 import { BaseRepository } from "@/lib/repositories/base";
 import { clientRepository } from "@/lib/repositories/client";
 import { planRepository } from "@/lib/repositories/plan";
+import { logWithContext } from "../logger/logger";
 
 export class PlanService {
   /**
@@ -29,8 +30,13 @@ export class PlanService {
             : client.plan.no > newPlan.no
             ? "DOWNGRADE"
             : "SAME";
-        if (autoReason === "SAME")
+        if (autoReason === "SAME") {
+          logWithContext("warn", "❌ 同一プランへの変更リクエスト", {
+            clientId,
+            newPlanCode,
+          });
           throw new Error("You are already on this plan");
+        }
 
         // 利用残数のチェック(アップグレード時はリセット)
         let dailyReadingsCount = 0;
@@ -52,21 +58,38 @@ export class PlanService {
           );
         }
 
-        // プラン変更履歴記録
-        await planRepo.createPlanChangeHistory({
-          client: { connect: { id: client.id } },
-          fromPlan: { connect: { id: client.planId } },
-          toPlan: { connect: { code: newPlanCode } },
-          reason: reason || autoReason,
-        });
+        try {
+          // プラン変更履歴記録
+          await planRepo.createPlanChangeHistory({
+            client: { connect: { id: client.id } },
+            fromPlan: { connect: { id: client.planId } },
+            toPlan: { connect: { code: newPlanCode } },
+            reason: reason || autoReason,
+          });
+        } catch (error) {
+          logWithContext("error", "❌ プラン変更履歴の記録に失敗", {
+            clientId,
+            newPlanCode,
+            error,
+          });
+        }
 
-        // ユーザーのプラン更新
-        return await clientRepo.updateClient(clientId, {
-          plan: { connect: { code: newPlanCode } },
-          dailyReadingsCount,
-          dailyCelticsCount,
-          dailyPersonalCount,
-        });
+        try {
+          // ユーザーのプラン更新
+          return await clientRepo.updateClient(clientId, {
+            plan: { connect: { code: newPlanCode } },
+            dailyReadingsCount,
+            dailyCelticsCount,
+            dailyPersonalCount,
+          });
+        } catch (error) {
+          logWithContext("error", "❌ クライアントのプラン更新に失敗", {
+            clientId,
+            newPlanCode,
+            error,
+          });
+          throw error;
+        }
       }
     );
   }

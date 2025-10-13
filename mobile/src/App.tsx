@@ -16,7 +16,6 @@ import { useAuth } from "./lib/hooks/useAuth";
 import { useClient } from "./lib/hooks/useClient";
 import { useLifecycle } from "./lib/hooks/useLifecycle";
 import { useMaster } from "./lib/hooks/useMaster";
-import { useUsage } from "./lib/hooks/useUsage";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
@@ -52,8 +51,15 @@ function App() {
   } = useAuth();
 
   // 🔥 クライアント情報（changePlanで全て管理）
-  const { planCode, clientId, changePlan, isChangingPlan, planChangeError } =
-    useClient();
+  const {
+    isReady: clientIsReady,
+    usage: usageStats,
+    planCode,
+    clientId,
+    changePlan,
+    isChangingPlan,
+    planChangeError,
+  } = useClient();
 
   // 🔥 マスターデータ取得
   // 条件: lifecycle.init()完了 && auth.isReady
@@ -61,21 +67,19 @@ function App() {
     masterData,
     plans,
     isLoading: isMasterLoading,
-  } = useMaster(isInitialized && authIsReady);
-
-  // 🔥 利用状況取得
-  // 条件: lifecycle.init()完了 && auth.isReady && clientIdあり
-  const { usage: usageStats, isLoading: isUsageLoading } = useUsage(
-    isInitialized && authIsReady && !!clientId
-  );
+  } = useMaster(isInitialized && authIsReady && clientIsReady);
 
   // 🔥 初期化処理
   useEffect(() => {
     console.log("[App] 初期化開始");
 
+    console.log("[App] init 開始");
     init().then(() => {
-      console.log("[App] 初期化完了");
+      console.log("[App] init 完了");
+      console.log("[App] setup 開始");
       setup();
+      console.log("[App] setup 完了");
+      console.log("[App] 初期化完了");
     });
 
     return () => {
@@ -109,7 +113,6 @@ function App() {
   useEffect(() => {
     if (planChangeError) {
       console.error("[App] Plan change error:", planChangeError);
-      alert(planChangeError || "プラン変更に失敗しました");
     }
   }, [planChangeError]);
 
@@ -190,9 +193,7 @@ function App() {
       authIsReady,
       clientId,
       isMasterLoading,
-      isUsageLoading,
       hasMasterData: !!masterData,
-      hasUsageStats: !!usageStats,
       hasPayload: !!payload,
       isChangingPlan,
     });
@@ -201,9 +202,7 @@ function App() {
     authIsReady,
     clientId,
     isMasterLoading,
-    isUsageLoading,
     masterData,
-    usageStats,
     payload,
     isChangingPlan,
   ]);
@@ -213,7 +212,6 @@ function App() {
     !isInitialized ||
     !authIsReady ||
     isMasterLoading ||
-    isUsageLoading ||
     !masterData ||
     !usageStats ||
     !payload
@@ -227,8 +225,6 @@ function App() {
             ? "認証情報を確認中..."
             : isMasterLoading
             ? "マスターデータを読み込み中..."
-            : isUsageLoading
-            ? "利用状況を読み込み中..."
             : !masterData
             ? "マスターデータを読み込み中..."
             : !usageStats
@@ -329,7 +325,6 @@ function App() {
               <div className="text-6xl mb-4">🚧</div>
               <div className="text-lg font-bold mb-2">準備中</div>
               <div className="text-sm">設定機能を開発中です</div>
-              <DebugResetButton />
 
               {isAuthenticated && (
                 <div className="mt-8">
@@ -394,7 +389,7 @@ function App() {
       <Header currentPlan={planCode as UserPlan} currentPage={pageType} />
 
       {/* 開発メニュー */}
-      <div className="fixed top-2 right-2 z-50">
+      <div className="fixed top-16 right-2 z-50">
         <button
           onClick={() => setDevMenuOpen(!devMenuOpen)}
           className="w-6 h-6 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full text-xs text-white flex items-center justify-center transition-all opacity-30 hover:opacity-80"
@@ -404,7 +399,7 @@ function App() {
         </button>
 
         {devMenuOpen && (
-          <div className="absolute top-8 right-0 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border">
+          <div className="absolute top-8 right-0 w-32 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border">
             <div className="text-xs mb-2 text-gray-600">プラン切替</div>
             <div className="flex flex-col gap-1">
               <button
@@ -467,6 +462,7 @@ function App() {
               >
                 🔮 Tarotist
               </button>
+              <DebugResetButton />
               <hr className="my-1 border-gray-300" />
               {isAuthenticated ? (
                 <button

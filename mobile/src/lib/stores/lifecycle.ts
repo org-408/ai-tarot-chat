@@ -4,7 +4,6 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { authService } from "../services/auth";
-import { queryClient } from "../services/queryClient";
 import { useAuthStore } from "./auth";
 
 interface HttpError extends Error {
@@ -34,6 +33,7 @@ interface LifecycleState {
 }
 
 import type { PluginListenerHandle } from "@capacitor/core";
+import { useClientStore } from "./client";
 
 let appStateListener: PluginListenerHandle | null = null;
 
@@ -83,10 +83,16 @@ export const useLifecycleStore = create<LifecycleState>()(
             });
 
             // ========================================
-            // 認証初期化のみ実行
+            // 認証初期化の実行
             // ========================================
             logWithContext("info", "[Lifecycle] Initializing auth");
             await useAuthStore.getState().init();
+
+            // ========================================
+            // 利用状況初期化の実行
+            // ========================================
+            logWithContext("info", "[Lifecycle] Initializing client");
+            await useClientStore.getState().init();
 
             // ✅ 初期化完了
             set({
@@ -210,20 +216,32 @@ export const useLifecycleStore = create<LifecycleState>()(
                 { error: error.message }
               );
             }
-          }
-
-          // ========================================
-          // 2. ReactQueryキャッシュの無効化
-          // ========================================
-          const authPayload = authStore.payload;
-
-          if (authStore.isReady && authPayload?.clientId) {
-            logWithContext("info", "[Lifecycle] Invalidating data cache");
-
-            // Usageキャッシュを無効化(ReactQueryが自動で再取得)
-            await queryClient.invalidateQueries({
-              queryKey: ["usage", authPayload.clientId],
-            });
+            // ========================================
+            // 2. 利用状況のリフレッシュ
+            // ========================================
+            const clientStore = useClientStore.getState();
+            if (authStore.isAuthenticated && clientStore.isReady) {
+              logWithContext("info", "[Lifecycle] Refreshing client usage");
+              try {
+                await clientStore.refreshUsage();
+              } catch (usageError) {
+                logWithContext(
+                  "warn",
+                  "[Lifecycle] Failed to refresh usage, but continuing",
+                  {
+                    error:
+                      usageError instanceof Error
+                        ? usageError.message
+                        : String(usageError),
+                  }
+                );
+              }
+            } else {
+              logWithContext(
+                "info",
+                "[Lifecycle] Skipping usage refresh, not authenticated or client not ready"
+              );
+            }
           }
 
           // 日付変更の検出
