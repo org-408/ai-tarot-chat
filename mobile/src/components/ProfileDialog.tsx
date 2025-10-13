@@ -9,9 +9,8 @@ interface ProfileDialogProps {
   setImageViewTarotist: (tarotist: Tarotist | null) => void;
   hasButton?: boolean;
   canUseTarotist?: (planCode: string) => boolean;
-  handleUpgrade?: (planCode: string) => void;
-  isAuthenticated?: boolean;
-  isLoggingIn?: boolean;
+  handleChangePlan?: (planCode: string) => void;
+  isChangingPlan?: boolean;
 }
 
 const ProfileDialog: React.FC<ProfileDialogProps> = ({
@@ -21,9 +20,8 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
   setImageViewTarotist,
   hasButton = false,
   canUseTarotist = () => false,
-  handleUpgrade = () => {},
-  isAuthenticated,
-  isLoggingIn,
+  handleChangePlan = () => {},
+  isChangingPlan,
 }) => {
   const renderStars = (quality: number) => {
     return "⭐️".repeat(quality);
@@ -116,19 +114,17 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleUpgrade(selectedTarotist.plan!.code);
+                    handleChangePlan(selectedTarotist.plan!.code);
                     setSelectedTarotist(null);
                   }}
-                  disabled={isLoggingIn}
+                  disabled={isChangingPlan}
                   className="w-full py-3 px-4 text-xs text-white rounded-lg font-medium transition-all mb-3 shadow-md"
                   style={{
                     backgroundColor: selectedTarotist.plan!.accentColor,
                   }}
                 >
-                  {isLoggingIn
+                  {isChangingPlan
                     ? "認証中..."
-                    : !isAuthenticated
-                    ? `ログイン&${selectedTarotist.plan!.name}にアップグレード`
                     : `${selectedTarotist.plan!.name}にアップグレード`}
                 </button>
               ) : (

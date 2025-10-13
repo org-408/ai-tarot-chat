@@ -15,29 +15,24 @@ import ScrollableRadioSelector from "./ScrollableRadioSelector";
 
 interface SalonPageProps {
   payload: AppJWTPayload;
-  isAuthenticated: boolean;
   masterData: MasterData;
   usageStats: UsageStats;
-  onLogin: () => void;
-  onUpgrade: (plan: UserPlan) => void;
-  onDowngrade: (plan: UserPlan) => void;
+  onChangePlan: (plan: UserPlan) => void;
   onStartReading: (
     tarotist: Tarotist,
     spread: Spread,
     category: ReadingCategory
   ) => void;
-  isLoggingIn: boolean;
+  isChangingPlan: boolean;
 }
 
 const SalonPage: React.FC<SalonPageProps> = ({
   payload,
-  isAuthenticated,
   masterData,
   usageStats,
-  onLogin,
-  onUpgrade,
+  onChangePlan,
   onStartReading,
-  isLoggingIn,
+  isChangingPlan,
 }) => {
   const [selectedCategory, setSelectedCategory] =
     useState<ReadingCategory | null>(null);
@@ -49,8 +44,12 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const user = payload?.user || null;
 
-  const currentPlan = masterData.plans.find(
-    (p: Plan) => p.code === payload?.planCode || "GUEST"
+  const currentPlan = useMemo(
+    () =>
+      masterData.plans.find(
+        (p: Plan) => p.code === (payload?.planCode || "GUEST")
+      ),
+    [masterData.plans, payload?.planCode]
   );
 
   // 1. 占い師の取得とフィルタリング
@@ -65,7 +64,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
       return (
         tarotistPlan &&
         tarotistPlan.no <= (currentPlan!.no || 0) &&
-        tarotistPlan.code !== "OFFLINE" // TODO:OFFLINEプランの占い師は除外
+        tarotist.provider !== "OFFLINE" // TODO:OFFLINEプランの占い師は除外
       );
     });
   }, [masterData, currentPlan]);
@@ -79,7 +78,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         // GUESTとFREEは、恋愛・健康・金運を除外
         if (
           (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") &&
-          ["恋愛", "健康", "金運"].includes(category.name)
+          ["恋愛", "仕事", "今日の運勢"].includes(category.name)
         ) {
           return true;
         }
@@ -185,17 +184,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
     onStartReading(selectedTarotist!, selectedSpread, selectedCategory);
   };
 
-  const handleUpgradeClick = (targetPlan: UserPlan) => {
-    if (!isAuthenticated) {
-      console.log(
-        `[SalonPage] 未認証:${targetPlan}へのアップグレードを保留してサインイン`
-      );
-      sessionStorage.setItem("pendingUpgrade", targetPlan);
-      onLogin();
-    } else {
-      console.log(`[SalonPage] 認証済み:${targetPlan}へ直接アップグレード`);
-      onUpgrade(targetPlan);
-    }
+  const handleChangePlan = (targetPlan: UserPlan) => {
+    onChangePlan(targetPlan);
   };
 
   const isPremium = currentPlan!.code === "PREMIUM";
@@ -233,9 +223,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             {getPlanIcon()} {currentPlan?.name}
           </div>
           <div className="text-sm text-gray-600">
-            {isAuthenticated && user
-              ? `認証済み: ${user.email}`
-              : "未登録・ゲストモード"}
+            {user ? `認証済み: ${user.email}` : "未登録・ゲストモード"}
           </div>
         </div>
       </div>
@@ -441,25 +429,13 @@ const SalonPage: React.FC<SalonPageProps> = ({
                           {/* アップグレードボタン */}
                           <button
                             onClick={() => {
-                              if (isGuest) {
-                                // ゲストの場合、どのプランでもpendingUpgradeを設定してからサインイン
-                                console.log(
-                                  `[SalonPage] ゲスト:${plan.code}へのアップグレードを保留してサインイン`
-                                );
-                                sessionStorage.setItem(
-                                  "pendingUpgrade",
-                                  plan.code
-                                );
-                                onLogin();
-                              } else {
-                                handleUpgradeClick(plan.code as UserPlan);
-                              }
+                              handleChangePlan(plan.code as UserPlan);
                             }}
-                            disabled={isLoggingIn}
+                            disabled={isChangingPlan}
                             className="w-full mt-2 py-2 text-white rounded text-sm font-medium transition-all hover:opacity-90 disabled:opacity-50"
                             style={{ backgroundColor: colors.accent }}
                           >
-                            {isLoggingIn
+                            {isChangingPlan
                               ? "処理中..."
                               : isGuest && plan.code === "FREE"
                               ? `無料でユーザー登録`

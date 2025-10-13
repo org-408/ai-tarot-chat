@@ -7,22 +7,18 @@ import type { UserPlan } from "../types";
 
 interface PlansPageProps {
   payload: AppJWTPayload;
-  isAuthenticated: boolean;
-  masterData: MasterData; // マスターデータを親から受け取る
-  onLogin: () => void;
+  masterData: MasterData;
   onChangePlan: (plan: UserPlan) => void;
-  isLoggingIn: boolean;
+  isChangingPlan: boolean;
 }
 
 const PlansPage: React.FC<PlansPageProps> = ({
   payload,
-  isAuthenticated,
   masterData,
-  onLogin,
   onChangePlan,
-  isLoggingIn,
+  isChangingPlan,
 }) => {
-  const currentPlan = payload.planCode || "GUEST";
+  const planCode = payload.planCode || "GUEST";
   const planData = masterData.plans.reduce((acc, plan) => {
     acc[plan.code as UserPlan] = {
       no: plan.no,
@@ -47,17 +43,8 @@ const PlansPage: React.FC<PlansPageProps> = ({
     return acc;
   }, {} as Record<string, PlanInput & { popular: boolean; primaryColor?: string; secondaryColor?: string; accentColor?: string }>);
 
-  const handlePlanChange = (planKey: keyof typeof planData) => {
-    const plan = planData[planKey];
-
-    // 有料プランかつ未認証の場合はログインが必要
-    if (plan.requiresAuth && !isAuthenticated) {
-      onLogin();
-      return;
-    }
-
-    // プラン変更処理
-    onChangePlan(planKey as UserPlan);
+  const handlePlanChange = (planCode: UserPlan) => {
+    onChangePlan(planCode);
   };
 
   return (
@@ -69,17 +56,15 @@ const PlansPage: React.FC<PlansPageProps> = ({
       <div
         className="mb-6 p-4 rounded-lg text-center"
         style={{
-          backgroundColor: planData[currentPlan].primaryColor,
-          borderColor: planData[currentPlan].secondaryColor,
+          backgroundColor: planData[planCode].primaryColor,
+          borderColor: planData[planCode].secondaryColor,
           borderWidth: "2px",
         }}
       >
         <div className="text-sm text-gray-600">現在の状態</div>
-        <div className="font-bold text-lg">{planData[currentPlan].name}</div>
-        <div className="text-sm text-gray-500">
-          ¥{planData[currentPlan].price}
-        </div>
-        {!isAuthenticated && (
+        <div className="font-bold text-lg">{planData[planCode].name}</div>
+        <div className="text-sm text-gray-500">¥{planData[planCode].price}</div>
+        {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
             ⚠️ 未認証(有料プラン選択時に自動ログイン)
           </div>
@@ -97,7 +82,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
           <div
             key={planKey}
             className={`relative p-4 rounded-lg border-2 transition-all ${
-              currentPlan === planKey
+              planCode === planKey
                 ? `ring-2 ring-offset-2 ${
                     plan.accentColor
                       ? `ring-[${plan.accentColor}]`
@@ -107,11 +92,9 @@ const PlansPage: React.FC<PlansPageProps> = ({
             }`}
             style={{
               backgroundColor:
-                currentPlan === planKey ? plan.primaryColor : "white",
+                planCode === planKey ? plan.primaryColor : "white",
               borderColor:
-                currentPlan === planKey
-                  ? plan.accentColor
-                  : plan.secondaryColor,
+                planCode === planKey ? plan.accentColor : plan.secondaryColor,
             }}
           >
             {/* 人気バッジ */}
@@ -139,7 +122,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
               </div>
               <div className="text-right">
                 <div className="font-bold text-xl">¥{plan.price}</div>
-                {currentPlan === planKey && (
+                {planCode === planKey && (
                   <div
                     className="text-xs font-bold"
                     style={{ color: plan.accentColor }}
@@ -168,51 +151,41 @@ const PlansPage: React.FC<PlansPageProps> = ({
 
             {/* アクションボタン */}
             <div className="flex gap-2">
-              {currentPlan === planKey ? (
+              {planCode === planKey ? (
                 <div
-                  className="w-full py-2 px-4 text-gray-600 rounded-lg text-center text-sm"
+                  className="w-full py-2 px-4 text-gray-600 rounded-lg text-center text-sm font-bold border"
                   style={{
-                    backgroundColor: plan.secondaryColor,
+                    color: plan.accentColor,
+                    backgroundColor: plan.primaryColor,
+                    borderColor: plan.accentColor,
                   }}
                 >
                   現在利用中
                 </div>
-              ) : (
+              ) : planKey === "GUEST" && planCode !== "GUEST" ? null : (
                 <button
-                  onClick={() => handlePlanChange(planKey)}
-                  disabled={isLoggingIn}
+                  onClick={() => handlePlanChange(planKey as UserPlan)}
+                  disabled={isChangingPlan}
                   className="w-full py-2 px-4 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
                   style={{
                     backgroundColor: plan.accentColor,
                   }}
                 >
-                  {isLoggingIn
+                  {isChangingPlan
                     ? "認証中..."
-                    : plan.requiresAuth && !isAuthenticated
-                    ? `ログイン&${
-                        planKey === "STANDARD"
-                          ? "アップグレード"
-                          : "プレミアム登録"
-                      }`
-                    : planKey === "FREE"
-                    ? "ログインしてフリープランに変更"
-                    : currentPlan === "FREE"
+                    : planData[planCode].no < planData[planKey].no
                     ? "アップグレード"
-                    : planKey === "STANDARD" && currentPlan === "PREMIUM"
-                    ? "ダウングレード"
-                    : "プラン変更"}
+                    : "ダウングレード"}
                 </button>
               )}
             </div>
 
             {/* 認証必須の説明 */}
-            {plan.requiresAuth &&
-              !isAuthenticated &&
-              currentPlan !== planKey && (
-                <div className="mt-2 text-xs text-orange-600 text-center">
-                  このプランを選択すると自動的にログイン画面に移動します
-                </div>
-              )}
+            {planCode === "GUEST" && (
+              <div className="mt-2 text-xs text-orange-600 text-center">
+                このプランを選択すると自動的にログイン画面に移動します
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -222,10 +195,10 @@ const PlansPage: React.FC<PlansPageProps> = ({
         <div className="text-xs text-yellow-800">
           <div className="font-bold mb-1">📝 プラン変更について</div>
           <ul className="space-y-1">
-            <li>• フリープランは認証なしで利用可能</li>
-            <li>• 有料プランはGoogleアカウント認証が必要</li>
+            <li>• フリープランは課金なしで利用可能(サインインが必要です)</li>
+            <li>• 有料プランはサインインが必要です</li>
             <li>• アップグレードは即座に反映されます</li>
-            <li>• ダウングレードは次回更新日から適用</li>
+            <li>• ダウングレードは次回更新日から適用されます</li>
           </ul>
         </div>
       </div>

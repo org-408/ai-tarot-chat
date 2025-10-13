@@ -10,20 +10,16 @@ import ProfileDialog from "./ProfileDialog";
 
 interface TarotistPageProps {
   payload: AppJWTPayload;
-  isAuthenticated: boolean;
   masterData: MasterData;
-  onLogin: () => void;
-  onUpgrade: (plan: UserPlan) => void;
-  isLoggingIn: boolean;
+  onChangePlan: (plan: UserPlan) => void;
+  isChangingPlan: boolean;
 }
 
 const TarotistPage: React.FC<TarotistPageProps> = ({
   payload,
-  isAuthenticated,
   masterData,
-  onLogin,
-  onUpgrade,
-  isLoggingIn,
+  onChangePlan,
+  isChangingPlan,
 }) => {
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
@@ -41,15 +37,8 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
       (tarotist) => tarotist.plan!.code !== "OFFLINE" // OFFLINEは非表示 TODO: 自動化予定
     ) || [];
 
-  const handleUpgrade = (requiredPlan: string) => {
-    // 未認証の場合はログイン
-    if (!isAuthenticated) {
-      onLogin();
-      return;
-    }
-
-    // 必要なプランにアップグレード
-    onUpgrade(requiredPlan as UserPlan);
+  const handleChangePlan = (requiredPlan: string) => {
+    onChangePlan(requiredPlan as UserPlan);
   };
 
   const canUseTarotist = (requiredPlan: string) => {
@@ -144,7 +133,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           {masterData.plans.find((p) => p.code === currentPlan)?.name ||
             currentPlan}
         </div>
-        {!isAuthenticated && (
+        {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
             ⚠️ 未認証(有料プラン選択時に自動ログイン)
           </div>
@@ -177,7 +166,9 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   className="absolute -top-2 right-4 text-white text-xs px-2 py-1 rounded"
                   style={{ backgroundColor: tarotist.plan!.accentColor }}
                 >
-                  {tarotist.plan!.name}
+                  {tarotist.provider === "OFFLINE"
+                    ? "オフライン"
+                    : tarotist.plan!.name}
                 </div>
 
                 <div className="flex gap-4">
@@ -228,43 +219,45 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     </div>
 
                     {/* おすすめ度 */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="text-sm text-gray-600">おすすめ度:</div>
-                      <div className="text-base">
-                        {renderStars(tarotist.quality!)}
+                    {tarotist.provider !== "OFFLINE" && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="text-sm text-gray-600">おすすめ度:</div>
+                        <div className="text-base">
+                          {renderStars(tarotist.quality!)}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* ステータス */}
-                    {requiresUpgrade ? (
+                    {tarotist.provider !== "OFFLINE" && requiresUpgrade ? (
                       <div className="text-xs text-gray-500 text-center">
                         {tarotist.plan!.name}プラン以上で利用可能
                       </div>
                     ) : (
                       <div className="text-xs text-green-600 font-bold text-center">
-                        ✓ 利用可能
+                        {tarotist.provider !== "OFFLINE"
+                          ? "✓ 利用可能"
+                          : "オフライン時のみご利用いただけます"}
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* アップグレードボタン(カード下部) */}
-                {requiresUpgrade && (
+                {tarotist.provider !== "OFFLINE" && requiresUpgrade && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleUpgrade(tarotist.plan!.code);
+                      handleChangePlan(tarotist.plan!.code);
                     }}
-                    disabled={isLoggingIn}
+                    disabled={isChangingPlan}
                     className="w-full mt-3 py-2 px-4 text-white rounded-lg text-sm font-medium transition-all shadow-md"
                     style={{
                       backgroundColor: tarotist.plan!.accentColor,
                     }}
                   >
-                    {isLoggingIn
+                    {isChangingPlan
                       ? "認証中..."
-                      : !isAuthenticated
-                      ? `ログイン&${tarotist.plan!.name}にアップグレード`
                       : `${tarotist.plan!.name}にアップグレード`}
                   </button>
                 )}
@@ -292,9 +285,8 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
         selectedTarotist={selectedTarotist}
         setSelectedTarotist={setSelectedTarotist}
         canUseTarotist={canUseTarotist}
-        isAuthenticated={isAuthenticated}
-        handleUpgrade={handleUpgrade}
-        isLoggingIn={isLoggingIn}
+        handleChangePlan={handleChangePlan}
+        isChangingPlan={isChangingPlan}
         setImageViewTarotist={setImageViewTarotist}
         imageViewTarotist={imageViewTarotist}
         hasButton

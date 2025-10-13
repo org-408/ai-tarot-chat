@@ -187,6 +187,15 @@ export const useClientStore = create<ClientState>()(
       // プラン変更（自動判定）
       // ============================================
       changePlan: async (newPlan: Plan) => {
+        // 既に変更処理中なら何もしない
+        if (get().isChangingPlan) {
+          logWithContext(
+            "warn",
+            "[ClientStore] Plan change already in progress"
+          );
+          return;
+        }
+
         logWithContext("info", "[ClientStore] Plan change started", {
           newPlan,
         });
@@ -194,69 +203,119 @@ export const useClientStore = create<ClientState>()(
         try {
           set({ isChangingPlan: true, planChangeError: null });
 
-          // ✅ 1. 現在のプランを取得
           const currentPlan = get().currentPlan!;
 
-          // ✅ 2. 同じプランなら何もしない
+          // 同じプランなら何もしない
           if (currentPlan.code === newPlan.code) {
             logWithContext("info", "[ClientStore] Same plan, no change needed");
             set({ isChangingPlan: false });
             return;
           }
 
-          // ✅ 3. 認証チェック用に準備
           const authStore = useAuthStore.getState();
-
           const isDowngrade = newPlan.no < currentPlan.no;
 
-          if (isDowngrade && newPlan.code === "GUEST") {
-            // ゲストへのダウンロードは許可しない(UIで弾く前提)
-            logWithContext("info", "[ClientStore] Downgrade to free plan");
-            return;
-          } else {
-            // アップグレード（有料プランへ）→ 未認証なら自動ログイン
-            if (!authStore.isAuthenticated) {
-              logWithContext(
-                "info",
-                "[ClientStore] User not authenticated, starting login"
-              );
+          // ============================================
+          // ✅ ログインが必要な場合
+          // ============================================
+          if (!isDowngrade && !authStore.isAuthenticated) {
+            logWithContext("info", "[ClientStore] Starting login for upgrade");
+
+            try {
               await authStore.login();
+
               logWithContext("info", "[ClientStore] Login successful");
+
+              // ログイン後のプランを確認
+              const newPayload = authStore.payload;
+
+              if (newPayload?.planCode === newPlan.code) {
+                logWithContext(
+                  "info",
+                  "[ClientStore] Already on target plan after login"
+                );
+                await get().refreshUsage();
+                set({ currentPlan: newPlan, isChangingPlan: false });
+                return;
+              }
+
+              logWithContext("info", "[ClientStore] Continuing to plan change");
+            } catch (loginError) {
+              const errorMessage =
+                loginError instanceof Error
+                  ? loginError.message
+                  : String(loginError);
+
+              logWithContext(
+                "error",
+                "[ClientStore] Login failed or cancelled",
+                {
+                  error: errorMessage,
+                }
+              );
+
+              // ✅ キャンセル vs エラーの判定
+              const isCancelled =
+                errorMessage.includes("キャンセル") ||
+                errorMessage.includes("cancel") ||
+                errorMessage.includes("cancelled");
+
+              set({
+                isChangingPlan: false,
+                planChangeError: isCancelled
+                  ? "ログインがキャンセルされました"
+                  : `ログインに失敗しました: ${errorMessage}`,
+              });
+
+              // ✅ 元の状態を維持（throw しない！）
+              return;
             }
-            logWithContext("info", "[ClientStore] Upgrade to paid plan");
           }
 
-          // ✅ 4. プラン変更実行
-          logWithContext("info", "[ClientStore] Executing plan change", {
+          // ============================================
+          // ✅ プラン変更API実行
+          // ============================================
+          logWithContext("info", "[ClientStore] Executing plan change API", {
             from: currentPlan.code,
             to: newPlan.code,
           });
 
           const result = await clientService.changePlan(newPlan.code);
-
-          // ✅ 5. Auth ストアの payload を更新
           authStore.setPayload(result.payload);
-
-          // ✅ 6. Usage を再取得
           await get().refreshUsage();
 
           set({ currentPlan: newPlan, isChangingPlan: false });
 
-          logWithContext("info", "[ClientStore] Plan change successful", {
-            newPlan: result.payload.planCode,
-          });
+          logWithContext("info", "[ClientStore] Plan change successful");
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
 
-          logWithContext("error", "[ClientStore] Plan change failed", {
+          logWithContext("error", "[ClientStore] Plan change API failed", {
             newPlan,
             error: errorMessage,
           });
 
+          // ✅ プラン変更API失敗時の状態復旧
+          try {
+            await get().refreshUsage();
+            logWithContext("info", "[ClientStore] Refreshed usage after error");
+          } catch (refreshError) {
+            logWithContext(
+              "error",
+              "[ClientStore] Failed to refresh after error",
+              {
+                refreshError:
+                  refreshError instanceof Error
+                    ? refreshError.message
+                    : String(refreshError),
+              }
+            );
+          }
+
           set({
             isChangingPlan: false,
-            planChangeError: errorMessage,
+            planChangeError: `プラン変更に失敗しました: ${errorMessage}`,
           });
 
           throw error;

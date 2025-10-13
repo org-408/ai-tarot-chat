@@ -135,7 +135,7 @@ function App() {
   };
 
   // 🔥 プラン変更処理（サインインも含む）
-  const handlePlanChange = async (newPlan: UserPlan) => {
+  const handleChangePlan = async (newPlan: UserPlan) => {
     console.log(`プラン変更リクエスト: ${planCode} → ${newPlan}`);
 
     try {
@@ -145,20 +145,6 @@ function App() {
     } catch (err) {
       console.error("プラン変更エラー:", err);
       // エラーは planChangeError で処理されるため、ここでは何もしない
-    }
-  };
-
-  // 🔥 アップグレード処理
-  const handleUpgrade = (targetPlan: UserPlan) => {
-    console.log(`アップグレードリクエスト: ${targetPlan}`);
-    handlePlanChange(targetPlan);
-  };
-
-  // 🔥 ダウングレード処理
-  const handleDowngrade = (targetPlan: UserPlan) => {
-    console.log(`ダウングレードリクエスト: ${targetPlan}`);
-    if (confirm(`本当に ${targetPlan} プランにダウングレードしますか?`)) {
-      handlePlanChange(targetPlan);
     }
   };
 
@@ -263,14 +249,11 @@ function App() {
         return (
           <SalonPage
             payload={payload}
-            isAuthenticated={isAuthenticated}
             masterData={masterData}
             usageStats={usageStats}
-            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
-            onUpgrade={handleUpgrade}
-            onDowngrade={handleDowngrade}
+            onChangePlan={handleChangePlan}
             onStartReading={handleStartReading}
-            isLoggingIn={isChangingPlan}
+            isChangingPlan={isChangingPlan}
           />
         );
       case "reading":
@@ -278,9 +261,7 @@ function App() {
           <ReadingPage
             payload={payload}
             masterData={masterData}
-            tarotist={readingData?.tarotist || ({} as Tarotist)}
-            spread={readingData?.spread || ({} as Spread)}
-            category={readingData?.category || ({} as ReadingCategory)}
+            readingData={readingData!}
             onBack={handleBackFromReading}
           />
         );
@@ -288,22 +269,18 @@ function App() {
         return (
           <PlansPage
             payload={payload}
-            isAuthenticated={isAuthenticated}
             masterData={masterData}
-            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
-            onChangePlan={handlePlanChange}
-            isLoggingIn={isChangingPlan}
+            onChangePlan={handleChangePlan}
+            isChangingPlan={isChangingPlan}
           />
         );
       case "tarotist":
         return (
           <TarotistPage
             payload={payload}
-            isAuthenticated={isAuthenticated}
             masterData={masterData}
-            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
-            onUpgrade={handleUpgrade}
-            isLoggingIn={isChangingPlan}
+            onChangePlan={handleChangePlan}
+            isChangingPlan={isChangingPlan}
           />
         );
       case "history":
@@ -343,14 +320,11 @@ function App() {
         return (
           <SalonPage
             payload={payload}
-            isAuthenticated={isAuthenticated}
             masterData={masterData}
             usageStats={usageStats}
-            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
-            onUpgrade={handleUpgrade}
-            onDowngrade={handleDowngrade}
+            onChangePlan={handleChangePlan}
             onStartReading={handleStartReading}
-            isLoggingIn={isChangingPlan}
+            isChangingPlan={isChangingPlan}
           />
         );
     }
@@ -404,7 +378,7 @@ function App() {
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => {
-                  handlePlanChange("FREE");
+                  handleChangePlan("FREE");
                   setDevMenuOpen(false);
                   setPageType("salon");
                 }}
@@ -418,7 +392,7 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  handlePlanChange("STANDARD");
+                  handleChangePlan("STANDARD");
                   setDevMenuOpen(false);
                   setPageType("salon");
                 }}
@@ -432,7 +406,7 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  handlePlanChange("PREMIUM");
+                  handleChangePlan("PREMIUM");
                   setDevMenuOpen(false);
                   setPageType("salon");
                 }}
@@ -477,7 +451,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => {
-                    handlePlanChange("FREE");
+                    handleChangePlan("FREE");
                     setDevMenuOpen(false);
                   }}
                   className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"

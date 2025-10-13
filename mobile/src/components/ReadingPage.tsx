@@ -14,12 +14,16 @@ import type {
 } from "../../../shared/lib/types";
 import ProfileDialog from "./ProfileDialog";
 
-interface ReadingPageProps {
-  payload: AppJWTPayload;
-  masterData: MasterData; // マスターデータを親から受け取る
+interface ReadingData {
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory;
+}
+
+interface ReadingPageProps {
+  payload: AppJWTPayload;
+  masterData: MasterData; // マスターデータを親から受け取る
+  readingData: ReadingData;
   onBack: () => void;
 }
 
@@ -1363,11 +1367,10 @@ const TEMP_CARDS: TarotCard[] = [
 
 const ReadingPage: React.FC<ReadingPageProps> = ({
   masterData,
-  tarotist,
-  spread,
-  category,
+  readingData,
   // onBack,
 }) => {
+  const { tarotist, category, spread } = readingData;
   // const [messages, setMessages] = useState([
   //   {
   //     role: "assistant",
