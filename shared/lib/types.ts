@@ -585,7 +585,7 @@ export type UsageStats = {
   // totalCeltics: number;
   // totalPersonal: number;
   // プラン
-  planCode: string;
+  plan: Plan;
   // ユーザー登録
   isRegistered: boolean;
   // 最終ログイン日時

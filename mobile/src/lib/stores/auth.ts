@@ -3,10 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
-import type { UserPlan } from "../../types";
 import { logWithContext } from "../logger/logger";
-import { clientService } from "../services/client";
-import { apiClient } from "../utils/apiClient";
 
 interface HttpError extends Error {
   status?: number;
@@ -19,7 +16,6 @@ interface AuthState {
   // 状態
   isReady: boolean;
   payload: AppJWTPayload | null;
-  plan: UserPlan;
   isAuthenticated: boolean;
 
   // アクション
@@ -28,20 +24,25 @@ interface AuthState {
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setPayload: (payload: AppJWTPayload) => void;
-  changePlan: (newPlanCode: string) => Promise<void>;
   reset: () => void;
 }
 
 /**
  * 認証ストア
- * ⚠️ ストレージアクセスは authService 経由で行う
+ *
+ * 純粋な認証のみを管理
+ * - デバイス登録
+ * - OAuth ログイン
+ * - トークン更新
+ *
+ * ⚠️ Plan 情報は payload.planCode から導出（Client が管理）
+ * ⚠️ プラン変更は useClientStore が管理
  */
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       isReady: false,
       payload: null,
-      plan: "GUEST",
       isAuthenticated: false,
 
       init: async () => {
@@ -61,7 +62,6 @@ export const useAuthStore = create<AuthState>()(
             const payload = await authService.registerDevice();
             set({
               payload,
-              plan: payload.planCode as UserPlan,
               isAuthenticated: !!payload.user,
             });
             logWithContext(
@@ -92,7 +92,6 @@ export const useAuthStore = create<AuthState>()(
               const newPayload = await authService.registerDevice();
               set({
                 payload: newPayload,
-                plan: newPayload.planCode as UserPlan,
                 isAuthenticated: !!newPayload.user,
               });
             } else {
@@ -124,14 +123,10 @@ export const useAuthStore = create<AuthState>()(
                     { status: status || "unknown" }
                   );
 
-                  // APIクライアントのキャッシュをクリア
-                  apiClient.clearTokenCache();
-
                   // デバイス再登録（自動的にストレージが上書きされる）
                   const newPayload = await authService.registerDevice();
                   set({
                     payload: newPayload,
-                    plan: newPayload.planCode as UserPlan,
                     isAuthenticated: !!newPayload.user,
                   });
 
@@ -150,7 +145,6 @@ export const useAuthStore = create<AuthState>()(
                   // 既存のトークンで継続
                   set({
                     payload,
-                    plan: payload.planCode as UserPlan,
                     isAuthenticated: !!payload.user,
                   });
                 }
@@ -174,7 +168,6 @@ export const useAuthStore = create<AuthState>()(
           const payload = await authService.signInWithWeb();
           set({
             payload,
-            plan: payload.planCode as UserPlan,
             isAuthenticated: !!payload.user,
           });
           logWithContext("info", "[AuthStore] Login successful:", {
@@ -190,10 +183,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           logWithContext("info", "[AuthStore] Logout started");
           await authService.logout();
-          apiClient.clearTokenCache();
           set({
             payload: null,
-            plan: "GUEST",
             isAuthenticated: false,
           });
           logWithContext("info", "[AuthStore] Logout successful");
@@ -223,16 +214,8 @@ export const useAuthStore = create<AuthState>()(
           try {
             const newPayload = await authService.refreshToken();
 
-            // ✅ APIクライアントのトークンキャッシュをクリア
-            logWithContext(
-              "info",
-              "[AuthStore] 🔒 Clearing API client token cache"
-            );
-            apiClient.clearTokenCache();
-
             set({
               payload: newPayload,
-              plan: newPayload.planCode as UserPlan,
               isAuthenticated: !!newPayload.user,
             });
             logWithContext(
@@ -260,11 +243,9 @@ export const useAuthStore = create<AuthState>()(
                 { status: status || "unknown" }
               );
 
-              apiClient.clearTokenCache();
               const newPayload = await authService.registerDevice();
               set({
                 payload: newPayload,
-                plan: newPayload.planCode as UserPlan,
                 isAuthenticated: !!newPayload.user,
               });
 
@@ -290,7 +271,6 @@ export const useAuthStore = create<AuthState>()(
       setPayload: (payload: AppJWTPayload) => {
         set({
           payload,
-          plan: payload.planCode as UserPlan,
           isAuthenticated: !!payload.user,
         });
         logWithContext("info", "[AuthStore] Payload updated:", {
@@ -298,32 +278,11 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      changePlan: async (newPlanCode: string) => {
-        try {
-          logWithContext("info", "[AuthStore] Change plan started:", {
-            newPlanCode,
-          });
-          const result = await clientService.changePlan(newPlanCode);
-          set({
-            payload: result.payload,
-            plan: result.payload.planCode as UserPlan,
-            isAuthenticated: !!result.payload.user,
-          });
-          logWithContext("info", "[AuthStore] Change plan successful:", {
-            planCode: result.payload.planCode,
-          });
-        } catch (error) {
-          logWithContext("error", "[AuthStore] Change plan failed:", { error });
-          throw error;
-        }
-      },
-
       reset: () => {
         logWithContext("info", "[AuthStore] Resetting auth state");
         set({
           isReady: false,
           payload: null,
-          plan: "GUEST",
           isAuthenticated: false,
         });
       },

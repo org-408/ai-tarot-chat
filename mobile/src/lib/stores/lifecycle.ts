@@ -5,7 +5,6 @@ import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { authService } from "../services/auth";
 import { queryClient } from "../services/queryClient";
-import { apiClient } from "../utils/apiClient";
 import { useAuthStore } from "./auth";
 
 interface HttpError extends Error {
@@ -194,9 +193,6 @@ export const useLifecycleStore = create<LifecycleState>()(
                 `[Lifecycle] Server returned ${status}, re-registering device`,
                 { status }
               );
-
-              // APIクライアントのキャッシュをクリア
-              apiClient.clearTokenCache();
 
               // デバイス再登録（自動的にストレージが上書きされる）
               const newPayload = await authService.registerDevice();

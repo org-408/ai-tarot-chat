@@ -35,7 +35,7 @@ export class ClientService {
       const data = await apiClient.get<UsageStats>("/api/clients/usage");
 
       logWithContext("info", "[ClientService] Usage stats fetched", {
-        planCode: data.planCode,
+        planCode: data.plan.code,
         remainingReadings: data.remainingReadings,
         remainingCeltics: data.remainingCeltics,
         remainingPersonal: data.remainingPersonal,

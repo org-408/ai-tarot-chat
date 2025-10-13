@@ -442,6 +442,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
                           <button
                             onClick={() => {
                               if (isGuest) {
+                                // ゲストの場合、どのプランでもpendingUpgradeを設定してからサインイン
+                                console.log(
+                                  `[SalonPage] ゲスト:${plan.code}へのアップグレードを保留してサインイン`
+                                );
+                                sessionStorage.setItem(
+                                  "pendingUpgrade",
+                                  plan.code
+                                );
                                 onLogin();
                               } else {
                                 handleUpgradeClick(plan.code as UserPlan);
@@ -453,7 +461,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                           >
                             {isLoggingIn
                               ? "処理中..."
-                              : isGuest && expandedPlan === "FREE"
+                              : isGuest && plan.code === "FREE"
                               ? `無料でユーザー登録`
                               : `${
                                   plan.name

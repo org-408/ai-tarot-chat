@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import type { ReadingCategory, Spread, Tarotist } from "../../shared/lib/types";
+import type {
+  Plan,
+  ReadingCategory,
+  Spread,
+  Tarotist,
+} from "../../shared/lib/types";
 import { DebugResetButton } from "./components/DebugResetButton";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
@@ -18,7 +23,6 @@ import type { PageType, UserPlan } from "./types";
 function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const [readingData, setReadingData] = useState<{
     tarotist: Tarotist;
@@ -44,18 +48,20 @@ function App() {
     payload,
     isReady: authIsReady,
     isAuthenticated,
-    login: authLogin,
     logout: authLogout,
   } = useAuth();
 
-  // 🔥 クライアント情報
-  const { planCode, userId, clientId, changePlan } = useClient();
+  // 🔥 クライアント情報（changePlanで全て管理）
+  const { planCode, clientId, changePlan, isChangingPlan, planChangeError } =
+    useClient();
 
   // 🔥 マスターデータ取得
   // 条件: lifecycle.init()完了 && auth.isReady
-  const { masterData, isLoading: isMasterLoading } = useMaster(
-    isInitialized && authIsReady
-  );
+  const {
+    masterData,
+    plans,
+    isLoading: isMasterLoading,
+  } = useMaster(isInitialized && authIsReady);
 
   // 🔥 利用状況取得
   // 条件: lifecycle.init()完了 && auth.isReady && clientIdあり
@@ -99,22 +105,15 @@ function App() {
     }
   }, [error, clearError]);
 
-  const handleLogin = async () => {
-    try {
-      setIsLoggingIn(true);
-      console.log("ログイン開始");
-
-      await authLogin();
-      console.log("ログイン成功");
-    } catch (err) {
-      console.error("ログイン失敗:", err);
-      alert(err instanceof Error ? err.message : "ログインに失敗しました");
-      sessionStorage.removeItem("pendingUpgrade");
-    } finally {
-      setIsLoggingIn(false);
+  // 🔥 プラン変更エラーハンドリング
+  useEffect(() => {
+    if (planChangeError) {
+      console.error("[App] Plan change error:", planChangeError);
+      alert(planChangeError || "プラン変更に失敗しました");
     }
-  };
+  }, [planChangeError]);
 
+  // 🔥 ログアウト処理
   const handleLogout = async () => {
     try {
       console.log("ログアウト開始");
@@ -128,29 +127,31 @@ function App() {
     }
   };
 
+  const getPlan = (code: string): Plan | null => {
+    return plans.find((p) => p.code === code) || null;
+  };
+
+  // 🔥 プラン変更処理（サインインも含む）
   const handlePlanChange = async (newPlan: UserPlan) => {
     console.log(`プラン変更リクエスト: ${planCode} → ${newPlan}`);
 
-    if ((newPlan === "STANDARD" || newPlan === "PREMIUM") && !isAuthenticated) {
-      console.log("認証が必要です。");
-      alert("このプランにはログインが必要です");
-      return;
-    }
-
     try {
-      await changePlan(newPlan);
+      // changePlanが全てを処理（サインインが必要な場合も内部で処理）
+      await changePlan(getPlan(newPlan)!);
       console.log("プラン変更成功");
     } catch (err) {
       console.error("プラン変更エラー:", err);
-      alert(err instanceof Error ? err.message : "プラン変更に失敗しました");
+      // エラーは planChangeError で処理されるため、ここでは何もしない
     }
   };
 
+  // 🔥 アップグレード処理
   const handleUpgrade = (targetPlan: UserPlan) => {
     console.log(`アップグレードリクエスト: ${targetPlan}`);
     handlePlanChange(targetPlan);
   };
 
+  // 🔥 ダウングレード処理
   const handleDowngrade = (targetPlan: UserPlan) => {
     console.log(`ダウングレードリクエスト: ${targetPlan}`);
     if (confirm(`本当に ${targetPlan} プランにダウングレードしますか?`)) {
@@ -158,11 +159,13 @@ function App() {
     }
   };
 
+  // 🔥 ページ変更
   const handlePageChange = (page: PageType) => {
     console.log("ページ変更:", page);
     setPageType(page);
   };
 
+  // 🔥 占い開始
   const handleStartReading = (
     tarotist: Tarotist,
     spread: Spread,
@@ -173,28 +176,12 @@ function App() {
     setPageType("reading");
   };
 
+  // 🔥 占いから戻る
   const handleBackFromReading = () => {
     console.log("占いから戻る");
     setReadingData(null);
     setPageType("salon");
   };
-
-  // 🔥 サインイン完了後の自動アップグレード処理
-  useEffect(() => {
-    if (isAuthenticated && isInitialized) {
-      console.log(
-        `[App] サインイン検出 - 現在のプラン: ${planCode}, ユーザーID: ${userId}`
-      );
-
-      const pendingUpgrade = sessionStorage.getItem("pendingUpgrade");
-      if (pendingUpgrade && pendingUpgrade !== planCode) {
-        console.log(`[App] 保留中のアップグレードを実行: ${pendingUpgrade}`);
-        sessionStorage.removeItem("pendingUpgrade");
-        handlePlanChange(pendingUpgrade as UserPlan);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isInitialized, planCode, userId]);
 
   // 🔥 起動シーケンスのデバッグログ
   useEffect(() => {
@@ -207,6 +194,7 @@ function App() {
       hasMasterData: !!masterData,
       hasUsageStats: !!usageStats,
       hasPayload: !!payload,
+      isChangingPlan,
     });
   }, [
     isInitialized,
@@ -217,6 +205,7 @@ function App() {
     masterData,
     usageStats,
     payload,
+    isChangingPlan,
   ]);
 
   // 初期化中またはデータロード中
@@ -252,7 +241,7 @@ function App() {
     );
   }
 
-  // 初期化完了後もpayloadがない場合（異常系）
+  // 初期化完了後もpayloadがない場合(異常系)
   if (!payload) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 to-indigo-900">
@@ -281,11 +270,11 @@ function App() {
             isAuthenticated={isAuthenticated}
             masterData={masterData}
             usageStats={usageStats}
-            onLogin={handleLogin}
+            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
             onStartReading={handleStartReading}
-            isLoggingIn={isLoggingIn}
+            isLoggingIn={isChangingPlan}
           />
         );
       case "reading":
@@ -305,9 +294,9 @@ function App() {
             payload={payload}
             isAuthenticated={isAuthenticated}
             masterData={masterData}
-            onLogin={handleLogin}
+            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
             onChangePlan={handlePlanChange}
-            isLoggingIn={isLoggingIn}
+            isLoggingIn={isChangingPlan}
           />
         );
       case "tarotist":
@@ -316,9 +305,9 @@ function App() {
             payload={payload}
             isAuthenticated={isAuthenticated}
             masterData={masterData}
-            onLogin={handleLogin}
+            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
             onUpgrade={handleUpgrade}
-            isLoggingIn={isLoggingIn}
+            isLoggingIn={isChangingPlan}
           />
         );
       case "history":
@@ -362,11 +351,11 @@ function App() {
             isAuthenticated={isAuthenticated}
             masterData={masterData}
             usageStats={usageStats}
-            onLogin={handleLogin}
+            onLogin={() => handlePlanChange("FREE")} // FREEプランへの変更でサインイン
             onUpgrade={handleUpgrade}
             onDowngrade={handleDowngrade}
             onStartReading={handleStartReading}
-            isLoggingIn={isLoggingIn}
+            isLoggingIn={isChangingPlan}
           />
         );
     }
@@ -374,6 +363,13 @@ function App() {
 
   return (
     <div className="w-full" style={{ height: "100vh" }}>
+      {/* 🔥 プラン変更中インジケーター */}
+      {isChangingPlan && (
+        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+          🔄 処理中...
+        </div>
+      )}
+
       {/* 🔥 リフレッシュ中インジケーター */}
       {isRefreshing && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
@@ -394,9 +390,6 @@ function App() {
           ⚠️ {error.message}
         </div>
       )}
-
-      {/* ビルドモードチェッカー */}
-      {/* <BuildModeChecker /> */}
 
       <Header currentPlan={planCode as UserPlan} currentPage={pageType} />
 
@@ -488,7 +481,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => {
-                    handleLogin();
+                    handlePlanChange("FREE");
                     setDevMenuOpen(false);
                   }}
                   className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"

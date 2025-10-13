@@ -39,15 +39,7 @@ export const resetAppData = async () => {
     queryClient.clear();
 
     // ========================================
-    // 3. APIクライアントのトークンキャッシュをクリア
-    // ========================================
-    logWithContext("info", "[ResetApp] Clearing API client token cache");
-    if (apiClient.clearTokenCache) {
-      apiClient.clearTokenCache();
-    }
-
-    // ========================================
-    // 4. マスターデータのファイルシステムキャッシュをクリア
+    // 3. マスターデータのファイルシステムキャッシュをクリア
     // ========================================
     logWithContext("info", "[ResetApp] Clearing master data filesystem cache");
     try {
@@ -60,7 +52,7 @@ export const resetAppData = async () => {
     }
 
     // ========================================
-    // 5. Preference内の個別キーを削除
+    // 4. Preference内の個別キーを削除
     // ========================================
     logWithContext("info", "[ResetApp] Deleting individual storage keys");
 

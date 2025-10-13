@@ -27,7 +27,7 @@ export class ClientService {
 
         const plan = client.plan;
         if (!plan) throw new Error("Plan not found");
-        const planCode = plan.code;
+
         logWithContext("info", "Client plan", { plan });
 
         // 日付確認
@@ -102,7 +102,7 @@ export class ClientService {
 
         // UsageStats組み立て
         return {
-          planCode,
+          plan,
           isRegistered: client.isRegistered,
           lastLoginAt: client.lastLoginAt,
           hasDailyReset: needsReset,
