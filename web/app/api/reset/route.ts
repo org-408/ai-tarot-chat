@@ -10,6 +10,10 @@ export async function POST(req: NextRequest) {
   const expectedSecret = process.env.AUTH_SECRET;
 
   if (!secret || secret !== expectedSecret) {
+    logWithContext("warn", "Unauthorized reset attempt", {
+      path: "/api/reset",
+      secret,
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
