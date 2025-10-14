@@ -19,8 +19,9 @@ export async function POST(req: NextRequest) {
 
   try {
     // client, device, log, user,  テーブルをクリア
-    await prisma.device.deleteMany({});
+    await prisma.planChangeHistory.deleteMany({});
     await prisma.client.deleteMany({});
+    await prisma.device.deleteMany({});
     await prisma.log.deleteMany({});
     await prisma.user.deleteMany({});
     await prisma.session.deleteMany({});
