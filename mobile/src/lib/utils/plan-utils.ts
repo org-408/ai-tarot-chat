@@ -7,9 +7,9 @@ export function getPackageIdentifier(planCode: string): string {
     case "FREE":
       return "free_package";
     case "STANDARD":
-      return "standard_package";
+      return "com.atelierflowlab.aitarotchat.standard.monthly";
     case "PREMIUM":
-      return "premium_package";
+      return "com.atelierflowlab.aitarotchat.premium.monthly";
     default:
       return "guest_package";
   }
