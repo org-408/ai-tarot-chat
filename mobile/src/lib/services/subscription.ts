@@ -1,40 +1,85 @@
+import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
 import {
   type CustomerInfo,
   LOG_LEVEL,
   Purchases,
 } from "@revenuecat/purchases-capacitor";
+import { RevenueCatUI } from "@revenuecat/purchases-capacitor-ui";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { apiClient } from "../utils/apiClient";
+import { getPackageIdentifier } from "../utils/plan-utils";
 
+/**
+ * RevenueCat購読管理サービス
+ *
+ * 責務:
+ * - RevenueCatの初期化と設定
+ * - ユーザーのログイン/ログアウト
+ * - プランの購入処理
+ * - 購読状態の同期
+ * - Customer Centerの表示
+ */
 export class SubscriptionService {
+  private isInitialized = false;
+
   /**
    * RevenueCatの初期化
    */
   async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      logWithContext("info", "[SubscriptionService] Already initialized");
+      return;
+    }
+
     logWithContext("info", "[SubscriptionService] Initializing RevenueCat");
 
     const platform = Capacitor.getPlatform();
 
+    // Web環境ではスキップ
+    if (platform === "web") {
+      logWithContext(
+        "warn",
+        "[SubscriptionService] Skipping initialization on web platform"
+      );
+      this.isInitialized = true;
+      return;
+    }
+
     try {
+      // デバッグログを有効化
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
 
-      if (platform === "ios") {
-        await Purchases.configure({
-          apiKey: import.meta.env.VITE_REVENUECAT_IOS_KEY,
+      // プラットフォーム別の設定
+      const apiKey =
+        platform === "ios"
+          ? import.meta.env.VITE_REVENUECAT_IOS_KEY
+          : import.meta.env.VITE_REVENUECAT_ANDROID_KEY;
+
+      if (!apiKey) {
+        logWithContext("error", "[SubscriptionService] API key not found", {
+          platform,
         });
-      } else if (platform === "android") {
-        await Purchases.configure({
-          apiKey: import.meta.env.VITE_REVENUECAT_ANDROID_KEY,
-        });
+        throw new Error(`RevenueCat API key not found for ${platform}`);
       }
 
-      logWithContext("info", "[SubscriptionService] RevenueCat initialized", {
+      await Purchases.configure({ apiKey });
+
+      // ✅ 購読状態変更リスナーの登録
+      await this.setupCustomerInfoListener();
+
+      // ✅ アプリ復帰時の同期設定
+      await this.setupAppStateListener();
+
+      this.isInitialized = true;
+
+      logWithContext("info", "[SubscriptionService] Initialized successfully", {
         platform,
       });
     } catch (error) {
-      logWithContext("error", "[SubscriptionService] Init failed", {
+      logWithContext("error", "[SubscriptionService] Initialization failed", {
         error: error instanceof Error ? error.message : String(error),
         platform,
       });
@@ -43,18 +88,124 @@ export class SubscriptionService {
   }
 
   /**
-   * Purchases に Loginする
+   * CustomerInfo変更リスナーの設定
+   * RevenueCatで購読状態が変更されたらサーバーと同期
+   */
+  private async setupCustomerInfoListener(): Promise<void> {
+    try {
+      await Purchases.addCustomerInfoUpdateListener(async (info) => {
+        try {
+          logWithContext("info", "[SubscriptionService] CustomerInfo updated", {
+            entitlements: Object.keys(info.entitlements.active),
+          });
+
+          // サーバーと同期
+          await this.syncWithServer(info);
+        } catch (error) {
+          logWithContext(
+            "error",
+            "[SubscriptionService] Failed to sync on update",
+            {
+              error: error instanceof Error ? error.message : String(error),
+            }
+          );
+        }
+      });
+
+      logWithContext(
+        "info",
+        "[SubscriptionService] CustomerInfo listener registered"
+      );
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to setup listener",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+    }
+  }
+
+  /**
+   * アプリ復帰時のリスナー設定
+   * 外部での解約・変更に対応
+   */
+  private async setupAppStateListener(): Promise<void> {
+    try {
+      App.addListener("appStateChange", async ({ isActive }) => {
+        if (!isActive) return;
+
+        try {
+          logWithContext(
+            "info",
+            "[SubscriptionService] App resumed, syncing..."
+          );
+
+          const { customerInfo } = await Purchases.getCustomerInfo();
+          await this.syncWithServer(customerInfo);
+
+          logWithContext("info", "[SubscriptionService] Synced on app resume");
+        } catch (error) {
+          logWithContext(
+            "error",
+            "[SubscriptionService] Failed to sync on resume",
+            {
+              error: error instanceof Error ? error.message : String(error),
+            }
+          );
+        }
+      });
+
+      logWithContext(
+        "info",
+        "[SubscriptionService] App state listener registered"
+      );
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to setup app listener",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+    }
+  }
+
+  /**
+   * サーバーと購読状態を同期
+   */
+  private async syncWithServer(customerInfo: CustomerInfo): Promise<void> {
+    try {
+      await apiClient.post("/api/subscriptions/sync", {
+        customerInfo,
+      });
+
+      logWithContext("info", "[SubscriptionService] Synced with server");
+    } catch (error) {
+      logWithContext("error", "[SubscriptionService] Server sync failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * RevenueCatにログイン
    */
   async login(userId: string): Promise<void> {
-    logWithContext("info", "[SubscriptionService] Logging in user", {
-      userId,
-    });
+    logWithContext("info", "[SubscriptionService] Logging in", { userId });
 
     try {
-      await Purchases.logIn({ appUserID: userId });
-      logWithContext("info", "[SubscriptionService] User logged in", {
+      const { customerInfo } = await Purchases.logIn({ appUserID: userId });
+
+      logWithContext("info", "[SubscriptionService] Login successful", {
         userId,
+        entitlements: Object.keys(customerInfo.entitlements.active),
       });
+
+      // ログイン後、サーバーと同期
+      await this.syncWithServer(customerInfo);
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Login failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -65,14 +216,18 @@ export class SubscriptionService {
   }
 
   /**
-   * Purchases から Logoutする
+   * RevenueCatからログアウト
    */
   async logout(): Promise<void> {
-    logWithContext("info", "[SubscriptionService] Logging out user");
+    logWithContext("info", "[SubscriptionService] Logging out");
 
     try {
-      await Purchases.logOut();
-      logWithContext("info", "[SubscriptionService] User logged out");
+      const { customerInfo } = await Purchases.logOut();
+
+      logWithContext("info", "[SubscriptionService] Logout successful");
+
+      // ログアウト後も状態を同期（匿名ユーザーとして）
+      await this.syncWithServer(customerInfo);
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Logout failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -82,7 +237,7 @@ export class SubscriptionService {
   }
 
   /**
-   * Offeringsを取得
+   * 現在のOfferingsを取得
    */
   async getOfferings() {
     logWithContext("info", "[SubscriptionService] Fetching offerings");
@@ -98,6 +253,10 @@ export class SubscriptionService {
         throw new Error("No current offering available");
       }
 
+      logWithContext("info", "[SubscriptionService] Offerings fetched", {
+        packages: offerings.current.availablePackages.length,
+      });
+
       return offerings.current;
     } catch (error) {
       logWithContext(
@@ -112,49 +271,51 @@ export class SubscriptionService {
   }
 
   /**
-   * プラン購入処理（RevenueCat → サーバー検証 → プラン変更）
+   * プラン購入とサーバー検証
    */
-  async purchaseAndChangePlan(
-    targetPlan: Plan,
-    packageIdentifier: string
-  ): Promise<void> {
+  async purchaseAndChangePlan(targetPlan: Plan): Promise<void> {
     logWithContext("info", "[SubscriptionService] Starting purchase", {
       targetPlan: targetPlan.code,
-      packageIdentifier,
+      price: targetPlan.price,
     });
 
     try {
-      // 1. Offeringsを取得
-      const offering = await this.getOfferings();
+      // 1. パッケージ識別子を取得
+      const packageIdentifier = getPackageIdentifier(targetPlan.code);
 
-      // 2. パッケージを取得
+      logWithContext("info", "[SubscriptionService] Package identifier", {
+        packageIdentifier,
+      });
+
+      // 2. Offeringsから該当パッケージを取得
+      const offering = await this.getOfferings();
       const targetPackage = offering.availablePackages.find(
         (pkg) => pkg.identifier === packageIdentifier
       );
 
       if (!targetPackage) {
+        logWithContext("error", "[SubscriptionService] Package not found", {
+          packageIdentifier,
+        });
         throw new Error(`Package not found: ${packageIdentifier}`);
       }
 
-      logWithContext("info", "[SubscriptionService] Found package", {
+      logWithContext("info", "[SubscriptionService] Package found", {
         identifier: targetPackage.identifier,
         price: targetPackage.product.priceString,
       });
 
       // 3. RevenueCatで購入実行
-      const purchaseResult = await Purchases.purchasePackage({
+      const { customerInfo } = await Purchases.purchasePackage({
         aPackage: targetPackage,
       });
 
       logWithContext("info", "[SubscriptionService] Purchase successful", {
-        customerInfo: purchaseResult.customerInfo,
+        entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      // 4. サーバーに購入情報を送信して検証
-      await this.verifyPurchaseOnServer(
-        targetPlan.code,
-        purchaseResult.customerInfo
-      );
+      // 4. サーバーで購入を検証してプラン変更
+      await this.verifyPurchaseOnServer(targetPlan.code, customerInfo);
 
       logWithContext(
         "info",
@@ -163,6 +324,7 @@ export class SubscriptionService {
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Purchase failed", {
         error: error instanceof Error ? error.message : String(error),
+        targetPlan: targetPlan.code,
       });
       throw error;
     }
@@ -175,18 +337,17 @@ export class SubscriptionService {
     planCode: string,
     customerInfo: CustomerInfo
   ): Promise<void> {
-    logWithContext(
-      "info",
-      "[SubscriptionService] Verifying purchase on server"
-    );
+    logWithContext("info", "[SubscriptionService] Verifying on server", {
+      planCode,
+    });
 
     try {
-      // サーバーに購入情報を送信
-      // サーバー側でRevenueCatの購入を検証し、プラン変更を実行
       await apiClient.post("/api/subscriptions/verify", {
         planCode,
         customerInfo,
       });
+
+      logWithContext("info", "[SubscriptionService] Verification successful");
     } catch (error) {
       logWithContext(
         "error",
@@ -200,7 +361,7 @@ export class SubscriptionService {
   }
 
   /**
-   * リストア処理
+   * 購入のリストア
    */
   async restorePurchases(): Promise<void> {
     logWithContext("info", "[SubscriptionService] Restoring purchases");
@@ -208,16 +369,96 @@ export class SubscriptionService {
     try {
       const { customerInfo } = await Purchases.restorePurchases();
 
-      // サーバー側と同期
-      await apiClient.post("/api/subscriptions/sync", {
-        customerInfo,
+      logWithContext("info", "[SubscriptionService] Purchases restored", {
+        entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      logWithContext("info", "[SubscriptionService] Purchases restored");
+      // サーバーと同期
+      await this.syncWithServer(customerInfo);
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Restore failed", {
         error: error instanceof Error ? error.message : String(error),
       });
+      throw error;
+    }
+  }
+
+  /**
+   * Customer Centerまたは購読管理ページを開く
+   */
+  async openManage(): Promise<void> {
+    logWithContext(
+      "info",
+      "[SubscriptionService] Opening subscription management"
+    );
+
+    try {
+      // ✅ まずCustomer Centerを表示
+      await RevenueCatUI.presentCustomerCenter();
+
+      logWithContext("info", "[SubscriptionService] Customer Center opened");
+    } catch (error) {
+      // Customer Centerが利用できない場合はmanagementURLにフォールバック
+      logWithContext(
+        "warn",
+        "[SubscriptionService] Customer Center unavailable, using managementURL",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+
+      try {
+        // CustomerInfoを取得してmanagementURLを使用
+        const { customerInfo } = await Purchases.getCustomerInfo();
+
+        // ✅ 正しい型でmanagementURLにアクセス
+        const url = customerInfo.managementURL;
+
+        if (url) {
+          await Browser.open({ url });
+          logWithContext(
+            "info",
+            "[SubscriptionService] Management URL opened",
+            { url }
+          );
+        } else {
+          logWithContext(
+            "error",
+            "[SubscriptionService] managementURL not available"
+          );
+          throw new Error("Management URL not available");
+        }
+      } catch (fallbackError) {
+        logWithContext(
+          "error",
+          "[SubscriptionService] Failed to open management",
+          {
+            error:
+              fallbackError instanceof Error
+                ? fallbackError.message
+                : String(fallbackError),
+          }
+        );
+        throw fallbackError;
+      }
+    }
+  }
+
+  /**
+   * 現在の購読状態を取得
+   */
+  async getCustomerInfo(): Promise<CustomerInfo> {
+    try {
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      return customerInfo;
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to get customer info",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
       throw error;
     }
   }

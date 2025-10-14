@@ -4,9 +4,9 @@ import type { Plan, UsageStats } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { clientService } from "../services/client";
-// import { subscriptionService } from "../services/subscription";
 import { getTodayJST } from "../utils/date";
 import { useAuthStore } from "./auth";
+import { useSubscriptionStore } from "./subscription";
 
 interface ClientState {
   // ============================================
@@ -32,7 +32,7 @@ interface ClientState {
   decrementOptimistic: (type: "readings" | "celtics" | "personal") => void;
 
   // ============================================
-  // アクション: プラン変更（認証込み）
+  // アクション: プラン変更
   // ============================================
   changePlan: (newPlan: Plan) => Promise<void>;
 
@@ -43,11 +43,15 @@ interface ClientState {
 }
 
 /**
- * Client ストア
+ * Client Store
  *
  * ユーザー、プラン、利用状況など、クライアントに関する全てを管理
  *
- * ⚠️ 旧 usage.ts から改名 & 拡張
+ * 責務:
+ * - 利用状況の取得・更新
+ * - プラン変更フロー（認証・購読統合）
+ * - 日次リセット管理
+ * - 楽観的UI更新
  */
 export const useClientStore = create<ClientState>()(
   persist(
@@ -63,17 +67,13 @@ export const useClientStore = create<ClientState>()(
       planChangeError: null,
 
       // ============================================
-      // 利用プラン、利用状況の初期化
+      // 初期化
       // ============================================
       init: async () => {
         logWithContext("info", "[ClientStore] Initializing");
 
         try {
-          // ✅ 1. RevenueCatを初期化
-          // await subscriptionService.initialize();
-          // logWithContext("info", "[ClientStore] RevenueCat initialized");
-
-          // ✅ 2. サーバーから利用状況を取得
+          // ✅ サーバーから利用状況を取得
           const usage = await clientService.getUsageAndReset();
           const currentPlan = usage.plan;
           const today = getTodayJST();
@@ -87,14 +87,16 @@ export const useClientStore = create<ClientState>()(
             isReady: true,
           });
 
-          logWithContext("info", "[ClientStore] Initialized", {
-            planCode: usage.plan.code,
+          logWithContext("info", "[ClientStore] Initialized successfully", {
+            planCode: currentPlan.code,
             remainingReadings: usage.remainingReadings,
           });
         } catch (error) {
-          logWithContext("error", "[ClientStore] Init failed", {
+          logWithContext("error", "[ClientStore] Initialization failed", {
             error: error instanceof Error ? error.message : String(error),
           });
+
+          // 初期化失敗でも isReady を true にして先に進める
           set({ isReady: true });
         }
       },
@@ -108,19 +110,21 @@ export const useClientStore = create<ClientState>()(
         try {
           const usage = await clientService.getUsageAndReset();
           const currentPlan = usage.plan;
-          const today = new Date().toISOString().split("T")[0];
+          const today = getTodayJST();
 
           await clientService.saveLastFetchedDate(today);
 
           set({ currentPlan, usage, lastFetchedDate: today });
 
-          logWithContext("info", "[ClientStore] Refreshed", {
+          logWithContext("info", "[ClientStore] Usage refreshed", {
+            planCode: currentPlan.code,
             remainingReadings: usage.remainingReadings,
           });
         } catch (error) {
-          logWithContext("error", "[ClientStore] Refresh failed", {
+          logWithContext("error", "[ClientStore] Failed to refresh usage", {
             error: error instanceof Error ? error.message : String(error),
           });
+          throw error;
         }
       },
 
@@ -132,7 +136,7 @@ export const useClientStore = create<ClientState>()(
 
         try {
           const lastDate = await clientService.getLastFetchedDate();
-          const today = new Date().toISOString().split("T")[0];
+          const today = getTodayJST();
 
           if (lastDate === today) {
             logWithContext("info", "[ClientStore] Same day, no reset needed");
@@ -141,8 +145,9 @@ export const useClientStore = create<ClientState>()(
 
           logWithContext(
             "info",
-            "[ClientStore] Date changed, fetching fresh data"
+            "[ClientStore] Date changed, resetting limits"
           );
+
           const usage = await clientService.getUsageAndReset();
           const currentPlan = usage.plan;
 
@@ -150,7 +155,7 @@ export const useClientStore = create<ClientState>()(
 
           set({ currentPlan, usage, lastFetchedDate: today });
 
-          logWithContext("info", "[ClientStore] Date changed, limits reset", {
+          logWithContext("info", "[ClientStore] Limits reset", {
             remainingReadings: usage.remainingReadings,
           });
 
@@ -170,12 +175,13 @@ export const useClientStore = create<ClientState>()(
         const { usage } = get();
         if (!usage) return;
 
-        const field =
-          type === "readings"
-            ? "remainingReadings"
-            : type === "celtics"
-            ? "remainingCeltics"
-            : "remainingPersonal";
+        const fieldMap = {
+          readings: "remainingReadings",
+          celtics: "remainingCeltics",
+          personal: "remainingPersonal",
+        } as const;
+
+        const field = fieldMap[type];
 
         set({
           usage: {
@@ -191,11 +197,13 @@ export const useClientStore = create<ClientState>()(
       },
 
       // ============================================
-      // プラン変更（自動判定）
+      // プラン変更（認証・購読統合）
       // ============================================
       changePlan: async (newPlan: Plan) => {
-        // 既に変更処理中なら何もしない
-        if (get().isChangingPlan) {
+        const { isChangingPlan, currentPlan } = get();
+
+        // 既に変更処理中なら中断
+        if (isChangingPlan) {
           logWithContext(
             "warn",
             "[ClientStore] Plan change already in progress"
@@ -203,62 +211,46 @@ export const useClientStore = create<ClientState>()(
           return;
         }
 
-        logWithContext("info", "[ClientStore] Plan change started", {
-          newPlan,
+        // 同じプランなら何もしない
+        if (currentPlan?.code === newPlan.code) {
+          logWithContext("info", "[ClientStore] Already on target plan");
+          return;
+        }
+
+        // GUESTプランへの変更は不可
+        if (newPlan.code === "GUEST") {
+          logWithContext("warn", "[ClientStore] Cannot change to GUEST plan");
+          set({
+            planChangeError: "GUESTプランへの変更はできません",
+          });
+          return;
+        }
+
+        logWithContext("info", "[ClientStore] Starting plan change", {
+          from: currentPlan?.code,
+          to: newPlan.code,
         });
 
+        set({ isChangingPlan: true, planChangeError: null });
+
         try {
-          set({ isChangingPlan: true, planChangeError: null });
-
-          const currentPlan = get().currentPlan!;
-
-          // 同じプランなら何もしない
-          if (currentPlan.code === newPlan.code) {
-            logWithContext("info", "[ClientStore] Same plan, no change needed");
-            set({ isChangingPlan: false });
-            return;
-          }
-
-          // newPlan が "GUEST" なら何もしない(UIで弾いているはずだが念のため)
-          if (newPlan.code === "GUEST") {
-            logWithContext("info", "[ClientStore] Cannot change to GUEST plan");
-            set({
-              isChangingPlan: false,
-              planChangeError: "GUESTプランへの変更はできません",
-            });
-            return;
-          }
-
           const authStore = useAuthStore.getState();
+          const subscriptionStore = useSubscriptionStore.getState();
 
           // ============================================
-          // ✅ ログインが必要な場合(isAuthenticated=false なら必ずログイン)
+          // ✅ ステップ1: 認証が必要な場合はログイン
           // ============================================
           if (!authStore.isAuthenticated) {
-            logWithContext(
-              "info",
-              "[ClientStore] Starting login for plan change"
-            );
+            logWithContext("info", "[ClientStore] Authentication required");
 
             try {
               await authStore.login();
 
               logWithContext("info", "[ClientStore] Login successful");
 
-              // ✅ ログイン後にRevenueCatにもログイン
-              // const userId = authStore.payload?.user?.id;
-              // if (userId) {
-              //   await subscriptionService.login(userId);
-              //   logWithContext(
-              //     "info",
-              //     "[ClientStore] RevenueCat login successful"
-              //   );
-              // }
-
-              // ログイン後のプランを確認
+              // ログイン後のプランをチェック
               const newPayload = authStore.payload;
 
-              // GUEST -> FREE への変更時は、ログイン後に FREE になっているのでチェック
               if (newPayload?.planCode === newPlan.code) {
                 logWithContext(
                   "info",
@@ -268,27 +260,20 @@ export const useClientStore = create<ClientState>()(
                 set({ currentPlan: newPlan, isChangingPlan: false });
                 return;
               }
-
-              logWithContext("info", "[ClientStore] Continuing to plan change");
             } catch (loginError) {
               const errorMessage =
                 loginError instanceof Error
                   ? loginError.message
                   : String(loginError);
 
-              logWithContext(
-                "error",
-                "[ClientStore] Login failed or cancelled",
-                {
-                  error: errorMessage,
-                }
-              );
-
-              // ✅ キャンセル vs エラーの判定
               const isCancelled =
                 errorMessage.includes("キャンセル") ||
-                errorMessage.includes("cancel") ||
-                errorMessage.includes("cancelled");
+                errorMessage.toLowerCase().includes("cancel");
+
+              logWithContext("error", "[ClientStore] Login failed", {
+                error: errorMessage,
+                isCancelled,
+              });
 
               set({
                 isChangingPlan: false,
@@ -297,39 +282,79 @@ export const useClientStore = create<ClientState>()(
                   : `ログインに失敗しました: ${errorMessage}`,
               });
 
-              // ✅ 元の状態を維持（throw しない！）
-              return;
+              return; // ログイン失敗時は処理を中断
             }
           }
 
           // ============================================
-          // ✅ プラン変更API実行
+          // ✅ ステップ2: 有料プランの場合は購読処理
           // ============================================
-          logWithContext("info", "[ClientStore] Executing plan change API", {
-            from: currentPlan.code,
-            to: newPlan.code,
-          });
+          if (newPlan.price > 0) {
+            logWithContext(
+              "info",
+              "[ClientStore] Paid plan, initiating purchase"
+            );
 
-          const result = await clientService.changePlan(newPlan.code);
-          authStore.setPayload(result.payload);
+            try {
+              // RevenueCat経由で購入
+              await subscriptionStore.purchasePlan(newPlan);
+
+              logWithContext("info", "[ClientStore] Purchase completed");
+            } catch (purchaseError) {
+              const errorMessage =
+                purchaseError instanceof Error
+                  ? purchaseError.message
+                  : String(purchaseError);
+
+              logWithContext("error", "[ClientStore] Purchase failed", {
+                error: errorMessage,
+              });
+
+              // 購入失敗時は状態を復旧
+              await get().refreshUsage();
+
+              set({
+                isChangingPlan: false,
+                planChangeError: `購入に失敗しました: ${errorMessage}`,
+              });
+
+              throw purchaseError;
+            }
+          } else {
+            // ============================================
+            // ✅ ステップ3: 無料プランの場合はサーバーAPIで変更
+            // ============================================
+            logWithContext("info", "[ClientStore] Free plan, changing via API");
+
+            const result = await clientService.changePlan(newPlan.code);
+            authStore.setPayload(result.payload);
+          }
+
+          // ============================================
+          // ✅ ステップ4: 利用状況を更新して完了
+          // ============================================
           await get().refreshUsage();
 
-          set({ currentPlan: newPlan, isChangingPlan: false });
+          set({
+            currentPlan: newPlan,
+            isChangingPlan: false,
+            planChangeError: null,
+          });
 
-          logWithContext("info", "[ClientStore] Plan change successful");
+          logWithContext("info", "[ClientStore] Plan change completed", {
+            newPlan: newPlan.code,
+          });
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
 
-          logWithContext("error", "[ClientStore] Plan change API failed", {
-            newPlan,
+          logWithContext("error", "[ClientStore] Plan change failed", {
             error: errorMessage,
           });
 
-          // ✅ プラン変更API失敗時の状態復旧
+          // エラー時は状態を復旧
           try {
             await get().refreshUsage();
-            logWithContext("info", "[ClientStore] Refreshed usage after error");
           } catch (refreshError) {
             logWithContext(
               "error",
@@ -359,6 +384,7 @@ export const useClientStore = create<ClientState>()(
         logWithContext("info", "[ClientStore] Resetting to initial state");
         set({
           isReady: false,
+          currentPlan: null,
           usage: null,
           lastFetchedDate: null,
           isChangingPlan: false,

@@ -4,6 +4,7 @@ import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
 import { logWithContext } from "../logger/logger";
+import { subscriptionService } from "../services/subscription";
 
 interface HttpError extends Error {
   status?: number;
@@ -170,6 +171,30 @@ export const useAuthStore = create<AuthState>()(
             payload,
             isAuthenticated: !!payload.user,
           });
+
+          // RevenueCatにログイン
+          const userId = payload.user?.id;
+          if (userId) {
+            try {
+              const { subscriptionService } = await import(
+                "../services/subscription"
+              );
+              await subscriptionService.login(userId);
+              logWithContext("info", "[AuthStore] RevenueCat login successful");
+            } catch (rcError) {
+              logWithContext(
+                "warn",
+                "[AuthStore] RevenueCat login failed (non-critical)",
+                {
+                  error:
+                    rcError instanceof Error
+                      ? rcError.message
+                      : String(rcError),
+                }
+              );
+            }
+          }
+
           logWithContext("info", "[AuthStore] Login successful:", {
             planCode: payload.planCode,
           });
@@ -182,6 +207,22 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           logWithContext("info", "[AuthStore] Logout started");
+
+          // RevenueCatからログアウト
+          try {
+            await subscriptionService.logout();
+            logWithContext("info", "[AuthStore] RevenueCat logout successful");
+          } catch (rcError) {
+            logWithContext(
+              "warn",
+              "[AuthStore] RevenueCat logout failed (non-critical)",
+              {
+                error:
+                  rcError instanceof Error ? rcError.message : String(rcError),
+              }
+            );
+          }
+
           await authService.logout();
           set({
             payload: null,

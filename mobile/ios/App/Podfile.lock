@@ -22,10 +22,18 @@ PODS:
   - IONFilesystemLib (1.0.1)
   - PurchasesHybridCommon (17.10.0):
     - RevenueCat (= 5.43.0)
+  - PurchasesHybridCommonUI (17.10.0):
+    - PurchasesHybridCommon (= 17.10.0)
+    - RevenueCatUI (= 5.43.0)
   - RevenueCat (5.43.0)
   - RevenuecatPurchasesCapacitor (11.2.6):
     - Capacitor
     - PurchasesHybridCommon (= 17.10.0)
+  - RevenuecatPurchasesCapacitorUi (11.2.6):
+    - Capacitor
+    - PurchasesHybridCommonUI (= 17.10.0)
+  - RevenueCatUI (5.43.0):
+    - RevenueCat (= 5.43.0)
   - SQLCipher (4.10.0):
     - SQLCipher/standard (= 4.10.0)
   - SQLCipher/common (4.10.0)
@@ -44,12 +52,15 @@ DEPENDENCIES:
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
+  - "RevenuecatPurchasesCapacitorUi (from `../../node_modules/@revenuecat/purchases-capacitor-ui`)"
 
 SPEC REPOS:
   trunk:
     - IONFilesystemLib
     - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - RevenueCat
+    - RevenueCatUI
     - SQLCipher
     - ZIPFoundation
 
@@ -74,6 +85,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/preferences"
   RevenuecatPurchasesCapacitor:
     :path: "../../node_modules/@revenuecat/purchases-capacitor"
+  RevenuecatPurchasesCapacitorUi:
+    :path: "../../node_modules/@revenuecat/purchases-capacitor-ui"
 
 SPEC CHECKSUMS:
   Capacitor: 28d6c01026a9a3f7156529498ec1f389a2a28dbc
@@ -87,11 +100,14 @@ SPEC CHECKSUMS:
   CapacitorPreferences: 65107ed7437d96ee72583df5763985e3c0ff2bc2
   IONFilesystemLib: 89258b8e3e85465da93127d25d7ce37f977e8a6f
   PurchasesHybridCommon: b7b4eafb55fbaaac19b4c36d4082657a3f0d8490
+  PurchasesHybridCommonUI: fe9a666c1b768dcb630a7bd32bf490ebab08cce4
   RevenueCat: a51003d4cb33820cc504cf177c627832b462a98e
   RevenuecatPurchasesCapacitor: fc904c3f4da985cc3498f57f956cda169698a983
+  RevenuecatPurchasesCapacitorUi: 72aede27b13e4003359153a223f5dc5365b426fd
+  RevenueCatUI: 1dfe9f8a07654203419efa211c3ec368ae34e5e4
   SQLCipher: eb79c64049cb002b4e9fcb30edb7979bf4706dfc
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 070f5887c1c20e3a5e61a090c2ec530fc5715675
+PODFILE CHECKSUM: 6f8833f5ba8479629d964ce27776727d80bcd995
 
 COCOAPODS: 1.16.2

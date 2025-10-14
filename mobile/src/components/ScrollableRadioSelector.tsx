@@ -10,6 +10,7 @@ interface SelectorItem {
 
 interface ScrollableRadioSelectorProps<T extends SelectorItem> {
   title: string;
+  subtitle?: string;
   items: T[];
   selected: T | null;
   onSelect: (tarotist: T) => void;
@@ -18,6 +19,7 @@ interface ScrollableRadioSelectorProps<T extends SelectorItem> {
 
 function ScrollableRadioSelector<T extends SelectorItem>({
   title,
+  subtitle,
   items,
   selected,
   onSelect,
@@ -33,6 +35,7 @@ function ScrollableRadioSelector<T extends SelectorItem>({
   return (
     <div className="mb-6">
       <div className="section-title">{title}</div>
+      {subtitle && <div className="section-subtitle gap-8">{subtitle}</div>}
       <div
         className={`space-y-2 ${needsScroll ? "overflow-y-auto pr-1" : ""}`}
         style={{

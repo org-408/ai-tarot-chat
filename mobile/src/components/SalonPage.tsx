@@ -73,20 +73,26 @@ const SalonPage: React.FC<SalonPageProps> = ({
   const availableCategories = useMemo(() => {
     if (!masterData.categories) return [];
 
-    return masterData.categories
-      .filter((category: ReadingCategory) => {
-        // GUESTとFREEは、恋愛・健康・金運を除外
-        if (
-          (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") &&
-          ["恋愛", "仕事", "今日の運勢"].includes(category.name)
-        ) {
-          return true;
-        }
-      })
-      .map((category: ReadingCategory) => ({
-        ...category,
-        bio: category.description,
-      }));
+    return (
+      masterData.categories
+        .filter((category: ReadingCategory) => {
+          // GUESTとFREEは、恋愛・健康・金運を除外
+          if (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") {
+            if (["恋愛", "仕事", "今日の運勢"].includes(category.name)) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return true;
+          }
+        })
+        // bioプロパティをdescriptionからコピー
+        .map((category: ReadingCategory) => ({
+          ...category,
+          bio: category.description,
+        }))
+    );
   }, [masterData, currentPlan]);
 
   // 3 スプレッドの取得とフィルタリング
@@ -235,15 +241,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       {isStandard && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {usageStats.remainingReadings}回 / ケルト十字:{" "}
+          通常: {usageStats.remainingReadings}回 または ケルト十字:{" "}
           {usageStats.remainingCeltics}回
         </div>
       )}
 
       {isPremium && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {usageStats.remainingReadings}回 / ケルト十字:{" "}
-          {usageStats.remainingCeltics}回 / パーソナル:{" "}
+          通常(ケルト十字を含む): {usageStats.remainingReadings}回 / パーソナル:{" "}
           {usageStats.remainingPersonal}回
         </div>
       )}
@@ -302,7 +307,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
       {/* 占い師選択 */}
       {availableTarotists.length > 0 && (
         <ScrollableRadioSelector
-          title="🔮 占い師を選択:"
+          title="🔮 どの占い師に占ってもらいますか？"
           items={availableTarotists}
           selected={selectedTarotist || null}
           onSelect={setSelectedTarotist}
@@ -313,11 +318,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
       {/* カテゴリー選択 */}
       {(!isPremium || aiMode !== "ai-auto") && (
         <ScrollableRadioSelector
-          title={`🎯 ${
-            isPremium || isStandard
-              ? "占いたいジャンルを選択:"
-              : "どのジャンルを占いますか?"
-          }`}
+          title={"どのジャンルを占いますか?"}
           items={availableCategories}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
@@ -327,7 +328,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       {/* スプレッド選択 */}
       <ScrollableRadioSelector
-        title={isPremium ? "🎴 スプレッドを選択:" : "🎴 占い方:"}
+        title={"🎴 どのスプレッドで占いますか？"}
+        subtitle={"(カテゴリごとに選択肢が変わります)"}
         items={availableSpreads}
         selected={selectedSpread}
         onSelect={setSelectedSpread}
