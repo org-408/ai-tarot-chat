@@ -4,6 +4,8 @@ import type { Plan, UsageStats } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { clientService } from "../services/client";
+// import { subscriptionService } from "../services/subscription";
+import { getTodayJST } from "../utils/date";
 import { useAuthStore } from "./auth";
 
 interface ClientState {
@@ -67,9 +69,14 @@ export const useClientStore = create<ClientState>()(
         logWithContext("info", "[ClientStore] Initializing");
 
         try {
+          // ✅ 1. RevenueCatを初期化
+          // await subscriptionService.initialize();
+          // logWithContext("info", "[ClientStore] RevenueCat initialized");
+
+          // ✅ 2. サーバーから利用状況を取得
           const usage = await clientService.getUsageAndReset();
           const currentPlan = usage.plan;
-          const today = new Date().toISOString().split("T")[0];
+          const today = getTodayJST();
 
           await clientService.saveLastFetchedDate(today);
 
@@ -212,23 +219,46 @@ export const useClientStore = create<ClientState>()(
             return;
           }
 
+          // newPlan が "GUEST" なら何もしない(UIで弾いているはずだが念のため)
+          if (newPlan.code === "GUEST") {
+            logWithContext("info", "[ClientStore] Cannot change to GUEST plan");
+            set({
+              isChangingPlan: false,
+              planChangeError: "GUESTプランへの変更はできません",
+            });
+            return;
+          }
+
           const authStore = useAuthStore.getState();
-          const isDowngrade = newPlan.no < currentPlan.no;
 
           // ============================================
-          // ✅ ログインが必要な場合
+          // ✅ ログインが必要な場合(isAuthenticated=false なら必ずログイン)
           // ============================================
-          if (!isDowngrade && !authStore.isAuthenticated) {
-            logWithContext("info", "[ClientStore] Starting login for upgrade");
+          if (!authStore.isAuthenticated) {
+            logWithContext(
+              "info",
+              "[ClientStore] Starting login for plan change"
+            );
 
             try {
               await authStore.login();
 
               logWithContext("info", "[ClientStore] Login successful");
 
+              // ✅ ログイン後にRevenueCatにもログイン
+              // const userId = authStore.payload?.user?.id;
+              // if (userId) {
+              //   await subscriptionService.login(userId);
+              //   logWithContext(
+              //     "info",
+              //     "[ClientStore] RevenueCat login successful"
+              //   );
+              // }
+
               // ログイン後のプランを確認
               const newPayload = authStore.payload;
 
+              // GUEST -> FREE への変更時は、ログイン後に FREE になっているのでチェック
               if (newPayload?.planCode === newPlan.code) {
                 logWithContext(
                   "info",

@@ -82,7 +82,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
         ) {
           return true;
         }
-        return false;
       })
       .map((category: ReadingCategory) => ({
         ...category,

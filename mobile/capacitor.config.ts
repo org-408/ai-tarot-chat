@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.aitarotchat.app",
-  appName: "mobile",
+  appId: "com.atelierflowlab.aitarotchat",
+  appName: "AI Tarot Chat",
   webDir: "dist",
   plugins: {
     CapacitorHttp: {
