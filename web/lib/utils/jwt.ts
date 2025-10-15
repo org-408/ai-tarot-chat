@@ -29,7 +29,7 @@ export async function decodeJWT<T>(
   token: string,
   secret: string = JWT_SECRET,
   ignoreExpiration = false
-): Promise<T & { exp?: number }> {
+): Promise<T> {
   logWithContext("info", "🔑 decodeJWT token:", { token });
   const jwtSecret = secret ?? JWT_SECRET;
   logWithContext("info", "🔑 decodeJWT secret:", { jwtSecret });
@@ -50,5 +50,5 @@ export async function decodeJWT<T>(
     throw new Error("Invalid token type");
   }
   logWithContext("info", "🔑 decodeJWT payload:", { payload });
-  return payload as T & { exp?: number };
+  return payload as T;
 }

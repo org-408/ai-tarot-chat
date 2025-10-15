@@ -99,19 +99,7 @@ export class AuthService {
       }
 
       const { token } = result;
-      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
-
-      if (!payload || !payload.deviceId || payload.deviceId !== deviceId) {
-        throw new Error("不正なトークンが返却されました");
-      }
-
-      // サーバーレスポンスに合わせて保存
-      await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-      await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
-
-      if (payload.user?.id) {
-        await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
-      }
+      const payload = await this.saveAccessTokenWithDecode(token);
 
       logWithContext("info", "[AuthService] Device registration successful", {
         clientId: payload.clientId,
@@ -263,7 +251,7 @@ export class AuthService {
       }
 
       const { token } = result;
-      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
+      const payload = await this.saveAccessTokenWithDecode(token);
 
       if (
         !payload ||
@@ -274,9 +262,6 @@ export class AuthService {
       ) {
         throw new Error("不正なトークンが返却されました");
       }
-
-      await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
 
       logWithContext("info", "[AuthService] OAuth signin successful", {
         clientId: payload.clientId,
@@ -300,26 +285,11 @@ export class AuthService {
     logWithContext("info", "[AuthService] Token refresh started");
 
     try {
-      const response = await apiClient.post<{ token: string }>(
+      const { token } = await apiClient.post<{ token: string }>(
         "/api/auth/refresh"
       );
 
-      await storeRepository.set(this.KEYS.ACCESS_TOKEN, response.token);
-
-      const payload = await decodeJWT<AppJWTPayload>(
-        response.token,
-        JWT_SECRET
-      );
-
-      if (payload.deviceId) {
-        await storeRepository.set(this.KEYS.DEVICE_ID, payload.deviceId);
-      }
-      if (payload.clientId) {
-        await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
-      }
-      if (payload.user?.id) {
-        await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
-      }
+      const payload = await this.saveAccessTokenWithDecode(token);
 
       logWithContext("info", "[AuthService] Token refresh successful", {
         clientId: payload.clientId,
@@ -337,7 +307,7 @@ export class AuthService {
   /**
    * ログアウト
    */
-  async logout(): Promise<void> {
+  async logout(): Promise<AppJWTPayload> {
     logWithContext("info", "[AuthService] Logout started");
 
     try {
@@ -345,12 +315,29 @@ export class AuthService {
       await storeRepository.delete(this.KEYS.CLIENT_ID);
       await storeRepository.delete(this.KEYS.USER_ID);
 
+      // サーバー側のセッションも終了させる
+      const { token } = await apiClient.post<{ token: string }>(
+        "/api/auth/signout",
+        {}
+      );
+
+      const payload = await this.saveAccessTokenWithDecode(token);
+      logWithContext("info", "[AuthService] Server signout successful", {
+        clientId: payload.clientId,
+      });
       logWithContext("info", "[AuthService] Logout successful");
+      return payload;
     } catch (error) {
+      // サーバー側の失敗は基本的にデバイスIDが null のみなので、registerDevice からやり直し
       logWithContext("error", "[AuthService] Logout failed", {
         error: error instanceof Error ? error.message : String(error),
       });
-      throw error;
+      logWithContext(
+        "warn",
+        "[AuthService] Device re-registered after signout failure"
+      );
+      // registerDevice からやり直し(エラーはそちらの関数に任せる)
+      return await this.registerDevice();
     }
   }
 
@@ -380,6 +367,23 @@ export class AuthService {
 
   async saveAccessToken(token: string): Promise<void> {
     await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+  }
+
+  async saveAccessTokenWithDecode(token: string): Promise<AppJWTPayload> {
+    const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
+
+    if (!payload || !payload.deviceId) {
+      throw new Error("不正なトークンが返却されました");
+    }
+
+    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+    await storeRepository.set(this.KEYS.DEVICE_ID, payload.deviceId);
+    await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
+
+    if (payload.user?.id) {
+      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
+    }
+    return payload;
   }
 
   async getClientId(): Promise<string | null> {

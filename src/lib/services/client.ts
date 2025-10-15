@@ -28,7 +28,7 @@ export class ClientService {
   ): Promise<{ success: boolean; payload: AppJWTPayload }> {
     console.log("Changing client plan to:", newPlanCode);
     const result = await apiClient.post<{ success: boolean; token: string }>(
-      "/api/plans/change",
+      "/api/clients/plan/change",
       { code: newPlanCode }
     );
     const { success, token } = result;

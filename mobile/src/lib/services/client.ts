@@ -80,7 +80,7 @@ export class ClientService {
 
     try {
       const result = await apiClient.post<{ success: boolean; token: string }>(
-        "/api/plans/change",
+        "/api/clients/plan/change",
         { code: newPlanCode }
       );
 

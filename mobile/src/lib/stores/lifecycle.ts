@@ -33,6 +33,7 @@ interface LifecycleState {
 }
 
 import type { PluginListenerHandle } from "@capacitor/core";
+import { subscriptionService } from "../services/subscription";
 import { useClientStore } from "./client";
 
 let appStateListener: PluginListenerHandle | null = null;
@@ -192,7 +193,6 @@ export const useLifecycleStore = create<LifecycleState>()(
             const error = refreshError as HttpError;
             const status = error.status || error.response?.status;
 
-            // ✅ 401 または 500 → 再登録で救済
             if (!status || status === 401 || status === 500) {
               logWithContext(
                 "warn",
@@ -200,7 +200,6 @@ export const useLifecycleStore = create<LifecycleState>()(
                 { status }
               );
 
-              // デバイス再登録（自動的にストレージが上書きされる）
               const newPayload = await authService.registerDevice();
               authStore.setPayload(newPayload);
 
@@ -209,39 +208,60 @@ export const useLifecycleStore = create<LifecycleState>()(
                 "[Lifecycle] Device re-registered successfully"
               );
             } else {
-              // ✅ その他のエラー（ネットワークエラーなど） → ログのみでスキップ
               logWithContext(
                 "warn",
                 "[Lifecycle] Failed to refresh token, but continuing",
                 { error: error.message }
               );
             }
-            // ========================================
-            // 2. 利用状況のリフレッシュ
-            // ========================================
-            const clientStore = useClientStore.getState();
-            if (authStore.isAuthenticated && clientStore.isReady) {
-              logWithContext("info", "[Lifecycle] Refreshing client usage");
-              try {
-                await clientStore.refreshUsage();
-              } catch (usageError) {
-                logWithContext(
-                  "warn",
-                  "[Lifecycle] Failed to refresh usage, but continuing",
-                  {
-                    error:
-                      usageError instanceof Error
-                        ? usageError.message
-                        : String(usageError),
-                  }
-                );
-              }
-            } else {
+          }
+
+          // ========================================
+          // 2. RevenueCat の状態確認と同期
+          // ========================================
+          if (authStore.isAuthenticated) {
+            logWithContext("info", "[Lifecycle] Checking RevenueCat status");
+            try {
+              await subscriptionService.checkAndSyncOnResume();
+            } catch (rcError) {
               logWithContext(
-                "info",
-                "[Lifecycle] Skipping usage refresh, not authenticated or client not ready"
+                "warn",
+                "[Lifecycle] Failed to sync RevenueCat, but continuing",
+                {
+                  error:
+                    rcError instanceof Error
+                      ? rcError.message
+                      : String(rcError),
+                }
               );
             }
+          }
+
+          // ========================================
+          // 3. 利用状況のリフレッシュ
+          // ========================================
+          const clientStore = useClientStore.getState();
+          if (authStore.isAuthenticated && clientStore.isReady) {
+            logWithContext("info", "[Lifecycle] Refreshing client usage");
+            try {
+              await clientStore.refreshUsage();
+            } catch (usageError) {
+              logWithContext(
+                "warn",
+                "[Lifecycle] Failed to refresh usage, but continuing",
+                {
+                  error:
+                    usageError instanceof Error
+                      ? usageError.message
+                      : String(usageError),
+                }
+              );
+            }
+          } else {
+            logWithContext(
+              "info",
+              "[Lifecycle] Skipping usage refresh, not authenticated or client not ready"
+            );
           }
 
           // 日付変更の検出

@@ -106,6 +106,10 @@ model Client {
   planId               String
   plan                 Plan     @relation(fields: [planId], references: [id])
 
+  // RevenueCat情報
+  revenueCatUserId String?  // RevenueCatの匿名IDまたはログインID
+
+
   // 利用状況
   dailyReadingsCount Int      @default(0)
   lastReadingDate    DateTime?
@@ -514,7 +518,6 @@ model MasterConfig {
 // ==========================================
 // Logging関連モデル
 // ==========================================
-// schema.prisma に追加するモデル
 model Log {
   id        String   @id @default(cuid())
   level     String   @default("info")// 'info', 'warn', 'error' など
@@ -540,7 +543,6 @@ model Log {
 // ==========================================
 // Ticket関連モデル
 // ==========================================
-// schema.prisma
 model UsedTicket {
   id         String   @id @default(cuid())
   ticketHash String   @unique @db.VarChar(64)

@@ -1,12 +1,16 @@
 import { logWithContext } from "@/lib/logger/logger";
 import { authService } from "@/lib/services/auth";
-import { planService } from "@/lib/services/plan";
+import { clientService } from "@/lib/services/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  logWithContext("info", "📍 /api/plans/change - プラン変更リクエスト受信", {
-    path: "/api/plans/change",
-  });
+  logWithContext(
+    "info",
+    "📍 /api/clients/plan/change - プラン変更リクエスト受信",
+    {
+      path: "/api/clients/plan/change",
+    }
+  );
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);
@@ -37,7 +41,7 @@ export async function POST(request: NextRequest) {
     logWithContext("info", `🔄 プラン変更処理開始`, { clientId, code });
 
     // プラン変更処理
-    const needsUpdate = await planService.changePlan(clientId, code);
+    const needsUpdate = await clientService.changePlan(clientId, code);
 
     // JWTペイロード更新
     if (!needsUpdate) {

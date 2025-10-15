@@ -5,7 +5,7 @@ import {
   type Client,
   type TicketData,
 } from "@/../shared/lib/types";
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { authRepository } from "@/lib/repositories/auth";
 import { BaseRepository } from "@/lib/repositories/base";
 import { clientRepository } from "@/lib/repositories/client";
@@ -269,6 +269,66 @@ export class AuthService {
   }
 
   /**
+   * サインアウト
+   */
+  async signOut(request: NextRequest): Promise<string> {
+    logWithContext("info", "🔄 signOut called", { request });
+    const payload = await this.getPayloadFromRequest(request);
+    // いずれにしろ Auth.js5.0 のサインアウトするが、証跡だけログに残す
+    signOut();
+    if (payload.user && payload.user.id) {
+      logWithContext("info", "✅ User signed out", { userId: payload.user.id });
+    } else {
+      logWithContext("warn", "⚠️ No user to sign out", { payload });
+    }
+    // client, device の存在確認をし、なければトークンとの紐付けを切って、新しいトークンを発行する
+    const device = await clientService.getDeviceById(payload.deviceId);
+    if (!device) {
+      // device が存在しない場合は救済しない(よっぽどのことがないと発生しないと思われる)
+      logWithContext("error", "device not found. token will be invalidated", {
+        payload,
+      });
+      throw new Error("Device not found");
+    }
+    const client = await device.client;
+    // device が存在し、client が存在しない場合は client の紐付けを切り、デバイス再登録
+    if (!client) {
+      logWithContext("warn", "client not found. re-registerDevice", {
+        payload,
+      });
+      return await this.registerOrUpdateDevice({
+        deviceId: payload.deviceId,
+        platform: device.platform || undefined,
+        appVersion: device.appVersion || undefined,
+        osVersion: device.osVersion || undefined,
+        pushToken: device.pushToken || undefined,
+      });
+    } else {
+      // client, device 両方存在する場合はそのまま返す
+      logWithContext(
+        "info",
+        "✅ Client and Device found, token remains valid",
+        {
+          payload,
+        }
+      );
+      // GUESTに戻す
+      const newClient = await clientService.changePlan(client.id, "GUEST");
+      return await generateJWT<AppJWTPayload>(
+        {
+          t: "app",
+          deviceId: device.deviceId,
+          clientId: newClient.id,
+          planCode: "GUEST", // signOut後はGUESTに戻す,
+          provider: undefined,
+          user: undefined,
+        },
+        JWT_SECRET
+      );
+    }
+  }
+
+  /**
    * ** 重要!! **
    * Client統合(ユーザーが複数Clientを持ってしまった場合の救済用)
    * planはより上位のものを適用
@@ -515,30 +575,39 @@ export class AuthService {
    */
   async verifyApiRequest(
     request: NextRequest | string
-  ): Promise<
-    { payload: AppJWTPayload & { exp?: number } } | { error: NextResponse }
-  > {
-    const authHeader =
-      request instanceof NextRequest
-        ? request.headers.get("authorization")
-        : (request as string);
-    if (!authHeader?.startsWith("Bearer ")) {
-      return {
-        error: NextResponse.json({ error: "認証が必要です" }, { status: 401 }),
-      };
-    }
-
+  ): Promise<{ payload: AppJWTPayload } | { error: NextResponse }> {
     try {
-      const payload = await decodeJWT<AppJWTPayload>(
-        authHeader.substring(7),
-        JWT_SECRET
-      );
+      const payload = await this.getPayloadFromRequest(request);
       return { payload };
     } catch (error) {
       logWithContext("error", "❌ APIリクエスト認証エラー:", { error });
       return {
         error: NextResponse.json({ error: "認証失敗" }, { status: 401 }),
       };
+    }
+  }
+
+  private getPayloadFromRequest(
+    request: NextRequest | string
+  ): Promise<AppJWTPayload> {
+    const authHeader =
+      request instanceof NextRequest
+        ? request.headers.get("authorization")
+        : (request as string);
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw new Error("認証が必要です");
+    }
+
+    try {
+      const payload = decodeJWT<AppJWTPayload>(
+        authHeader.substring(7),
+        JWT_SECRET,
+        true
+      );
+      return payload;
+    } catch (error) {
+      logWithContext("error", "❌ getPayloadFromRequest error:", { error });
+      throw error;
     }
   }
 

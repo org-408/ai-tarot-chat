@@ -9,7 +9,8 @@ import {
 import { RevenueCatUI } from "@revenuecat/purchases-capacitor-ui";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
-import { apiClient } from "../utils/apiClient";
+import { useClientStore } from "../stores/client";
+import { useMasterStore } from "../stores/master";
 import { getPackageIdentifier } from "../utils/plan-utils";
 
 /**
@@ -83,6 +84,33 @@ export class SubscriptionService {
         error: error instanceof Error ? error.message : String(error),
         platform,
       });
+      throw error;
+    }
+  }
+
+  /**
+   * アプリ復帰時の購読状態確認と同期
+   * lifecycle.ts から呼び出される
+   */
+  async checkAndSyncOnResume(): Promise<void> {
+    logWithContext(
+      "info",
+      "[SubscriptionService] Checking subscription on resume"
+    );
+
+    try {
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      await this.syncWithServer(customerInfo);
+
+      logWithContext("info", "[SubscriptionService] Synced on app resume");
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to sync on resume",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
       throw error;
     }
   }
@@ -174,20 +202,69 @@ export class SubscriptionService {
 
   /**
    * サーバーと購読状態を同期
+   * ClientStore の changePlan を呼び出してプラン変更を委譲
    */
   private async syncWithServer(customerInfo: CustomerInfo): Promise<void> {
     try {
-      await apiClient.post("/api/subscriptions/sync", {
-        customerInfo,
+      // CustomerInfo から planCode を判定
+      const planCode = this.getPlanCodeFromCustomerInfo(customerInfo);
+
+      logWithContext("info", "[SubscriptionService] Syncing with server", {
+        planCode,
+        entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      logWithContext("info", "[SubscriptionService] Synced with server");
+      // ClientStore の changePlanByCode を呼び出す
+      // 動的インポートを使用（循環参照を避けるため）
+      const clientStore = useClientStore.getState();
+      if (!clientStore) {
+        logWithContext(
+          "error",
+          "[SubscriptionService] ClientStore not initialized"
+        );
+        throw new Error("ClientStore is not initialized");
+      }
+      const currentPlan = clientStore.currentPlan!;
+      if (currentPlan.code !== planCode) {
+        logWithContext(
+          "info",
+          "[SubscriptionService] Changing plan in ClientStore",
+          { planCode }
+        );
+        const { masterData } = useMasterStore.getState();
+        if (!masterData) {
+          logWithContext(
+            "error",
+            "[SubscriptionService] Master data not loaded"
+          );
+          throw new Error("Master data is not loaded");
+        }
+        const newPlan = masterData.plans.find((p) => p.code === planCode);
+        await clientStore.changePlan(newPlan!);
+      }
+
+      logWithContext("info", "[SubscriptionService] Synced with server", {
+        planCode,
+      });
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Server sync failed", {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
+  }
+
+  /**
+   * CustomerInfo から planCode を判定
+   */
+  private getPlanCodeFromCustomerInfo(customerInfo: CustomerInfo): string {
+    const activeEntitlements = Object.keys(customerInfo.entitlements.active);
+
+    if (activeEntitlements.includes("premium")) return "PREMIUM";
+    if (activeEntitlements.includes("standard")) return "STANDARD";
+
+    // 購読なし = FREE
+    return "FREE";
   }
 
   /**
@@ -271,7 +348,8 @@ export class SubscriptionService {
   }
 
   /**
-   * プラン購入とサーバー検証
+   * プラン購入
+   * 購入完了後はリスナーが自動的に syncWithServer → changePlanByCode を呼び出す
    */
   async purchaseAndChangePlan(targetPlan: Plan): Promise<void> {
     logWithContext("info", "[SubscriptionService] Starting purchase", {
@@ -314,48 +392,13 @@ export class SubscriptionService {
         entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      // 4. サーバーで購入を検証してプラン変更
-      await this.verifyPurchaseOnServer(targetPlan.code, customerInfo);
-
-      logWithContext(
-        "info",
-        "[SubscriptionService] Purchase verified on server"
-      );
+      // 4. リスナーが自動的に syncWithServer → changePlanByCode を呼び出すため、ここでは何もしない
+      // changePlan() 側で /api/clients/plan/change を呼び出してサーバーに即時反映する
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Purchase failed", {
         error: error instanceof Error ? error.message : String(error),
         targetPlan: targetPlan.code,
       });
-      throw error;
-    }
-  }
-
-  /**
-   * サーバー側で購入を検証してプラン変更
-   */
-  private async verifyPurchaseOnServer(
-    planCode: string,
-    customerInfo: CustomerInfo
-  ): Promise<void> {
-    logWithContext("info", "[SubscriptionService] Verifying on server", {
-      planCode,
-    });
-
-    try {
-      await apiClient.post("/api/subscriptions/verify", {
-        planCode,
-        customerInfo,
-      });
-
-      logWithContext("info", "[SubscriptionService] Verification successful");
-    } catch (error) {
-      logWithContext(
-        "error",
-        "[SubscriptionService] Server verification failed",
-        {
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
       throw error;
     }
   }
