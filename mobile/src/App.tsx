@@ -12,6 +12,7 @@ import PlansPage from "./components/PlansPage";
 import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
 import TarotistPage from "./components/TarotistPage";
+import TarotistSwipePage from "./components/TarotistSwipePage";
 import { useAuth } from "./lib/hooks/useAuth";
 import { useClient } from "./lib/hooks/useClient";
 import { useLifecycle } from "./lib/hooks/useLifecycle";
@@ -283,6 +284,15 @@ function App() {
             isChangingPlan={isChangingPlan}
           />
         );
+      case "tarotistSwipe":
+        return (
+          <TarotistSwipePage
+            payload={payload}
+            masterData={masterData}
+            onChangePlan={handleChangePlan}
+            isChangingPlan={isChangingPlan}
+          />
+        );
       case "history":
         return (
           <div className="main-container">
@@ -435,6 +445,15 @@ function App() {
                 className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
               >
                 🔮 Tarotist
+              </button>
+              <button
+                onClick={() => {
+                  setDevMenuOpen(false);
+                  setPageType("tarotistSwipe");
+                }}
+                className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
+              >
+                🔮 TarotistSwipe
               </button>
               <DebugResetButton />
               <hr className="my-1 border-gray-300" />

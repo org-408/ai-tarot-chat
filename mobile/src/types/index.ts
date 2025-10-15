@@ -7,6 +7,7 @@ export type PageType =
   | "reading"
   | "plans"
   | "tarotist"
+  | "tarotistSwipe"
   | "history"
   | "settings";
 
