@@ -86,7 +86,6 @@ export class AuthService {
             t: "app",
             deviceId: device.deviceId,
             clientId: clientData.id,
-            planCode: clientData.plan.code,
             provider: clientData.provider || undefined,
             user: user
               ? {
@@ -251,7 +250,6 @@ export class AuthService {
             t: "app",
             deviceId: device.deviceId,
             clientId: finalClient.id,
-            planCode: finalClient.plan.code,
             provider,
             user: {
               id: user.id,
@@ -319,7 +317,6 @@ export class AuthService {
           t: "app",
           deviceId: device.deviceId,
           clientId: newClient.id,
-          planCode: "GUEST", // signOut後はGUESTに戻す,
           provider: undefined,
           user: undefined,
         },
@@ -496,17 +493,13 @@ export class AuthService {
   /**
    * JWTペイロード更新(プラン変更時など)
    */
-  async refreshJwtPayload(
-    payload: AppJWTPayload & { exp?: number },
-    planCode?: string
-  ): Promise<string> {
+  async refreshJwtPayload(payload: AppJWTPayload): Promise<string> {
     // アプリ用JWT生成(既存パターンに合わせて)
     return await generateJWT<AppJWTPayload>(
       {
         t: "app",
         deviceId: payload.deviceId,
         clientId: payload.clientId,
-        planCode: planCode || payload.planCode,
         provider: payload.provider,
         user: payload.user,
       },
@@ -624,10 +617,10 @@ export class AuthService {
       if ("error" in verifyJwt) return verifyJwt; // { error: NextResponse }
       // token 検証開始
       const {
-        payload: { t, deviceId, clientId, planCode },
+        payload: { t, deviceId, clientId },
       } = verifyJwt;
       // 正常ケース
-      if (t === "app" && deviceId === body.deviceId && clientId && planCode) {
+      if (t === "app" && deviceId === body.deviceId && clientId) {
       }
     }
     return body;
