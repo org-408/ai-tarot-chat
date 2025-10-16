@@ -21,6 +21,9 @@ import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
 function App() {
+  // ✅ デバッグメニュー有効化フラグ
+  const isDebugEnabled = import.meta.env.VITE_ENABLE_DEBUG_MENU === "true";
+
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
 
@@ -30,26 +33,33 @@ function App() {
     category: ReadingCategory;
   } | null>(null);
 
-  // 🔥 ライフサイクル管理
+  // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
     isInitialized,
     isRefreshing,
     dateChanged,
     error,
+    currentInitStep,
+    currentResumeStep,
+    isOffline,
+    offlineMode,
+    lastError,
+    isChangingPlan,
+    planChangeError,
     init,
     setup,
     cleanup,
     clearDateChanged,
     clearError,
+    getInitStepLabel,
+    getResumeStepLabel,
+    getOfflineModeLabel,
+    logout: appLogout,
+    changePlan,
   } = useLifecycle();
 
   // 🔥 認証状態
-  const {
-    payload,
-    isReady: authIsReady,
-    isAuthenticated,
-    logout: authLogout,
-  } = useAuth();
+  const { payload, isReady: authIsReady, isAuthenticated } = useAuth();
 
   // 🔥 クライアント情報（changePlanで全て管理）
   const {
@@ -57,18 +67,11 @@ function App() {
     usage: usageStats,
     planCode,
     clientId,
-    changePlan,
-    isChangingPlan,
-    planChangeError,
   } = useClient();
 
   // 🔥 マスターデータ取得
-  // 条件: lifecycle.init()完了 && auth.isReady
-  const {
-    masterData,
-    plans,
-    isLoading: isMasterLoading,
-  } = useMaster(isInitialized && authIsReady && clientIsReady);
+  // ✅ 修正: 条件なしで呼び出し（lifecycle.tsがinit()を管理）
+  const { masterData, plans, isLoading: isMasterLoading } = useMaster();
 
   // 🔥 初期化処理
   useEffect(() => {
@@ -121,7 +124,7 @@ function App() {
   const handleLogout = async () => {
     try {
       console.log("ログアウト開始");
-      await authLogout();
+      await appLogout();
       console.log("ログアウト成功");
 
       setPageType("salon");
@@ -198,6 +201,7 @@ function App() {
   if (
     !isInitialized ||
     !authIsReady ||
+    !clientIsReady ||
     isMasterLoading ||
     !masterData ||
     !usageStats ||
@@ -207,9 +211,11 @@ function App() {
       <TarotSplashScreen
         message={
           !isInitialized
-            ? "アプリを初期化中..."
+            ? getInitStepLabel()
             : !authIsReady
             ? "認証情報を確認中..."
+            : !clientIsReady
+            ? "クライアント情報を取得中..."
             : isMasterLoading
             ? "マスターデータを読み込み中..."
             : !masterData
@@ -352,7 +358,21 @@ function App() {
       {/* 🔥 リフレッシュ中インジケーター */}
       {isRefreshing && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
-          🔄 更新中...
+          🔄 {getResumeStepLabel()}
+        </div>
+      )}
+
+      {/* ✅ オフライン通知 */}
+      {isOffline && offlineMode === "limited" && (
+        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+          📡 {getOfflineModeLabel()}
+        </div>
+      )}
+
+      {/* ✅ 完全オフライン警告 */}
+      {offlineMode === "full" && (
+        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+          ⚠️ オフライン - 初回起動にはネット接続が必要です
         </div>
       )}
 
@@ -372,116 +392,155 @@ function App() {
 
       <Header currentPlan={planCode as UserPlan} currentPage={pageType} />
 
-      {/* 開発メニュー */}
-      <div className="fixed top-16 right-2 z-50">
-        <button
-          onClick={() => setDevMenuOpen(!devMenuOpen)}
-          className="w-6 h-6 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full text-xs text-white flex items-center justify-center transition-all opacity-30 hover:opacity-80"
-          title="開発メニュー"
-        >
-          ⚙
-        </button>
+      {/* 開発メニュー（環境変数で制御） */}
+      {isDebugEnabled && (
+        <div className="fixed top-16 right-2 z-50">
+          <button
+            onClick={() => setDevMenuOpen(!devMenuOpen)}
+            className="w-6 h-6 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full text-xs text-white flex items-center justify-center transition-all opacity-30 hover:opacity-80"
+            title="開発メニュー"
+          >
+            ⚙
+          </button>
 
-        {devMenuOpen && (
-          <div className="absolute top-8 right-0 w-32 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border">
-            <div className="text-xs mb-2 text-gray-600">プラン切替</div>
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={() => {
-                  handleChangePlan("FREE");
-                  setDevMenuOpen(false);
-                  setPageType("salon");
-                }}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
-                  planCode === "FREE"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                Free
-              </button>
-              <button
-                onClick={() => {
-                  handleChangePlan("STANDARD");
-                  setDevMenuOpen(false);
-                  setPageType("salon");
-                }}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
-                  planCode === "STANDARD"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                💎 Standard
-              </button>
-              <button
-                onClick={() => {
-                  handleChangePlan("PREMIUM");
-                  setDevMenuOpen(false);
-                  setPageType("salon");
-                }}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
-                  planCode === "PREMIUM"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                👑 Premium
-              </button>
-              <button
-                onClick={() => {
-                  setDevMenuOpen(false);
-                  setPageType("plans");
-                }}
-                className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
-              >
-                💎 Plan
-              </button>
-              <button
-                onClick={() => {
-                  setDevMenuOpen(false);
-                  setPageType("tarotist");
-                }}
-                className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
-              >
-                🔮 Tarotist
-              </button>
-              <button
-                onClick={() => {
-                  setDevMenuOpen(false);
-                  setPageType("tarotistSwipe");
-                }}
-                className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
-              >
-                🔮 TarotistSwipe
-              </button>
-              <DebugResetButton />
-              <hr className="my-1 border-gray-300" />
-              {isAuthenticated ? (
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setDevMenuOpen(false);
-                  }}
-                  className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
-                >
-                  🚪 Logout
-                </button>
-              ) : (
+          {devMenuOpen && (
+            <div className="absolute top-8 right-0 w-64 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border max-h-[80vh] overflow-y-auto">
+              {/* ✅ デバッグ情報セクション */}
+              <div className="text-xs mb-2 pb-2 border-b">
+                <div className="font-bold text-gray-700 mb-1">
+                  🔧 システム状態
+                </div>
+                <div className="space-y-0.5 text-gray-600">
+                  <div>
+                    Init:{" "}
+                    <span className="text-purple-600">{currentInitStep}</span>
+                  </div>
+                  <div>
+                    Resume:{" "}
+                    <span className="text-purple-600">{currentResumeStep}</span>
+                  </div>
+                  <div>
+                    Offline:{" "}
+                    <span
+                      className={isOffline ? "text-red-600" : "text-green-600"}
+                    >
+                      {isOffline ? "YES" : "NO"} ({offlineMode})
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span>Auth: {authIsReady ? "✓" : "⏳"}</span>
+                    <span>Client: {clientIsReady ? "✓" : "⏳"}</span>
+                    <span>Master: {masterData ? "✓" : "⏳"}</span>
+                  </div>
+                  {lastError && (
+                    <div className="text-red-500 text-[10px] mt-1">
+                      Error@{lastError.step}:{" "}
+                      {lastError.error.message.substring(0, 40)}...
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 既存のプラン切り替えセクション */}
+              <div className="text-xs mb-2 text-gray-600">プラン切替</div>
+              <div className="flex flex-col gap-1">
                 <button
                   onClick={() => {
                     handleChangePlan("FREE");
                     setDevMenuOpen(false);
+                    setPageType("salon");
                   }}
-                  className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    planCode === "FREE"
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
-                  🔐 Login
+                  Free
                 </button>
-              )}
+                <button
+                  onClick={() => {
+                    handleChangePlan("STANDARD");
+                    setDevMenuOpen(false);
+                    setPageType("salon");
+                  }}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    planCode === "STANDARD"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
+                >
+                  💎 Standard
+                </button>
+                <button
+                  onClick={() => {
+                    handleChangePlan("PREMIUM");
+                    setDevMenuOpen(false);
+                    setPageType("salon");
+                  }}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    planCode === "PREMIUM"
+                      ? "bg-yellow-500 text-white"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
+                >
+                  👑 Premium
+                </button>
+                <button
+                  onClick={() => {
+                    setDevMenuOpen(false);
+                    setPageType("plans");
+                  }}
+                  className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
+                >
+                  💎 Plan
+                </button>
+                <button
+                  onClick={() => {
+                    setDevMenuOpen(false);
+                    setPageType("tarotist");
+                  }}
+                  className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
+                >
+                  🔮 Tarotist
+                </button>
+                <button
+                  onClick={() => {
+                    setDevMenuOpen(false);
+                    setPageType("tarotistSwipe");
+                  }}
+                  className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
+                >
+                  🔮 TarotistSwipe
+                </button>
+                <DebugResetButton />
+                <hr className="my-1 border-gray-300" />
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setDevMenuOpen(false);
+                    }}
+                    className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
+                  >
+                    🚪 Logout
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleChangePlan("FREE");
+                      setDevMenuOpen(false);
+                    }}
+                    className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
+                  >
+                    🔐 Login
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* ユーザー情報表示 */}
       {payload.user && (

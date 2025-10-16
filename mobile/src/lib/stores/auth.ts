@@ -5,13 +5,7 @@ import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
 import { logWithContext } from "../logger/logger";
 import { subscriptionService } from "../services/subscription";
-
-interface HttpError extends Error {
-  status?: number;
-  response?: {
-    status?: number;
-  };
-}
+import { HttpError, isNetworkError } from "../utils/apiClient";
 
 interface AuthState {
   // 状態
@@ -109,41 +103,70 @@ export const useAuthStore = create<AuthState>()(
                   error: refreshError,
                 });
 
-                const error = refreshError as HttpError;
-                const status = error.status || error.response?.status;
-
-                logWithContext("warn", "[AuthStore] Refresh failed, status:", {
-                  status,
-                });
-
-                // ✅ status が取れない場合も再登録（安全側に倒す）
-                if (!status || status === 401 || status === 500) {
+                // ✅ ネットワークエラーチェック
+                if (isNetworkError(refreshError)) {
                   logWithContext(
                     "warn",
-                    "[AuthStore] Token verification failed, re-registering device",
-                    { status: status || "unknown" }
-                  );
-
-                  // デバイス再登録（自動的にストレージが上書きされる）
-                  const newPayload = await authService.registerDevice();
-                  set({
-                    payload: newPayload,
-                    isAuthenticated: !!newPayload.user,
-                  });
-
-                  logWithContext(
-                    "info",
-                    "[AuthStore] Device re-registered successfully"
-                  );
-                } else {
-                  // ✅ 明確なネットワークエラー（502, 503など）→ ログのみ
-                  logWithContext(
-                    "warn",
-                    "[AuthStore] Network error during init, continuing with stored token",
-                    { error: error.message, status }
+                    "[AuthStore] Network error during init, continuing with stored token"
                   );
 
                   // 既存のトークンで継続
+                  set({
+                    payload,
+                    isAuthenticated: !!payload.user,
+                  });
+                } else if (refreshError instanceof HttpError) {
+                  const status = refreshError.status;
+
+                  logWithContext(
+                    "warn",
+                    "[AuthStore] Refresh failed, status:",
+                    {
+                      status,
+                    }
+                  );
+
+                  // ✅ 401/500 → 再登録
+                  if (status === 401 || status === 500) {
+                    logWithContext(
+                      "warn",
+                      "[AuthStore] Token verification failed, re-registering device",
+                      { status }
+                    );
+
+                    // デバイス再登録（自動的にストレージが上書きされる）
+                    const newPayload = await authService.registerDevice();
+                    set({
+                      payload: newPayload,
+                      isAuthenticated: !!newPayload.user,
+                    });
+
+                    logWithContext(
+                      "info",
+                      "[AuthStore] Device re-registered successfully"
+                    );
+                  } else {
+                    // ✅ その他のHTTPエラー → ログのみ
+                    logWithContext(
+                      "warn",
+                      "[AuthStore] HTTP error during init, continuing with stored token",
+                      { status }
+                    );
+
+                    // 既存のトークンで継続
+                    set({
+                      payload,
+                      isAuthenticated: !!payload.user,
+                    });
+                  }
+                } else {
+                  // ✅ 不明なエラー → ログのみ
+                  logWithContext(
+                    "warn",
+                    "[AuthStore] Unknown error during init, continuing with stored token",
+                    { error: refreshError }
+                  );
+
                   set({
                     payload,
                     isAuthenticated: !!payload.user,
@@ -223,9 +246,9 @@ export const useAuthStore = create<AuthState>()(
             );
           }
 
-          await authService.logout();
+          const payload = await authService.logout();
           set({
-            payload: null,
+            payload,
             isAuthenticated: false,
           });
           logWithContext("info", "[AuthStore] Logout successful");
@@ -268,44 +291,58 @@ export const useAuthStore = create<AuthState>()(
               }
             );
           } catch (refreshError) {
-            // ✅ ここでエラーハンドリング
-            const error = refreshError as HttpError;
-            const status = error.status || error.response?.status;
-
-            logWithContext("warn", "[AuthStore] Refresh failed, status:", {
-              status,
-            });
-
-            // ✅ 401/500 または status不明 → 再登録
-            if (!status || status === 401 || status === 500) {
+            // ✅ ネットワークエラーチェック
+            if (isNetworkError(refreshError)) {
               logWithContext(
                 "warn",
-                "[AuthStore] Token invalid, re-registering device",
-                { status: status || "unknown" }
+                "[AuthStore] Network error during refresh"
               );
-
-              const newPayload = await authService.registerDevice();
-              set({
-                payload: newPayload,
-                isAuthenticated: !!newPayload.user,
-              });
-
-              logWithContext(
-                "info",
-                "[AuthStore] Device re-registered successfully"
-              );
-              return; // ✅ 成功として扱う
+              throw refreshError; // ネットワークエラーは上位に伝播
             }
 
-            // ✅ その他のエラー（ネットワークエラーなど）→ 再throw
-            logWithContext("error", "[AuthStore] Network error during refresh");
+            // ✅ HTTPエラーチェック
+            if (refreshError instanceof HttpError) {
+              const status = refreshError.status;
+
+              logWithContext("warn", "[AuthStore] Refresh failed, status:", {
+                status,
+              });
+
+              // ✅ 401/500 → 再登録
+              if (status === 401 || status === 500) {
+                logWithContext(
+                  "warn",
+                  "[AuthStore] Token invalid, re-registering device",
+                  { status }
+                );
+
+                const newPayload = await authService.registerDevice();
+                set({
+                  payload: newPayload,
+                  isAuthenticated: !!newPayload.user,
+                });
+
+                logWithContext(
+                  "info",
+                  "[AuthStore] Device re-registered successfully"
+                );
+                return; // ✅ 成功として扱う
+              }
+
+              // ✅ その他のHTTPエラー → 再throw
+              logWithContext("error", "[AuthStore] HTTP error during refresh");
+              throw refreshError;
+            }
+
+            // ✅ 不明なエラー → 再throw
+            logWithContext("error", "[AuthStore] Unknown error during refresh");
             throw refreshError;
           }
 
           logWithContext("info", "[AuthStore] Refresh completed");
         } catch (error) {
           logWithContext("error", "[AuthStore] Refresh failed:", { error });
-          throw error; // ✅ ネットワークエラーなど回復不能なエラーのみ上位に伝播
+          throw error; // ✅ エラーを上位に伝播
         }
       },
 

@@ -26,8 +26,6 @@ interface TarotistCarouselStackProps {
 
 const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
   availableTarotists,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  currentPlan,
   canUseTarotist,
   getTarotistColor,
   renderStars,
@@ -36,7 +34,6 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
   onSelectTarotist,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [exitDirection, setExitDirection] = useState<"left" | "right">("right");
 
   if (availableTarotists.length === 0) {
     return (
@@ -47,12 +44,10 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
   }
 
   const handleNext = () => {
-    setExitDirection("right");
     setCurrentIndex((prev) => (prev + 1) % availableTarotists.length);
   };
 
   const handlePrev = () => {
-    setExitDirection("left");
     setCurrentIndex((prev) =>
       prev === 0 ? availableTarotists.length - 1 : prev - 1
     );
@@ -65,12 +60,12 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
         {availableTarotists.map((tarotist, index) => {
           const offset = index - currentIndex;
           const isActive = offset === 0;
-          const isVisible = Math.abs(offset) <= 2;
+          const isVisible = Math.abs(offset) <= 3;
 
           if (!isVisible) return null;
 
           return (
-            <CardWithDrag
+            <TinderCard
               key={`${tarotist.name}-${index}`}
               tarotist={tarotist}
               offset={offset}
@@ -80,8 +75,8 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
               renderStars={renderStars}
               onChangePlan={onChangePlan}
               isChangingPlan={isChangingPlan}
-              onSwipeLeft={handleNext}
-              onSwipeRight={handlePrev}
+              onNext={handleNext}
+              onPrev={handlePrev}
               onSelect={() => {
                 if (
                   canUseTarotist(tarotist.plan?.code || "GUEST") &&
@@ -90,11 +85,50 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
                   onSelectTarotist(tarotist);
                 }
               }}
-              exitDirection={exitDirection}
             />
           );
         })}
       </div>
+
+      {/* 左右ナビゲーションボタン */}
+      <button
+        onClick={handlePrev}
+        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-xl z-20 transition-all active:scale-95"
+        aria-label="前の占い師"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
+      <button
+        onClick={handleNext}
+        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-xl z-20 transition-all active:scale-95"
+        aria-label="次の占い師"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </button>
 
       {/* カウンター */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center">
@@ -105,23 +139,24 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
         </div>
       </div>
 
-      {/* スワイプヒント */}
+      {/* 操作ヒント */}
       <motion.div
         className="absolute top-4 left-0 right-0 text-center pointer-events-none"
-        initial={{ opacity: 1, y: 0 }}
-        animate={{ opacity: 0, y: -10 }}
-        transition={{ delay: 2.5, duration: 1 }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ delay: 3, duration: 1 }}
       >
         <div className="inline-block bg-purple-500 text-white px-4 py-2 rounded-full text-xs md:text-sm shadow-lg">
-          ← スワイプして選択 →
+          スワイプで閲覧 / タップで選択
         </div>
       </motion.div>
     </div>
   );
 };
 
-// 個別カードコンポーネント
-const CardWithDrag: React.FC<{
+// Tinder風カードコンポーネント
+// Tinder風カードコンポーネント
+const TinderCard: React.FC<{
   tarotist: Tarotist;
   offset: number;
   isActive: boolean;
@@ -136,10 +171,9 @@ const CardWithDrag: React.FC<{
   renderStars: (quality: number) => string;
   onChangePlan: (planCode: string) => void;
   isChangingPlan: boolean;
-  onSwipeLeft: () => void;
-  onSwipeRight: () => void;
+  onNext: () => void;
+  onPrev: () => void;
   onSelect: () => void;
-  exitDirection: "left" | "right";
 }> = ({
   tarotist,
   offset,
@@ -149,81 +183,83 @@ const CardWithDrag: React.FC<{
   renderStars,
   onChangePlan,
   isChangingPlan,
-  onSwipeLeft,
-  onSwipeRight,
+  onNext,
+  onPrev,
   onSelect,
-  exitDirection,
 }) => {
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-20, 20]);
-  const opacity = useTransform(
-    x,
-    [-200, -150, 0, 150, 200],
-    [0.5, 1, 1, 1, 0.5]
-  );
+  const y = useMotionValue(0);
+
+  // ✅ Hooksは常にトップレベルで呼ぶ
+  const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
+  const opacityLeft = useTransform(x, [-200, -100, 0], [1, 1, 0]);
+  const opacityRight = useTransform(x, [0, 100, 200], [0, 1, 1]);
 
   const colors = getTarotistColor(tarotist);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent, info: PanInfo) => {
-    const threshold = 80;
+  const handleDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    setIsDragging(false);
 
-    if (info.offset.x > threshold) {
-      onSwipeRight();
-    } else if (info.offset.x < -threshold) {
-      onSwipeLeft();
+    const threshold = 100;
+    const velocity = info.velocity.x;
+
+    if (Math.abs(velocity) > 500 || Math.abs(info.offset.x) > threshold) {
+      if (info.offset.x > 0) {
+        onPrev();
+      } else {
+        onNext();
+      }
     }
   };
 
   return (
     <motion.div
-      className="absolute inset-0"
+      className="absolute inset-0 select-none"
       style={{
-        cursor: isActive ? "grab" : "default",
         x: isActive ? x : 0,
+        y: isActive ? y : 0,
         rotate: isActive ? rotate : 0,
-        opacity: isActive ? opacity : undefined,
         zIndex: 100 - Math.abs(offset) * 10,
+        cursor: isActive ? (isDragging ? "grabbing" : "grab") : "default",
       }}
-      drag={isActive ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.7}
+      drag={isActive ? true : false}
+      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      dragElastic={1}
+      onDragStart={() => setIsDragging(true)}
       onDragEnd={handleDragEnd}
-      initial={false}
       animate={{
         scale: 1 - Math.abs(offset) * 0.05,
-        y: Math.abs(offset) * 20,
-        opacity: isActive
-          ? isAvailable
-            ? 1
-            : 0.6
-          : 0.85 - Math.abs(offset) * 0.15,
+        y: Math.abs(offset) * 15,
+        opacity: Math.max(0.3, 1 - Math.abs(offset) * 0.2),
         filter: isAvailable
           ? `grayscale(0%) blur(${Math.abs(offset) * 2}px)`
           : `grayscale(100%) blur(${Math.abs(offset) * 2}px)`,
-        rotateY: offset * 3,
-      }}
-      exit={{
-        x: exitDirection === "right" ? 400 : -400,
-        opacity: 0,
-        rotate: exitDirection === "right" ? 25 : -25,
-        transition: { duration: 0.4 },
       }}
       transition={{
         type: "spring",
         stiffness: 300,
         damping: 30,
       }}
-      onClick={isActive ? onSelect : undefined}
+      onClick={() => {
+        if (!isDragging && isActive) {
+          onSelect();
+        }
+      }}
     >
       {/* カード本体 */}
       <div
         className="w-full h-full rounded-2xl overflow-hidden shadow-2xl"
         style={{
           backgroundColor: colors.bg,
-          borderWidth: "3px",
+          borderWidth: "4px",
           borderStyle: "solid",
-          borderColor: colors.secondary,
+          borderColor: isActive ? colors.accent : colors.secondary,
           transformStyle: "preserve-3d",
+          transition: "border-color 0.3s",
         }}
       >
         {/* 画像エリア */}
@@ -232,6 +268,7 @@ const CardWithDrag: React.FC<{
             src={`/tarotists/${tarotist.name}.png`}
             alt={tarotist.title}
             className="w-full h-full object-cover"
+            draggable={false}
             onError={(e) => {
               e.currentTarget.src =
                 "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='40'%3E🔮%3C/text%3E%3C/svg%3E";
@@ -240,6 +277,26 @@ const CardWithDrag: React.FC<{
 
           {/* グラデーション */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+          {/* スワイプ方向インジケーター（左） ✅ isActiveで表示制御、Hookは外で呼ぶ */}
+          {isActive && (
+            <motion.div
+              className="absolute left-8 top-1/2 -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-xl rotate-[-20deg] pointer-events-none"
+              style={{ opacity: opacityLeft }}
+            >
+              ← PREV
+            </motion.div>
+          )}
+
+          {/* スワイプ方向インジケーター（右） ✅ 修正済み */}
+          {isActive && (
+            <motion.div
+              className="absolute right-8 top-1/2 -translate-y-1/2 bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-xl rotate-[20deg] pointer-events-none"
+              style={{ opacity: opacityRight }}
+            >
+              NEXT →
+            </motion.div>
+          )}
 
           {/* ロックオーバーレイ */}
           {!isAvailable && (
@@ -256,7 +313,7 @@ const CardWithDrag: React.FC<{
               >
                 <div className="text-7xl mb-3">🔒</div>
                 <div className="text-white text-sm font-bold bg-black/60 px-4 py-1.5 rounded-full">
-                  {tarotist.plan?.name}プラン
+                  {tarotist.plan?.name}プラン必要
                 </div>
               </motion.div>
             </div>
@@ -273,20 +330,19 @@ const CardWithDrag: React.FC<{
           </div>
 
           {/* アクティブインジケーター */}
-          {isActive && (
+          {isActive && !isDragging && (
             <motion.div
-              className="absolute top-4 left-4 flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+              className="absolute top-4 left-4 flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring" }}
             >
               <motion.span
-                animate={{ scale: [1, 1.3, 1] }}
+                animate={{ scale: [1, 1.2, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               >
                 ●
               </motion.span>
-              NOW
+              FOCUS
             </motion.div>
           )}
         </div>
@@ -340,7 +396,7 @@ const CardWithDrag: React.FC<{
                 onChangePlan(tarotist.plan?.code || "GUEST");
               }}
               disabled={isChangingPlan}
-              className="w-full py-2.5 rounded-lg text-white font-bold text-sm shadow-md transition-all disabled:opacity-50"
+              className="w-full py-3 rounded-lg text-white font-bold text-sm shadow-md transition-all disabled:opacity-50"
               style={{
                 backgroundColor: tarotist.plan?.accentColor || colors.accent,
               }}
@@ -353,11 +409,33 @@ const CardWithDrag: React.FC<{
             </motion.button>
           )}
 
-          {/* 利用可能表示 */}
-          {isAvailable && tarotist.provider !== "OFFLINE" && (
-            <div className="text-center text-xs text-green-600 font-bold py-2 bg-green-50 rounded-lg">
-              ✓ 利用可能 - タップして選択
-            </div>
+          {/* 選択ボタン */}
+          {isAvailable && tarotist.provider !== "OFFLINE" && isActive && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center"
+            >
+              <div className="text-xs text-gray-600 mb-2">
+                👆 タップして占ってもらう
+              </div>
+              <div className="flex items-center justify-center gap-2 text-xs text-green-600 font-bold py-2 bg-green-50 rounded-lg">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                利用可能
+              </div>
+            </motion.div>
           )}
         </div>
       </div>

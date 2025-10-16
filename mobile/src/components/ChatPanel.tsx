@@ -4,7 +4,7 @@ import { Keyboard } from "@capacitor/keyboard";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ReadingCategory,
   Spread,
@@ -43,146 +43,85 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
-  const initialMessages: UIMessage[] = [
-    {
-      id: "ai-tarot-chat",
-      role: "system",
-      parts: [
-        {
-          type: "text",
-          text:
-            `あなたは、${tarotist.title}${tarotist.name}です。` +
-            `あなたの特徴は${tarotist.trait}です。` +
-            `あなたの性格・自己紹介は${tarotist.bio}です。` +
-            `また、あなたは熟練したタロット占い師でもあります。` +
-            `相談者が質問していない場合でも、` +
-            `タロットカードの意味を踏まえた上で回答してください。` +
-            `* 占いたいジャンルは${category.name}です。` +
-            `* スプレッドは${spread.name}です。` +
-            `* カードは以下の通りです。\n` +
-            drawnCards
-              .map(
-                (placement) =>
-                  `- ${placement.position}(${placement.card.name}${
-                    placement.isReversed ? "逆位置" : "正位置"
-                  }): ${
-                    placement.isReversed
-                      ? placement.card.reversedKeywords.join(", ")
-                      : placement.card.uprightKeywords.join(", ")
-                  }`
-              )
-              .join("\n")
-              .trim() +
-            `\n\n` +
-            `【フォーマット】\n` +
-            `- 全てのカードの解釈を丁寧にしてください\n` +
-            `- カードの解釈を総合的に判断して、最終的な占い結果を概要と詳細説明に分けて丁寧に説明してください。\n` +
-            `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
-            `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-            `- です・ます調で話すこと\n` +
-            `- 絵文字や顔文字は使わないこと\n` +
-            `- 1回の回答は200文字以上300文字以内とすること\n` +
-            `\n` +
-            `【制約条件】\n` +
-            `- タロットカードの意味に基づいて回答すること\n` +
-            `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
-            `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
-            `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
-            `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
-            `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
-            `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
-            `- 絵文字や顔文字を使わないこと\n` +
-            `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-            `- です・ます調で話すこと\n` +
-            `- 1回の回答は200文字以上300文字以内とすること\n`,
-        },
-      ],
-    },
-  ];
+  const initialMessages: UIMessage[] = useMemo(
+    () => [
+      {
+        id: "ai-tarot-chat",
+        role: "system",
+        parts: [
+          {
+            type: "text",
+            text:
+              `あなたは、${tarotist.title}${tarotist.name}です。` +
+              `あなたの特徴は${tarotist.trait}です。` +
+              `あなたの性格・自己紹介は${tarotist.bio}です。` +
+              `また、あなたは熟練したタロット占い師でもあります。` +
+              `相談者が質問していない場合でも、` +
+              `タロットカードの意味を踏まえた上で回答してください。` +
+              `* 占いたいジャンルは${category.name}です。` +
+              `* スプレッドは${spread.name}です。` +
+              `* カードは以下の通りです。\n` +
+              drawnCards
+                .map(
+                  (placement) =>
+                    `- ${placement.position}(${placement.card.name}${
+                      placement.isReversed ? "逆位置" : "正位置"
+                    }): ${
+                      placement.isReversed
+                        ? placement.card.reversedKeywords.join(", ")
+                        : placement.card.uprightKeywords.join(", ")
+                    }`
+                )
+                .join("\n")
+                .trim() +
+              `\n\n` +
+              `【フォーマット】\n` +
+              `- 全てのカードの解釈を丁寧にしてください\n` +
+              `- カードの解釈を総合的に判断して、最終的な占い結果を概要と詳細説明に分けて丁寧に説明してください。\n` +
+              `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
+              `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
+              `- です・ます調で話すこと\n` +
+              `- 絵文字や顔文字は使わないこと\n` +
+              `- 1回の回答は200文字以上300文字以内とすること\n` +
+              `\n` +
+              `【制約条件】\n` +
+              `- タロットカードの意味に基づいて回答すること\n` +
+              `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
+              `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
+              `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
+              `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
+              `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
+              `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
+              `- 絵文字や顔文字を使わないこと\n` +
+              `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
+              `- です・ます調で話すこと\n` +
+              `- 1回の回答は200文字以上300文字以内とすること\n`,
+          },
+        ],
+      },
+    ],
+    [tarotist, category, spread, drawnCards]
+  );
 
   const { messages, sendMessage, status } = useChat({
     id: "ai-tarot-chat",
-    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: `${domain}/api/chat`,
-
-      // リクエストをカスタマイズ
-      // prepareSendMessagesRequest: ({ messages, id }) => {
-      //   // 初回（messagesが1件＝ユーザーの最初の入力のみ）の場合
-      //   let modelMessages = convertToModelMessages(messages);
-
-      //   if (modelMessages.length === 1) {
-      //     modelMessages = [
-      //       {
-      //         role: "system",
-      //         content:
-      //           `あなたは熟練したタロット占い師です。` +
-      //           `以下の制約条件と入力文をもとに、` +
-      //           `タロットカードのリーディングを行い、` +
-      //           `相談者にわかりやすく丁寧に説明してください。` +
-      //           `相談者の質問に対して、` +
-      //           `タロットカードの意味を踏まえた上で回答してください。` +
-      //           `相談者が質問していない場合でも、` +
-      //           `タロットカードの意味を踏まえた上で回答してください。` +
-      //           `* あなたは、${tarotist.title}${tarotist.name}です。` +
-      //           `* 占いたいジャンルは${category.name}です。` +
-      //           `* スプレッドは${spread.name}です。` +
-      //           `* カードは以下の通りです。\n` +
-      //           drawnCards
-      //             .map(
-      //               (placement) =>
-      //                 `- ${placement.position}(${placement.card.name}${
-      //                   placement.isReversed ? "逆位置" : "正位置"
-      //                 }): ${
-      //                   placement.isReversed
-      //                     ? placement.card.reversedKeywords.join(", ")
-      //                     : placement.card.uprightKeywords.join(", ")
-      //                 }`
-      //             )
-      //             .join("\n")
-      //             .trim() +
-      //           `\n\n` +
-      //           `【フォーマット】\n` +
-      //           `- 箇条書きでわかりやすく説明すること\n` +
-      //           `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
-      //           `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
-      //           `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-      //           `- です・ます調で話すこと\n` +
-      //           `- 絵文字や顔文字は使わないこと\n` +
-      //           `- 1回の回答は200文字以上300文字以内とすること\n` +
-      //           `- 回答の最後に「他に知りたいことはありますか?」と付け加えること\n` +
-      //           `\n` +
-      //           `【制約条件】\n` +
-      //           `- タロットカードの意味に基づいて回答すること\n` +
-      //           `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
-      //           `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
-      //           `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
-      //           `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
-      //           `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
-      //           `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
-      //           `- 絵文字や顔文字を使わないこと\n` +
-      //           `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-      //           `- です・ます調で話すこと\n` +
-      //           `- 1回の回答は200文字以上300文字以内とすること\n` +
-      //           `- 回答の最後に「他に知りたいことはありますか?」と付け加えること\n`,
-      //       },
-      //       ...modelMessages,
-      //     ];
-      //   }
-
-      //   return {
-      //     body: {
-      //       id,
-      //       messages: modelMessages,
-      //       tarotist,
-      //       spread,
-      //       category,
-      //     },
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //   };
-      // },
+      body: (message: UIMessage) => {
+        const modelMessages = [...initialMessages, message];
+        return {
+          body: {
+            id: "ai-tarot-chat",
+            messages: modelMessages,
+            tarotist,
+            spread,
+            category,
+          },
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+      },
     }),
     onError: (err) => {
       console.error("Chat error:", err);
@@ -192,6 +131,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
+  const [isKeyboardReady, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -199,44 +139,62 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // キーボード高さの検出
+  // キーボード高さの検出 - マウント時に即座にセットアップ
   useEffect(() => {
     let showListener: PluginListenerHandle | undefined;
     let hideListener: PluginListenerHandle | undefined;
 
-    const setupListeners = async () => {
-      // Capacitor Keyboard API（ネイティブ環境）
+    // Capacitor Keyboard API（ネイティブ環境）
+    const setupCapacitorListeners = async () => {
       try {
         showListener = await Keyboard.addListener(
           "keyboardWillShow",
           (info) => {
             setKeyboardHeight(info.keyboardHeight);
+            setIsKeyboardReady(true);
           }
         );
 
         hideListener = await Keyboard.addListener("keyboardWillHide", () => {
           setKeyboardHeight(0);
         });
+
+        // リスナー登録完了
+        setIsKeyboardReady(true);
       } catch (error) {
-        // Capacitor が利用できない環境（Web）ではエラーを無視
+        // Capacitor が利用できない環境（Web）ではフォールバックを使用
         console.log(
           "Capacitor Keyboard not available, using web fallback",
           error
         );
+        setIsKeyboardReady(true); // Web環境でも準備完了とする
       }
     };
 
-    setupListeners();
+    // 即座にセットアップ開始
+    setupCapacitorListeners();
 
     // Web環境のフォールバック（visualViewport）
     const handleResize = () => {
       if (window.visualViewport) {
         const offset = window.innerHeight - window.visualViewport.height;
         setKeyboardHeight(offset > 0 ? offset : 0);
+        if (offset > 0) {
+          setIsKeyboardReady(true);
+        }
       }
     };
 
-    window.visualViewport?.addEventListener("resize", handleResize);
+    // visualViewportも即座に登録
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      // 初回チェック
+      const initialOffset = window.innerHeight - window.visualViewport.height;
+      if (initialOffset > 0) {
+        setKeyboardHeight(initialOffset);
+        setIsKeyboardReady(true);
+      }
+    }
 
     return () => {
       showListener?.remove();
@@ -270,10 +228,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const handleFocus = () => {
     setIsFocused(true);
-    // キーボードアニメーション後にメッセージを最下部にスクロール
+
+    // キーボードの準備ができている場合は即座にスクロール
+    // そうでない場合は少し待つ
+    const scrollDelay = isKeyboardReady ? 100 : 300;
+
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 300);
+    }, scrollDelay);
   };
 
   const handleBlur = () => {
@@ -328,7 +290,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
       <motion.div
-        className="px-4 py-3 bg-transparent"
+        className="px-4 py-3 bg-transparent　border-1 shadow"
         animate={{
           y: isFocused && keyboardHeight > 0 ? -keyboardHeight : 0,
         }}
@@ -349,7 +311,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             onBlur={handleBlur}
             placeholder="メッセージを入力..."
             rows={2}
-            className="w-full resize-none bg-transparent border-0 rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
+            className="w-full resize-none bg-transparent rounded-2xl
+              px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400
+              focus:outline-none transition-all"
             style={{ maxHeight: "120px" }}
           />
           <button

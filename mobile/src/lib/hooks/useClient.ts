@@ -5,6 +5,8 @@ import { useClientStore } from "../stores/client";
  * Client（ユーザー）情報のフック
  *
  * Auth から Client 情報を取得 + Client Store のアクションを提供
+ *
+ * ⚠️ プラン変更は useLifecycle().changePlan() を使用すること
  */
 export function useClient() {
   const { payload } = useAuthStore();
@@ -12,10 +14,7 @@ export function useClient() {
     isReady,
     currentPlan,
     usage,
-    isChangingPlan,
-    planChangeError,
     init,
-    changePlan,
     refreshUsage,
     checkAndResetIfNeeded,
     decrementOptimistic,
@@ -48,18 +47,13 @@ export function useClient() {
     remainingPersonal: usage?.remainingPersonal ?? 0,
 
     // ============================================
-    // プラン変更（Client Store から取得）
-    // ============================================
-    isChangingPlan,
-    planChangeError,
-
-    // ============================================
     // アクション
     // ============================================
     init,
     refreshUsage,
     checkAndResetIfNeeded,
     decrementOptimistic,
-    changePlan,
+
+    // ⚠️ プラン変更は useLifecycle().changePlan() を使用
   };
 }
