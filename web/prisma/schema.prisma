@@ -106,10 +106,6 @@ model Client {
   planId               String
   plan                 Plan     @relation(fields: [planId], references: [id])
 
-  // RevenueCat情報
-  revenueCatUserId String?  // RevenueCatの匿名IDまたはログインID
-
-
   // 利用状況
   dailyReadingsCount Int      @default(0)
   lastReadingDate    DateTime?
