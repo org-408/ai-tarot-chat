@@ -7,10 +7,25 @@ export function getPackageIdentifier(planCode: string): string {
     case "FREE":
       return "free_package";
     case "STANDARD":
-      return "com.atelierflowlab.aitarotchat.standard.monthly";
+      return "$rc_monthly";
     case "PREMIUM":
-      return "com.atelierflowlab.aitarotchat.premium.monthly";
+      return "premium_monthly";
     default:
       return "guest_package";
+  }
+}
+
+/**
+ * プランコードからRevenueCatエンタイトルメント識別子を取得
+ * 例: "STANDARD" → "standard"
+ */
+export function getEntitlementIdentifier(planCode: string): string {
+  switch (planCode) {
+    case "STANDARD":
+      return "standard";
+    case "PREMIUM":
+      return "premium";
+    default:
+      return "";
   }
 }

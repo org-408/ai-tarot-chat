@@ -54,6 +54,7 @@ function App() {
     getInitStepLabel,
     getResumeStepLabel,
     getOfflineModeLabel,
+    login: appLogin,
     logout: appLogout,
     changePlan,
   } = useLifecycle();
@@ -65,8 +66,7 @@ function App() {
   const {
     isReady: clientIsReady,
     usage: usageStats,
-    planCode,
-    clientId,
+    currentPlan,
   } = useClient();
 
   // 🔥 マスターデータ取得
@@ -120,6 +120,18 @@ function App() {
     }
   }, [planChangeError]);
 
+  const handleLogin = async () => {
+    try {
+      console.log("ログイン開始");
+      await appLogin();
+      console.log("ログイン成功");
+
+      setReadingData(null);
+    } catch (err) {
+      console.error("ログインエラー:", err);
+    }
+  };
+
   // 🔥 ログアウト処理
   const handleLogout = async () => {
     try {
@@ -140,7 +152,7 @@ function App() {
 
   // 🔥 プラン変更処理（サインインも含む）
   const handleChangePlan = async (newPlan: UserPlan) => {
-    console.log(`プラン変更リクエスト: ${planCode} → ${newPlan}`);
+    console.log(`プラン変更リクエスト: ${currentPlan?.code} → ${newPlan}`);
 
     try {
       // changePlanが全てを処理（サインインが必要な場合も内部で処理）
@@ -181,7 +193,6 @@ function App() {
     console.log("[App] Startup Status:", {
       isInitialized,
       authIsReady,
-      clientId,
       isMasterLoading,
       hasMasterData: !!masterData,
       hasPayload: !!payload,
@@ -190,7 +201,6 @@ function App() {
   }, [
     isInitialized,
     authIsReady,
-    clientId,
     isMasterLoading,
     masterData,
     payload,
@@ -256,6 +266,7 @@ function App() {
         return (
           <SalonPage
             payload={payload}
+            currentPlan={currentPlan!}
             masterData={masterData}
             usageStats={usageStats}
             onChangePlan={handleChangePlan}
@@ -276,6 +287,7 @@ function App() {
         return (
           <PlansPage
             payload={payload}
+            currentPlan={currentPlan!}
             masterData={masterData}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
@@ -285,6 +297,7 @@ function App() {
         return (
           <TarotistPage
             payload={payload}
+            currentPlan={currentPlan!}
             masterData={masterData}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
@@ -294,6 +307,7 @@ function App() {
         return (
           <TarotistSwipePage
             payload={payload}
+            currentPlan={currentPlan!}
             masterData={masterData}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
@@ -319,13 +333,22 @@ function App() {
               <div className="text-lg font-bold mb-2">準備中</div>
               <div className="text-sm">設定機能を開発中です</div>
 
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <div className="mt-8">
                   <button
                     onClick={handleLogout}
                     className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >
-                    ログアウト
+                    サインアウト
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-8">
+                  <button
+                    onClick={handleLogin}
+                    className="px-6 py-2 bg-sky-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    サインイン
                   </button>
                 </div>
               )}
@@ -336,6 +359,7 @@ function App() {
         return (
           <SalonPage
             payload={payload}
+            currentPlan={currentPlan!}
             masterData={masterData}
             usageStats={usageStats}
             onChangePlan={handleChangePlan}
@@ -390,7 +414,10 @@ function App() {
         </div>
       )}
 
-      <Header currentPlan={planCode as UserPlan} currentPage={pageType} />
+      <Header
+        currentPlan={currentPlan!.code as UserPlan}
+        currentPage={pageType}
+      />
 
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
@@ -451,7 +478,7 @@ function App() {
                     setPageType("salon");
                   }}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
-                    planCode === "FREE"
+                    currentPlan!.code === "FREE"
                       ? "bg-green-500 text-white"
                       : "bg-gray-200 hover:bg-gray-300"
                   }`}
@@ -465,7 +492,7 @@ function App() {
                     setPageType("salon");
                   }}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
-                    planCode === "STANDARD"
+                    currentPlan!.code === "STANDARD"
                       ? "bg-blue-500 text-white"
                       : "bg-gray-200 hover:bg-gray-300"
                   }`}
@@ -479,7 +506,7 @@ function App() {
                     setPageType("salon");
                   }}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
-                    planCode === "PREMIUM"
+                    currentPlan!.code === "PREMIUM"
                       ? "bg-yellow-500 text-white"
                       : "bg-gray-200 hover:bg-gray-300"
                   }`}

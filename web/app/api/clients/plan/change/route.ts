@@ -41,32 +41,49 @@ export async function POST(request: NextRequest) {
     logWithContext("info", `🔄 プラン変更処理開始`, { clientId, code });
 
     // プラン変更処理
-    const needsUpdate = await clientService.changePlan(clientId, code);
+    const client = await clientService.changePlan(clientId, code);
+    // プラン変更後の利用状況を取得
+    const usage = await clientService.getUsageAndReset(clientId);
 
-    // JWTペイロード更新
-    if (!needsUpdate) {
-      logWithContext("error", "❌ プラン変更失敗", {
-        needsUpdate,
-        clientId,
-        code,
+    // クライアントが null ならエラー
+    if (!client || !client.plan || !usage || !usage.plan) {
+      logWithContext(
+        "error",
+        "❌ クライアント or プラン or 利用状況が見つからない",
+        {
+          clientId,
+          code,
+          usage,
+          status: 404,
+        }
+      );
+      return new Response("client|plan|usage not found", { status: 404 });
+    }
+    if (client.plan.code !== code || usage.plan.code !== code) {
+      logWithContext("error", "❌ プラン変更ミスマッチ", {
+        expected: code,
+        actualClient: client.plan.code,
+        actualUsage: usage.plan.code,
         status: 500,
       });
-      return new Response("plan change failed", { status: 500 });
+      return new Response("plan change mismatch", { status: 500 });
     }
 
-    const newToken = await authService.refreshJwtPayload(payload.payload, code);
     logWithContext("info", `✅ プラン変更完了`, {
-      needsUpdate,
-      newToken,
+      success: true,
+      usage,
     });
-    return NextResponse.json({ success: !!needsUpdate, token: newToken });
+    return NextResponse.json({
+      success: true,
+      usage,
+    });
   } catch (error) {
-    logWithContext("error", "❌ 更新チェックエラー", {
+    logWithContext("error", "❌ プラン変更エラー", {
       error,
       status: 500,
     });
     return NextResponse.json(
-      { error, errorMessage: "更新チェックに失敗しました" },
+      { error, errorMessage: "プラン変更に失敗しました" },
       { status: 500 }
     );
   }

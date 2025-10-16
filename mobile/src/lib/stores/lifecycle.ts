@@ -4,8 +4,6 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
-import { authService } from "../services/auth";
-import { clientService } from "../services/client";
 import { HttpError, isNetworkError } from "../utils/apiClient";
 import { useAuthStore } from "./auth";
 
@@ -59,7 +57,9 @@ interface LifecycleState {
   onPause: () => Promise<void>;
   clearDateChanged: () => void;
   clearError: () => void;
+  login: () => Promise<void>;
   logout: () => Promise<void>;
+  getCurrentPlan: () => Plan | null;
   changePlan: (newPlan: Plan) => Promise<void>; // ✅ 追加
   reset: () => void;
 
@@ -71,6 +71,7 @@ interface LifecycleState {
 
 import type { PluginListenerHandle } from "@capacitor/core";
 import { subscriptionService } from "../services/subscription";
+import { getEntitlementIdentifier } from "../utils/plan-utils";
 import { useClientStore } from "./client";
 import { useMasterStore } from "./master";
 import { useSubscriptionStore } from "./subscription";
@@ -154,9 +155,9 @@ export const useLifecycleStore = create<LifecycleState>()(
                 );
 
                 // ✅ ローカルにトークンがあるかチェック
-                const stored = await authService.getStoredPayload();
+                const token = await useAuthStore.getState().getStoredToken();
 
-                if (stored.token) {
+                if (token) {
                   // ✅ キャッシュあり → 制限付きモードで継続
                   logWithContext(
                     "info",
@@ -464,8 +465,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                   { status }
                 );
 
-                const newPayload = await authService.registerDevice();
-                authStore.setPayload(newPayload);
+                await useAuthStore.getState().registerDevice();
 
                 logWithContext(
                   "info",
@@ -677,6 +677,51 @@ export const useLifecycleStore = create<LifecycleState>()(
       },
 
       /**
+       * ✅ ログイン処理
+       *
+       * ログアウト後に再度ログインする場合のルート
+       * changePlan() とは別に、単純にログインだけしたい場合に使用
+       */
+      login: async () => {
+        logWithContext("info", "[Lifecycle] Login started");
+
+        try {
+          // ========================================
+          // 1. Auth でログイン
+          // ========================================
+          logWithContext("info", "[Lifecycle] Auth login");
+          await useAuthStore.getState().login();
+          const userId = useAuthStore.getState().payload?.user?.id;
+          // TODO: userIdが取れない場合の処理は必要？？？エラースローで良い？
+
+          //  =======================================
+          // 2. Subscription のログイン
+          // ========================================
+          logWithContext("info", "[Lifecycle] Subscription login");
+          await useSubscriptionStore.getState().login(userId!);
+
+          // ========================================
+          // 2. onResume() を呼んで全体をリフレッシュ
+          // ✅ subscription同期
+          // ✅ client.refreshUsage() → ログイン後のプラン利用状況取得
+          // ✅ master確認
+          // ========================================
+          logWithContext(
+            "info",
+            "[Lifecycle] Calling onResume to refresh all stores"
+          );
+          await get().onResume();
+
+          logWithContext("info", "[Lifecycle] Login completed successfully", {
+            userId,
+          });
+        } catch (error) {
+          logWithContext("error", "[Lifecycle] Login failed", { error });
+          throw error;
+        }
+      },
+
+      /**
        * ✅ ログアウト処理
        *
        * 既存のフローを再利用するシンプルな設計:
@@ -696,7 +741,12 @@ export const useLifecycleStore = create<LifecycleState>()(
           await useAuthStore.getState().logout();
 
           // ========================================
-          // 2. onResume() を呼んで既存のリフレッシュフローを再利用
+          // 2. Subscription のログアウト
+          // ========================================
+          logWithContext("info", "[Lifecycle] Subscription logout");
+          await useSubscriptionStore.getState().logout();
+
+          // 3. onResume() を呼んで既存のリフレッシュフローを再利用
           // ✅ auth.refresh() → GUESTトークンの検証
           // ✅ subscription同期 → リセットされる
           // ✅ client.refreshUsage() → GUEST利用状況取得
@@ -708,13 +758,21 @@ export const useLifecycleStore = create<LifecycleState>()(
           );
           await get().onResume();
 
-          logWithContext("info", "[Lifecycle] Logout completed successfully", {
-            newPlanCode: useAuthStore.getState().payload?.planCode,
-          });
+          logWithContext("info", "[Lifecycle] Logout completed successfully");
         } catch (error) {
           logWithContext("error", "[Lifecycle] Logout failed", { error });
           throw error;
         }
+      },
+
+      /**
+       * ✅ ヘルパー: 現在のプランを取得
+       */
+      getCurrentPlan: () => {
+        // client が都度取得しているはず
+        // 基本的に随時 RevenueCat と同期しているはずなので、
+        // 気にせず clientStore を参照すれば良いはず
+        return useClientStore.getState().currentPlan;
       },
 
       /**
@@ -729,26 +787,27 @@ export const useLifecycleStore = create<LifecycleState>()(
       changePlan: async (newPlan: Plan) => {
         const { isChangingPlan } = get();
         const authStore = useAuthStore.getState();
-        const currentPlanCode = authStore.payload?.planCode;
+        const currentPlan = get().getCurrentPlan();
+        const currentPlanCode = currentPlan ? currentPlan.code : "GUEST";
 
-        // 既に変更処理中なら中断
+        logWithContext("info", "[Lifecycle] changePlan called", {
+          newPlan: newPlan.code,
+          currentPlanCode,
+        });
+
         if (isChangingPlan) {
           logWithContext("warn", "[Lifecycle] Plan change already in progress");
           return;
         }
 
-        // 同じプランなら何もしない
         if (currentPlanCode === newPlan.code) {
           logWithContext("info", "[Lifecycle] Already on target plan");
           return;
         }
 
-        // GUESTプランへの変更は不可
         if (newPlan.code === "GUEST") {
           logWithContext("warn", "[Lifecycle] Cannot change to GUEST plan");
-          set({
-            planChangeError: "GUESTプランへの変更はできません",
-          });
+          set({ planChangeError: "GUESTプランへの変更はできません" });
           return;
         }
 
@@ -763,107 +822,56 @@ export const useLifecycleStore = create<LifecycleState>()(
           const subscriptionStore = useSubscriptionStore.getState();
 
           // ============================================
-          // ✅ ステップ1: 認証が必要な場合はログイン
+          // 1. 認証が必要な場合はログイン
           // ============================================
           if (!authStore.isAuthenticated) {
             logWithContext("info", "[Lifecycle] Authentication required");
+            await authStore.login();
+          }
 
-            try {
-              await authStore.login();
-
-              logWithContext("info", "[Lifecycle] Login successful");
-
-              // ログイン後のプランをチェック
-              const newPayload = authStore.payload;
-
-              if (newPayload?.planCode === newPlan.code) {
-                logWithContext(
-                  "info",
-                  "[Lifecycle] Already on target plan after login"
-                );
-                await useClientStore.getState().refreshUsage();
-                set({ isChangingPlan: false });
-                return;
-              }
-            } catch (loginError) {
-              const errorMessage =
-                loginError instanceof Error
-                  ? loginError.message
-                  : String(loginError);
-
-              const isCancelled =
-                errorMessage.includes("キャンセル") ||
-                errorMessage.toLowerCase().includes("cancel");
-
-              logWithContext("error", "[Lifecycle] Login failed", {
-                error: errorMessage,
-                isCancelled,
-              });
-
-              set({
-                isChangingPlan: false,
-                planChangeError: isCancelled
-                  ? "ログインがキャンセルされました"
-                  : `ログインに失敗しました: ${errorMessage}`,
-              });
-
-              return; // ログイン失敗時は処理を中断
+          if (!subscriptionStore.isLoggedIn) {
+            const userId = authStore.payload?.user?.id;
+            if (!userId) {
+              logWithContext(
+                "error",
+                "[Lifecycle] User ID missing after login"
+              );
+              throw new Error("User ID is missing after login");
             }
+            logWithContext("info", "[Lifecycle] Logging into subscription", {
+              userId,
+            });
+            await subscriptionStore.login(userId);
           }
 
           // ============================================
-          // ✅ ステップ2: 有料プランの場合は購入処理
+          // 2. 有料プランで購読がない場合のみ購入
           // ============================================
           if (newPlan.price > 0) {
-            logWithContext(
-              "info",
-              "[Lifecycle] Paid plan, initiating purchase"
-            );
+            const targetEntitlement = getEntitlementIdentifier(newPlan.code);
+            const customerInfo = subscriptionStore.customerInfo;
+            const hasEntitlement =
+              customerInfo?.entitlements.active[targetEntitlement];
 
-            try {
-              // RevenueCat経由で購入
+            if (!hasEntitlement) {
+              logWithContext("info", "[Lifecycle] No subscription, purchasing");
               await subscriptionStore.purchasePlan(newPlan);
-
-              logWithContext("info", "[Lifecycle] Purchase completed");
-            } catch (purchaseError) {
-              const errorMessage =
-                purchaseError instanceof Error
-                  ? purchaseError.message
-                  : String(purchaseError);
-
-              logWithContext("error", "[Lifecycle] Purchase failed", {
-                error: errorMessage,
-              });
-
-              // 購入失敗時は状態を復旧
-              await useClientStore.getState().refreshUsage();
-
-              set({
-                isChangingPlan: false,
-                planChangeError: `購入に失敗しました: ${errorMessage}`,
-              });
-
-              throw purchaseError;
             }
-          } else {
-            // ============================================
-            // ✅ ステップ3: 無料プランの場合はサーバーAPIで変更
-            // ============================================
-            logWithContext("info", "[Lifecycle] Free plan, changing via API");
-
-            const result = await clientService.changePlan(newPlan.code);
-            authStore.setPayload(result.payload);
           }
 
           // ============================================
-          // ✅ ステップ4: 利用状況を更新して完了
+          // 3. サーバーAPIでプラン変更
           // ============================================
-          await useClientStore.getState().refreshUsage();
+          logWithContext("info", "[Lifecycle] Updating plan on server");
+          await useClientStore.getState().changePlan(newPlan);
 
-          set({
-            isChangingPlan: false,
-            planChangeError: null,
-          });
+          // ============================================
+          // 4. onResume() で全体を同期 ✅
+          // ============================================
+          logWithContext("info", "[Lifecycle] Calling onResume to sync all");
+          await get().onResume();
+
+          set({ isChangingPlan: false, planChangeError: null });
 
           logWithContext("info", "[Lifecycle] Plan change completed", {
             newPlan: newPlan.code,
@@ -875,22 +883,6 @@ export const useLifecycleStore = create<LifecycleState>()(
           logWithContext("error", "[Lifecycle] Plan change failed", {
             error: errorMessage,
           });
-
-          // エラー時は状態を復旧
-          try {
-            await useClientStore.getState().refreshUsage();
-          } catch (refreshError) {
-            logWithContext(
-              "error",
-              "[Lifecycle] Failed to refresh after error",
-              {
-                refreshError:
-                  refreshError instanceof Error
-                    ? refreshError.message
-                    : String(refreshError),
-              }
-            );
-          }
 
           set({
             isChangingPlan: false,

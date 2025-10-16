@@ -15,6 +15,7 @@ import ScrollableRadioSelector from "./ScrollableRadioSelector";
 
 interface SalonPageProps {
   payload: AppJWTPayload;
+  currentPlan: Plan;
   masterData: MasterData;
   usageStats: UsageStats;
   onChangePlan: (plan: UserPlan) => void;
@@ -28,6 +29,7 @@ interface SalonPageProps {
 
 const SalonPage: React.FC<SalonPageProps> = ({
   payload,
+  currentPlan,
   masterData,
   usageStats,
   onChangePlan,
@@ -43,14 +45,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 
   const user = payload?.user || null;
-
-  const currentPlan = useMemo(
-    () =>
-      masterData.plans.find(
-        (p: Plan) => p.code === (payload?.planCode || "GUEST")
-      ),
-    [masterData.plans, payload?.planCode]
-  );
 
   // 1. 占い師の取得とフィルタリング
   const availableTarotists = useMemo(() => {

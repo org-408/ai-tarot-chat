@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { MasterData } from "../../../../shared/lib/types";
+import type { MasterData, Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { masterService } from "../services/master";
 
@@ -18,6 +18,7 @@ interface MasterState {
     serverVersion: string;
     needsUpdate: boolean;
   }>;
+  getPlan: (code: string) => Plan | null;
   clear: () => Promise<void>;
   reset: () => void;
 }
@@ -113,6 +114,12 @@ export const useMasterStore = create<MasterState>((set, get) => ({
       logWithContext("error", "[MasterStore] Version check failed", { error });
       throw error;
     }
+  },
+
+  getPlan: (code: string): Plan | null => {
+    const state = get();
+    const plans = state.masterData?.plans || [];
+    return plans.find((plan) => plan.code === code) || null;
   },
 
   clear: async () => {

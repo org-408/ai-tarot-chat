@@ -5,11 +5,11 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { useState } from "react";
-import type { Tarotist } from "../../../shared/lib/types";
+import type { Plan, Tarotist } from "../../../shared/lib/types";
 
 interface TarotistCarouselStackProps {
   availableTarotists: Tarotist[];
-  currentPlan: string;
+  currentPlan: Plan;
   canUseTarotist: (planCode: string) => boolean;
   getTarotistColor: (tarotist: Tarotist) => {
     primary: string;

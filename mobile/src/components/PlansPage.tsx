@@ -1,12 +1,14 @@
 import type {
   AppJWTPayload,
   MasterData,
+  Plan,
   PlanInput,
 } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 
 interface PlansPageProps {
   payload: AppJWTPayload;
+  currentPlan: Plan;
   masterData: MasterData;
   onChangePlan: (plan: UserPlan) => void;
   isChangingPlan: boolean;
@@ -14,11 +16,12 @@ interface PlansPageProps {
 
 const PlansPage: React.FC<PlansPageProps> = ({
   payload,
+  currentPlan,
   masterData,
   onChangePlan,
   isChangingPlan,
 }) => {
-  const planCode = payload.planCode || "GUEST";
+  const planCode = currentPlan.code || "GUEST";
   const planData = masterData.plans.reduce((acc, plan) => {
     acc[plan.code as UserPlan] = {
       no: plan.no,

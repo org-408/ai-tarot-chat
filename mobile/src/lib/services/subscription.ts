@@ -10,6 +10,7 @@ import { RevenueCatUI } from "@revenuecat/purchases-capacitor-ui";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { useClientStore } from "../stores/client";
+import { useLifecycleStore } from "../stores/lifecycle";
 import { useMasterStore } from "../stores/master";
 import { getPackageIdentifier } from "../utils/plan-utils";
 
@@ -206,6 +207,16 @@ export class SubscriptionService {
    */
   private async syncWithServer(customerInfo: CustomerInfo): Promise<void> {
     try {
+      // ✅ UI経由でプラン変更中なら何もしない（無限ループ防止）
+      const lifecycleStore = useLifecycleStore.getState();
+      if (lifecycleStore.isChangingPlan) {
+        logWithContext(
+          "info",
+          "[SubscriptionService] Plan change in progress via UI, skipping sync"
+        );
+        return;
+      }
+
       // CustomerInfo から planCode を判定
       const planCode = this.getPlanCodeFromCustomerInfo(customerInfo);
 
@@ -215,7 +226,6 @@ export class SubscriptionService {
       });
 
       // ClientStore の changePlanByCode を呼び出す
-      // 動的インポートを使用（循環参照を避けるため）
       const clientStore = useClientStore.getState();
       if (!clientStore) {
         logWithContext(
@@ -224,13 +234,17 @@ export class SubscriptionService {
         );
         throw new Error("ClientStore is not initialized");
       }
+
       const currentPlan = clientStore.currentPlan!;
+
+      // ✅ 既に同じプランなら何もしない
       if (currentPlan.code !== planCode) {
         logWithContext(
           "info",
-          "[SubscriptionService] Changing plan in ClientStore",
+          "[SubscriptionService] Changing plan in Lifecycle",
           { planCode }
         );
+
         const { masterData } = useMasterStore.getState();
         if (!masterData) {
           logWithContext(
@@ -239,8 +253,11 @@ export class SubscriptionService {
           );
           throw new Error("Master data is not loaded");
         }
+
         const newPlan = masterData.plans.find((p) => p.code === planCode);
-        await clientStore.changePlan(newPlan!);
+
+        // ✅ リスナー経由での changePlan 呼び出し
+        await lifecycleStore.changePlan(newPlan!);
       }
 
       logWithContext("info", "[SubscriptionService] Synced with server", {

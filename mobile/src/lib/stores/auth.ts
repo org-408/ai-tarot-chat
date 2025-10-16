@@ -4,7 +4,6 @@ import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
 import { logWithContext } from "../logger/logger";
-import { subscriptionService } from "../services/subscription";
 import { HttpError, isNetworkError } from "../utils/apiClient";
 
 interface AuthState {
@@ -15,9 +14,11 @@ interface AuthState {
 
   // アクション
   init: () => Promise<void>;
+  registerDevice: () => Promise<void>;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  getStoredToken: () => Promise<string | null>;
   setPayload: (payload: AppJWTPayload) => void;
   reset: () => void;
 }
@@ -54,17 +55,10 @@ export const useAuthStore = create<AuthState>()(
               "info",
               "[AuthStore] No token found, registering device"
             );
-            const payload = await authService.registerDevice();
-            set({
-              payload,
-              isAuthenticated: !!payload.user,
-            });
+            await get().registerDevice();
             logWithContext(
               "info",
-              "[AuthStore] Device registration successful:",
-              {
-                planCode: payload.planCode,
-              }
+              "[AuthStore] Device registration successful:"
             );
           } else {
             // トークンあり → デコード & 整合性チェック
@@ -84,11 +78,7 @@ export const useAuthStore = create<AuthState>()(
                 "info",
                 "[AuthStore] Token mismatch, re-registering device"
               );
-              const newPayload = await authService.registerDevice();
-              set({
-                payload: newPayload,
-                isAuthenticated: !!newPayload.user,
-              });
+              await get().registerDevice();
             } else {
               // ✅ 整合性OK → 必ずサーバーに検証リクエスト
               logWithContext(
@@ -135,12 +125,7 @@ export const useAuthStore = create<AuthState>()(
                     );
 
                     // デバイス再登録（自動的にストレージが上書きされる）
-                    const newPayload = await authService.registerDevice();
-                    set({
-                      payload: newPayload,
-                      isAuthenticated: !!newPayload.user,
-                    });
-
+                    await get().registerDevice();
                     logWithContext(
                       "info",
                       "[AuthStore] Device re-registered successfully"
@@ -186,6 +171,30 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      registerDevice: async () => {
+        try {
+          logWithContext("info", "[AuthStore] Device registration started");
+          const payload = await authService.registerDevice();
+          set({
+            payload,
+            isAuthenticated: !!payload.user,
+          });
+          logWithContext(
+            "info",
+            "[AuthStore] Device registration successful:",
+            {
+              payload,
+              isAuthenticated: !!payload.user,
+            }
+          );
+        } catch (error) {
+          logWithContext("error", "[AuthStore] Device registration failed:", {
+            error,
+          });
+          throw error;
+        }
+      },
+
       login: async () => {
         try {
           logWithContext("info", "[AuthStore] Login started");
@@ -195,31 +204,9 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: !!payload.user,
           });
 
-          // RevenueCatにログイン
-          const userId = payload.user?.id;
-          if (userId) {
-            try {
-              const { subscriptionService } = await import(
-                "../services/subscription"
-              );
-              await subscriptionService.login(userId);
-              logWithContext("info", "[AuthStore] RevenueCat login successful");
-            } catch (rcError) {
-              logWithContext(
-                "warn",
-                "[AuthStore] RevenueCat login failed (non-critical)",
-                {
-                  error:
-                    rcError instanceof Error
-                      ? rcError.message
-                      : String(rcError),
-                }
-              );
-            }
-          }
-
           logWithContext("info", "[AuthStore] Login successful:", {
-            planCode: payload.planCode,
+            payload,
+            isAuthenticated: !!payload.user,
           });
         } catch (error) {
           logWithContext("error", "[AuthStore] Login failed:", { error });
@@ -230,21 +217,6 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           logWithContext("info", "[AuthStore] Logout started");
-
-          // RevenueCatからログアウト
-          try {
-            await subscriptionService.logout();
-            logWithContext("info", "[AuthStore] RevenueCat logout successful");
-          } catch (rcError) {
-            logWithContext(
-              "warn",
-              "[AuthStore] RevenueCat logout failed (non-critical)",
-              {
-                error:
-                  rcError instanceof Error ? rcError.message : String(rcError),
-              }
-            );
-          }
 
           const payload = await authService.logout();
           set({
@@ -286,8 +258,8 @@ export const useAuthStore = create<AuthState>()(
               "info",
               "[AuthStore] ✅ Token refreshed successfully",
               {
-                clientId: newPayload.clientId,
-                planCode: newPayload.planCode,
+                payload: newPayload,
+                isAuthenticated: !!newPayload.user,
               }
             );
           } catch (refreshError) {
@@ -316,12 +288,7 @@ export const useAuthStore = create<AuthState>()(
                   { status }
                 );
 
-                const newPayload = await authService.registerDevice();
-                set({
-                  payload: newPayload,
-                  isAuthenticated: !!newPayload.user,
-                });
-
+                await get().registerDevice();
                 logWithContext(
                   "info",
                   "[AuthStore] Device re-registered successfully"
@@ -346,13 +313,19 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      getStoredToken: async () => {
+        const { token } = await authService.getStoredPayload();
+        return token;
+      },
+
       setPayload: (payload: AppJWTPayload) => {
         set({
           payload,
           isAuthenticated: !!payload.user,
         });
         logWithContext("info", "[AuthStore] Payload updated:", {
-          planCode: payload.planCode,
+          payload,
+          isAuthenticated: !!payload.user,
         });
       },
 

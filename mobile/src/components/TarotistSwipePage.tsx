@@ -13,6 +13,7 @@ import TarotistCarouselStack from "./TarotistCarouselStack";
 
 interface TarotistSwipePageProps {
   payload: AppJWTPayload;
+  currentPlan: Plan;
   masterData: MasterData;
   onChangePlan: (plan: UserPlan) => void;
   isChangingPlan: boolean;
@@ -20,6 +21,7 @@ interface TarotistSwipePageProps {
 
 const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   payload,
+  currentPlan,
   masterData,
   onChangePlan,
   isChangingPlan,
@@ -33,11 +35,6 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
 
   // カルーセルタイプの切り替え（テスト用）
   const [carouselType, setCarouselType] = useState<"embla" | "stack">("embla");
-
-  const currentPlan = payload.planCode || "GUEST";
-  const currentPlanData = masterData.plans.find(
-    (p: Plan) => p.code === currentPlan
-  );
 
   const availableTarotists =
     masterData.tarotists!.filter(
@@ -55,7 +52,7 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
       STANDARD: 2,
       PREMIUM: 3,
     };
-    return planHierarchy[currentPlan] >= planHierarchy[requiredPlan];
+    return planHierarchy[currentPlan.code] >= planHierarchy[requiredPlan];
   };
 
   const renderStars = (quality: number) => {
@@ -107,8 +104,8 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
     };
   };
 
-  const currentColors = currentPlanData
-    ? getPlanColors(currentPlan)
+  const currentColors = currentPlan
+    ? getPlanColors(currentPlan.code)
     : getPlanColors("GUEST");
 
   return (
@@ -129,8 +126,7 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
           className="font-bold text-lg"
           style={{ color: currentColors.accent }}
         >
-          {masterData.plans.find((p) => p.code === currentPlan)?.name ||
-            currentPlan}
+          {currentPlan.name}
         </div>
         {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">

@@ -11,6 +11,7 @@ interface SubscriptionState {
   // 状態
   // ============================================
   isInitialized: boolean;
+  isLoggedIn: boolean;
   customerInfo: CustomerInfo | null;
   isPurchasing: boolean;
   purchaseError: string | null;
@@ -19,6 +20,8 @@ interface SubscriptionState {
   // アクション
   // ============================================
   init: () => Promise<void>;
+  login: (userId: string) => Promise<void>;
+  logout: () => Promise<void>;
   purchasePlan: (targetPlan: Plan) => Promise<void>;
   restorePurchases: () => Promise<void>;
   openManage: () => Promise<void>;
@@ -45,6 +48,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       // 初期状態
       // ============================================
       isInitialized: false,
+      isLoggedIn: false,
       customerInfo: null,
       isPurchasing: false,
       purchaseError: null,
@@ -103,6 +107,68 @@ export const useSubscriptionStore = create<SubscriptionState>()(
 
           // 初期化失敗でも isInitialized を true にして先に進める
           set({ isInitialized: true });
+        }
+      },
+
+      // ============================================
+      // ログイン
+      // ============================================
+      login: async (userId: string) => {
+        const { isLoggedIn } = get();
+
+        if (isLoggedIn) {
+          logWithContext("info", "[SubscriptionStore] Already logged in");
+          return;
+        }
+        logWithContext("info", "[SubscriptionStore] Logging in to RevenueCat");
+
+        try {
+          // RevenueCatにログイン（匿名ユーザーとして）
+          await subscriptionService.login(userId);
+
+          // ログイン後、CustomerInfoを更新
+          const customerInfo = await subscriptionService.getCustomerInfo();
+
+          set({ isLoggedIn: true, customerInfo });
+
+          logWithContext("info", "[SubscriptionStore] Logged in successfully", {
+            entitlements: Object.keys(customerInfo.entitlements.active),
+          });
+        } catch (error) {
+          logWithContext("error", "[SubscriptionStore] Login failed", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          throw error;
+        }
+      },
+
+      // ============================================
+      // ログアウト
+      // ============================================
+      logout: async () => {
+        const { isLoggedIn } = get();
+
+        if (!isLoggedIn) {
+          logWithContext("info", "[SubscriptionStore] Already logged out");
+          return;
+        }
+        logWithContext(
+          "info",
+          "[SubscriptionStore] Logging out from RevenueCat"
+        );
+
+        try {
+          // RevenueCatからログアウト
+          await subscriptionService.logout();
+
+          set({ isLoggedIn: false, customerInfo: null });
+
+          logWithContext("info", "[SubscriptionStore] Logged out successfully");
+        } catch (error) {
+          logWithContext("error", "[SubscriptionStore] Logout failed", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          throw error;
         }
       },
 

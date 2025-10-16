@@ -23,6 +23,7 @@ interface ClientState {
   // アクション: 利用状況
   // ============================================
   init: () => Promise<void>;
+  changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
   decrementOptimistic: (type: "readings" | "celtics" | "personal") => void;
@@ -92,6 +93,41 @@ export const useClientStore = create<ClientState>()(
       },
 
       // ============================================
+      // プラン変更
+      // ============================================
+      changePlan: async (newPlan: Plan) => {
+        logWithContext("info", "[ClientStore] Changing plan", {
+          newPlanCode: newPlan.code,
+        });
+
+        try {
+          // 1. サーバーにプラン変更をリクエスト
+          const { success, usage } = await clientService.changePlan(
+            newPlan.code
+          );
+          if (!success || !usage) {
+            throw new Error("Server plan change failed");
+          }
+
+          const today = getTodayJST();
+
+          await clientService.saveLastFetchedDate(today);
+
+          set({ currentPlan: usage.plan, usage, lastFetchedDate: today });
+
+          logWithContext("info", "[ClientStore] Plan changed successfully", {
+            planCode: usage.plan.code,
+            remainingReadings: usage.remainingReadings,
+          });
+        } catch (error) {
+          logWithContext("error", "[ClientStore] Plan change failed", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          throw error;
+        }
+      },
+
+      // ============================================
       // 利用状況の更新
       // ============================================
       refreshUsage: async () => {
@@ -108,7 +144,6 @@ export const useClientStore = create<ClientState>()(
 
           logWithContext("info", "[ClientStore] Usage refreshed", {
             planCode: currentPlan.code,
-            remainingReadings: usage.remainingReadings,
           });
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to refresh usage", {

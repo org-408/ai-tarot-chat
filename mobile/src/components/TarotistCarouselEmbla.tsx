@@ -1,11 +1,11 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
-import type { Tarotist } from "../../../shared/lib/types";
+import type { Plan, Tarotist } from "../../../shared/lib/types";
 
 interface TarotistCarouselEmblaProps {
   availableTarotists: Tarotist[];
-  currentPlan: string;
+  currentPlan: Plan;
   canUseTarotist: (planCode: string) => boolean;
   getTarotistColor: (tarotist: Tarotist) => {
     primary: string;

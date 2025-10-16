@@ -103,7 +103,6 @@ export class AuthService {
 
       logWithContext("info", "[AuthService] Device registration successful", {
         clientId: payload.clientId,
-        planCode: payload.planCode,
         platform: platformName,
       });
 
@@ -311,10 +310,6 @@ export class AuthService {
     logWithContext("info", "[AuthService] Logout started");
 
     try {
-      await storeRepository.delete(this.KEYS.ACCESS_TOKEN);
-      await storeRepository.delete(this.KEYS.CLIENT_ID);
-      await storeRepository.delete(this.KEYS.USER_ID);
-
       // サーバー側のセッションも終了させる
       const { token } = await apiClient.post<{ token: string }>(
         "/api/auth/signout",

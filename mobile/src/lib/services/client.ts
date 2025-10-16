@@ -1,8 +1,7 @@
-import type { AppJWTPayload, UsageStats } from "../../../../shared/lib/types";
+import type { UsageStats } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/apiClient";
-import { decodeJWT } from "../utils/jwt";
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 if (!JWT_SECRET) {
@@ -73,46 +72,35 @@ export class ClientService {
    */
   async changePlan(
     newPlanCode: string
-  ): Promise<{ success: boolean; payload: AppJWTPayload }> {
+  ): Promise<{ success: boolean; usage: UsageStats }> {
     logWithContext("info", "[ClientService] Changing plan", {
       newPlanCode,
     });
 
     try {
-      const result = await apiClient.post<{ success: boolean; token: string }>(
-        "/api/clients/plan/change",
-        { code: newPlanCode }
-      );
+      const result = await apiClient.post<{
+        success: boolean;
+        usage: UsageStats;
+      }>("/api/clients/plan/change", { code: newPlanCode });
 
-      const { success, token } = result;
+      const { success, usage } = result;
+      const planCode = usage?.plan.code;
 
-      if (!result || !success || !token || "error" in result) {
+      if (!result || !success || !usage || "error" in result) {
         throw new Error("Failed to change plan");
       }
 
-      // トークンをデコード
-      const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
-
-      if (
-        !payload ||
-        !payload.deviceId ||
-        !payload.clientId ||
-        payload.t !== "app" ||
-        !payload.planCode ||
-        payload.planCode !== newPlanCode
-      ) {
-        throw new Error("Invalid JWT token received");
+      if (newPlanCode !== planCode) {
+        logWithContext("error", "[ClientService] Plan change mismatch", {
+          expected: newPlanCode,
+          actual: planCode,
+        });
+        throw new Error(
+          `Plan change mismatch: expected ${newPlanCode}, got ${planCode}`
+        );
       }
 
-      // アクセストークンを保存
-      await storeRepository.set("accessToken", token);
-
-      logWithContext("info", "[ClientService] Plan changed successfully", {
-        newPlan: newPlanCode,
-        clientId: payload.clientId,
-      });
-
-      return { success, payload };
+      return result;
     } catch (error) {
       logWithContext("error", "[ClientService] Failed to change plan", {
         newPlanCode,

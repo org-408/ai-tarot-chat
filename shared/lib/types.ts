@@ -526,7 +526,6 @@ export interface AppJWTPayload {
   t: string; // "app"
   deviceId: string;
   clientId: string;
-  planCode: string;
   // ↓↓ ユーザー認証後のみ ↓↓
   provider?: string; // "google", "apple", etc.
   user?: {
