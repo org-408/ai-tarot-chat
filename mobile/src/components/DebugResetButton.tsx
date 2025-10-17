@@ -8,8 +8,7 @@ import { useResetApp } from "../lib/hooks/useResetApp";
  * - Usageのみリセット
  */
 export function DebugResetButton() {
-  const { resetApp, resetMaster, resetUsage, isResetting, error } =
-    useResetApp();
+  const { resetApp, isResetting, error } = useResetApp();
   const [showMenu, setShowMenu] = useState(false);
 
   /**
@@ -24,38 +23,6 @@ export function DebugResetButton() {
       const success = await resetApp();
       if (success) {
         alert("✅ リセット完了！\nアプリを再起動します。");
-        window.location.reload();
-      } else {
-        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
-      }
-    }
-  };
-
-  const handleMasterReset = async () => {
-    if (
-      confirm(
-        "マスターデータのみをリセットします。\n認証情報は保持されます。\n\n実行しますか？"
-      )
-    ) {
-      const success = await resetMaster();
-      if (success) {
-        alert("✅ マスターデータをリセットしました！\nアプリを再起動します。");
-        window.location.reload();
-      } else {
-        alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
-      }
-    }
-  };
-
-  const handleUsageReset = async () => {
-    if (
-      confirm(
-        "利用状況のみをリセットします。\n認証情報は保持されます。\n\n実行しますか？"
-      )
-    ) {
-      const success = await resetUsage();
-      if (success) {
-        alert("✅ 利用状況をリセットしました！\nアプリを再起動します。");
         window.location.reload();
       } else {
         alert(`❌ リセット失敗: ${error?.message || "不明なエラー"}`);
@@ -88,30 +55,6 @@ export function DebugResetButton() {
             >
               <div className="font-bold">🔄 完全リセット → 再起動</div>
               <div className="text-xs opacity-80">全削除して即座に再起動</div>
-            </button>
-
-            {/* マスターデータのみリセット */}
-            <button
-              onClick={handleMasterReset}
-              disabled={isResetting}
-              className="px-4 py-2 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-colors disabled:opacity-50 text-left"
-            >
-              <div className="font-bold">📦 マスターデータ</div>
-              <div className="text-xs opacity-80">
-                カード・スプレッドデータのみ
-              </div>
-            </button>
-
-            {/* Usageのみリセット */}
-            <button
-              onClick={handleUsageReset}
-              disabled={isResetting}
-              className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors disabled:opacity-50 text-left"
-            >
-              <div className="font-bold">📊 利用状況</div>
-              <div className="text-xs opacity-80">
-                占い回数などの利用データのみ
-              </div>
             </button>
 
             {/* 閉じる */}

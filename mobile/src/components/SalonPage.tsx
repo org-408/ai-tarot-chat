@@ -89,6 +89,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
     );
   }, [masterData, currentPlan]);
 
+  useEffect(() => {
+    console.log("[SalonPage] isChangingPlan changed", isChangingPlan);
+  }, [isChangingPlan]);
+
   // 3 スプレッドの取得とフィルタリング
   const availableSpreads = useMemo(() => {
     if (!masterData.spreads || !currentPlan || !masterData.categories)
@@ -96,10 +100,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
     return masterData.spreads
       .filter((spread: Spread) => {
-        console.log("[SalonPage] スプレッドフィルタリング", {
-          spreads: masterData.spreads,
-          selectedCategory,
-        });
         // spread.plan, spread.categoriesが存在しない場合はfalse(データ破損)
         if (!spread.plan || !spread.categories) return false;
         // スプレッド内のカテゴリー一覧にselectedCategoryが含まれているか

@@ -2,7 +2,6 @@ import { Preferences } from "@capacitor/preferences";
 import { logWithContext } from "../logger/logger";
 import { filesystemRepository } from "../repositories/filesystem";
 import { storeRepository } from "../repositories/store";
-import { queryClient } from "../services/queryClient";
 import { useAuthStore } from "../stores/auth";
 import { useLifecycleStore } from "../stores/lifecycle";
 import { apiClient } from "./apiClient";
@@ -33,12 +32,6 @@ export const resetAppData = async () => {
     useLifecycleStore.getState().reset();
 
     // ========================================
-    // 2. React Queryのキャッシュをクリア
-    // ========================================
-    logWithContext("info", "[ResetApp] Clearing React Query cache");
-    queryClient.clear();
-
-    // ========================================
     // 3. マスターデータのファイルシステムキャッシュをクリア
     // ========================================
     logWithContext("info", "[ResetApp] Clearing master data filesystem cache");
@@ -63,15 +56,10 @@ export const resetAppData = async () => {
     await storeRepository.delete("userId");
 
     // Zustand永続化キー
-    await storeRepository.delete("auth-storage");
     await storeRepository.delete("lifecycle-storage");
-
-    // マスターデータバージョン
-    await storeRepository.delete("master_data_version");
-
-    // 旧Usage関連（削除予定の古いキー）
-    await storeRepository.delete("usage-storage");
-    await storeRepository.delete("usage_last_fetched_date");
+    await storeRepository.delete("auth-storage");
+    await storeRepository.delete("client-storage");
+    await storeRepository.delete("master-storage");
 
     // ========================================
     // 6. すべてのPreferencesをクリア（念のため）
@@ -101,51 +89,6 @@ export const resetAppData = async () => {
     return true;
   } catch (error) {
     logWithContext("error", "[ResetApp] App data reset failed", { error });
-    throw error;
-  }
-};
-
-/**
- * 開発用：マスターデータのみをクリアする
- * 認証情報は保持したまま、マスターデータだけ再取得したい場合に使用
- */
-export const resetMasterDataOnly = async () => {
-  try {
-    logWithContext("info", "[ResetApp] Master data reset started");
-
-    // マスターデータのキャッシュをクリア
-    await filesystemRepository.delete("master_data");
-    await storeRepository.delete("master_data_version");
-
-    // React Queryのマスターデータキャッシュをクリア
-    queryClient.removeQueries({ queryKey: ["masters"] });
-
-    logWithContext("info", "[ResetApp] Master data reset completed");
-    return true;
-  } catch (error) {
-    logWithContext("error", "[ResetApp] Master data reset failed", { error });
-    throw error;
-  }
-};
-
-/**
- * 開発用：Usageデータのみをクリアする
- * 認証情報は保持したまま、Usageだけリセットしたい場合に使用
- */
-export const resetUsageOnly = async () => {
-  try {
-    logWithContext("info", "[ResetApp] Usage reset started");
-
-    // React QueryのUsageキャッシュをクリア
-    queryClient.removeQueries({ queryKey: ["usage"] });
-
-    // 旧Usage関連キーを削除
-    await storeRepository.delete("usage_last_fetched_date");
-
-    logWithContext("info", "[ResetApp] Usage reset completed");
-    return true;
-  } catch (error) {
-    logWithContext("error", "[ResetApp] Usage reset failed", { error });
     throw error;
   }
 };

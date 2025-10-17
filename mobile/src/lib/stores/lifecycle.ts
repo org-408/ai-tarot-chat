@@ -49,6 +49,10 @@ interface LifecycleState {
   isChangingPlan: boolean;
   planChangeError: string | null;
 
+  // ログイン・アウト状態
+  isLoggingIn: boolean;
+  isLoggingOut: boolean;
+
   // アクション
   init: () => Promise<void>;
   setup: () => void;
@@ -94,6 +98,8 @@ export const useLifecycleStore = create<LifecycleState>()(
       isOffline: false,
       offlineMode: "none",
       isChangingPlan: false,
+      isLoggingIn: false,
+      isLoggingOut: false,
       planChangeError: null,
 
       /**
@@ -120,6 +126,15 @@ export const useLifecycleStore = create<LifecycleState>()(
         // ✅ 既に初期化完了している場合
         if (get().isInitialized) {
           logWithContext("info", "[Lifecycle] Already initialized, skipping");
+          return;
+        }
+
+        // 他の処理が実行中のときはスキップ
+        if (get().isChangingPlan || get().isLoggingIn || get().isLoggingOut) {
+          logWithContext(
+            "info",
+            "[Lifecycle] Busy with another operation, skipping"
+          );
           return;
         }
 
@@ -344,6 +359,11 @@ export const useLifecycleStore = create<LifecycleState>()(
               });
             }
 
+            // ========================================
+            // ステップ5. setup
+            // ========================================
+            get().setup();
+
             // ✅ 初期化完了
             set({
               isInitialized: true,
@@ -421,6 +441,15 @@ export const useLifecycleStore = create<LifecycleState>()(
         if (!isInitialized) {
           logWithContext("info", "[Lifecycle] Not initialized, running init()");
           await get().init();
+          return;
+        }
+
+        // 他の処理が実行中のときはスキップ
+        if (get().isChangingPlan || get().isLoggingIn || get().isLoggingOut) {
+          logWithContext(
+            "info",
+            "[Lifecycle] Busy with another operation, skipping"
+          );
           return;
         }
 
@@ -596,12 +625,12 @@ export const useLifecycleStore = create<LifecycleState>()(
                   "info",
                   "[Lifecycle] Master data update available",
                   {
-                    localVersion: versionCheck.localVersion,
-                    serverVersion: versionCheck.serverVersion,
+                    localVersion: versionCheck.clientVersion,
+                    serverVersion: versionCheck.latestVersion,
                   }
                 );
                 // 必要に応じてここで更新
-                // await useMasterStore.getState().refresh();
+                await useMasterStore.getState().refresh();
               }
             } catch (error) {
               if (isNetworkError(error)) {
@@ -685,6 +714,8 @@ export const useLifecycleStore = create<LifecycleState>()(
       login: async () => {
         logWithContext("info", "[Lifecycle] Login started");
 
+        set({ isLoggingIn: true, error: null });
+
         try {
           // ========================================
           // 1. Auth でログイン
@@ -719,6 +750,8 @@ export const useLifecycleStore = create<LifecycleState>()(
         } catch (error) {
           logWithContext("error", "[Lifecycle] Login failed", { error });
           throw error;
+        } finally {
+          set({ isLoggingIn: false });
         }
       },
 
@@ -731,6 +764,7 @@ export const useLifecycleStore = create<LifecycleState>()(
        */
       logout: async () => {
         logWithContext("info", "[Lifecycle] Logout started");
+        set({ isLoggingOut: true, error: null });
 
         try {
           // ========================================
@@ -766,6 +800,8 @@ export const useLifecycleStore = create<LifecycleState>()(
         } catch (error) {
           logWithContext("error", "[Lifecycle] Logout failed", { error });
           throw error;
+        } finally {
+          set({ isLoggingOut: false });
         }
       },
 
@@ -803,6 +839,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           logWithContext("warn", "[Lifecycle] Plan change already in progress");
           return;
         }
+        set({ isChangingPlan: true, planChangeError: null });
 
         if (currentPlanCode === newPlan.code) {
           logWithContext("info", "[Lifecycle] Already on target plan");
@@ -820,16 +857,14 @@ export const useLifecycleStore = create<LifecycleState>()(
           to: newPlan.code,
         });
 
-        set({ isChangingPlan: true, planChangeError: null });
-
         try {
           const subscriptionStore = useSubscriptionStore.getState();
 
           // ============================================
           // 1. 認証が必要な場合はログイン
           // ============================================
-          let payload = null;
-          let info = null;
+          let payload = authStore.payload;
+          let info = subscriptionStore.customerInfo;
           if (!authStore.isAuthenticated) {
             logWithContext("info", "[Lifecycle] Authentication required");
             payload = await authStore.login();
@@ -899,12 +934,6 @@ export const useLifecycleStore = create<LifecycleState>()(
           // ============================================
           logWithContext("info", "[Lifecycle] Updating plan on server");
           await useClientStore.getState().changePlan(newPlan);
-
-          // ============================================
-          // 4. onResume() で全体を同期 ✅
-          // ============================================
-          logWithContext("info", "[Lifecycle] Calling onResume to sync all");
-          await get().onResume();
 
           set({ isChangingPlan: false, planChangeError: null });
 

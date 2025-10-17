@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import type {
   Plan,
@@ -5,7 +6,7 @@ import type {
   Spread,
   Tarotist,
 } from "../../shared/lib/types";
-import { DebugResetButton } from "./components/DebugResetButton";
+import { DebugMenu } from "./components/DebugMenu";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
@@ -39,15 +40,11 @@ function App() {
     isRefreshing,
     dateChanged,
     error,
-    currentInitStep,
-    currentResumeStep,
     isOffline,
     offlineMode,
-    lastError,
     isChangingPlan,
     planChangeError,
     init,
-    setup,
     cleanup,
     clearDateChanged,
     clearError,
@@ -80,10 +77,6 @@ function App() {
     console.log("[App] init 開始");
     init().then(() => {
       console.log("[App] init 完了");
-      console.log("[App] setup 開始");
-      setup();
-      console.log("[App] setup 完了");
-      console.log("[App] 初期化完了");
     });
 
     return () => {
@@ -373,41 +366,140 @@ function App() {
   return (
     <div className="w-full" style={{ height: "100vh" }}>
       {/* 🔥 プラン変更中インジケーター */}
-      {isChangingPlan && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg px-8 py-6 flex flex-col items-center">
-            <div className="animate-spin mb-3">
-              <svg
-                className="w-8 h-8 text-purple-600"
-                fill="none"
-                viewBox="0 0 24 24"
+      <AnimatePresence>
+        {isChangingPlan && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 25,
+              }}
+              className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center border border-purple-100/50 relative overflow-hidden"
+              style={{
+                minWidth: "340px",
+                maxWidth: "90vw",
+              }}
+            >
+              {/* 背景装飾 - アニメーション付き */}
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.5, 0.3],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+              />
+              <motion.div
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.2, 0.4, 0.2],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
+                className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"
+              />
+
+              {/* スピナー */}
+              <div className="relative mb-5">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.5, 0.7, 0.5],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full blur-md"
+                />
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  className="relative w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg"
+                >
+                  <svg
+                    className="w-8 h-8 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v1a7 7 0 00-7 7h1z"
+                    />
+                  </svg>
+                </motion.div>
+              </div>
+
+              {/* テキスト - ふわっと表示 */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+                className="relative z-10"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                ></path>
-              </svg>
-            </div>
-            <div className="text-lg font-bold text-purple-700 mb-1">
-              プラン変更中...
-            </div>
-            <div className="text-sm text-gray-600 text-center">
-              プランの切り替えを行っています。
-              <br />
-              このままお待ちください。
-            </div>
-          </div>
-        </div>
-      )}
+                <div className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  プラン変更中
+                </div>
+                <div className="text-sm text-gray-600 text-center leading-relaxed">
+                  プランの切り替えを行っています
+                  <br />
+                  <span className="text-purple-500 font-medium">
+                    このままお待ちください
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* プログレスバー */}
+              <div className="w-full h-1 bg-gray-200 rounded-full mt-6 overflow-hidden relative z-10">
+                <motion.div
+                  animate={{
+                    x: ["-100%", "300%"],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 rounded-full"
+                  style={{ width: "40%" }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 🔥 リフレッシュ中インジケーター */}
       {isRefreshing && (
@@ -445,153 +537,13 @@ function App() {
       />
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
-        <div className="fixed top-16 right-2 z-50">
-          <button
-            onClick={() => setDevMenuOpen(!devMenuOpen)}
-            className="w-6 h-6 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full text-xs text-white flex items-center justify-center transition-all opacity-30 hover:opacity-80"
-            title="開発メニュー"
-          >
-            ⚙
-          </button>
-
-          {devMenuOpen && (
-            <div className="absolute top-8 right-0 w-64 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border max-h-[80vh] overflow-y-auto">
-              {/* ✅ デバッグ情報セクション */}
-              <div className="text-xs mb-2 pb-2 border-b">
-                <div className="font-bold text-gray-700 mb-1">
-                  🔧 システム状態
-                </div>
-                <div className="space-y-0.5 text-gray-600">
-                  <div>
-                    Init:{" "}
-                    <span className="text-purple-600">{currentInitStep}</span>
-                  </div>
-                  <div>
-                    Resume:{" "}
-                    <span className="text-purple-600">{currentResumeStep}</span>
-                  </div>
-                  <div>
-                    Offline:{" "}
-                    <span
-                      className={isOffline ? "text-red-600" : "text-green-600"}
-                    >
-                      {isOffline ? "YES" : "NO"} ({offlineMode})
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span>Auth: {authIsReady ? "✓" : "⏳"}</span>
-                    <span>Client: {clientIsReady ? "✓" : "⏳"}</span>
-                    <span>Master: {masterData ? "✓" : "⏳"}</span>
-                  </div>
-                  {lastError && (
-                    <div className="text-red-500 text-[10px] mt-1">
-                      Error@{lastError.step}:{" "}
-                      {lastError.error.message.substring(0, 40)}...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 既存のプラン切り替えセクション */}
-              <div className="text-xs mb-2 text-gray-600">プラン切替</div>
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={() => {
-                    handleChangePlan("FREE");
-                    setDevMenuOpen(false);
-                    setPageType("salon");
-                  }}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    currentPlan!.code === "FREE"
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                >
-                  Free
-                </button>
-                <button
-                  onClick={() => {
-                    handleChangePlan("STANDARD");
-                    setDevMenuOpen(false);
-                    setPageType("salon");
-                  }}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    currentPlan!.code === "STANDARD"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                >
-                  💎 Standard
-                </button>
-                <button
-                  onClick={() => {
-                    handleChangePlan("PREMIUM");
-                    setDevMenuOpen(false);
-                    setPageType("salon");
-                  }}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    currentPlan!.code === "PREMIUM"
-                      ? "bg-yellow-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                >
-                  👑 Premium
-                </button>
-                <button
-                  onClick={() => {
-                    setDevMenuOpen(false);
-                    setPageType("plans");
-                  }}
-                  className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
-                >
-                  💎 Plan
-                </button>
-                <button
-                  onClick={() => {
-                    setDevMenuOpen(false);
-                    setPageType("tarotist");
-                  }}
-                  className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
-                >
-                  🔮 Tarotist
-                </button>
-                <button
-                  onClick={() => {
-                    setDevMenuOpen(false);
-                    setPageType("tarotistSwipe");
-                  }}
-                  className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
-                >
-                  🔮 TarotistSwipe
-                </button>
-                <DebugResetButton />
-                <hr className="my-1 border-gray-300" />
-                {isAuthenticated ? (
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setDevMenuOpen(false);
-                    }}
-                    className="px-2 py-1 text-xs rounded transition-colors bg-red-200 hover:bg-red-300"
-                  >
-                    🚪 Logout
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      handleChangePlan("FREE");
-                      setDevMenuOpen(false);
-                    }}
-                    className="px-2 py-1 text-xs rounded transition-colors bg-blue-200 hover:bg-blue-300"
-                  >
-                    🔐 Login
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        <DebugMenu
+          devMenuOpen={devMenuOpen}
+          setDevMenuOpen={setDevMenuOpen}
+          setPageType={setPageType}
+        />
       )}
+
       {/* ユーザー情報表示 */}
       {payload.user && (
         <div className="fixed top-2 left-2 z-40 bg-black bg-opacity-10 text-xs px-2 py-1 rounded opacity-30 hover:opacity-80 transition-all">

@@ -9,9 +9,7 @@ export class MasterService {
   /**
    * サーバーに更新チェック（POST）
    */
-  private async checkUpdate(
-    localVersion: string
-  ): Promise<MasterDataUpdateResponse> {
+  async checkUpdate(localVersion: string): Promise<MasterDataUpdateResponse> {
     try {
       const response = await apiClient.post<MasterDataUpdateResponse>(
         "/api/masters/check-update",
@@ -44,6 +42,7 @@ export class MasterService {
    */
   async getMasterData(): Promise<MasterData> {
     logWithContext("info", "[MasterService] Fetching master data from server");
+    console.trace("[MasterService] getMasterData called");
 
     try {
       const data = await apiClient.get<MasterData>("/api/masters");
