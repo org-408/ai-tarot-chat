@@ -60,7 +60,7 @@ interface LifecycleState {
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getCurrentPlan: () => Plan | null;
-  changePlan: (newPlan: Plan) => Promise<void>; // ✅ 追加
+  changePlan: (newPlan: Plan) => Promise<void>;
   reset: () => void;
 
   // ✅ デバッグ用ヘルパー
@@ -70,7 +70,6 @@ interface LifecycleState {
 }
 
 import type { PluginListenerHandle } from "@capacitor/core";
-import { subscriptionService } from "../services/subscription";
 import { getEntitlementIdentifier } from "../utils/plan-utils";
 import { useClientStore } from "./client";
 import { useMasterStore } from "./master";
@@ -497,7 +496,8 @@ export const useLifecycleStore = create<LifecycleState>()(
               "[Lifecycle] Step 2/4: Checking RevenueCat status"
             );
             try {
-              await subscriptionService.checkAndSyncOnResume();
+              // RevenueCatとCustomerInfo を同期
+              await useSubscriptionStore.getState().refreshCustomerInfo();
             } catch (rcError) {
               if (isNetworkError(rcError)) {
                 logWithContext(
@@ -690,15 +690,15 @@ export const useLifecycleStore = create<LifecycleState>()(
           // 1. Auth でログイン
           // ========================================
           logWithContext("info", "[Lifecycle] Auth login");
-          await useAuthStore.getState().login();
-          const userId = useAuthStore.getState().payload?.user?.id;
+          const payload = await useAuthStore.getState().login();
+          const userId = payload.user?.id;
           // TODO: userIdが取れない場合の処理は必要？？？エラースローで良い？
 
           //  =======================================
           // 2. Subscription のログイン
           // ========================================
           logWithContext("info", "[Lifecycle] Subscription login");
-          await useSubscriptionStore.getState().login(userId!);
+          const info = await useSubscriptionStore.getState().login(userId!);
 
           // ========================================
           // 2. onResume() を呼んで全体をリフレッシュ
@@ -713,7 +713,8 @@ export const useLifecycleStore = create<LifecycleState>()(
           await get().onResume();
 
           logWithContext("info", "[Lifecycle] Login completed successfully", {
-            userId,
+            payload,
+            entitlements: Object.keys(info.entitlements.active),
           });
         } catch (error) {
           logWithContext("error", "[Lifecycle] Login failed", { error });
@@ -738,13 +739,13 @@ export const useLifecycleStore = create<LifecycleState>()(
           // ✅ auth store に新しいGUESTのpayloadがセットされる
           // ========================================
           logWithContext("info", "[Lifecycle] Auth logout");
-          await useAuthStore.getState().logout();
+          const payload = await useAuthStore.getState().logout();
 
           // ========================================
           // 2. Subscription のログアウト
           // ========================================
           logWithContext("info", "[Lifecycle] Subscription logout");
-          await useSubscriptionStore.getState().logout();
+          const info = await useSubscriptionStore.getState().logout();
 
           // 3. onResume() を呼んで既存のリフレッシュフローを再利用
           // ✅ auth.refresh() → GUESTトークンの検証
@@ -758,7 +759,10 @@ export const useLifecycleStore = create<LifecycleState>()(
           );
           await get().onResume();
 
-          logWithContext("info", "[Lifecycle] Logout completed successfully");
+          logWithContext("info", "[Lifecycle] Logout completed successfully", {
+            payload,
+            entitlements: Object.keys(info.entitlements.active),
+          });
         } catch (error) {
           logWithContext("error", "[Lifecycle] Logout failed", { error });
           throw error;
@@ -824,24 +828,46 @@ export const useLifecycleStore = create<LifecycleState>()(
           // ============================================
           // 1. 認証が必要な場合はログイン
           // ============================================
+          let payload = null;
+          let info = null;
           if (!authStore.isAuthenticated) {
             logWithContext("info", "[Lifecycle] Authentication required");
-            await authStore.login();
+            payload = await authStore.login();
+            logWithContext("info", "[Lifecycle] OAuth Logged in", { payload });
+          }
+
+          if (!payload) {
+            logWithContext(
+              "error",
+              "[Lifecycle] Auth payload missing after login"
+            );
+            throw new Error("Authentication failed, payload is null");
           }
 
           if (!subscriptionStore.isLoggedIn) {
-            const userId = authStore.payload?.user?.id;
+            const userId = payload.user?.id;
             if (!userId) {
               logWithContext(
                 "error",
-                "[Lifecycle] User ID missing after login"
+                "[Lifecycle] User ID missing after login",
+                {
+                  authPayload: payload,
+                }
               );
               throw new Error("User ID is missing after login");
             }
+            info = await subscriptionStore.login(userId);
+            if (!info) {
+              logWithContext(
+                "error",
+                "[Lifecycle] Subscription info missing after login"
+              );
+              throw new Error("Subscription login failed, info is null");
+            }
             logWithContext("info", "[Lifecycle] Logging into subscription", {
               userId,
+              entitlements: Object.keys(info.entitlements.active),
             });
-            await subscriptionStore.login(userId);
           }
 
           // ============================================
@@ -849,9 +875,18 @@ export const useLifecycleStore = create<LifecycleState>()(
           // ============================================
           if (newPlan.price > 0) {
             const targetEntitlement = getEntitlementIdentifier(newPlan.code);
-            const customerInfo = subscriptionStore.customerInfo;
+            const customerInfo = info || subscriptionStore.customerInfo;
+            if (!customerInfo) {
+              logWithContext(
+                "error",
+                "[Lifecycle] CustomerInfo missing for purchase"
+              );
+              throw new Error(
+                "CustomerInfo is null, cannot proceed with purchase"
+              );
+            }
             const hasEntitlement =
-              customerInfo?.entitlements.active[targetEntitlement];
+              customerInfo.entitlements.active[targetEntitlement];
 
             if (!hasEntitlement) {
               logWithContext("info", "[Lifecycle] No subscription, purchasing");

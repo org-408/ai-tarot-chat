@@ -14,10 +14,10 @@ interface AuthState {
 
   // アクション
   init: () => Promise<void>;
-  registerDevice: () => Promise<void>;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
-  refresh: () => Promise<void>;
+  registerDevice: () => Promise<AppJWTPayload>;
+  login: () => Promise<AppJWTPayload>;
+  logout: () => Promise<AppJWTPayload>;
+  refresh: () => Promise<AppJWTPayload>;
   getStoredToken: () => Promise<string | null>;
   setPayload: (payload: AppJWTPayload) => void;
   reset: () => void;
@@ -187,6 +187,7 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: !!payload.user,
             }
           );
+          return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Device registration failed:", {
             error,
@@ -208,6 +209,7 @@ export const useAuthStore = create<AuthState>()(
             payload,
             isAuthenticated: !!payload.user,
           });
+          return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Login failed:", { error });
           throw error;
@@ -224,6 +226,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
           });
           logWithContext("info", "[AuthStore] Logout successful");
+          return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Logout failed:", { error });
           throw error;
@@ -237,8 +240,9 @@ export const useAuthStore = create<AuthState>()(
           const stored = await authService.getStoredPayload();
 
           if (!stored.token) {
+            // TODO: 単純に null を返していいのか要検討
             logWithContext("info", "[AuthStore] No token to refresh");
-            return;
+            throw new Error("No token to refresh");
           }
 
           // ✅ 常にサーバーに検証リクエスト
@@ -262,6 +266,7 @@ export const useAuthStore = create<AuthState>()(
                 isAuthenticated: !!newPayload.user,
               }
             );
+            return newPayload;
           } catch (refreshError) {
             // ✅ ネットワークエラーチェック
             if (isNetworkError(refreshError)) {
@@ -288,12 +293,13 @@ export const useAuthStore = create<AuthState>()(
                   { status }
                 );
 
-                await get().registerDevice();
+                const payload = await get().registerDevice();
                 logWithContext(
                   "info",
-                  "[AuthStore] Device re-registered successfully"
+                  "[AuthStore] Device re-registered successfully",
+                  { payload }
                 );
-                return; // ✅ 成功として扱う
+                return payload; // ✅ 成功として扱う
               }
 
               // ✅ その他のHTTPエラー → 再throw

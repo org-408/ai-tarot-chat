@@ -374,8 +374,38 @@ function App() {
     <div className="w-full" style={{ height: "100vh" }}>
       {/* 🔥 プラン変更中インジケーター */}
       {isChangingPlan && (
-        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
-          🔄 処理中...
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg px-8 py-6 flex flex-col items-center">
+            <div className="animate-spin mb-3">
+              <svg
+                className="w-8 h-8 text-purple-600"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                ></path>
+              </svg>
+            </div>
+            <div className="text-lg font-bold text-purple-700 mb-1">
+              プラン変更中...
+            </div>
+            <div className="text-sm text-gray-600 text-center">
+              プランの切り替えを行っています。
+              <br />
+              このままお待ちください。
+            </div>
+          </div>
         </div>
       )}
 
@@ -385,40 +415,34 @@ function App() {
           🔄 {getResumeStepLabel()}
         </div>
       )}
-
       {/* ✅ オフライン通知 */}
       {isOffline && offlineMode === "limited" && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
           📡 {getOfflineModeLabel()}
         </div>
       )}
-
       {/* ✅ 完全オフライン警告 */}
       {offlineMode === "full" && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
           ⚠️ オフライン - 初回起動にはネット接続が必要です
         </div>
       )}
-
       {/* 🔥 日付変更通知 */}
       {dateChanged && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
           ✨ 新しい日になりました!
         </div>
       )}
-
       {/* 🔥 エラー通知 */}
       {error && (
         <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
           ⚠️ {error.message}
         </div>
       )}
-
       <Header
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
       />
-
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
         <div className="fixed top-16 right-2 z-50">
@@ -568,21 +592,18 @@ function App() {
           )}
         </div>
       )}
-
       {/* ユーザー情報表示 */}
       {payload.user && (
         <div className="fixed top-2 left-2 z-40 bg-black bg-opacity-10 text-xs px-2 py-1 rounded opacity-30 hover:opacity-80 transition-all">
           {payload.user.email}
         </div>
       )}
-
       <div
         className="main-content-area"
         style={pageType === "salon" ? { paddingBottom: "105px" } : {}}
       >
         {renderPage()}
       </div>
-
       <Navigation currentPage={pageType} onPageChange={handlePageChange} />
     </div>
   );

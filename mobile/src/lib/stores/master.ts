@@ -45,6 +45,7 @@ export const useMasterStore = create<MasterState>((set, get) => ({
       logWithContext("info", "[MasterStore] Initialization started");
       set({ isLoading: true, error: null });
 
+      // 初回は必ずサーバーから取得
       const data = await masterService.getMasterData();
 
       set({
@@ -72,8 +73,24 @@ export const useMasterStore = create<MasterState>((set, get) => ({
       logWithContext("info", "[MasterStore] Refresh started");
       set({ isLoading: true, error: null });
 
-      const data = await masterService.getMasterData(true);
+      // サーバーのバージョンをチェックして、必要なら取得
+      const result = await get().checkVersion();
 
+      if (!result.needsUpdate) {
+        logWithContext("info", "[MasterStore] No update needed");
+        set({ isLoading: false });
+        return;
+      }
+
+      logWithContext(
+        "info",
+        "[MasterStore] Update needed, fetching data",
+        result
+      );
+
+      set({ isLoading: true });
+
+      const data = await masterService.getMasterData();
       set({
         masterData: data,
         isLoading: false,
@@ -83,11 +100,13 @@ export const useMasterStore = create<MasterState>((set, get) => ({
       logWithContext("info", "[MasterStore] Refresh completed", {
         version: data.version,
       });
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      set({ isLoading: false, error: err });
+    } catch (refreshError) {
+      const error =
+        refreshError instanceof Error
+          ? refreshError
+          : new Error(String(refreshError));
+      set({ isLoading: false, error });
       logWithContext("error", "[MasterStore] Refresh failed", { error });
-      throw err;
     }
   },
 
@@ -125,8 +144,6 @@ export const useMasterStore = create<MasterState>((set, get) => ({
   clear: async () => {
     try {
       logWithContext("info", "[MasterStore] Clearing data");
-      await masterService.clearLocalData();
-
       set({
         masterData: null,
         isReady: false,

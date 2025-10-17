@@ -1,4 +1,3 @@
-import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
 import {
@@ -9,9 +8,6 @@ import {
 import { RevenueCatUI } from "@revenuecat/purchases-capacitor-ui";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
-import { useClientStore } from "../stores/client";
-import { useLifecycleStore } from "../stores/lifecycle";
-import { useMasterStore } from "../stores/master";
 import { getPackageIdentifier } from "../utils/plan-utils";
 
 /**
@@ -25,17 +21,10 @@ import { getPackageIdentifier } from "../utils/plan-utils";
  * - Customer Centerの表示
  */
 export class SubscriptionService {
-  private isInitialized = false;
-
   /**
    * RevenueCatの初期化
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) {
-      logWithContext("info", "[SubscriptionService] Already initialized");
-      return;
-    }
-
     logWithContext("info", "[SubscriptionService] Initializing RevenueCat");
 
     const platform = Capacitor.getPlatform();
@@ -46,7 +35,6 @@ export class SubscriptionService {
         "warn",
         "[SubscriptionService] Skipping initialization on web platform"
       );
-      this.isInitialized = true;
       return;
     }
 
@@ -69,14 +57,6 @@ export class SubscriptionService {
 
       await Purchases.configure({ apiKey });
 
-      // ✅ 購読状態変更リスナーの登録
-      await this.setupCustomerInfoListener();
-
-      // ✅ アプリ復帰時の同期設定
-      await this.setupAppStateListener();
-
-      this.isInitialized = true;
-
       logWithContext("info", "[SubscriptionService] Initialized successfully", {
         platform,
       });
@@ -90,10 +70,9 @@ export class SubscriptionService {
   }
 
   /**
-   * アプリ復帰時の購読状態確認と同期
-   * lifecycle.ts から呼び出される
+   * 購読状態を取得
    */
-  async checkAndSyncOnResume(): Promise<void> {
+  async getCustomerInfo(): Promise<CustomerInfo> {
     logWithContext(
       "info",
       "[SubscriptionService] Checking subscription on resume"
@@ -101,9 +80,10 @@ export class SubscriptionService {
 
     try {
       const { customerInfo } = await Purchases.getCustomerInfo();
-      await this.syncWithServer(customerInfo);
-
-      logWithContext("info", "[SubscriptionService] Synced on app resume");
+      logWithContext("info", "[SubscriptionService] getCustomerInfo fetched", {
+        entitlements: Object.keys(customerInfo.entitlements.active),
+      });
+      return customerInfo;
     } catch (error) {
       logWithContext(
         "error",
@@ -117,33 +97,19 @@ export class SubscriptionService {
   }
 
   /**
-   * CustomerInfo変更リスナーの設定
+   * CustomerInfo 変更リスナーを handler に設定
    * RevenueCatで購読状態が変更されたらサーバーと同期
    */
-  private async setupCustomerInfoListener(): Promise<void> {
+  async setupCustomerInfoListener(
+    handler: (info: CustomerInfo) => Promise<void> | void
+  ): Promise<void> {
     try {
-      await Purchases.addCustomerInfoUpdateListener(async (info) => {
-        try {
-          logWithContext("info", "[SubscriptionService] CustomerInfo updated", {
-            entitlements: Object.keys(info.entitlements.active),
-          });
-
-          // サーバーと同期
-          await this.syncWithServer(info);
-        } catch (error) {
-          logWithContext(
-            "error",
-            "[SubscriptionService] Failed to sync on update",
-            {
-              error: error instanceof Error ? error.message : String(error),
-            }
-          );
-        }
-      });
+      await Purchases.addCustomerInfoUpdateListener(handler);
 
       logWithContext(
         "info",
-        "[SubscriptionService] CustomerInfo listener registered"
+        "[SubscriptionService] CustomerInfo listener registered",
+        { handler: handler.name || "anonymous" }
       );
     } catch (error) {
       logWithContext(
@@ -157,137 +123,9 @@ export class SubscriptionService {
   }
 
   /**
-   * アプリ復帰時のリスナー設定
-   * 外部での解約・変更に対応
-   */
-  private async setupAppStateListener(): Promise<void> {
-    try {
-      App.addListener("appStateChange", async ({ isActive }) => {
-        if (!isActive) return;
-
-        try {
-          logWithContext(
-            "info",
-            "[SubscriptionService] App resumed, syncing..."
-          );
-
-          const { customerInfo } = await Purchases.getCustomerInfo();
-          await this.syncWithServer(customerInfo);
-
-          logWithContext("info", "[SubscriptionService] Synced on app resume");
-        } catch (error) {
-          logWithContext(
-            "error",
-            "[SubscriptionService] Failed to sync on resume",
-            {
-              error: error instanceof Error ? error.message : String(error),
-            }
-          );
-        }
-      });
-
-      logWithContext(
-        "info",
-        "[SubscriptionService] App state listener registered"
-      );
-    } catch (error) {
-      logWithContext(
-        "error",
-        "[SubscriptionService] Failed to setup app listener",
-        {
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
-    }
-  }
-
-  /**
-   * サーバーと購読状態を同期
-   * ClientStore の changePlan を呼び出してプラン変更を委譲
-   */
-  private async syncWithServer(customerInfo: CustomerInfo): Promise<void> {
-    try {
-      // ✅ UI経由でプラン変更中なら何もしない（無限ループ防止）
-      const lifecycleStore = useLifecycleStore.getState();
-      if (lifecycleStore.isChangingPlan) {
-        logWithContext(
-          "info",
-          "[SubscriptionService] Plan change in progress via UI, skipping sync"
-        );
-        return;
-      }
-
-      // CustomerInfo から planCode を判定
-      const planCode = this.getPlanCodeFromCustomerInfo(customerInfo);
-
-      logWithContext("info", "[SubscriptionService] Syncing with server", {
-        planCode,
-        entitlements: Object.keys(customerInfo.entitlements.active),
-      });
-
-      // ClientStore の changePlanByCode を呼び出す
-      const clientStore = useClientStore.getState();
-      if (!clientStore) {
-        logWithContext(
-          "error",
-          "[SubscriptionService] ClientStore not initialized"
-        );
-        throw new Error("ClientStore is not initialized");
-      }
-
-      const currentPlan = clientStore.currentPlan!;
-
-      // ✅ 既に同じプランなら何もしない
-      if (currentPlan.code !== planCode) {
-        logWithContext(
-          "info",
-          "[SubscriptionService] Changing plan in Lifecycle",
-          { planCode }
-        );
-
-        const { masterData } = useMasterStore.getState();
-        if (!masterData) {
-          logWithContext(
-            "error",
-            "[SubscriptionService] Master data not loaded"
-          );
-          throw new Error("Master data is not loaded");
-        }
-
-        const newPlan = masterData.plans.find((p) => p.code === planCode);
-
-        // ✅ リスナー経由での changePlan 呼び出し
-        await lifecycleStore.changePlan(newPlan!);
-      }
-
-      logWithContext("info", "[SubscriptionService] Synced with server", {
-        planCode,
-      });
-    } catch (error) {
-      logWithContext("error", "[SubscriptionService] Server sync failed", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * CustomerInfo から planCode を判定
-   */
-  private getPlanCodeFromCustomerInfo(customerInfo: CustomerInfo): string {
-    const activeEntitlements = Object.keys(customerInfo.entitlements.active);
-
-    if (activeEntitlements.includes("premium")) return "PREMIUM";
-    if (activeEntitlements.includes("standard")) return "STANDARD";
-
-    // 購読なし = FREE
-    return "FREE";
-  }
-
-  /**
    * RevenueCatにログイン
    */
-  async login(userId: string): Promise<void> {
+  async login(userId: string): Promise<CustomerInfo> {
     logWithContext("info", "[SubscriptionService] Logging in", { userId });
 
     try {
@@ -298,8 +136,7 @@ export class SubscriptionService {
         entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      // ログイン後、サーバーと同期
-      await this.syncWithServer(customerInfo);
+      return customerInfo;
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Login failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -312,16 +149,18 @@ export class SubscriptionService {
   /**
    * RevenueCatからログアウト
    */
-  async logout(): Promise<void> {
+  async logout(): Promise<CustomerInfo> {
     logWithContext("info", "[SubscriptionService] Logging out");
 
     try {
       const { customerInfo } = await Purchases.logOut();
 
-      logWithContext("info", "[SubscriptionService] Logout successful");
+      logWithContext("info", "[SubscriptionService] Logout successful", {
+        entitlements: Object.keys(customerInfo.entitlements.active),
+      });
 
       // ログアウト後も状態を同期（匿名ユーザーとして）
-      await this.syncWithServer(customerInfo);
+      return customerInfo;
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Logout failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -331,7 +170,7 @@ export class SubscriptionService {
   }
 
   /**
-   * 現在のOfferingsを取得
+   * 現在のOfferings(RevenueCat側のプラン一覧)を取得
    */
   async getOfferings() {
     logWithContext("info", "[SubscriptionService] Fetching offerings");
@@ -366,9 +205,9 @@ export class SubscriptionService {
 
   /**
    * プラン購入
-   * 購入完了後はリスナーが自動的に syncWithServer → changePlanByCode を呼び出す
+   * RevenueCatで購入処理を行う
    */
-  async purchaseAndChangePlan(targetPlan: Plan): Promise<void> {
+  async purchase(targetPlan: Plan): Promise<CustomerInfo> {
     logWithContext("info", "[SubscriptionService] Starting purchase", {
       targetPlan: targetPlan.code,
       price: targetPlan.price,
@@ -409,8 +248,7 @@ export class SubscriptionService {
         entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      // 4. リスナーが自動的に syncWithServer → changePlanByCode を呼び出すため、ここでは何もしない
-      // changePlan() 側で /api/clients/plan/change を呼び出してサーバーに即時反映する
+      return customerInfo;
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Purchase failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -421,9 +259,9 @@ export class SubscriptionService {
   }
 
   /**
-   * 購入のリストア
+   * 購入のリストア ＝ 購入を復元するために用意しておく
    */
-  async restorePurchases(): Promise<void> {
+  async restorePurchases(): Promise<CustomerInfo> {
     logWithContext("info", "[SubscriptionService] Restoring purchases");
 
     try {
@@ -433,8 +271,7 @@ export class SubscriptionService {
         entitlements: Object.keys(customerInfo.entitlements.active),
       });
 
-      // サーバーと同期
-      await this.syncWithServer(customerInfo);
+      return customerInfo;
     } catch (error) {
       logWithContext("error", "[SubscriptionService] Restore failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -501,25 +338,6 @@ export class SubscriptionService {
         );
         throw fallbackError;
       }
-    }
-  }
-
-  /**
-   * 現在の購読状態を取得
-   */
-  async getCustomerInfo(): Promise<CustomerInfo> {
-    try {
-      const { customerInfo } = await Purchases.getCustomerInfo();
-      return customerInfo;
-    } catch (error) {
-      logWithContext(
-        "error",
-        "[SubscriptionService] Failed to get customer info",
-        {
-          error: error instanceof Error ? error.message : String(error),
-        }
-      );
-      throw error;
     }
   }
 }

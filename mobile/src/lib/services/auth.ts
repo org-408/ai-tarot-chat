@@ -266,6 +266,7 @@ export class AuthService {
         clientId: payload.clientId,
         userId: payload.user.id,
         provider: payload.provider,
+        payload,
       });
 
       return payload;
