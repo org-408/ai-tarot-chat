@@ -1,8 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
-import type { TarotCard } from "../../../shared/lib/types";
-import type { CardPlacement } from "../types";
+import type { CardPlacement, TarotCard } from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
 

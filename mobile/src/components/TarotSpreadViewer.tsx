@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import type { TarotCard } from "../../../shared/lib/types";
-import type { CardPlacement } from "../types";
+import type { CardPlacement, TarotCard } from "../../../shared/lib/types";
 
 interface TarotSpreadViewerProps {
   drawnCards: CardPlacement[];

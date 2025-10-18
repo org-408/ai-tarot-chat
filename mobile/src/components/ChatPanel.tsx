@@ -1,32 +1,16 @@
 import { useChat } from "@ai-sdk/react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type {
+  CardPlacement,
   ReadingCategory,
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
-
-interface CardPlacement {
-  id: string;
-  number: number;
-  gridX: number;
-  gridY: number;
-  rotation: number;
-  card: {
-    id: string;
-    name: string;
-    uprightKeywords: string[];
-    reversedKeywords: string[];
-  };
-  isReversed: boolean;
-  position: string;
-  description: string;
-}
 
 interface ChatPanelProps {
   tarotist: Tarotist;
@@ -43,79 +27,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
-  const initialMessages: UIMessage[] = useMemo(
-    () => [
-      {
-        id: "ai-tarot-chat",
-        role: "system",
-        parts: [
-          {
-            type: "text",
-            text:
-              `あなたは、${tarotist.title}${tarotist.name}です。` +
-              `あなたの特徴は${tarotist.trait}です。` +
-              `あなたの性格・自己紹介は${tarotist.bio}です。` +
-              `また、あなたは熟練したタロット占い師でもあります。` +
-              `相談者が質問していない場合でも、` +
-              `タロットカードの意味を踏まえた上で回答してください。` +
-              `* 占いたいジャンルは${category.name}です。` +
-              `* スプレッドは${spread.name}です。` +
-              `* カードは以下の通りです。\n` +
-              drawnCards
-                .map(
-                  (placement) =>
-                    `- ${placement.position}(${placement.card.name}${
-                      placement.isReversed ? "逆位置" : "正位置"
-                    }): ${
-                      placement.isReversed
-                        ? placement.card.reversedKeywords.join(", ")
-                        : placement.card.uprightKeywords.join(", ")
-                    }`
-                )
-                .join("\n")
-                .trim() +
-              `\n\n` +
-              `【フォーマット】\n` +
-              `- 全てのカードの解釈を丁寧にしてください\n` +
-              `- カードの解釈を総合的に判断して、最終的な占い結果を概要と詳細説明に分けて丁寧に説明してください。\n` +
-              `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
-              `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-              `- です・ます調で話すこと\n` +
-              `- 絵文字や顔文字は使わないこと\n` +
-              `- 1回の回答は200文字以上300文字以内とすること\n` +
-              `\n` +
-              `【制約条件】\n` +
-              `- タロットカードの意味に基づいて回答すること\n` +
-              `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
-              `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
-              `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
-              `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
-              `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
-              `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
-              `- 絵文字や顔文字を使わないこと\n` +
-              `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-              `- です・ます調で話すこと\n` +
-              `- 1回の回答は200文字以上300文字以内とすること\n`,
-          },
-        ],
-      },
-    ],
-    [tarotist, category, spread, drawnCards]
-  );
-
   const { messages, sendMessage, status } = useChat({
     id: "ai-tarot-chat",
     transport: new DefaultChatTransport({
       api: `${domain}/api/chat`,
-      body: (message: UIMessage) => {
-        const modelMessages = [...initialMessages, message];
+      body: () => {
         return {
           body: {
-            id: "ai-tarot-chat",
-            messages: modelMessages,
             tarotist,
             spread,
             category,
+            drawnCards,
           },
           headers: {
             "Content-Type": "application/json",

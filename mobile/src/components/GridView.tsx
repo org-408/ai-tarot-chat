@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import type { Spread, TarotCard } from "../../../shared/lib/types";
-import type { CardPlacement } from "../types";
+import type {
+  CardPlacement,
+  Spread,
+  TarotCard,
+} from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
 

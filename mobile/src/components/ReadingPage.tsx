@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import type {
   AppJWTPayload,
+  CardPlacement,
   MasterData,
   ReadingCategory,
   Spread,
@@ -10,7 +11,6 @@ import type {
   Tarotist,
 } from "../../../shared/lib/types";
 import { TEMP_CARDS } from "../lib/utils/cards";
-import type { CardPlacement } from "../types";
 import { ChatPanel } from "./ChatPanel";
 import ProfileDialog from "./ProfileDialog";
 import TarotSpreadViewerSwipe from "./TarotSpreadViewerSwipe";

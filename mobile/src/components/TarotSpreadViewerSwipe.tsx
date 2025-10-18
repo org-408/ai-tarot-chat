@@ -1,8 +1,11 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import type { Spread, TarotCard } from "../../../shared/lib/types";
-import type { CardPlacement } from "../types";
+import type {
+  CardPlacement,
+  Spread,
+  TarotCard,
+} from "../../../shared/lib/types";
 import CarouselView from "./CarouselView";
 import GridView from "./GridView";
 

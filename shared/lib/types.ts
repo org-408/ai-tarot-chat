@@ -645,3 +645,16 @@ export type AppStateCheckLog = {
   appVersion?: string;
   path?: string;
 };
+
+// カード配置情報の型
+export interface CardPlacement {
+  id: string;
+  number: number;
+  gridX: number;
+  gridY: number;
+  rotation: number;
+  card: TarotCard;
+  isReversed: boolean;
+  position: string;
+  description: string;
+}
