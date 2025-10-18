@@ -59,6 +59,7 @@ export const resetAppData = async () => {
     await storeRepository.delete("lifecycle-storage");
     await storeRepository.delete("auth-storage");
     await storeRepository.delete("client-storage");
+    await storeRepository.delete("subscription-storage");
     await storeRepository.delete("master-storage");
 
     // ========================================

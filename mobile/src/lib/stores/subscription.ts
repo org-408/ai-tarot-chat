@@ -107,15 +107,12 @@ export const useSubscriptionStore = create<SubscriptionState>()(
                     : String(infoError),
               }
             );
-
-            set({ isInitialized: true });
           }
         } catch (error) {
           logWithContext("error", "[SubscriptionStore] Initialization failed", {
             error: error instanceof Error ? error.message : String(error),
           });
-
-          // 初期化失敗でも isInitialized を true にして先に進める
+        } finally {
           set({ isInitialized: true });
         }
       },
@@ -434,10 +431,6 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           await storeRepository.delete(name);
         },
       })),
-      // CustomerInfoは永続化しない（セキュリティ上の理由）
-      partialize: (state) => ({
-        isInitialized: state.isInitialized,
-      }),
     }
   )
 );
