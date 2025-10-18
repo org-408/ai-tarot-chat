@@ -31,18 +31,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     id: "ai-tarot-chat",
     transport: new DefaultChatTransport({
       api: `${domain}/api/chat`,
-      body: () => {
-        return {
-          body: {
-            tarotist,
-            spread,
-            category,
-            drawnCards,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
+      body: {
+        tarotist,
+        spread,
+        category,
+        drawnCards,
       },
     }),
     onError: (err) => {

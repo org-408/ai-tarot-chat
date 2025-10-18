@@ -38,7 +38,6 @@ export async function POST(req: Request) {
     category,
     path: "/api/chat",
   });
-  console.log(`[chat/route] `, { messages, tarotist, spread, category });
   const provider =
     tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 
@@ -89,6 +88,15 @@ export async function POST(req: Request) {
     `- です・ます調で話すこと\n` +
     `- 1回の回答は200文字以上300文字以内とすること\n`;
 
+  console.log(`[chat/route] `, {
+    messages,
+    tarotist,
+    spread,
+    category,
+    drawnCards,
+    system,
+    provider,
+  });
   const result = streamText({
     model: providers[provider as keyof typeof providers],
     messages: convertToModelMessages(messages),
