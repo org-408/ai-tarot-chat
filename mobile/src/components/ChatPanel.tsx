@@ -25,6 +25,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   category,
   drawnCards,
 }) => {
+  console.log("ChatPanel rendered with:", {
+    tarotist,
+    spread,
+    category,
+    drawnCards,
+  });
   const domain = import.meta.env.VITE_BFF_URL;
 
   const { messages, sendMessage, status } = useChat({

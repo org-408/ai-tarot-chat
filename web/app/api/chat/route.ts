@@ -51,20 +51,24 @@ export async function POST(req: Request) {
     `タロットカードの意味を踏まえた上で回答してください。` +
     `* 占いたいジャンルは${category.name}です。` +
     `* スプレッドは${spread.name}です。` +
-    `* シャッフルして引いたカードは以下の通りです。\n` +
-    drawnCards
-      .map(
-        (placement) =>
-          `- ${placement.position}(${placement.card.name}${
-            placement.isReversed ? "逆位置" : "正位置"
-          }): ${
-            placement.isReversed
-              ? placement.card.reversedKeywords.join(", ")
-              : placement.card.uprightKeywords.join(", ")
-          }`
-      )
-      .join("\n")
-      .trim() +
+    (drawnCards.length === 0
+      ? `* まだカードは引かれていません。スプレッドに必要な${
+          spread.cells!.length
+        }枚のカードをシャッフルして引いてください。`
+      : `* シャッフルして引いたカードは以下の通りです。\n` +
+        drawnCards
+          .map(
+            (placement) =>
+              `- ${placement.position}(${placement.card.name}${
+                placement.isReversed ? "逆位置" : "正位置"
+              }): ${
+                placement.isReversed
+                  ? placement.card.reversedKeywords.join(", ")
+                  : placement.card.uprightKeywords.join(", ")
+              }`
+          )
+          .join("\n")
+          .trim()) +
     `\n\n` +
     `【フォーマット】\n` +
     `- 全てのカードの解釈を丁寧にしてください\n` +
