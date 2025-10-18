@@ -2,7 +2,12 @@ import { logWithContext } from "@/lib/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
 import { groq } from "@ai-sdk/groq";
 import { openai } from "@ai-sdk/openai";
-import { ModelMessage, streamText } from "ai";
+import {
+  convertToModelMessages,
+  ModelMessage,
+  streamText,
+  UIMessage,
+} from "ai";
 import {
   ReadingCategory,
   Spread,
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
     category,
   }: {
     id: unknown;
-    messages: ModelMessage[];
+    messages: UIMessage[];
     tarotist: Tarotist;
     spread: Spread;
     category: ReadingCategory;
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: providers[provider as keyof typeof providers],
-    messages,
+    messages: convertToModelMessages(messages) as ModelMessage[],
     system: "あなたは熟練のタロット占い師です。",
   });
 

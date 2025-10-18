@@ -28,11 +28,13 @@ const TarotSpreadViewer: React.FC<TarotSpreadViewerProps> = ({
   const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showHint, setShowHint] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const toggleFlip = (cardId: string): void => {
+    setShowHint(false); // 🔥 カードタップでヒントを消す
     const newFlipped = new Set(flippedCards);
-    // めくったらそのままにする仕様に変更
+    // あったらそのままにする仕様に変更
     if (!newFlipped.has(cardId)) {
       newFlipped.add(cardId);
     }
@@ -58,6 +60,14 @@ const TarotSpreadViewer: React.FC<TarotSpreadViewerProps> = ({
       }
     }
   }, [currentIndex, viewMode]);
+
+  // 🔥 ヒントを5秒後に自動で消す
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowHint(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // スワイプ操作のハンドラ
   const [swipeOn, SetSwipeOn] = useState(false);
@@ -91,7 +101,8 @@ const TarotSpreadViewer: React.FC<TarotSpreadViewerProps> = ({
   return (
     <div className="w-full h-full">
       <motion.div
-        className="bg-white/5 backdrop-blur-md rounded-2xl sm:p-4 border border-white/10"
+        className="bg-white backdrop-blur-md rounded-2xl sm:p-4
+          border border-white/10 relative shadow-xs z-30"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
@@ -124,24 +135,74 @@ const TarotSpreadViewer: React.FC<TarotSpreadViewerProps> = ({
             />
           )}
         </AnimatePresence>
+
+        {/* 🔥 操作ヒント - 横長で薄いツールチップ */}
+        <AnimatePresence>
+          {showHint && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -10, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="absolute bottom-1 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+            >
+              <div className="bg-white/60 backdrop-blur-sm text-gray-800 px-8 py-0.5 rounded-full shadow-sm border border-gray-100/40 min-w-[280px]">
+                <div className="flex items-center justify-center gap-6 text-[10px] leading-tight">
+                  <div className="flex items-center gap-1.5">
+                    <motion.div
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="text-sm"
+                    >
+                      👆
+                    </motion.div>
+                    <span className="font-medium whitespace-nowrap">
+                      タップで裏返し
+                    </span>
+                  </div>
+                  <div className="w-px h-2.5 bg-gray-400/40" />
+                  <div className="flex items-center gap-1.5">
+                    <motion.div
+                      animate={{ x: [-2, 2, -2] }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="text-sm"
+                    >
+                      👈👉
+                    </motion.div>
+                    <span className="font-medium whitespace-nowrap">
+                      スワイプで切替
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
-      <div className="flex justify-center gap-2 mt-3">
+      <div className="flex justify-center gap-3 mt-3">
         {(["grid", "carousel"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              viewMode === mode ? "bg-white w-6" : "bg-white/30"
+            className={`h-1 rounded-full transition-all ${
+              viewMode === mode
+                ? "bg-purple-400/70 w-8"
+                : "bg-purple-200/40 w-1"
             }`}
           />
         ))}
       </div>
 
-      <div className="mt-3 text-center text-black/70 text-xs sm:text-sm px-2">
-        {"← ビューをスワイプで切替 →　カードをタップで裏返し"}
-      </div>
-
+      {/* カード詳細ダイアログ */}
       <AnimatePresence>
         {selectedCard && (
           <motion.div
@@ -207,12 +268,6 @@ const TarotSpreadViewer: React.FC<TarotSpreadViewerProps> = ({
                   ? selectedCard.card.reversedKeywords.join("、")
                   : selectedCard.card.uprightKeywords.join("、")}
               </div>
-              <button
-                onClick={() => setSelectedCard(null)}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 font-medium transition-colors text-sm"
-              >
-                閉じる
-              </button>
             </motion.div>
           </motion.div>
         )}

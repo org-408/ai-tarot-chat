@@ -11,6 +11,7 @@ import type {
 } from "../../../shared/lib/types";
 import { TEMP_CARDS } from "../lib/utils/cards";
 import type { CardPlacement } from "../types";
+import { ChatPanel } from "./ChatPanel";
 import ProfileDialog from "./ProfileDialog";
 import TarotSpreadViewerSwipe from "./TarotSpreadViewerSwipe";
 
@@ -32,7 +33,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   masterData,
   readingData,
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { tarotist, category, spread } = readingData;
 
   const [drawnCards, setDrawnCards] = useState<CardPlacement[]>([]);
@@ -105,12 +105,12 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       />
 
       {/* チャットパネル */}
-      {/* <ChatPanel
+      <ChatPanel
         tarotist={tarotist}
         spread={spread}
         category={category}
         drawnCards={drawnCards}
-      /> */}
+      />
 
       {/* 占い師ダイアログ */}
       <ProfileDialog

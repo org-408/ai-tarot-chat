@@ -68,6 +68,11 @@ const CarouselView: React.FC<CarouselViewProps> = ({
   const cardHeight = VIEW_HEIGHT_MAX - 14 * 2;
   const cardWidth = cardHeight * CARD_ASPECT;
 
+  const handleCardInteraction = (card: CardPlacement) => {
+    onCardClick(card);
+    onToggleFlip(card.id);
+  };
+
   return (
     <div
       className="relative w-full h-full flex flex-col items-center justify-center"
@@ -90,10 +95,7 @@ const CarouselView: React.FC<CarouselViewProps> = ({
                 <motion.div
                   className="relative cursor-pointer mx-auto"
                   style={{ width: cardWidth, height: cardWidth / CARD_ASPECT }}
-                  onClick={() => {
-                    if (isFlipped) onCardClick(card);
-                    onToggleFlip(card.id);
-                  }}
+                  onClick={() => handleCardInteraction(card)}
                   onPointerDown={(e) => {
                     e.stopPropagation();
                     setSwipeOn(false);

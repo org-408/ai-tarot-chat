@@ -3,9 +3,14 @@ import type { PageType, UserPlan } from "../types";
 interface HeaderProps {
   currentPlan: UserPlan;
   currentPage: PageType;
+  onMenuClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
+const Header: React.FC<HeaderProps> = ({
+  currentPlan,
+  currentPage,
+  onMenuClick,
+}) => {
   console.log(
     `[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`
   );
@@ -66,6 +71,27 @@ const Header: React.FC<HeaderProps> = ({ currentPlan, currentPage }) => {
   return (
     <header className="app-header">
       <div className="header-container">
+        {/* 🔥 ハンバーガーメニューボタン */}
+        <button
+          onClick={onMenuClick}
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg transition-colors"
+          aria-label="メニューを開く"
+        >
+          <svg
+            className="w-6 h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+
         <h1 className="header-title">{getHeaderTitle()}</h1>
         {getSubtitle() && <p className="header-subtitle">{getSubtitle()}</p>}
       </div>

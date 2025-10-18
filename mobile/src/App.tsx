@@ -8,10 +8,10 @@ import type {
 } from "../../shared/lib/types";
 import { DebugMenu } from "./components/DebugMenu";
 import Header from "./components/Header";
-import Navigation from "./components/Navigation";
 import PlansPage from "./components/PlansPage";
 import ReadingPage from "./components/ReadingPage";
 import SalonPage from "./components/SalonPage";
+import SidebarMenu from "./components/SidebarMenu";
 import TarotistPage from "./components/TarotistPage";
 import TarotistSwipePage from "./components/TarotistSwipePage";
 import { useAuth } from "./lib/hooks/useAuth";
@@ -27,6 +27,7 @@ function App() {
 
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
 
   const [readingData, setReadingData] = useState<{
     tarotist: Tarotist;
@@ -112,6 +113,31 @@ function App() {
       console.error("[App] Plan change error:", planChangeError);
     }
   }, [planChangeError]);
+
+  // 🔥 左端から右スワイプでサイドバーを開く
+  useEffect(() => {
+    let startX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startX = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const endX = e.changedTouches[0].clientX;
+      // 左端20px以内から始まり、50px以上右にスワイプしたら開く
+      if (startX < 20 && endX - startX > 50 && !sidebarOpen) {
+        setSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [sidebarOpen]);
 
   const handleLogin = async () => {
     try {
@@ -365,6 +391,16 @@ function App() {
 
   return (
     <div className="w-full" style={{ height: "100vh" }}>
+      {/* 🔥 サイドバーメニュー */}
+      <SidebarMenu
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        currentPage={pageType}
+        onPageChange={handlePageChange}
+        currentPlan={currentPlan?.code || "GUEST"}
+        userEmail={payload.user?.email}
+      />
+
       {/* 🔥 プラン変更中インジケーター */}
       <AnimatePresence>
         {isChangingPlan && (
@@ -534,6 +570,7 @@ function App() {
       <Header
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
+        onMenuClick={() => setSidebarOpen(true)}
       />
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
@@ -550,13 +587,7 @@ function App() {
           {payload.user.email}
         </div>
       )}
-      <div
-        className="main-content-area"
-        style={pageType === "salon" ? { paddingBottom: "105px" } : {}}
-      >
-        {renderPage()}
-      </div>
-      <Navigation currentPage={pageType} onPageChange={handlePageChange} />
+      <div className="main-content-area">{renderPage()}</div>
     </div>
   );
 }

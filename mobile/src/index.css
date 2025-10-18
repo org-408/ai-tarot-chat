@@ -20,7 +20,7 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   overflow: hidden;
-  padding-bottom: calc(40px + env(safe-area-inset-bottom)); /* ボトムナビのみ */
+  /* ✅ ボトムナビ削除のためpadding-bottomを削除 */
 }
 
 /* メインコンテンツエリア */
@@ -29,9 +29,10 @@ body {
   top: calc(50px + env(safe-area-inset-top));
   left: 0;
   right: 0;
-  bottom: calc(34px + env(safe-area-inset-bottom));
+  bottom: 0; /* ✅ ボトムナビ削除のため bottom: 0 に変更 */
   overflow: auto;
   background: transparent;
+  padding-bottom: env(safe-area-inset-bottom); /* ✅ セーフエリア対応 */
 }
 
 /* 固定ヘッダースタイル */
@@ -52,6 +53,7 @@ body {
   margin: 0 auto;
   padding: 0.5rem 1rem;
   text-align: center;
+  position: relative; /* ✅ ハンバーガーメニュー用 */
 }
 
 .header-title {
@@ -69,80 +71,15 @@ body {
   line-height: 1;
 }
 
-/* ボトムナビゲーションスタイル */
-.bottom-navigation {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 40;
-  background: white;
-  border-top: 1px solid #e9ecef;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.bottom-nav-container {
-  display: flex;
-  justify-content: space-around;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 0.5rem;
-}
-
-.bottom-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  border: none;
-  background: none;
-  color: #6b7280;
-  cursor: pointer;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  position: relative;
-  min-width: 60px;
-  font-size: 0.75rem;
-}
-
-.bottom-nav-item:hover:not(.disabled) {
-  color: #374151;
-  background: #f3f4f6;
-}
-
-.bottom-nav-item.active {
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
-}
-
-.bottom-nav-item.disabled {
-  color: #d1d5db;
-  cursor: not-allowed;
-}
-
-.nav-icon {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.nav-label {
-  font-size: 0.625rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.coming-soon-badge {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  background: #ff6b6b;
-  color: white;
-  font-size: 0.5rem;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  line-height: 1;
-}
+/* ✅ ボトムナビゲーションスタイルを完全削除 */
+/* 以下のクラスは不要になりました:
+   .bottom-navigation
+   .bottom-nav-container
+   .bottom-nav-item
+   .nav-icon
+   .nav-label
+   .coming-soon-badge
+*/
 
 /* メインコンテナ調整 */
 .main-container {
@@ -150,7 +87,6 @@ body {
   margin: 0 auto;
   background: white;
   border-radius: 0;
-  /* min-height: calc(100vh - 200px); */
 }
 
 /* タイトルスタイル */
@@ -328,59 +264,18 @@ body {
   }
 }
 
-/* ダークモード対応 */
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  .main-container {
-    background: #1f1f1f;
-    color: #f6f6f6;
-  }
-
-  .option-item {
-    background: #2d2d2d;
-    color: #f6f6f6;
-  }
-
-  .option-item:hover {
-    background: #3d3d3d;
-  }
-
-  .text-input {
-    background: #2d2d2d;
-    color: #f6f6f6;
-    border-color: #4a4a4a;
-  }
-
-  .bottom-navigation {
-    background: #1f1f1f;
-    border-top-color: #374151;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .bottom-nav-item {
-    color: #9ca3af;
-  }
-
-  .bottom-nav-item:hover:not(.disabled) {
-    color: #f3f4f6;
-    background: #374151;
-  }
-} */
-
-/* 固定占いボタンのスタイル */
+/* ✅ 固定占いボタンのスタイル（ボトムナビ削除により位置調整） */
 .fixed-action-button {
   position: fixed;
-  bottom: calc(40px + env(safe-area-inset-bottom)); /* ナビゲーションの上 */
+  bottom: env(
+    safe-area-inset-bottom
+  ); /* ✅ ナビゲーション削除により直接bottom */
   left: 0;
   right: 0;
   background: transparent;
-  border-top: none; /* purple-200 */
+  border-top: none;
   box-shadow: none;
-  padding: 0px 16px;
+  padding: 0px 16px 16px 16px; /* ✅ 下部にpaddingを追加 */
   z-index: 45;
   max-width: 400px;
   margin: 0 auto;

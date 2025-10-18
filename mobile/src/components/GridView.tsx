@@ -35,11 +35,11 @@ const GridView: React.FC<GridViewProps> = ({
   const colGap = 8;
   const rowGap = 8;
 
-  const cardWidth = Math.min(
-    (VIEW_WIDTH_MAX / Math.min(maxX + 1, GRID_WIDTH_MAX)) * CARD_ASPECT,
-    VIEW_HEIGHT_MAX / Math.min(maxY + 1, GRID_HEIGHT_MAX) / CARD_ASPECT
+  const cardHeight = Math.min(
+    (VIEW_WIDTH_MAX - colGap * 2) / Math.min(maxX + 1, GRID_WIDTH_MAX),
+    (VIEW_HEIGHT_MAX - rowGap * 2) / Math.min(maxY + 1, GRID_HEIGHT_MAX)
   );
-  const cardHeight = cardWidth / CARD_ASPECT;
+  const cardWidth = cardHeight * CARD_ASPECT;
   const cellSize = cardHeight;
 
   const [crossFlipState, setCrossFlipState] = useState(false);
@@ -57,32 +57,53 @@ const GridView: React.FC<GridViewProps> = ({
     return 5;
   };
 
+  // カードがタップされた時の処理
+  const handleCardInteraction = (card: CardPlacement) => {
+    onCardClick(card);
+    onToggleFlip(card.id);
+  };
+
   return (
     <div
-      className="overflow-x-auto pb-2 flex justify-center items-center"
+      className="overflow-x-auto pb-2 flex justify-center items-center relative"
       style={{
-        width: `${cellSize * Math.min(GRID_WIDTH_MAX, maxX + 1)}px`,
+        width: `${VIEW_WIDTH_MAX}px`,
         height: `${VIEW_HEIGHT_MAX}px`,
       }}
     >
-      {/* スプレッド名を上部に浮かせて表示 */}
+      {/* 🔥 スプレッド名 -洗練されたバッジ */}
       {spread && (
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 z-20 pointer-events-none select-none"
-          style={{
-            padding: "0.3em 1.2em",
-            background: "rgba(255,255,255,0)", // 完全透明
-            color: "#7c3aed", // 紫系
-            fontWeight: 700,
-            fontSize: "1.1rem",
-            textShadow: "0 2px 8px rgba(255,255,255,0.7)",
-            letterSpacing: "0.05em",
-            borderRadius: "1em",
-            userSelect: "none",
-          }}
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="absolute top-0.5 right-0.5 z-30 pointer-events-none"
         >
-          {spread.name}
-        </div>
+          <div className="relative">
+            {/* 背景のグロー効果 - より控えめに */}
+            <motion.div
+              animate={{
+                scale: [1, 1.05, 1],
+                opacity: [0.15, 0.25, 0.15],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute inset-0 bg-purple-500 blur-lg rounded-full"
+            />
+
+            {/* バッジ本体 - 淡い色で控えめに、横幅を広く */}
+            <div className="relative bg-white/20 backdrop-blur-sm text-purple-600/70 px-8 py-1 rounded-full shadow-sm border border-purple-100/40">
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="text-sm font-normal tracking-wide opacity-70">
+                  {spread.name}
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       <div
@@ -124,10 +145,7 @@ const GridView: React.FC<GridViewProps> = ({
               }}
               whileHover={{ scale: 1.15, zIndex: 50 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (isFlipped) onCardClick(card);
-                onToggleFlip(card.id);
-              }}
+              onClick={() => handleCardInteraction(card)}
               className="cursor-pointer"
             >
               <motion.div
