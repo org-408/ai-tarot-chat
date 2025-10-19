@@ -40,7 +40,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const domain = import.meta.env.VITE_BFF_URL;
 
   const { messages, sendMessage, status } = useChat({
-    id: "ai-tarot-chat",
     transport: new DefaultChatTransport({
       api: `${domain}/api/chat`,
       body: {

@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     provider,
   });
   const result = streamText({
-    model: providers[provider as keyof typeof providers],
+    model: providers["anthropic"], //provider as keyof typeof providers],
     messages: convertToModelMessages(messages),
     system,
   });
