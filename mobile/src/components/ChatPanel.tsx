@@ -12,6 +12,7 @@ import type {
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
+import { MessageContent } from "./MessageContent";
 import { RevealPromptPanel } from "./RevealPromptPanel";
 
 interface ChatPanelProps {
@@ -20,9 +21,10 @@ interface ChatPanelProps {
   spread: Spread;
   category: ReadingCategory;
   drawnCards: CardPlacement[];
-  selectedCard: CardPlacement | null;
-  isReadingComplete: boolean;
-  onRequestRevealAll: () => void;
+  selectedCard?: CardPlacement | null;
+  isRevealingComplete?: boolean;
+  onRequestRevealAll?: () => void;
+  onBack: () => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -31,8 +33,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   spread,
   category,
   drawnCards,
-  isReadingComplete,
+  isRevealingComplete,
   onRequestRevealAll,
+  onBack,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
@@ -50,6 +53,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     onError: (err) => {
       console.error("Chat error:", err);
     },
+    onFinish: (message) => {
+      console.log("Chat finished:", message);
+    },
   });
 
   const [inputValue, setInputValue] = useState("");
@@ -58,6 +64,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [isKeyboardReady, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // デバッグ用: messagesの変更を監視
+  useEffect(() => {
+    console.log("Messages updated:", messages.length, "Status:", status);
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      console.log("Last message:", lastMessage);
+    }
+  }, [messages, status]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -68,7 +83,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     let showListener: PluginListenerHandle | undefined;
     let hideListener: PluginListenerHandle | undefined;
 
-    // Capacitor Keyboard API（ネイティブ環境）
+    // Capacitor Keyboard API(ネイティブ環境)
     const setupCapacitorListeners = async () => {
       try {
         showListener = await Keyboard.addListener(
@@ -86,7 +101,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         // リスナー登録完了
         setIsKeyboardReady(true);
       } catch (error) {
-        // Capacitor が利用できない環境（Web）ではフォールバックを使用
+        // Capacitor が利用できない環境(Web)ではフォールバックを使用
         console.log(
           "Capacitor Keyboard not available, using web fallback",
           error
@@ -98,7 +113,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     // 即座にセットアップ開始
     setupCapacitorListeners();
 
-    // Web環境のフォールバック（visualViewport）
+    // Web環境のフォールバック(visualViewport)
     const handleResize = () => {
       if (window.visualViewport) {
         const offset = window.innerHeight - window.visualViewport.height;
@@ -175,32 +190,59 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [currentPlan.code, sendMessage]);
 
   useEffect(() => {
-    if (isReadingComplete) handleRevealAll();
-  }, [isReadingComplete, handleRevealAll]);
+    if (isRevealingComplete) handleRevealAll();
+  }, [isRevealingComplete, handleRevealAll]);
+
+  // 戻るボタン関連
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showBackButton, setShowBackButton] = useState(false);
+
+  // スクロールが一番下か判定;
+  useEffect(() => {
+    const container = messagesEndRef.current?.parentElement;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (!isRevealingComplete) return;
+      const isBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        10;
+      setShowBackButton(isBottom);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+
+    handleScroll();
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [isRevealingComplete]);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 h-1/2 bg-white flex flex-col shadow-[0_-4px_12px_rgba(0,0,0,0.08),0_-2px_4px_rgba(0,0,0,0.04)]">
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {messages.map((message, index) => (
-          <div key={index}>
-            {message.role === "user" ? (
-              <div className="bg-gray-100 rounded-3xl px-4 py-3 inline-block max-w-[85%]">
-                <p className="text-base text-gray-900 whitespace-pre-wrap">
-                  {message.parts.map((part) =>
-                    part.type === "text" ? part.text : null
-                  )}
-                </p>
-              </div>
-            ) : (
-              <div className="text-base text-gray-900 leading-relaxed whitespace-pre-wrap">
-                {message.parts.map((part) =>
-                  part.type === "text" ? part.text : null
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+        {messages.map((message, index) => {
+          const textContent = message.parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join("");
+
+          return (
+            <div key={index}>
+              {message.role === "user" ? (
+                <div className="bg-gray-100 rounded-3xl px-4 py-3 inline-block max-w-[85%]">
+                  <p className="text-base text-gray-900 whitespace-pre-wrap">
+                    {textContent}
+                  </p>
+                </div>
+              ) : (
+                <MessageContent content={textContent} />
+              )}
+            </div>
+          );
+        })}
 
         {status === "streaming" && (
           <div className="text-base text-gray-900">
@@ -227,17 +269,30 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* 即答方式のヒント及びボタン表示 */}
       {currentPlan.code !== "PREMIUM" && (
         <RevealPromptPanel
-          // カードを全部捲る指示
           onRequestRevealAll={onRequestRevealAll}
-          // カードが全部捲られ、選択カードがない場合に表示
-          isAllRevealed={isReadingComplete}
+          isAllRevealed={isRevealingComplete}
         />
+      )}
+
+      {/* Back Button - スクロールが一番下の時だけ表示 */}
+      {isRevealingComplete && (
+        <motion.button
+          key={"back-button"}
+          initial={{ opacity: 0, scale: 0.7, y: 40 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.7, y: 40 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
+          onClick={onBack}
+        >
+          <span>← 戻る</span>
+        </motion.button>
       )}
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
       {currentPlan.code === "PREMIUM" && (
         <motion.div
-          className="px-4 py-3 bg-transparent　border-1 shadow"
+          className="px-4 py-3 bg-transparent border-1 shadow"
           animate={{
             y: isFocused && keyboardHeight > 0 ? -keyboardHeight : 0,
           }}

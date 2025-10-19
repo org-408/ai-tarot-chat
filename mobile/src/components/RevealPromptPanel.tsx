@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import React from "react";
 
 interface RevealPromptPanelProps {
-  onRequestRevealAll: () => void;
-  isAllRevealed: boolean;
+  onRequestRevealAll?: () => void;
+  isAllRevealed?: boolean;
 }
 
 export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({

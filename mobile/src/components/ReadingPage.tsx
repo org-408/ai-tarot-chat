@@ -39,6 +39,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   readingData,
   viewMode,
   setViewMode,
+  onBack,
 }) => {
   const { tarotist, category, spread } = readingData;
 
@@ -104,7 +105,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   // カードめくり状態・選択カードの管理をここで行う
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
-  const [isReadingComplete, setIsReadingComplete] = useState(false);
+  const [isRevealingComplete, setIsReadingComplete] = useState(false);
 
   const handleRevealAll = () => {
     const allCardIds = drawnCards.map((card) => card.id);
@@ -114,16 +115,16 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   useEffect(() => {
     if (
       flippedCards.size > 0 &&
-      flippedCards.size === drawnCards.length &&
-      !selectedCard
+      flippedCards.size === drawnCards.length //&&
+      // !selectedCard
     ) {
       setIsReadingComplete(true);
     }
-  }, [flippedCards, drawnCards.length, selectedCard]);
+  }, [flippedCards, drawnCards.length /*, selectedCard*/]);
 
   useEffect(() => {
-    console.log("isReadingComplete:", isReadingComplete);
-  }, [isReadingComplete]);
+    console.log("isRevealingComplete:", isRevealingComplete);
+  }, [isRevealingComplete]);
 
   return (
     <div className="main-container">
@@ -157,9 +158,10 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           spread={spread}
           category={category}
           drawnCards={drawnCards}
-          selectedCard={selectedCard}
-          isReadingComplete={isReadingComplete}
+          // selectedCard={selectedCard}
+          isRevealingComplete={isRevealingComplete}
           onRequestRevealAll={handleRevealAll}
+          onBack={onBack}
         />
       )}
 
