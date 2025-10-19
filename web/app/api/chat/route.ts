@@ -102,9 +102,12 @@ export async function POST(req: Request) {
     provider,
   });
   const result = streamText({
-    model: providers["anthropic"], //provider as keyof typeof providers],
+    model: providers[provider as keyof typeof providers],
     messages: convertToModelMessages(messages),
     system,
+    onChunk: (chunk) => {
+      console.log(`[chat/route] chunk: `, chunk);
+    },
   });
 
   // AI SDK v5の標準レスポンス形式
