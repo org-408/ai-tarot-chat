@@ -83,20 +83,6 @@ const GridView: React.FC<GridViewProps> = ({
           className="absolute top-0.5 right-0.5 z-30 pointer-events-none"
         >
           <div className="relative">
-            {/* 背景のグロー効果 - より控えめに */}
-            <motion.div
-              animate={{
-                scale: [1, 1.05, 1],
-                opacity: [0.15, 0.25, 0.15],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute inset-0 bg-purple-500 blur-lg rounded-full"
-            />
-
             {/* バッジ本体 - 淡い色で控えめに、横幅を広く */}
             <div className="relative bg-white/20 backdrop-blur-sm text-purple-600/70 px-8 py-1 rounded-full shadow-sm border border-purple-100/40">
               <div className="flex items-center gap-2 whitespace-nowrap">

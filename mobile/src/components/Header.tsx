@@ -1,14 +1,16 @@
-import type { PageType, UserPlan } from "../types";
+import type { PageType, UserPlan, ViewModeType } from "../types";
 
 interface HeaderProps {
   currentPlan: UserPlan;
   currentPage: PageType;
+  viewMode: ViewModeType;
   onMenuClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   currentPlan,
   currentPage,
+  viewMode,
   onMenuClick,
 }) => {
   console.log(
@@ -55,6 +57,8 @@ const Header: React.FC<HeaderProps> = ({
           default:
             return "";
         }
+      case "reading":
+        return viewMode === "grid" ? "スプレッド表示" : "個別カード表示";
       case "plans":
         return "最適なプランを選択してください";
       case "tarotist":

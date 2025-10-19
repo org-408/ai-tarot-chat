@@ -19,7 +19,7 @@ import { useClient } from "./lib/hooks/useClient";
 import { useLifecycle } from "./lib/hooks/useLifecycle";
 import { useMaster } from "./lib/hooks/useMaster";
 import TarotSplashScreen from "./splashscreen";
-import type { PageType, UserPlan } from "./types";
+import type { PageType, UserPlan, ViewModeType } from "./types";
 
 function App() {
   // ✅ デバッグメニュー有効化フラグ
@@ -28,6 +28,7 @@ function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
+  const [viewMode, setViewMode] = useState<ViewModeType>("grid");
 
   const [readingData, setReadingData] = useState<{
     tarotist: Tarotist;
@@ -299,6 +300,8 @@ function App() {
             payload={payload}
             masterData={masterData}
             readingData={readingData!}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
             onBack={handleBackFromReading}
           />
         );
@@ -570,6 +573,7 @@ function App() {
       <Header
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
+        viewMode={viewMode}
         onMenuClick={() => setSidebarOpen(true)}
       />
       {/* 開発メニュー（環境変数で制御） */}

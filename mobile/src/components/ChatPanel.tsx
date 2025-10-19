@@ -4,33 +4,36 @@ import { Keyboard } from "@capacitor/keyboard";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type {
   CardPlacement,
+  Plan,
   ReadingCategory,
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
+import { RevealPromptPanel } from "./RevealPromptPanel";
 
 interface ChatPanelProps {
+  currentPlan: Plan;
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory;
   drawnCards: CardPlacement[];
+  selectedCard: CardPlacement | null;
+  isReadingComplete: boolean;
+  onRequestRevealAll: () => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
+  currentPlan,
   tarotist,
   spread,
   category,
   drawnCards,
+  isReadingComplete,
+  onRequestRevealAll,
 }) => {
-  console.log("ChatPanel rendered with:", {
-    tarotist,
-    spread,
-    category,
-    drawnCards,
-  });
   const domain = import.meta.env.VITE_BFF_URL;
 
   const { messages, sendMessage, status } = useChat({
@@ -163,6 +166,18 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setIsFocused(false);
   };
 
+  const handleRevealAll = useCallback(() => {
+    if (currentPlan.code !== "PREMIUM") {
+      const prompt =
+        "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
+      sendMessage({ text: prompt });
+    }
+  }, [currentPlan.code, sendMessage]);
+
+  useEffect(() => {
+    if (isReadingComplete) handleRevealAll();
+  }, [isReadingComplete, handleRevealAll]);
+
   return (
     <div className="fixed bottom-0 left-0 right-0 h-1/2 bg-white flex flex-col shadow-[0_-4px_12px_rgba(0,0,0,0.08),0_-2px_4px_rgba(0,0,0,0.04)]">
       {/* Messages Area */}
@@ -209,43 +224,55 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* 即答方式のヒント及びボタン表示 */}
+      {currentPlan.code !== "PREMIUM" && (
+        <RevealPromptPanel
+          // カードを全部捲る指示
+          onRequestRevealAll={onRequestRevealAll}
+          // カードが全部捲られ、選択カードがない場合に表示
+          isAllRevealed={isReadingComplete}
+        />
+      )}
+
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      <motion.div
-        className="px-4 py-3 bg-transparent　border-1 shadow"
-        animate={{
-          y: isFocused && keyboardHeight > 0 ? -keyboardHeight : 0,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-          mass: 0.8,
-        }}
-      >
-        <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
-          <textarea
-            ref={textareaRef}
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            placeholder="メッセージを入力..."
-            rows={2}
-            className="w-full resize-none bg-transparent rounded-2xl
+      {currentPlan.code === "PREMIUM" && (
+        <motion.div
+          className="px-4 py-3 bg-transparent　border-1 shadow"
+          animate={{
+            y: isFocused && keyboardHeight > 0 ? -keyboardHeight : 0,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+            mass: 0.8,
+          }}
+        >
+          <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
+            <textarea
+              ref={textareaRef}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              placeholder="メッセージを入力..."
+              rows={2}
+              className="w-full resize-none bg-transparent rounded-2xl
               px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400
               focus:outline-none transition-all"
-            style={{ maxHeight: "120px" }}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || status === "streaming"}
-            className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
-          >
-            <ArrowUp size={18} strokeWidth={2.5} />
-          </button>
-        </div>
-      </motion.div>
+              style={{ maxHeight: "120px" }}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim() || status === "streaming"}
+              className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
+            >
+              <ArrowUp size={18} strokeWidth={2.5} />
+            </button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

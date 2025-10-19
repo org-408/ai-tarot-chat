@@ -157,7 +157,7 @@ const CarouselView: React.FC<CarouselViewProps> = ({
           <button
             key={index}
             className={`h-2 rounded-full transition-all ${
-              index === selectedIndex ? "w-8 bg-purple-500" : "w-2 bg-gray-400" // ← gray-400に変更
+              index === selectedIndex ? "w-8 bg-purple-500" : "w-2 bg-gray-400"
             }`}
             onClick={() => emblaApi?.scrollTo(index)}
           />

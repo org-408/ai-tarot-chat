@@ -10,10 +10,13 @@ import type {
   TarotCard,
   Tarotist,
 } from "../../../shared/lib/types";
+import { useClientStore } from "../lib/stores/client";
 import { TEMP_CARDS } from "../lib/utils/cards";
+import type { ViewModeType } from "../types";
 import { ChatPanel } from "./ChatPanel";
 import ProfileDialog from "./ProfileDialog";
-import TarotSpreadViewerSwipe from "./TarotSpreadViewerSwipe";
+import ShuffleDialog from "./ShuffleDialog";
+import SpreadViewerSwipe from "./SpreadViewerSwipe";
 
 interface ReadingData {
   tarotist: Tarotist;
@@ -25,6 +28,8 @@ interface ReadingPageProps {
   payload: AppJWTPayload;
   masterData: MasterData;
   readingData: ReadingData;
+  viewMode: ViewModeType;
+  setViewMode: React.Dispatch<React.SetStateAction<ViewModeType>>;
   onBack: () => void;
 }
 
@@ -32,10 +37,14 @@ interface ReadingPageProps {
 const ReadingPage: React.FC<ReadingPageProps> = ({
   masterData,
   readingData,
+  viewMode,
+  setViewMode,
 }) => {
   const { tarotist, category, spread } = readingData;
 
   const [drawnCards, setDrawnCards] = useState<CardPlacement[]>([]);
+
+  const { currentPlan } = useClientStore.getState();
 
   // カードをランダムに引く関数
   const drawRandomCards = (
@@ -92,25 +101,67 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     window.scrollTo(0, 0);
   }, []);
 
+  // カードめくり状態・選択カードの管理をここで行う
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
+  const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
+  const [isReadingComplete, setIsReadingComplete] = useState(false);
+
+  const handleRevealAll = () => {
+    const allCardIds = drawnCards.map((card) => card.id);
+    setFlippedCards(new Set(allCardIds));
+  };
+
+  useEffect(() => {
+    if (
+      flippedCards.size > 0 &&
+      flippedCards.size === drawnCards.length &&
+      !selectedCard
+    ) {
+      setIsReadingComplete(true);
+    }
+  }, [flippedCards, drawnCards.length, selectedCard]);
+
+  useEffect(() => {
+    console.log("isReadingComplete:", isReadingComplete);
+  }, [isReadingComplete]);
+
   return (
     <div className="main-container">
-      {/* カード表示エリア */}
-      {/* <TarotSpreadViewer drawnCards={drawnCards} /> */}
-      <TarotSpreadViewerSwipe
-        spread={spread}
-        drawnCards={drawnCards}
-        onCardClick={(card: CardPlacement) =>
-          console.log("Card clicked!", card)
-        }
+      {/* カードシャッフルダイアログ drawnCards が引かれるまでの演出 */}
+      <ShuffleDialog
+        isOpen={!drawnCards || drawnCards.length === 0}
+        onComplete={() => {
+          console.log("Shuffle complete!");
+        }}
       />
 
+      {/* カード表示エリア */}
+      {drawnCards.length > 0 && (
+        <SpreadViewerSwipe
+          spread={spread}
+          drawnCards={drawnCards}
+          flippedCards={flippedCards}
+          setFlippedCards={setFlippedCards}
+          selectedCard={selectedCard}
+          setSelectedCard={setSelectedCard}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
+      )}
+
       {/* チャットパネル */}
-      <ChatPanel
-        tarotist={tarotist}
-        spread={spread}
-        category={category}
-        drawnCards={drawnCards}
-      />
+      {drawnCards.length > 0 && (
+        <ChatPanel
+          currentPlan={currentPlan!}
+          tarotist={tarotist}
+          spread={spread}
+          category={category}
+          drawnCards={drawnCards}
+          selectedCard={selectedCard}
+          isReadingComplete={isReadingComplete}
+          onRequestRevealAll={handleRevealAll}
+        />
+      )}
 
       {/* 占い師ダイアログ */}
       <ProfileDialog

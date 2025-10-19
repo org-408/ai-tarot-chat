@@ -10,6 +10,7 @@ export type PageType =
   | "tarotistSwipe"
   | "history"
   | "settings";
+export type ViewModeType = "grid" | "carousel";
 
 export interface NavigationItem {
   id: PageType;
