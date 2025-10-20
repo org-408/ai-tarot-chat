@@ -21,24 +21,22 @@ function Content() {
   const deepLinkWithTicket = useCallback(async () => {
     try {
       setMsg("アプリに戻る準備中…");
-      logWithContext("info", "チケット取得開始", { source: "web_app" });
+      logWithContext("info", "チケット取得開始");
       const res = await fetch("/api/auth/ticket", { method: "GET" });
       if (!res.ok) {
         logWithContext("error", "チケット取得失敗", {
-          source: "web_app",
           error: "ticket-issue-failed",
           status: res.status,
         });
         throw new Error("ticket-issue-failed");
       }
       const { ticket } = await res.json();
-      logWithContext("info", "チケット取得成功", { source: "web_app", ticket });
+      logWithContext("info", "チケット取得成功", { ticket });
       const url = `${APP_SCHEME}?ticket=${encodeURIComponent(ticket)}`;
       window.location.href = url;
     } catch (e) {
       console.error("error", "チケット取得エラー:", e);
       logWithContext("error", "チケット取得エラー", {
-        source: "web_app",
         error: e,
       });
       if (!retried.current) {
@@ -46,11 +44,9 @@ function Content() {
         await signIn(undefined, {
           callbackUrl: "/auth/mobile/callback",
         });
-        logWithContext("info", "再サインイン試行", { source: "web_app" });
+        logWithContext("info", "再サインイン試行");
       } else {
-        logWithContext("info", "手動サインイン画面へリダイレクト", {
-          source: "web_app",
-        });
+        logWithContext("info", "手動サインイン画面へリダイレクト");
         router.push("/auth/signin?isMobile=true");
       }
     }
@@ -59,7 +55,6 @@ function Content() {
   useEffect(() => {
     console.log("info", "AuthMobileCallbackPage status:", { status, success });
     logWithContext("info", "AuthMobileCallbackPage status changed", {
-      source: "web_app",
       status,
       success,
     });
@@ -72,7 +67,6 @@ function Content() {
         success,
       });
       logWithContext("info", "セッション確立中… : 認証を確定しています…", {
-        source: "web_app",
         status,
         success,
       });
@@ -87,7 +81,6 @@ function Content() {
         success,
       });
       logWithContext("info", "認証確定 → チケット発行 → アプリに戻る", {
-        source: "web_app",
         status,
         success,
       });
@@ -102,7 +95,6 @@ function Content() {
       });
       console.log("info", "未認証 → 自動サインイン試行", { status, success });
       logWithContext("info", "未認証 → 自動サインイン試行", {
-        source: "web_app",
         status,
         success,
       });
@@ -116,7 +108,6 @@ function Content() {
         success,
       });
       logWithContext("info", "未認証 → 手動サインイン画面へリダイレクト", {
-        source: "web_app",
         status,
         success,
       });

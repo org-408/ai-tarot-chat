@@ -198,7 +198,6 @@ export function SignInForm({ error, isMobileApp, deviceId }: SignInFormProps) {
         redirect: true,
       });
       logWithContext("info", `SignIn initiated with ${provider}`, {
-        source: "web_app",
         provider,
         isMobileApp,
         deviceId,
@@ -206,7 +205,6 @@ export function SignInForm({ error, isMobileApp, deviceId }: SignInFormProps) {
     } catch (error) {
       console.error("Sign in error:", error);
       logWithContext("error", "Sign in error", {
-        source: "web_app",
         provider,
         isMobileApp,
         deviceId,
