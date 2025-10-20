@@ -5,8 +5,8 @@ export const convertFromPrismaProviderKey = (
   provider: PrismaProviderKey | null
 ): ProviderKey => {
   switch (provider) {
-    case PrismaProviderKey.GEMINI20:
-      return "GEMINI20";
+    case PrismaProviderKey.GPT5NANO:
+      return "GPT5NANO";
     case PrismaProviderKey.GEMINI25:
       return "GEMINI25";
     case PrismaProviderKey.GEMINI25PRO:
@@ -22,7 +22,7 @@ export const convertFromPrismaProviderKey = (
     case PrismaProviderKey.OFFLINE:
       return "OFFLINE";
     default:
-      return "GEMINI20";
+      return "GPT5NANO";
   }
 };
 
@@ -30,8 +30,8 @@ export const convertToPrismaProviderKey = (
   provider: ProviderKey | null
 ): PrismaProviderKey => {
   switch (provider) {
-    case "GEMINI20":
-      return PrismaProviderKey.GEMINI20;
+    case "GPT5NANO":
+      return PrismaProviderKey.GPT5NANO;
     case "GEMINI25":
       return PrismaProviderKey.GEMINI25;
     case "GEMINI25PRO":
@@ -47,6 +47,6 @@ export const convertToPrismaProviderKey = (
     case "OFFLINE":
       return PrismaProviderKey.OFFLINE;
     default:
-      return PrismaProviderKey.GEMINI20;
+      return PrismaProviderKey.GPT5NANO;
   }
 };

@@ -25,7 +25,7 @@ const vertex = createVertex({
 
 // プロバイダマッピング
 const providers = {
-  gemini20: vertex("gemini-2.0-flash"),
+  gpt5nano: openai("gpt-5-nano"),
   gemini25: vertex("gemini-2.5-flash"),
   gemini25pro: vertex("gemini-2.5-pro"),
   claude_h: anthropic("claude-haiku-4-5"),

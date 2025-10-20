@@ -302,7 +302,7 @@ export type PlanChangeHistory = {
 };
 
 export type ProviderKey =
-  | "GEMINI20"
+  | "GPT5NANO"
   | "GEMINI25"
   | "GEMINI25PRO"
   | "GPT41"
