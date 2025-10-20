@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
-import { vertex } from "@ai-sdk/google-vertex";
+import { createVertex } from "@ai-sdk/google-vertex";
 import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import {
@@ -9,6 +9,19 @@ import {
   Spread,
   Tarotist,
 } from "../../../../shared/lib/types";
+
+// Google Vertex AI用の認証設定
+const vertex = createVertex({
+  project: process.env.GOOGLE_VERTEX_PROJECT!,
+  location: process.env.GOOGLE_VERTEX_LOCATION!,
+  googleAuthOptions: {
+    credentials: {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL!,
+      // 重要: \n を実際の改行に変換
+      private_key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+    },
+  },
+});
 
 // プロバイダマッピング
 const providers = {
