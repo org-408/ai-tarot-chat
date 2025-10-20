@@ -18,6 +18,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     Apple,
   ],
+  cookies: {
+    sessionToken: {
+      name: `__Secure-authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none", // ← これが重要！
+        path: "/",
+        secure: true,
+      },
+    },
+    callbackUrl: {
+      name: `__Secure-authjs.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: "none", // ← これが重要！
+        path: "/",
+        secure: true,
+      },
+    },
+    csrfToken: {
+      name: `__Host-authjs.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none", // ← これが重要！
+        path: "/",
+        secure: true,
+      },
+    },
+  },
+
   callbacks: {
     async signIn({ user }) {
       logWithContext("info", "Sign-in attempt", { user });

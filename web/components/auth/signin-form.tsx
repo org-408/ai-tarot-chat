@@ -173,10 +173,10 @@ const PlatformInfo = ({
 interface SignInFormProps {
   error?: string;
   isMobileApp?: boolean;
-  deviceId?: string;
+  // deviceId は不要 - チケット方式を使用
 }
 
-export function SignInForm({ error, isMobileApp, deviceId }: SignInFormProps) {
+export function SignInForm({ error, isMobileApp }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const { isMobile } = useDeviceDetection();
@@ -188,27 +188,32 @@ export function SignInForm({ error, isMobileApp, deviceId }: SignInFormProps) {
     setActiveProvider(provider);
 
     try {
-      // パスで判別できるので、パラメータ不要
-      const callbackUrl = isMobileApp
-        ? `/auth/mobile/callback?deviceId=${deviceId}`
-        : "/dashboard";
+      const callbackUrl = isMobileApp ? `/auth/mobile/callback` : "/dashboard";
 
-      await signIn(provider, {
+      console.log("🔐 サインイン開始", {
+        provider,
+        isMobileApp,
         callbackUrl,
-        redirect: true,
       });
+
       logWithContext("info", `SignIn initiated with ${provider}`, {
         provider,
         isMobileApp,
-        deviceId,
+        callbackUrl,
       });
+
+      const result = await signIn(provider, {
+        callbackUrl,
+        redirect: true,
+      });
+
+      console.log("🔍 signIn result:", result);
     } catch (error) {
-      console.error("Sign in error:", error);
+      console.error("❌ Sign in error:", error);
       logWithContext("error", "Sign in error", {
         provider,
         isMobileApp,
-        deviceId,
-        error,
+        error: String(error),
       });
       setIsLoading(false);
       setActiveProvider(null);
