@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { logWithContext } from "@/lib/logger/client/logger";
 import { Loader2, Monitor, Shield, Smartphone } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -196,8 +197,21 @@ export function SignInForm({ error, isMobileApp, deviceId }: SignInFormProps) {
         callbackUrl,
         redirect: true,
       });
+      logWithContext("info", `SignIn initiated with ${provider}`, {
+        source: "web_app",
+        provider,
+        isMobileApp,
+        deviceId,
+      });
     } catch (error) {
       console.error("Sign in error:", error);
+      logWithContext("error", "Sign in error", {
+        source: "web_app",
+        provider,
+        isMobileApp,
+        deviceId,
+        error,
+      });
       setIsLoading(false);
       setActiveProvider(null);
     }
