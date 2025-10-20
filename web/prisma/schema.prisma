@@ -360,13 +360,13 @@ model PlanChangeHistory {
 }
 
 enum ProviderKey {
-  CLAUDE
-  GEMINI
-  GEMINI_PRO
-  GPT
-  GROQ
-  MISTRAL
-  XAI
+  GEMINI20
+  GEMINI25
+  GEMINI25PRO
+  GPT41
+  GPT5
+  CLAUDE_H
+  CLAUDE_S
   OFFLINE
 }
 
@@ -384,6 +384,7 @@ model Tarotist {
   accentColor      String    // 占い師のアクセント色（16進数カラーコード）
   avatarUrl   String?
   provider    ProviderKey?   // 生成AIプロバイダー(将来的には人(null or PRO)も？)
+  model       String?    // 使用モデル名（例："gpt-4-turbo", "claude-2"など）
   cost        String?    // 占い師の料金 "1回500円"など
   quality     Int?       @default(1) // 占い師の品質スコア（1-5の範囲）
   createdAt   DateTime  @default(now())

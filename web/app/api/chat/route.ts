@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
-import { groq } from "@ai-sdk/groq";
+import { vertex } from "@ai-sdk/google-vertex";
 import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import {
@@ -12,9 +12,13 @@ import {
 
 // プロバイダマッピング
 const providers = {
-  groq: groq("llama-3.3-70b-versatile"),
-  openai: openai("gpt-5"),
-  anthropic: anthropic("claude-sonnet-4-20250514"),
+  gemini20: vertex("gemini-2.0-flash"),
+  gemini25: vertex("gemini-2.5-flash"),
+  gemini25pro: vertex("gemini-2.5-pro"),
+  claude_h: anthropic("claude-haiku-4-5"),
+  gpt41: openai("gpt-4.1"),
+  gpt5: openai("gpt-5"),
+  claude_s: anthropic("claude-sonnet-4-5"),
 };
 
 export async function POST(req: Request) {
@@ -101,6 +105,7 @@ export async function POST(req: Request) {
     system,
     provider,
   });
+
   const result = streamText({
     model: providers[provider as keyof typeof providers],
     messages: convertToModelMessages(messages),

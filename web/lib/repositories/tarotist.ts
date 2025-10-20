@@ -3,6 +3,7 @@ import type {
   TarotistInput,
   TarotistWithPlanCode,
 } from "@/../shared/lib/types";
+import { convertToPrismaProviderKey } from "../utils/prisma";
 import { BaseRepository } from "./base";
 
 export class TarotistRepository extends BaseRepository {
@@ -19,7 +20,7 @@ export class TarotistRepository extends BaseRepository {
         secondaryColor: tarotist.secondaryColor,
         accentColor: tarotist.accentColor,
         avatarUrl: tarotist.avatarUrl,
-        provider: tarotist.provider,
+        provider: convertToPrismaProviderKey(tarotist.provider!),
         cost: tarotist.cost,
         quality: tarotist.quality,
         planId: tarotist.planId,
@@ -33,9 +34,10 @@ export class TarotistRepository extends BaseRepository {
   async createTarotistWithPlanCode(
     tarotist: TarotistWithPlanCode
   ): Promise<Tarotist> {
-    const { planCode, ...rest } = tarotist;
+    const { provider, planCode, ...rest } = tarotist;
     return await this.db.tarotist.create({
       data: {
+        provider: convertToPrismaProviderKey(provider!),
         ...rest,
         plan: { connect: { code: planCode } },
       },
@@ -73,12 +75,15 @@ export class TarotistRepository extends BaseRepository {
     soft: boolean = true
   ): Promise<Tarotist> {
     // planプロパティを適切な形式に変換
-    const { planId, plan, ...rest } = data;
+    const { provider, planId, plan, ...rest } = data;
     console.log(planId, plan);
 
     return await this.db.tarotist.update({
       where: { id, ...(soft ? { deletedAt: null } : {}) },
       data: {
+        ...(provider != null
+          ? { provider: { set: convertToPrismaProviderKey(provider) } }
+          : {}),
         ...(rest as Omit<
           Tarotist,
           | "id"

@@ -302,13 +302,13 @@ export type PlanChangeHistory = {
 };
 
 export type ProviderKey =
-  | "GROQ"
-  | "GEMINI"
-  | "MISTRAL"
-  | "GEMINI_PRO"
-  | "GPT"
-  | "XAI"
-  | "CLAUDE"
+  | "GEMINI20"
+  | "GEMINI25"
+  | "GEMINI25PRO"
+  | "GPT41"
+  | "GPT5"
+  | "CLAUDE_H"
+  | "CLAUDE_S"
   | "OFFLINE";
 
 // タロット占い師モデル
@@ -325,6 +325,7 @@ export type Tarotist = {
   accentColor: string; // 占い師のアクセント色（16進数カラーコード）
   avatarUrl?: string | null;
   provider?: ProviderKey | null; // 生成AIプロバイダー(将来的には人(null)も？)
+  model?: string | null; // 使用モデル名
   cost?: string | null; // 占いコスト（APIコスト目安）
   quality?: number | null; // 占いの質（５段階評価）
   createdAt: Date;
