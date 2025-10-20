@@ -14,12 +14,12 @@ import fs from "fs";
 import path from "path";
 import {
   BaseRepository,
+  masterConfigRepository,
   planRepository,
   spreadRepository,
   tarotistRepository,
   tarotRepository,
 } from "../repositories";
-import { masterConfigRepository } from "../repositories/master";
 
 // SpreadデータのCSVインターフェース
 type SpreadCsv = SpreadInput & {

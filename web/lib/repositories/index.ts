@@ -4,6 +4,7 @@ export * from "./chat";
 export * from "./client";
 export * from "./database";
 export * from "./favorite";
+export * from "./master";
 export * from "./plan";
 export * from "./reading";
 export * from "./spread";

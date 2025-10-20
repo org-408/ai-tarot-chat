@@ -5,6 +5,7 @@ import type {
   MasterDataUpdateResponse,
   Plan,
 } from "../../../../shared/lib/types";
+import { DEFAULT_MASTER_DATA } from "../../assets/master-data";
 import { storeRepository } from "../../lib/repositories/store";
 import { logWithContext } from "../logger/logger";
 import { masterService } from "../services/master";
@@ -65,12 +66,12 @@ export const useMasterStore = create<MasterState>()(
             spreadsCount: data.spreads?.length || 0,
           });
         } catch (error) {
-          const err = error instanceof Error ? error : new Error(String(error));
-          set({ isLoading: false, error: err, isReady: true });
-          logWithContext("error", "[MasterStore] Initialization failed", {
-            error,
+          // フォールバック: バンドルデータ使用
+          console.warn("Using bundled master data", error);
+          set({
+            masterData: DEFAULT_MASTER_DATA as unknown as MasterData,
+            isReady: true,
           });
-          throw err;
         }
       },
 
