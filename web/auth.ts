@@ -64,12 +64,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async redirect({ url, baseUrl }) {
+      // ⭐ デバッグログ追加（サーバーログに出力）
+      console.log("🔀 redirect callback called", {
+        url,
+        baseUrl,
+        urlStartsWithSlash: url.startsWith("/"),
+        urlStartsWithBase: url.startsWith(baseUrl),
+      });
+
+      logWithContext("info", "Redirect callback", {
+        url,
+        baseUrl,
+      });
+
       // callbackUrl が指定されている場合はそれを優先
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      if (url.startsWith(baseUrl)) return url;
+      if (url.startsWith("/")) {
+        const result = `${baseUrl}${url}`;
+        console.log("✅ Redirecting to (relative path):", result);
+        logWithContext("info", "Redirect decision: relative path", {
+          result,
+        });
+        return result;
+      }
+
+      if (url.startsWith(baseUrl)) {
+        console.log("✅ Redirecting to (absolute URL):", url);
+        logWithContext("info", "Redirect decision: absolute URL", { url });
+        return url;
+      }
 
       // それ以外はデフォルト
-      return `${baseUrl}/dashboard`;
+      const defaultUrl = `${baseUrl}/dashboard`;
+      console.log("⚠️ Redirecting to (default):", defaultUrl);
+      logWithContext("info", "Redirect decision: default", { defaultUrl });
+      return defaultUrl;
     },
   },
 
