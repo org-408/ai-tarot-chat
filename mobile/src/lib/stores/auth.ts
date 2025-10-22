@@ -4,7 +4,7 @@ import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
 import { logWithContext } from "../logger/logger";
-import { HttpError, isNetworkError } from "../utils/apiClient";
+import { HttpError, isNetworkError } from "../utils/api-client";
 
 interface AuthState {
   // 状態

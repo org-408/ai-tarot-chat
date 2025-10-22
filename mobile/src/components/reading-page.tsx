@@ -13,10 +13,10 @@ import type {
 import { useClientStore } from "../lib/stores/client";
 import { TEMP_CARDS } from "../lib/utils/cards";
 import type { ViewModeType } from "../types";
-import { ChatPanel } from "./ChatPanel";
-import ProfileDialog from "./ProfileDialog";
-import ShuffleDialog from "./ShuffleDialog";
-import SpreadViewerSwipe from "./SpreadViewerSwipe";
+import { ChatPanel } from "./chat-panel";
+import ProfileDialog from "./profile-dialog";
+import ShuffleDialog from "./shuffle-dialog";
+import SpreadViewerSwipe from "./spread-viewer-swipe";
 
 interface ReadingData {
   tarotist: Tarotist;

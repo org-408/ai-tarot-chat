@@ -6,7 +6,7 @@ import type {
   Tarotist,
 } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-import ProfileDialog from "./ProfileDialog";
+import ProfileDialog from "./profile-dialog";
 
 interface TarotistPageProps {
   payload: AppJWTPayload;

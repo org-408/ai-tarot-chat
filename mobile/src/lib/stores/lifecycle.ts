@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
-import { HttpError, isNetworkError } from "../utils/apiClient";
+import { HttpError, isNetworkError } from "../utils/api-client";
 import { useAuthStore } from "./auth";
 
 // ✅ 初期化ステップの定義（デバッグ用）

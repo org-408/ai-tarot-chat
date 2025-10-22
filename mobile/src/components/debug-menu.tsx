@@ -1,12 +1,12 @@
 import JsonView from "@uiw/react-json-view";
 import type { Plan } from "../../../shared/lib/types";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useClient } from "../lib/hooks/useClient";
-import { useLifecycle } from "../lib/hooks/useLifecycle";
-import { useMaster } from "../lib/hooks/useMaster";
-import { useSubscription } from "../lib/hooks/useSubscription";
+import { useAuth } from "../lib/hooks/use-auth";
+import { useClient } from "../lib/hooks/use-client";
+import { useLifecycle } from "../lib/hooks/use-lifecycle";
+import { useMaster } from "../lib/hooks/use-master";
+import { useSubscription } from "../lib/hooks/use-subscription";
 import type { PageType, UserPlan } from "../types";
-import { DebugResetButton } from "./DebugResetButton";
+import { DebugResetButton } from "./debug-reset-button";
 
 interface DebugMenuProps {
   devMenuOpen: boolean;

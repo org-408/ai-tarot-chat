@@ -11,7 +11,7 @@ import type {
   UsageStats,
 } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-import ScrollableRadioSelector from "./ScrollableRadioSelector";
+import ScrollableRadioSelector from "./scrollable-radio-selector";
 
 interface SalonPageProps {
   payload: AppJWTPayload;
