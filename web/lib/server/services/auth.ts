@@ -6,16 +6,18 @@ import {
   type TicketData,
 } from "@/../shared/lib/types";
 import { auth, signOut } from "@/auth";
-import { authRepository } from "@/lib/repositories/auth";
-import { BaseRepository } from "@/lib/repositories/base";
-import { clientRepository } from "@/lib/repositories/client";
+import { logWithContext } from "@/lib/server/logger/logger";
+import {
+  authRepository,
+  BaseRepository,
+  clientRepository,
+  planRepository,
+} from "@/lib/server/repositories";
+import { clientService } from "@/lib/server/services";
 import { decodeJWT, generateJWT } from "@/lib/utils/jwt";
 import { createHash } from "crypto";
 import { importPKCS8, SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
-import { logWithContext } from "../logger/logger";
-import { planRepository } from "../repositories";
-import { clientService } from "./client";
 
 const JWT_SECRET = process.env.AUTH_SECRET;
 if (!JWT_SECRET) {

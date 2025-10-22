@@ -1,10 +1,10 @@
+import { logWithContext } from "@/lib/server/logger/logger";
+import { clientService } from "@/lib/server/services/client";
 import { prisma } from "@/prisma/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Google from "next-auth/providers/google";
-import { logWithContext } from "./lib/logger/logger";
-import { clientService } from "./lib/services/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),

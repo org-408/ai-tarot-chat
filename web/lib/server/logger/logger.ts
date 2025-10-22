@@ -1,6 +1,6 @@
+import { logService } from "@/lib/server/services/log";
 import winston from "winston";
 import Transport from "winston-transport";
-import { logService } from "../services/log";
 
 // ログのメタデータ型定義
 type LogMetadata = {

@@ -1,6 +1,6 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
-import { clientService } from "@/lib/services/client";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
+import { clientService } from "@/lib/server/services/client";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {

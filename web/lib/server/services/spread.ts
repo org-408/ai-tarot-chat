@@ -3,8 +3,7 @@ import type {
   SpreadInput,
   SpreadWithLevelPlanCategories,
 } from "@/../shared/lib/types";
-import { spreadRepository } from "../repositories";
-import { BaseRepository } from "../repositories/base";
+import { BaseRepository, spreadRepository } from "@/lib/server/repositories";
 
 export class SpreadService {
   // -------- Spread操作 --------

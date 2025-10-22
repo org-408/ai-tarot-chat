@@ -1,5 +1,5 @@
 import type { ChatMessage } from "@/../shared/lib/types";
-import { convertFromPrismaProviderKey } from "../utils/prisma";
+import { convertFromPrismaProviderKey } from "../../utils/prisma";
 import { BaseRepository } from "./base";
 
 export class ChatRepository extends BaseRepository {

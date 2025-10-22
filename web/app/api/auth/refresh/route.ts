@@ -1,5 +1,5 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 // NOTE: mobile/web 共通

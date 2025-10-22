@@ -1,5 +1,5 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
 import { NextResponse } from "next/server";
 
 // クリーンアップAPI (1時間に1回)

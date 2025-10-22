@@ -1,5 +1,5 @@
 // apps/web/lib/scripts/generate-master-data.ts
-import { masterService } from "@/lib/services/master";
+import { masterService } from "@/lib/server/services/master";
 import fs from "fs";
 import path from "path";
 

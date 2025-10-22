@@ -1,9 +1,11 @@
 import type { Client, UsageStats } from "@/../shared/lib/types";
-import { logWithContext } from "@/lib/logger/logger";
-import { BaseRepository } from "@/lib/repositories/base";
-import { clientRepository } from "@/lib/repositories/client";
-import { planRepository } from "../repositories";
-import { isSameDayJST } from "../utils/date";
+import { logWithContext } from "@/lib/server/logger/logger";
+import {
+  BaseRepository,
+  clientRepository,
+  planRepository,
+} from "@/lib/server/repositories";
+import { isSameDayJST } from "@/lib/utils/date";
 
 export class ClientService {
   /**

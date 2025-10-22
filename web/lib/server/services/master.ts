@@ -2,12 +2,14 @@ import type {
   MasterData,
   MasterDataUpdateResponse,
 } from "@/../shared/lib/types";
-import { masterConfigRepository } from "@/lib/repositories/master";
-import { tarotistService } from "@/lib/services/tarotist";
-import { logWithContext } from "../logger/logger";
-import { planService } from "./plan";
-import { spreadService } from "./spread";
-import { tarotService } from "./tarot";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { masterConfigRepository } from "@/lib/server/repositories";
+import {
+  planService,
+  spreadService,
+  tarotistService,
+  tarotService,
+} from "@/lib/server/services";
 
 export class MasterService {
   /**

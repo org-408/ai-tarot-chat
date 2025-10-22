@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 // Apple の client_secret(JWT) を作るユーティリティ（自作）
-import { authService } from "@/lib/services/auth";
+import { authService } from "@/lib/server/services/auth";
 
 type Provider = "google" | "apple";
 

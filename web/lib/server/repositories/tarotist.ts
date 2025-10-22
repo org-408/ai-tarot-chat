@@ -3,7 +3,7 @@ import type {
   TarotistInput,
   TarotistWithPlanCode,
 } from "@/../shared/lib/types";
-import { convertToPrismaProviderKey } from "../utils/prisma";
+import { convertToPrismaProviderKey } from "../../utils/prisma";
 import { BaseRepository } from "./base";
 
 export class TarotistRepository extends BaseRepository {

@@ -1,7 +1,9 @@
 import type { Reading } from "@/../shared/lib/types";
-import { clientRepository } from "@/lib/repositories/client";
-import { planRepository } from "@/lib/repositories/plan";
-import { readingRepository } from "@/lib/repositories/reading";
+import {
+  clientRepository,
+  planRepository,
+  readingRepository,
+} from "@/lib/server/repositories";
 
 export class ReadingService {
   /**
