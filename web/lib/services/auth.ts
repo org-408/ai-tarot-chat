@@ -23,6 +23,8 @@ if (!JWT_SECRET) {
   throw new Error("AUTH_SECRET environment variable is required");
 }
 
+const TOKEN_KEY = "access_token";
+
 export class AuthService {
   /**
    * デバイス登録・再登録(Tauri起動時)
@@ -509,23 +511,31 @@ export class AuthService {
 
   /**
    * 期限切れ・OAuth認証時は認証期限切れの検出とJWTペイロード更新
+   * mobile/web 両対応
    */
   async detectTokenExpirationAndRefresh(request: NextRequest): Promise<string> {
     // エラー処理は route 側で行う
     logWithContext("info", "🔑 Detecting token expiration and refreshing...");
     const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      throw new Error("認証が必要です");
+    let token: string | undefined;
+    if (authHeader) {
+      // 1.mobile 検証
+      if (!authHeader?.startsWith("Bearer ")) {
+        throw new Error("認証が必要です");
+      }
+      token = authHeader.substring(7);
+    } else {
+      // 2.web 検証
+      token = request.cookies.get("access_token")?.value;
+      if (!token) {
+        throw new Error("認証が必要です");
+      }
     }
 
     logWithContext("info", "🔑 decodeJWT token:", {
-      token: authHeader.substring(7),
+      token,
     });
-    const payload = await decodeJWT<AppJWTPayload>(
-      authHeader.substring(7),
-      JWT_SECRET,
-      true
-    );
+    const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET, true);
 
     // 期限切れでもpayloadを取得できるため、ここでログ出力
     logWithContext("info", "🔑 Token payload (not check expiration):", {
@@ -624,6 +634,32 @@ export class AuthService {
       }
     }
     return body;
+  }
+
+  /**
+   * トークンとCookieをセットしたレスポンスを返す (mobile/web対応)
+   */
+  respondWithTokenAndCookie(token: string): NextResponse {
+    const res = NextResponse.json({ token });
+    // web対応: Cookieに新しいトークンをセット
+    res.cookies.set(TOKEN_KEY, token, {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 60 * 60,
+      sameSite: "lax",
+    });
+    return res;
+  }
+
+  /**
+   * トークンは残し、Cookieをクリアしたレスポンスを返す (mobile/web対応)
+   */
+  respondWithTokenAndClearedCookie(token: string): NextResponse {
+    const res = NextResponse.json({ token });
+    // web対応: Cookieをクリア
+    res.cookies.delete(TOKEN_KEY);
+    return res;
   }
 
   async createAppleClientSecret(opts: {

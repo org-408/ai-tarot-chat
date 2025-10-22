@@ -29,9 +29,7 @@ export async function POST(request: NextRequest) {
     logWithContext("info", `✅ チケット交換完了`, { token });
 
     // 既存パターンに合わせたレスポンス
-    return Response.json({
-      token,
-    });
+    return Response.json({ token });
   } catch (error) {
     logWithContext("error", "❌ チケット交換エラー", { error });
 

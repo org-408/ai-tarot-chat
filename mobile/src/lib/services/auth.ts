@@ -14,13 +14,8 @@ if (!JWT_SECRET) {
 }
 
 export class AuthService {
-  private readonly KEYS = {
-    DEVICE_ID: "deviceId",
-    ACCESS_TOKEN: "accessToken",
-    CLIENT_ID: "clientId",
-    USER_ID: "userId",
-  } as const;
-
+  private readonly TOKEN_KEY = "access_token";
+  private readonly DEVICE_ID_KEY = "device_id";
   // ============================================
   // 公開メソッド: Zustand Store から呼ばれる
   // ============================================
@@ -35,12 +30,10 @@ export class AuthService {
     clientId: string | null;
     userId: string | null;
   }> {
-    const [token, deviceId, clientId, userId] = await Promise.all([
-      storeRepository.get<string>(this.KEYS.ACCESS_TOKEN),
-      storeRepository.get<string>(this.KEYS.DEVICE_ID),
-      storeRepository.get<string>(this.KEYS.CLIENT_ID),
-      storeRepository.get<string>(this.KEYS.USER_ID),
-    ]);
+    const token = await storeRepository.get<string>(this.TOKEN_KEY);
+    const payload = await this.decodeAccessToken(token || "");
+    const { deviceId, clientId, user } = payload;
+    const userId = user?.id || null;
 
     return { token, deviceId, clientId, userId };
   }
@@ -99,7 +92,7 @@ export class AuthService {
       }
 
       const { token } = result;
-      const payload = await this.saveAccessTokenWithDecode(token);
+      const payload = await this.decodeAccessToken(token);
 
       logWithContext("info", "[AuthService] Device registration successful", {
         clientId: payload.clientId,
@@ -250,7 +243,7 @@ export class AuthService {
       }
 
       const { token } = result;
-      const payload = await this.saveAccessTokenWithDecode(token);
+      const payload = await this.decodeAccessToken(token);
 
       if (
         !payload ||
@@ -289,7 +282,7 @@ export class AuthService {
         "/api/auth/refresh"
       );
 
-      const payload = await this.saveAccessTokenWithDecode(token);
+      const payload = await this.decodeAccessToken(token);
 
       logWithContext("info", "[AuthService] Token refresh successful", {
         clientId: payload.clientId,
@@ -317,7 +310,7 @@ export class AuthService {
         {}
       );
 
-      const payload = await this.saveAccessTokenWithDecode(token);
+      const payload = await this.decodeAccessToken(token);
       logWithContext("info", "[AuthService] Server signout successful", {
         clientId: payload.clientId,
       });
@@ -342,11 +335,11 @@ export class AuthService {
   // ============================================
 
   private async ensureDeviceId(): Promise<string> {
-    let deviceId = await storeRepository.get<string>(this.KEYS.DEVICE_ID);
+    let deviceId = await storeRepository.get<string>(this.DEVICE_ID_KEY);
 
     if (!deviceId) {
       deviceId = crypto.randomUUID();
-      await storeRepository.set(this.KEYS.DEVICE_ID, deviceId);
+      await storeRepository.set(this.DEVICE_ID_KEY, deviceId);
       logWithContext("info", "[AuthService] New device ID created");
     }
 
@@ -354,40 +347,17 @@ export class AuthService {
   }
 
   async getDeviceId(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.DEVICE_ID);
+    return await storeRepository.get<string>(this.DEVICE_ID_KEY);
   }
 
-  async getAccessToken(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.ACCESS_TOKEN);
-  }
-
-  async saveAccessToken(token: string): Promise<void> {
-    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-  }
-
-  async saveAccessTokenWithDecode(token: string): Promise<AppJWTPayload> {
+  async decodeAccessToken(token: string): Promise<AppJWTPayload> {
     const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
 
     if (!payload || !payload.deviceId) {
       throw new Error("不正なトークンが返却されました");
     }
 
-    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-    await storeRepository.set(this.KEYS.DEVICE_ID, payload.deviceId);
-    await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
-
-    if (payload.user?.id) {
-      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
-    }
     return payload;
-  }
-
-  async getClientId(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.CLIENT_ID);
-  }
-
-  async getUserId(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.USER_ID);
   }
 }
 
