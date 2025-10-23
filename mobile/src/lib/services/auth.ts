@@ -5,7 +5,7 @@ import { Device } from "@capacitor/device";
 import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
-import { apiClient } from "../utils/apiClient";
+import { apiClient } from "../utils/api-client";
 import { decodeJWT } from "../utils/jwt";
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;

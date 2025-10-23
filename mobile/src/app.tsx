@@ -6,18 +6,18 @@ import type {
   Spread,
   Tarotist,
 } from "../../shared/lib/types";
-import { DebugMenu } from "./components/DebugMenu";
-import Header from "./components/Header";
-import PlansPage from "./components/PlansPage";
-import ReadingPage from "./components/ReadingPage";
-import SalonPage from "./components/SalonPage";
-import SidebarMenu from "./components/SidebarMenu";
-import TarotistPage from "./components/TarotistPage";
-import TarotistSwipePage from "./components/TarotistSwipePage";
-import { useAuth } from "./lib/hooks/useAuth";
-import { useClient } from "./lib/hooks/useClient";
-import { useLifecycle } from "./lib/hooks/useLifecycle";
-import { useMaster } from "./lib/hooks/useMaster";
+import { DebugMenu } from "./components/debug-menu";
+import Header from "./components/header";
+import PlansPage from "./components/plans-page";
+import ReadingPage from "./components/reading-page";
+import SalonPage from "./components/salon-page";
+import SidebarMenu from "./components/sidebar-menu";
+import TarotistPage from "./components/tarotist-page";
+import TarotistSwipePage from "./components/tarotist-swipe-page";
+import { useAuth } from "./lib/hooks/use-auth";
+import { useClient } from "./lib/hooks/use-client";
+import { useLifecycle } from "./lib/hooks/use-lifecycle";
+import { useMaster } from "./lib/hooks/use-master";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan, ViewModeType } from "./types";
 

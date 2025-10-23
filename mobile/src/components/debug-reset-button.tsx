@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useResetApp } from "../lib/hooks/useResetApp";
+import { useResetApp } from "../lib/hooks/use-reset-app";
 
 /**
  * デバッグ用リセットボタンコンポーネント

@@ -12,8 +12,8 @@ import type {
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
-import { MessageContent } from "./MessageContent";
-import { RevealPromptPanel } from "./RevealPromptPanel";
+import { MessageContent } from "./message-content";
+import { RevealPromptPanel } from "./reveal-prompt-panel";
 
 interface ChatPanelProps {
   currentPlan: Plan;

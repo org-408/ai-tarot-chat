@@ -1,5 +1,5 @@
 import type { Plan } from "@/../shared/lib/types";
-import { planRepository } from "@/lib/repositories/plan";
+import { planRepository } from "@/lib/server/repositories";
 
 export class PlanService {
   /**

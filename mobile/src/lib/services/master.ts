@@ -3,7 +3,7 @@ import type {
   MasterDataUpdateResponse,
 } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
-import { apiClient } from "../utils/apiClient";
+import { apiClient } from "../utils/api-client";
 
 export class MasterService {
   /**

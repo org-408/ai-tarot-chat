@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DebugMenu } from "./components/DebugMenu";
+import { DebugMenu } from "./components/debug-menu";
 
 type TarotSplashScreenProps = {
   message?: string;

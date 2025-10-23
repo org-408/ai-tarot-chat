@@ -1,4 +1,4 @@
-import { logWithContext } from "../logger/client/logger";
+import { logWithContext } from "@/lib/client/logger/logger";
 
 const BFF_URL = process.env.NEXT_PUBLIC_BFF_URL || "http://localhost:3000";
 

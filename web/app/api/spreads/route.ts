@@ -1,5 +1,5 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { spreadService } from "@/lib/services/spread";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { spreadService } from "@/lib/server/services/spread";
 import { NextRequest, NextResponse } from "next/server";
 
 // スプレッド一覧取得

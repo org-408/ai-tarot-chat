@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { resetAppData } from "../utils/resetApp";
+import { resetAppData } from "../utils/reset-app";
 
 /**
  * アプリデータリセットフック

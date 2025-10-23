@@ -7,8 +7,8 @@ import type {
   TarotCard,
 } from "../../../shared/lib/types";
 import type { ViewModeType } from "../types";
-import CarouselView from "./CarouselView";
-import GridView from "./GridView";
+import CarouselView from "./carousel-view";
+import GridView from "./grid-view";
 
 const CARD_ASPECT = 300 / 527;
 

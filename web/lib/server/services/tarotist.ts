@@ -3,7 +3,7 @@ import type {
   TarotistInput,
   TarotistWithPlanCode,
 } from "@/../shared/lib/types";
-import { tarotistRepository } from "../repositories/tarotist";
+import { tarotistRepository } from "@/lib/server/repositories";
 
 export class TarotistService {
   /**

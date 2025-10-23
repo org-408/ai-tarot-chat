@@ -1,4 +1,4 @@
-import { logWithContext } from "@/lib/logger/logger";
+import { logWithContext } from "@/lib/server/logger/logger";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
 

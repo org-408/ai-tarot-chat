@@ -1,4 +1,4 @@
-import { logWithContext } from "@/lib/logger/logger";
+import { logWithContext } from "@/lib/server/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { openai } from "@ai-sdk/openai";

@@ -10,8 +10,6 @@ import type {
   TarotDeckInput,
   TarotistWithPlanCode,
 } from "@/../shared/lib/types";
-import fs from "fs";
-import path from "path";
 import {
   BaseRepository,
   masterConfigRepository,
@@ -19,7 +17,9 @@ import {
   spreadRepository,
   tarotistRepository,
   tarotRepository,
-} from "../repositories";
+} from "@/lib/server/repositories";
+import fs from "fs";
+import path from "path";
 
 // SpreadデータのCSVインターフェース
 type SpreadCsv = SpreadInput & {

@@ -14,47 +14,6 @@ import { MdAdd, MdContentCopy, MdSave } from "react-icons/md";
 const GRID_SIZE = [10, 10];
 
 export default function SpreadsPage() {
-  // デモ用データ（ケルト十字・恋愛三角）
-  // const initialSpreads = useMemo<Spread[]>(
-  //   () => [
-  //     {
-  //       id: "1",
-  //       name: "ケルト十字",
-  //       category: "総合",
-  //       level: "最上級",
-  //       plan: "プレミアム",
-  //       guide: "中央クロスから過去・未来・内外・結末へ広げて読む。",
-  //       updatedAt: "2025-09-10",
-  //       cells: [
-  //         { id: "1", x: 1, y: 1, vLabel: "可能な未来", vOrder: 1 },
-  //         { id: "2", x: 1, y: 1, hLabel: "可能な未来", hOrder: 2 },
-  //         { id: "3", x: 1, y: 2, vLabel: "遠い過去", vOrder: 3 },
-  //         { id: "4", x: 0, y: 1, vLabel: "近い過去", vOrder: 4 },
-  //         { id: "5", x: 1, y: 0, vLabel: "可能な未来", vOrder: 5 },
-  //         { id: "6", x: 2, y: 1, vLabel: "近い未来", vOrder: 6 },
-  //         { id: "7", x: 4, y: 3, vLabel: "あなたのアプローチ", vOrder: 7 },
-  //         { id: "8", x: 4, y: 2, vLabel: "周囲の影響", vOrder: 8 },
-  //         { id: "9", x: 4, y: 1, vLabel: "内面・感情", vOrder: 9 },
-  //         { id: "10", x: 4, y: 0, vLabel: "最終結果", vOrder: 10 },
-  //       ],
-  //     },
-  //     {
-  //       id: "2",
-  //       name: "恋愛三角",
-  //       category: "恋愛",
-  //       level: "中級者",
-  //       plan: "スタンダード",
-  //       guide: "心の状態／現在の愛／未来の愛の三点を結ぶ。",
-  //       updatedAt: "2025-09-12",
-  //       cells: [
-  //         { id: "11", x: 0, y: 2, vLabel: "心の状態", vOrder: 1 },
-  //         { id: "12", x: 2, y: 2, vLabel: "現在の愛", vOrder: 2 },
-  //         { id: "13", x: 1, y: 0, vLabel: "未来の愛", vOrder: 3 },
-  //       ],
-  //     },
-  //   ],
-  //   []
-  // );
   const { spreads, createSpread } = useSpreads();
 
   // const [rows, setRows] = useState<Spread[]>(initialSpreads);

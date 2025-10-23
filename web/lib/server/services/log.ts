@@ -1,7 +1,9 @@
-import { Log } from "../../../shared/lib/types";
-import { clientRepository } from "../repositories";
-import { BaseRepository } from "../repositories/base";
-import { logRepository } from "../repositories/log";
+import { Log } from "@/../shared/lib/types";
+import {
+  BaseRepository,
+  clientRepository,
+  logRepository,
+} from "@/lib/server/repositories";
 
 export class LogService {
   async createLog(log: Omit<Log, "id" | "createdAt">): Promise<string> {

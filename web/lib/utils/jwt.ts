@@ -1,5 +1,5 @@
+import { logWithContext } from "@/lib/server/logger/logger";
 import { SignJWT, jwtVerify } from "jose";
-import { logWithContext } from "../logger/logger";
 
 const ALG = "HS256";
 const JWT_SECRET = "PkqVjlmc0fU69KYm4lTqTESJ73aoGZKPo8gFKbePE3Y="; // 環境変数などで管理推奨

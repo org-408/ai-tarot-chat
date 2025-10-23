@@ -6,10 +6,10 @@ import type {
   Tarotist,
 } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
-import ProfileDialog from "./ProfileDialog";
+import ProfileDialog from "./profile-dialog";
 // 新しいコンポーネントをインポート
-import TarotistCarouselEmbla from "./TarotistCarouselEmbla";
-import TarotistCarouselStack from "./TarotistCarouselStack";
+import TarotistCarouselEmbla from "./tarotist-carousel-embla";
+import TarotistCarouselStack from "./tarotist-carousel-stack";
 
 interface TarotistSwipePageProps {
   payload: AppJWTPayload;

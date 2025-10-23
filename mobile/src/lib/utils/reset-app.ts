@@ -4,7 +4,7 @@ import { filesystemRepository } from "../repositories/filesystem";
 import { storeRepository } from "../repositories/store";
 import { useAuthStore } from "../stores/auth";
 import { useLifecycleStore } from "../stores/lifecycle";
-import { apiClient } from "./apiClient";
+import { apiClient } from "./api-client";
 
 /**
  * アプリの全ストアとキャッシュをリセットする

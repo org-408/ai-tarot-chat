@@ -3,7 +3,7 @@ import type {
   TarotDeck,
   TarotDeckInput,
 } from "@/../shared/lib/types";
-import { tarotRepository } from "../repositories";
+import { tarotRepository } from "@/lib/server/repositories";
 
 export class TarotService {
   /**
