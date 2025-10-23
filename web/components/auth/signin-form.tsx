@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { logWithContext } from "@/lib/client/logger/client/logger";
+import { logWithContext } from "@/lib/client/logger/logger";
 import { Loader2, Monitor, Shield, Smartphone } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";

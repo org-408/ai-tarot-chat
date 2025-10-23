@@ -1,5 +1,5 @@
 "use client";
-import { logWithContext } from "@/lib/client/logger/client/logger";
+import { logWithContext } from "@/lib/client/logger/logger";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
