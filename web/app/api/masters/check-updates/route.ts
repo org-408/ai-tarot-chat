@@ -1,6 +1,6 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
-import { masterService } from "@/lib/services/master";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
+import { masterService } from "@/lib/server/services/master";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

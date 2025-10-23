@@ -1,7 +1,7 @@
 import type { UsageStats } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
-import { apiClient } from "../utils/apiClient";
+import { apiClient } from "../utils/api-client";
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 if (!JWT_SECRET) {

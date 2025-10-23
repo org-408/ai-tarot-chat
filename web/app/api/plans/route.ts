@@ -1,6 +1,6 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
-import { planService } from "@/lib/services/plan";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
+import { planService } from "@/lib/server/services/plan";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

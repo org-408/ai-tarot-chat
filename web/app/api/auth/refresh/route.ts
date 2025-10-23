@@ -1,6 +1,8 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
 import { NextRequest, NextResponse } from "next/server";
+
+// NOTE: mobile/web 共通
 
 export async function POST(request: NextRequest) {
   logWithContext(
@@ -16,7 +18,7 @@ export async function POST(request: NextRequest) {
     const token = await authService.detectTokenExpirationAndRefresh(request);
     logWithContext("info", `✅ セッション検証完了`, { token });
 
-    return NextResponse.json({ token });
+    return authService.respondWithTokenAndCookie(token);
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "session validation failed";

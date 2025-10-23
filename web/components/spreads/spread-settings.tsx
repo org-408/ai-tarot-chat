@@ -8,6 +8,7 @@ import { MdDelete, MdUpdate } from "react-icons/md";
 export function SpreadSettings({
   selected,
   cells,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpsert,
   onRemove,
   onSave,

@@ -1,5 +1,5 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -29,9 +29,7 @@ export async function POST(request: NextRequest) {
     logWithContext("info", `✅ チケット交換完了`, { token });
 
     // 既存パターンに合わせたレスポンス
-    return Response.json({
-      token,
-    });
+    return Response.json({ token });
   } catch (error) {
     logWithContext("error", "❌ チケット交換エラー", { error });
 

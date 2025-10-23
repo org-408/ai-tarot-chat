@@ -5,22 +5,18 @@ import { Device } from "@capacitor/device";
 import type { AppJWTPayload } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
-import { apiClient } from "../utils/apiClient";
+import { apiClient } from "../utils/api-client";
 import { decodeJWT } from "../utils/jwt";
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 if (!JWT_SECRET) {
+  logWithContext("error", "VITE_AUTH_SECRET environment variable is required");
   throw new Error("VITE_AUTH_SECRET environment variable is required");
 }
 
 export class AuthService {
-  private readonly KEYS = {
-    DEVICE_ID: "deviceId",
-    ACCESS_TOKEN: "accessToken",
-    CLIENT_ID: "clientId",
-    USER_ID: "userId",
-  } as const;
-
+  private readonly TOKEN_KEY = "access_token";
+  private readonly DEVICE_ID_KEY = "device_id";
   // ============================================
   // 公開メソッド: Zustand Store から呼ばれる
   // ============================================
@@ -35,12 +31,21 @@ export class AuthService {
     clientId: string | null;
     userId: string | null;
   }> {
-    const [token, deviceId, clientId, userId] = await Promise.all([
-      storeRepository.get<string>(this.KEYS.ACCESS_TOKEN),
-      storeRepository.get<string>(this.KEYS.DEVICE_ID),
-      storeRepository.get<string>(this.KEYS.CLIENT_ID),
-      storeRepository.get<string>(this.KEYS.USER_ID),
-    ]);
+    const token = await storeRepository.get<string>(this.TOKEN_KEY);
+    logWithContext("info", "[AuthService] Retrieving stored token payload", {
+      token,
+    });
+    if (!token) {
+      return { token: null, deviceId: null, clientId: null, userId: null };
+    }
+    const payload = await this.decodeStoredToken(token || "");
+    const { deviceId, clientId, user } = payload;
+    const userId = user?.id || null;
+    logWithContext("info", "[AuthService] Retrieved stored token payload", {
+      deviceId,
+      clientId,
+      userId,
+    });
 
     return { token, deviceId, clientId, userId };
   }
@@ -285,10 +290,10 @@ export class AuthService {
     logWithContext("info", "[AuthService] Token refresh started");
 
     try {
-      const { token } = await apiClient.post<{ token: string }>(
-        "/api/auth/refresh"
-      );
+      // ✅ apiClient.refresh() を呼ぶ
+      const token = await apiClient.refresh();
 
+      // トークン保存とデコード（apiClient.refresh と二重保存になるが許容）
       const payload = await this.saveAccessTokenWithDecode(token);
 
       logWithContext("info", "[AuthService] Token refresh successful", {
@@ -342,11 +347,11 @@ export class AuthService {
   // ============================================
 
   private async ensureDeviceId(): Promise<string> {
-    let deviceId = await storeRepository.get<string>(this.KEYS.DEVICE_ID);
+    let deviceId = await storeRepository.get<string>(this.DEVICE_ID_KEY);
 
     if (!deviceId) {
       deviceId = crypto.randomUUID();
-      await storeRepository.set(this.KEYS.DEVICE_ID, deviceId);
+      await storeRepository.set(this.DEVICE_ID_KEY, deviceId);
       logWithContext("info", "[AuthService] New device ID created");
     }
 
@@ -354,40 +359,20 @@ export class AuthService {
   }
 
   async getDeviceId(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.DEVICE_ID);
-  }
-
-  async getAccessToken(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.ACCESS_TOKEN);
-  }
-
-  async saveAccessToken(token: string): Promise<void> {
-    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
+    return await storeRepository.get<string>(this.DEVICE_ID_KEY);
   }
 
   async saveAccessTokenWithDecode(token: string): Promise<AppJWTPayload> {
+    // トークン保存
+    await storeRepository.set(this.TOKEN_KEY, token);
+    // トークンデコード
     const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
 
     if (!payload || !payload.deviceId) {
       throw new Error("不正なトークンが返却されました");
     }
 
-    await storeRepository.set(this.KEYS.ACCESS_TOKEN, token);
-    await storeRepository.set(this.KEYS.DEVICE_ID, payload.deviceId);
-    await storeRepository.set(this.KEYS.CLIENT_ID, payload.clientId);
-
-    if (payload.user?.id) {
-      await storeRepository.set(this.KEYS.USER_ID, payload.user.id);
-    }
     return payload;
-  }
-
-  async getClientId(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.CLIENT_ID);
-  }
-
-  async getUserId(): Promise<string | null> {
-    return await storeRepository.get<string>(this.KEYS.USER_ID);
   }
 }
 

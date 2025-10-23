@@ -1,5 +1,5 @@
-import { logWithContext } from "@/lib/logger/logger";
-import { authService } from "@/lib/services/auth";
+import { logWithContext } from "@/lib/server/logger/logger";
+import { authService } from "@/lib/server/services/auth";
 
 export async function GET() {
   logWithContext("info", "📍 /api/auth/ticket - チケット発行リクエスト受信", {
