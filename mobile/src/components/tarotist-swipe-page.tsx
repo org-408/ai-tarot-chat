@@ -9,6 +9,7 @@ import type { UserPlan } from "../types";
 import ProfileDialog from "./profile-dialog";
 // 新しいコンポーネントをインポート
 import TarotistCarouselEmbla from "./tarotist-carousel-embla";
+import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 import TarotistCarouselStack from "./tarotist-carousel-stack";
 
 interface TarotistSwipePageProps {
@@ -34,7 +35,9 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   );
 
   // カルーセルタイプの切り替え（テスト用）
-  const [carouselType, setCarouselType] = useState<"embla" | "stack">("embla");
+  const [carouselType, setCarouselType] = useState<
+    "embla" | "stack" | "portrait"
+  >("embla");
 
   const availableTarotists =
     masterData.tarotists!.filter(
@@ -157,10 +160,20 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
         >
           3D Stack版
         </button>
+        <button
+          onClick={() => setCarouselType("portrait")}
+          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+            carouselType === "portrait"
+              ? "bg-purple-500 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
+        >
+          肖像画風
+        </button>
       </div>
 
       {/* カルーセル表示 */}
-      {carouselType === "embla" ? (
+      {carouselType === "embla" && (
         <TarotistCarouselEmbla
           availableTarotists={availableTarotists}
           currentPlan={currentPlan}
@@ -171,11 +184,23 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
           isChangingPlan={isChangingPlan}
           onSelectTarotist={setSelectedTarotist}
         />
-      ) : (
+      )}
+      {carouselType === "stack" && (
         <TarotistCarouselStack
           availableTarotists={availableTarotists}
           currentPlan={currentPlan}
           canUseTarotist={canUseTarotist}
+          getTarotistColor={getTarotistColor}
+          renderStars={renderStars}
+          onChangePlan={handleChangePlan}
+          isChangingPlan={isChangingPlan}
+          onSelectTarotist={setSelectedTarotist}
+        />
+      )}
+      {carouselType === "portrait" && (
+        <TarotistCarouselPortrait
+          availableTarotists={availableTarotists}
+          currentPlan={currentPlan}
           getTarotistColor={getTarotistColor}
           renderStars={renderStars}
           onChangePlan={handleChangePlan}

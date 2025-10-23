@@ -66,12 +66,13 @@ export interface TarotMeaning {
 }
 
 export class SeedService {
+  projectRoot = path.join(process.cwd(), "..");
   /**
    * CSVデータを取得するユーティリティ関数
    * docs フォルダから取得する
    */
   getCSVData(fileName: string, folder: string = "docs"): string[] {
-    const filePath = path.join(__dirname, "..", folder, fileName);
+    const filePath = path.join(this.projectRoot, folder, fileName);
     const data = fs.readFileSync(filePath, "utf-8");
     return data
       .split("\n")
@@ -87,7 +88,7 @@ export class SeedService {
    * @returns パースされたJSONデータ
    */
   getJSONData<T>(fileName: string, folder: string = "docs"): T {
-    const filePath = path.join(__dirname, "..", "..", "..", folder, fileName);
+    const filePath = path.join(this.projectRoot, folder, fileName);
     const data = fs.readFileSync(filePath, "utf-8");
     return JSON.parse(data) as T;
   }
@@ -116,7 +117,7 @@ export class SeedService {
     } = {}
   ): T[] {
     const arrays = options.arrays || ["features", "categories", "tags"];
-    const folder = options.folder || "../../docs";
+    const folder = options.folder || "docs";
     const copies = options.copies || { categories: "category" };
 
     // CSVデータを取得
@@ -482,7 +483,8 @@ export class SeedService {
 
         // 全データのシード完了
         console.log("Database seeding completed.");
-      }
+      },
+      5 * 60 * 1000 // タイムアウト5分
     );
   }
 }
