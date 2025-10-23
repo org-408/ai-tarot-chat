@@ -10,6 +10,7 @@ import { decodeJWT } from "../utils/jwt";
 
 const JWT_SECRET = import.meta.env.VITE_AUTH_SECRET;
 if (!JWT_SECRET) {
+  logWithContext("error", "VITE_AUTH_SECRET environment variable is required");
   throw new Error("VITE_AUTH_SECRET environment variable is required");
 }
 
@@ -31,9 +32,20 @@ export class AuthService {
     userId: string | null;
   }> {
     const token = await storeRepository.get<string>(this.TOKEN_KEY);
-    const payload = await this.decodeAccessToken(token || "");
+    logWithContext("info", "[AuthService] Retrieving stored token payload", {
+      token,
+    });
+    if (!token) {
+      return { token: null, deviceId: null, clientId: null, userId: null };
+    }
+    const payload = await this.decodeStoredToken(token || "");
     const { deviceId, clientId, user } = payload;
     const userId = user?.id || null;
+    logWithContext("info", "[AuthService] Retrieved stored token payload", {
+      deviceId,
+      clientId,
+      userId,
+    });
 
     return { token, deviceId, clientId, userId };
   }
@@ -92,7 +104,7 @@ export class AuthService {
       }
 
       const { token } = result;
-      const payload = await this.decodeAccessToken(token);
+      const payload = await this.saveAccessTokenWithDecode(token);
 
       logWithContext("info", "[AuthService] Device registration successful", {
         clientId: payload.clientId,
@@ -243,7 +255,7 @@ export class AuthService {
       }
 
       const { token } = result;
-      const payload = await this.decodeAccessToken(token);
+      const payload = await this.saveAccessTokenWithDecode(token);
 
       if (
         !payload ||
@@ -278,11 +290,11 @@ export class AuthService {
     logWithContext("info", "[AuthService] Token refresh started");
 
     try {
-      const { token } = await apiClient.post<{ token: string }>(
-        "/api/auth/refresh"
-      );
+      // ✅ apiClient.refresh() を呼ぶ
+      const token = await apiClient.refresh();
 
-      const payload = await this.decodeAccessToken(token);
+      // トークン保存とデコード（apiClient.refresh と二重保存になるが許容）
+      const payload = await this.saveAccessTokenWithDecode(token);
 
       logWithContext("info", "[AuthService] Token refresh successful", {
         clientId: payload.clientId,
@@ -310,7 +322,7 @@ export class AuthService {
         {}
       );
 
-      const payload = await this.decodeAccessToken(token);
+      const payload = await this.saveAccessTokenWithDecode(token);
       logWithContext("info", "[AuthService] Server signout successful", {
         clientId: payload.clientId,
       });
@@ -350,7 +362,10 @@ export class AuthService {
     return await storeRepository.get<string>(this.DEVICE_ID_KEY);
   }
 
-  async decodeAccessToken(token: string): Promise<AppJWTPayload> {
+  async saveAccessTokenWithDecode(token: string): Promise<AppJWTPayload> {
+    // トークン保存
+    await storeRepository.set(this.TOKEN_KEY, token);
+    // トークンデコード
     const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
 
     if (!payload || !payload.deviceId) {

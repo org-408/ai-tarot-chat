@@ -78,6 +78,18 @@ export class Http {
     }
   }
 
+  /**
+   *  ✅ トークンリフレッシュ処理
+   *
+   * authService 用に refresh を公開
+   * authService からの多重 _refresh 呼び出しを防ぐ
+   * @returns 新しいアクセストークン
+   */
+  static async refresh(): Promise<string> {
+    const response = await this._refresh();
+    return response.data.token;
+  }
+
   private static async _refresh(): Promise<HttpResponse> {
     logWithContext(
       "info",
@@ -103,6 +115,8 @@ export class Http {
         );
       }
       logWithContext("info", "[ApiClient] Token refresh successful", { res });
+      const { token } = res.data;
+      await this.saveAccessToken(token);
       return res;
     } catch (error) {
       logWithContext("error", "[ApiClient] Token refresh failed:", { error });

@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { DebugMenu } from "./components/DebugMenu";
+
 type TarotSplashScreenProps = {
   message?: string;
 };
@@ -12,8 +15,16 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
     duration: 2 + Math.random() * 2,
   }));
 
+  const isDebugEnabled = import.meta.env.VITE_ENABLE_DEBUG_MENU === "true";
+  const [devMenuOpen, setDevMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* 開発メニュー（環境変数で制御） */}
+      {isDebugEnabled && (
+        <DebugMenu devMenuOpen={devMenuOpen} setDevMenuOpen={setDevMenuOpen} />
+      )}
+
       {/* 背景装飾 - 静的 */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400/30 rounded-full blur-3xl"></div>

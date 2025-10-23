@@ -1,4 +1,4 @@
-import { apiClient } from "../utils/apiClient";
+import { CapacitorHttp } from "@capacitor/core";
 
 export const logWithContext = (
   level: "info" | "error" | "warn" | "debug",
@@ -14,14 +14,20 @@ export const logWithContext = (
 
   // サーバーに送信（認証なし）
   try {
-    apiClient
-      .postWithoutAuth("/api/logger", {
+    CapacitorHttp.post({
+      url: `${
+        import.meta.env.VITE_BFF_URL || "http://localhost:3000"
+      }/api/logger`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
         level,
         message,
         context,
         source,
-      })
-      .catch((e) => console.error("ログ送信エラー:", e));
+      },
+    }).catch((e) => console.error("ログ送信エラー:", e));
   } catch (e) {
     // エラーが発生しても処理を続行
     console.error("ログ送信例外:", e);

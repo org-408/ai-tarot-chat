@@ -11,7 +11,7 @@ import { DebugResetButton } from "./DebugResetButton";
 interface DebugMenuProps {
   devMenuOpen: boolean;
   setDevMenuOpen: (open: boolean) => void;
-  setPageType: React.Dispatch<React.SetStateAction<PageType>>;
+  setPageType?: React.Dispatch<React.SetStateAction<PageType>>;
 }
 
 export const DebugMenu: React.FC<DebugMenuProps> = ({
@@ -52,6 +52,12 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
     }
   };
 
+  const handleSetPageType = (pageType: PageType) => {
+    if (setPageType) {
+      setPageType(pageType);
+    }
+  };
+
   // 🔥 ログアウト処理
   const handleLogout = async () => {
     try {
@@ -59,7 +65,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
       await appLogout();
       console.log("ログアウト成功");
 
-      setPageType("salon");
+      handleSetPageType("salon");
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -161,7 +167,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
                 onClick={() => {
                   handleChangePlan("FREE");
                   setDevMenuOpen(false);
-                  setPageType("salon");
+                  handleSetPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan!.code === "FREE"
@@ -175,7 +181,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
                 onClick={() => {
                   handleChangePlan("STANDARD");
                   setDevMenuOpen(false);
-                  setPageType("salon");
+                  handleSetPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan!.code === "STANDARD"
@@ -189,7 +195,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
                 onClick={() => {
                   handleChangePlan("PREMIUM");
                   setDevMenuOpen(false);
-                  setPageType("salon");
+                  handleSetPageType("salon");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan!.code === "PREMIUM"
@@ -202,7 +208,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
               <button
                 onClick={() => {
                   setDevMenuOpen(false);
-                  setPageType("plans");
+                  handleSetPageType("plans");
                 }}
                 className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
               >
@@ -211,7 +217,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
               <button
                 onClick={() => {
                   setDevMenuOpen(false);
-                  setPageType("tarotist");
+                  handleSetPageType("tarotist");
                 }}
                 className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
               >
@@ -220,7 +226,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
               <button
                 onClick={() => {
                   setDevMenuOpen(false);
-                  setPageType("tarotistSwipe");
+                  handleSetPageType("tarotistSwipe");
                 }}
                 className="px-2 py-1 text-xs rounded transition-colors bg-purple-200 hover:bg-purple-300"
               >

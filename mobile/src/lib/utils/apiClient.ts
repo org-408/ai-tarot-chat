@@ -3,6 +3,15 @@ export { HttpError, isAuthError, isNetworkError } from "./http";
 
 export class ApiClient {
   /**
+   * refresh リクエスト
+   * @param path
+   * @returns
+   */
+  async refresh(): Promise<string> {
+    return await Http.refresh();
+  }
+
+  /**
    * ✅ GET リクエスト（認証あり）
    */
   async get<T>(path: string): Promise<T> {
