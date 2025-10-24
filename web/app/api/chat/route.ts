@@ -1,8 +1,5 @@
 import { logWithContext } from "@/lib/server/logger/logger";
-import { ChatAnthropic } from "@langchain/anthropic";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { ChatVertexAI } from "@langchain/google-vertexai";
-import { ChatOpenAI } from "@langchain/openai";
+import { createAgent } from "langchain";
 import {
   DrawnCard,
   ReadingCategory,
@@ -10,45 +7,27 @@ import {
   Tarotist,
 } from "../../../../shared/lib/types";
 
-// Google Vertex AI認証設定
-const vertexAIConfig = {
-  project: process.env.GOOGLE_VERTEX_PROJECT!,
-  location: process.env.GOOGLE_VERTEX_LOCATION!,
-  googleAuthOptions: {
-    credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL!,
-      private_key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
-    },
-  },
-};
-
-// プロバイダマッピング - LangChain 1.0対応
-function getModel(provider: string) {
+// プロバイダマッピング - LangChain 1.0の新しいモデル指定方式
+function getModelString(provider: string): string {
   const providerLower = provider.toLowerCase();
 
   switch (providerLower) {
     case "gpt5nano":
-      return new ChatOpenAI({ model: "gpt-5-nano" });
+      return "openai:gpt-5-nano";
     case "gemini25":
-      return new ChatVertexAI({
-        model: "gemini-2.5-flash",
-        ...vertexAIConfig,
-      });
+      return "google-vertexai:gemini-2.5-flash";
     case "gemini25pro":
-      return new ChatVertexAI({
-        model: "gemini-2.5-pro",
-        ...vertexAIConfig,
-      });
+      return "google-vertexai:gemini-2.5-pro";
     case "claude_h":
-      return new ChatAnthropic({ model: "claude-haiku-4-5" });
+      return "anthropic:claude-haiku-4-5";
     case "gpt41":
-      return new ChatOpenAI({ model: "gpt-4.1" });
+      return "openai:gpt-4.1";
     case "gpt5":
-      return new ChatOpenAI({ model: "gpt-5" });
+      return "openai:gpt-5";
     case "claude_s":
-      return new ChatAnthropic({ model: "claude-sonnet-4-5" });
+      return "anthropic:claude-sonnet-4-5";
     default:
-      return new ChatOpenAI({ model: "gpt-4o" });
+      return "openai:gpt-5-nano"; // デフォルトは最安のgpt-5-nano
   }
 }
 
@@ -76,10 +55,10 @@ export async function POST(req: Request) {
       path: "/api/chat",
     });
 
-    const provider = tarotist?.provider?.toLowerCase() || "gpt4";
+    const provider = tarotist?.provider?.toLowerCase() || "gpt5nano";
 
     // システムプロンプトを作成
-    const systemContent =
+    const systemPrompt =
       `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
@@ -133,33 +112,44 @@ export async function POST(req: Request) {
       clientMessages,
       tarotist,
       provider,
+      modelString: getModelString(provider),
     });
 
-    // LangChain 1.0のモデル取得
-    const model = getModel(provider);
+    // LangChain 1.0: createAgentでエージェント作成
+    const agent = createAgent({
+      model: getModelString(provider),
+      tools: [], // タロット占いではツール不要
+      systemPrompt,
+    });
 
-    // メッセージ履歴を構築 - LangChainのメッセージクラスを使用
-    const messages = [
-      new SystemMessage(systemContent),
-      ...clientMessages.map((msg) => new HumanMessage(msg.content)),
-    ];
+    // メッセージ履歴を構築
+    const messages = clientMessages.map((msg) => ({
+      role: msg.role as "user" | "assistant",
+      content: msg.content,
+    }));
 
-    // LangChain 1.0: .stream()でトークンレベルストリーミング
-    const stream = await model.stream(messages);
+    // LangChain 1.0: streamMode: "messages" でトークンレベルストリーミング
+    const stream = await agent.stream({ messages }, { streamMode: "messages" });
 
     // ReadableStreamを作成してSSE形式で返す
     const encoder = new TextEncoder();
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of stream) {
-            // チャンクからcontentを抽出
-            const content = chunk.content;
-
-            if (content && typeof content === "string") {
-              // SSE形式: data: {chunk}\n\n
-              const sseData = `data: ${JSON.stringify({ content })}\n\n`;
-              controller.enqueue(encoder.encode(sseData));
+          // streamMode: "messages" は [token, metadata] のタプルを返す
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          for await (const [token, metadata] of stream) {
+            // contentBlocksから実際のテキストを抽出
+            if (token.contentBlocks && Array.isArray(token.contentBlocks)) {
+              for (const block of token.contentBlocks) {
+                if (block.type === "text" && block.text) {
+                  // SSE形式: data: {content}\n\n
+                  const sseData = `data: ${JSON.stringify({
+                    content: block.text,
+                  })}\n\n`;
+                  controller.enqueue(encoder.encode(sseData));
+                }
+              }
             }
           }
 
@@ -168,7 +158,11 @@ export async function POST(req: Request) {
           controller.close();
         } catch (streamError) {
           console.error("[chat/route] Stream error:", streamError);
-          controller.error(streamError);
+          const errorMessage =
+            streamError instanceof Error
+              ? streamError.message
+              : "Unknown error";
+          controller.error(new Error(errorMessage));
         }
       },
     });
@@ -183,7 +177,9 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("[chat/route] Error:", error);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error";
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
