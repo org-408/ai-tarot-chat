@@ -52,6 +52,7 @@ export async function POST(req: Request) {
       tarotist,
       spread,
       category,
+      drawnCards,
       path: "/api/chat",
     });
     console.log("[chat/route] POST req", {
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
       tarotist,
       spread,
       category,
+      drawnCards,
     });
 
     const provider = tarotist?.provider?.toLowerCase() || "gpt5nano";
