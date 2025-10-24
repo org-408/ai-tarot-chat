@@ -18,6 +18,7 @@ import { useAuth } from "./lib/hooks/use-auth";
 import { useClient } from "./lib/hooks/use-client";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
+import { useSubscription } from "./lib/hooks/use-subscription";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan, ViewModeType } from "./types";
 
@@ -67,6 +68,8 @@ function App() {
     usage: usageStats,
     currentPlan,
   } = useClient();
+
+  const { openManage } = useSubscription();
 
   // 🔥 マスターデータ取得
   // ✅ 修正: 条件なしで呼び出し（lifecycle.tsがinit()を管理）
@@ -164,6 +167,12 @@ function App() {
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
+  };
+
+  // 🔥 RevenueCat Customer Center へ移動
+  const handleManageSubscriptions = () => {
+    console.log("Customer Center へ移動");
+    openManage();
   };
 
   const getPlan = (code: string): Plan | null => {
@@ -355,6 +364,16 @@ function App() {
               <div className="text-lg font-bold mb-2">準備中</div>
               <div className="text-sm">設定機能を開発中です</div>
 
+              {/* RevenueCat Customer Center へのリンク */}
+              <div className="mt-8">
+                <button
+                  onClick={handleManageSubscriptions}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  CustomerCenter
+                </button>
+              </div>
+
               {isAuthenticated ? (
                 <div className="mt-8">
                   <button
@@ -542,31 +561,31 @@ function App() {
 
       {/* 🔥 リフレッシュ中インジケーター */}
       {isRefreshing && (
-        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+        <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white p-2 rounded-full text-xs shadow-lg">
           🔄 {getResumeStepLabel()}
         </div>
       )}
       {/* ✅ オフライン通知 */}
       {isOffline && offlineMode === "limited" && (
-        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+        <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-600 text-white p-2 rounded-full text-xs shadow-lg">
           📡 {getOfflineModeLabel()}
         </div>
       )}
       {/* ✅ 完全オフライン警告 */}
       {offlineMode === "full" && (
-        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+        <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
           ⚠️ オフライン - 初回起動にはネット接続が必要です
         </div>
       )}
       {/* 🔥 日付変更通知 */}
       {dateChanged && (
-        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+        <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white p-2 rounded-full text-xs shadow-lg">
           ✨ 新しい日になりました!
         </div>
       )}
       {/* 🔥 エラー通知 */}
       {error && (
-        <div className="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-4 py-2 rounded-full text-xs shadow-lg">
+        <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
           ⚠️ {error.message}
         </div>
       )}

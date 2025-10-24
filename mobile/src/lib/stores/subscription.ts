@@ -6,6 +6,7 @@ import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { subscriptionService } from "../services/subscription";
 import { getEntitlementIdentifier } from "../utils/plan-utils";
+import { useAuthStore } from "./auth";
 import { useClientStore } from "./client";
 import { useMasterStore } from "./master";
 
@@ -264,6 +265,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
 
       // ============================================
       // プラン購入
+      // NOTE: ユーザー課金に直結するのでリトライ・リカバリーを実施
       // ============================================
       purchasePlan: async (targetPlan: Plan) => {
         const { isPurchasing } = get();
@@ -305,25 +307,88 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             error instanceof Error ? error.message : String(error);
 
           // ユーザーキャンセルかエラーかを判定
-          const isCancelled =
+          if (
             errorMessage.toLowerCase().includes("cancel") ||
-            errorMessage.toLowerCase().includes("キャンセル");
+            errorMessage.toLowerCase().includes("キャンセル")
+          ) {
+            logWithContext(
+              "warn",
+              "[SubscriptionStore] Purchase cancelled by user"
+            );
+            set({
+              isPurchasing: false,
+              purchaseError: "購入がキャンセルされました",
+            });
+            throw error;
+          }
 
-          const displayError = isCancelled
-            ? "購入がキャンセルされました"
-            : `購入に失敗しました: ${errorMessage}`;
+          // initialize からリトライする
+          logWithContext(
+            "info",
+            "[SubscriptionStore] Purchase failed, re-initializing and retrying",
+            { error: errorMessage }
+          );
 
-          set({
-            isPurchasing: false,
-            purchaseError: displayError,
-          });
+          try {
+            // 再初期化
+            await get().init();
 
-          logWithContext("error", "[SubscriptionStore] Purchase failed", {
-            error: errorMessage,
-            isCancelled,
-          });
+            // 再ログイン
+            const userId = useAuthStore.getState().payload!.user!.id;
+            if (!userId) {
+              throw new Error("User ID is missing for re-login");
+            }
+            await get().login(userId);
 
-          throw error;
+            // 再購入
+            const customerInfo = await subscriptionService.purchase(targetPlan);
+
+            set({
+              isPurchasing: false,
+              customerInfo,
+              purchaseError: null,
+            });
+
+            logWithContext(
+              "info",
+              "[SubscriptionStore] Purchase retried and completed successfully",
+              {
+                targetPlan: targetPlan.code,
+              }
+            );
+            return customerInfo;
+          } catch (retryError) {
+            const retryErrorMessage =
+              retryError instanceof Error
+                ? retryError.message
+                : String(retryError);
+
+            // ユーザーキャンセルかエラーかを判定
+            if (
+              retryErrorMessage.toLowerCase().includes("cancel") ||
+              retryErrorMessage.toLowerCase().includes("キャンセル")
+            ) {
+              logWithContext(
+                "warn",
+                "[SubscriptionStore] Retry-Purchase cancelled by user"
+              );
+              set({
+                isPurchasing: false,
+                purchaseError: "購入がキャンセルされました",
+              });
+              throw error;
+            }
+            logWithContext(
+              "error",
+              "[SubscriptionStore] Purchase retry failed",
+              { error: retryErrorMessage }
+            );
+            set({
+              isPurchasing: false,
+              purchaseError: `購入に失敗しました: ${retryErrorMessage}`,
+            });
+            throw retryError;
+          }
         }
       },
 

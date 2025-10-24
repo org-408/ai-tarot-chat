@@ -165,7 +165,8 @@ const PlansPage: React.FC<PlansPageProps> = ({
                 >
                   現在利用中
                 </div>
-              ) : planKey === "GUEST" && planCode !== "GUEST" ? null : (
+              ) : (planKey === "GUEST" && planCode !== "GUEST") ||
+                planData[planCode].no >= planData[planKey].no ? null : (
                 <button
                   onClick={() => handlePlanChange(planKey as UserPlan)}
                   disabled={isChangingPlan}
@@ -201,7 +202,6 @@ const PlansPage: React.FC<PlansPageProps> = ({
             <li>• フリープランは課金なしで利用可能(サインインが必要です)</li>
             <li>• 有料プランはサインインが必要です</li>
             <li>• アップグレードは即座に反映されます</li>
-            <li>• ダウングレードは次回更新日から適用されます</li>
           </ul>
         </div>
       </div>

@@ -6,8 +6,8 @@ import type {
   Plan,
 } from "../../../../shared/lib/types";
 import { DEFAULT_MASTER_DATA } from "../../assets/master-data";
-import { storeRepository } from "../../lib/repositories/store";
 import { logWithContext } from "../logger/logger";
+import { filesystemRepository } from "../repositories/filesystem";
 import { masterService } from "../services/master";
 
 interface MasterState {
@@ -178,15 +178,15 @@ export const useMasterStore = create<MasterState>()(
       name: "master-storage",
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
-          const value = await storeRepository.get(name);
+          const value = await filesystemRepository.get(name);
           return value ? JSON.stringify(value) : null;
         },
         setItem: async (name: string, value: string) => {
           const parsed = JSON.parse(value);
-          await storeRepository.set(name, parsed);
+          await filesystemRepository.set(name, parsed);
         },
         removeItem: async (name: string) => {
-          await storeRepository.delete(name);
+          await filesystemRepository.delete(name);
         },
       })),
     }

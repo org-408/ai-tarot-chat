@@ -2,6 +2,7 @@ import type { UIMessage } from "ai";
 import type { DrawnCard } from "../../../shared/lib/types";
 
 export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
+
 export type PageType =
   | "salon"
   | "reading"
@@ -11,6 +12,8 @@ export type PageType =
   | "tarotistSwipe"
   | "history"
   | "settings";
+export type SelectMode = "tarotist" | "portrait" | "category" | "spread";
+
 export type ViewModeType = "grid" | "carousel";
 
 export interface NavigationItem {

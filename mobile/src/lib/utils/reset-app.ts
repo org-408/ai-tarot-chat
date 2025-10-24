@@ -36,7 +36,7 @@ export const resetAppData = async () => {
     // ========================================
     logWithContext("info", "[ResetApp] Clearing master data filesystem cache");
     try {
-      await filesystemRepository.delete("master_data");
+      await filesystemRepository.delete("master-storage");
     } catch (error) {
       // ファイルが存在しない場合はエラーを無視
       logWithContext("warn", "[ResetApp] Master data file not found", {
@@ -61,6 +61,7 @@ export const resetAppData = async () => {
     await storeRepository.delete("client-storage");
     await storeRepository.delete("subscription-storage");
     await storeRepository.delete("master-storage");
+    await storeRepository.delete("salon-storage");
 
     // ========================================
     // 6. すべてのPreferencesをクリア（念のため）

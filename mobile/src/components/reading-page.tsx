@@ -112,6 +112,11 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     setFlippedCards(new Set(allCardIds));
   };
 
+  const handleBack = () => {
+    setViewMode("grid");
+    onBack();
+  };
+
   useEffect(() => {
     if (
       flippedCards.size > 0 &&
@@ -161,7 +166,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           // selectedCard={selectedCard}
           isRevealingComplete={isRevealingComplete}
           onRequestRevealAll={handleRevealAll}
-          onBack={onBack}
+          onBack={handleBack}
         />
       )}
 

@@ -2,6 +2,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
+import type { UserPlan } from "../types";
 
 interface TarotistCarouselEmblaProps {
   availableTarotists: Tarotist[];
@@ -15,7 +16,7 @@ interface TarotistCarouselEmblaProps {
     button: string;
   };
   renderStars: (quality: number) => string;
-  onChangePlan: (planCode: string) => void;
+  onChangePlan: (planCode: UserPlan) => void;
   isChangingPlan: boolean;
   onSelectTarotist?: (tarotist: Tarotist) => void;
 }
@@ -221,7 +222,9 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
                         <motion.button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onChangePlan(tarotist.plan?.code || "GUEST");
+                            onChangePlan(
+                              (tarotist.plan?.code as UserPlan) || "GUEST"
+                            );
                           }}
                           disabled={isChangingPlan}
                           className="w-full py-2.5 rounded-lg text-white font-bold text-sm shadow-md transition-all disabled:opacity-50"

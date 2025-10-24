@@ -6,6 +6,7 @@ import {
 } from "framer-motion";
 import { useState } from "react";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
+import type { UserPlan } from "../types";
 
 interface TarotistCarouselStackProps {
   availableTarotists: Tarotist[];
@@ -19,7 +20,7 @@ interface TarotistCarouselStackProps {
     button: string;
   };
   renderStars: (quality: number) => string;
-  onChangePlan: (planCode: string) => void;
+  onChangePlan: (planCode: UserPlan) => void;
   isChangingPlan: boolean;
   onSelectTarotist?: (tarotist: Tarotist) => void;
 }
@@ -169,7 +170,7 @@ const TinderCard: React.FC<{
     button: string;
   };
   renderStars: (quality: number) => string;
-  onChangePlan: (planCode: string) => void;
+  onChangePlan: (planCode: UserPlan) => void;
   isChangingPlan: boolean;
   onNext: () => void;
   onPrev: () => void;
@@ -393,7 +394,7 @@ const TinderCard: React.FC<{
             <motion.button
               onClick={(e) => {
                 e.stopPropagation();
-                onChangePlan(tarotist.plan?.code || "GUEST");
+                onChangePlan((tarotist.plan?.code as UserPlan) || "GUEST");
               }}
               disabled={isChangingPlan}
               className="w-full py-3 rounded-lg text-white font-bold text-sm shadow-md transition-all disabled:opacity-50"

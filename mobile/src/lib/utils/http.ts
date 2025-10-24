@@ -48,9 +48,7 @@ export class Http {
             status: retryResponse.status,
           });
           if (retryResponse.status >= 200 && retryResponse.status < 300) {
-            logWithContext("info", "[ApiClient] Response data after retry:", {
-              data: retryResponse.data,
-            });
+            logWithContext("info", "[ApiClient] Response data after retry:");
             return retryResponse.data as T;
           }
         }
@@ -64,9 +62,7 @@ export class Http {
         );
       }
 
-      logWithContext("info", "[ApiClient] Response data:", {
-        data: response.data,
-      });
+      logWithContext("info", "[ApiClient] Response data:");
       return response.data as T;
     } catch (error) {
       // ネットワークエラーの変換

@@ -36,7 +36,7 @@ const providers = {
 
 export async function POST(req: Request) {
   const {
-    messages,
+    messages: uiMessages,
     tarotist,
     spread,
     category,
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     drawnCards: CardPlacement[];
   } = await req.json();
   logWithContext("info", "[chat/route] POST req", {
-    message: messages,
+    messages: uiMessages,
     tarotist,
     spread,
     category,
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
     `- 1回の回答は200文字以上300文字以内とすること\n`;
 
   console.log(`[chat/route] `, {
-    messages,
+    uiMessages,
     tarotist,
     spread,
     category,
@@ -119,9 +119,11 @@ export async function POST(req: Request) {
     provider,
   });
 
+  const messages = convertToModelMessages(uiMessages);
+
   const result = streamText({
     model: providers[provider as keyof typeof providers],
-    messages: convertToModelMessages(messages),
+    messages: messages.length > 0 ? messages : [{ role: "user", content: "" }],
     system,
     onChunk: (chunk) => {
       console.log(`[chat/route] chunk: `, chunk);

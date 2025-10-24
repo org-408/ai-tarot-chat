@@ -100,6 +100,18 @@ export const useClientStore = create<ClientState>()(
           newPlanCode: newPlan.code,
         });
 
+        // currentPlan が GUEST で、新プランが FREE の場合は状態変更のみ実施
+        const { currentPlan } = get();
+        const currentPlanCode = currentPlan ? currentPlan.code : "GUEST";
+        if (currentPlanCode === "GUEST" && newPlan.price === 0) {
+          logWithContext(
+            "info",
+            "[ClientStore] GUEST to FREE plan change, updating state only"
+          );
+          set({ currentPlan: newPlan });
+          return;
+        }
+
         try {
           // 1. サーバーにプラン変更をリクエスト
           const { success, usage } = await clientService.changePlan(

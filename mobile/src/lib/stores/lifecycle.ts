@@ -465,9 +465,9 @@ export const useLifecycleStore = create<LifecycleState>()(
           isOffline: false, // ✅ レジューム時はオフライン状態をリセット
         });
 
+        const authStore = useAuthStore.getState();
+        let payload = authStore.payload;
         try {
-          const authStore = useAuthStore.getState();
-
           // ========================================
           // 1. 認証トークンのリフレッシュ
           // ========================================
@@ -475,7 +475,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           logWithContext("info", "[Lifecycle] Step 1/4: Refreshing auth token");
 
           try {
-            await authStore.refresh();
+            payload = await authStore.refresh();
           } catch (refreshError) {
             if (isNetworkError(refreshError)) {
               logWithContext(
@@ -516,44 +516,62 @@ export const useLifecycleStore = create<LifecycleState>()(
           }
 
           // ========================================
-          // 2. RevenueCat の状態確認と同期
+          // 2. RevenueCat の強制初期化
+          // NOTE: RevenueCat と Store の同期を保証するため
           // ========================================
-          if (authStore.isAuthenticated && !get().isOffline) {
-            set({ currentResumeStep: "subscription" });
+          set({ currentResumeStep: "subscription" });
+          logWithContext(
+            "info",
+            "[Lifecycle] Step 2/4: Initializing RevenueCat"
+          );
+          const subscriptionStore = useSubscriptionStore.getState();
+
+          try {
+            // isInitialized の状態に関わらず強制同期
+            subscriptionStore.init();
             logWithContext(
               "info",
-              "[Lifecycle] Step 2/4: Checking RevenueCat status"
+              "[Lifecycle] Step 2/4: login/logout RevenueCat as needed"
             );
-            try {
-              // RevenueCatとCustomerInfo を同期
-              await useSubscriptionStore.getState().refreshCustomerInfo();
-            } catch (rcError) {
-              if (isNetworkError(rcError)) {
-                logWithContext(
-                  "warn",
-                  "[Lifecycle] RevenueCat offline (non-critical)"
-                );
-                set({ isOffline: true });
-              } else {
-                logWithContext(
-                  "warn",
-                  "[Lifecycle] Failed to sync RevenueCat, but continuing",
-                  {
-                    error:
-                      rcError instanceof Error
-                        ? rcError.message
-                        : String(rcError),
-                  }
-                );
-              }
-              set({
-                lastError: {
-                  step: "subscription",
-                  error: rcError as Error,
-                  timestamp: new Date(),
-                },
-              });
+            // ログイン状態なら RevenueCat と同期
+            if (authStore.isAuthenticated && payload?.user && payload.user.id) {
+              subscriptionStore.login(payload.user.id);
+            } else {
+              subscriptionStore.logout();
             }
+
+            // RevenueCatとCustomerInfo を同期
+            await useSubscriptionStore.getState().refreshCustomerInfo();
+            logWithContext(
+              "info",
+              "[Lifecycle] Step 2/4: RevenueCat initialized successfully"
+            );
+          } catch (rcError) {
+            if (isNetworkError(rcError)) {
+              logWithContext(
+                "warn",
+                "[Lifecycle] RevenueCat offline (non-critical)"
+              );
+              set({ isOffline: true });
+            } else {
+              logWithContext(
+                "warn",
+                "[Lifecycle] Failed to sync RevenueCat, but continuing",
+                {
+                  error:
+                    rcError instanceof Error
+                      ? rcError.message
+                      : String(rcError),
+                }
+              );
+            }
+            set({
+              lastError: {
+                step: "subscription",
+                error: rcError as Error,
+                timestamp: new Date(),
+              },
+            });
           }
 
           // ========================================
@@ -924,8 +942,26 @@ export const useLifecycleStore = create<LifecycleState>()(
               customerInfo.entitlements.active[targetEntitlement];
 
             if (!hasEntitlement) {
-              logWithContext("info", "[Lifecycle] No subscription, purchasing");
-              await subscriptionStore.purchasePlan(newPlan);
+              try {
+                logWithContext(
+                  "info",
+                  "[Lifecycle] No subscription, purchasing"
+                );
+                await subscriptionStore.purchasePlan(newPlan);
+                logWithContext("info", "[Lifecycle] Purchase completed");
+              } catch (purchaseError) {
+                logWithContext(
+                  "error",
+                  "[Lifecycle] Purchase failed re-initialize",
+                  {
+                    error:
+                      purchaseError instanceof Error
+                        ? purchaseError.message
+                        : String(purchaseError),
+                  }
+                );
+                throw purchaseError;
+              }
             }
           }
 

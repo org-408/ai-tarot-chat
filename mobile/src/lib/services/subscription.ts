@@ -290,6 +290,8 @@ export class SubscriptionService {
     );
 
     try {
+      // 初期化必須とする
+      await this.initialize();
       // ✅ まずCustomer Centerを表示
       await RevenueCatUI.presentCustomerCenter();
 

@@ -5,7 +5,7 @@ import type {
   Plan,
   Tarotist,
 } from "../../../shared/lib/types";
-import type { UserPlan } from "../types";
+import type { SelectMode, UserPlan } from "../types";
 import ProfileDialog from "./profile-dialog";
 // 新しいコンポーネントをインポート
 import TarotistCarouselEmbla from "./tarotist-carousel-embla";
@@ -44,8 +44,8 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
       (tarotist) => tarotist.plan!.code !== "OFFLINE"
     ) || [];
 
-  const handleChangePlan = (requiredPlan: string) => {
-    onChangePlan(requiredPlan as UserPlan);
+  const handleChangePlan = (requiredPlan: UserPlan) => {
+    onChangePlan(requiredPlan);
   };
 
   const canUseTarotist = (requiredPlan: string) => {
@@ -110,6 +110,8 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   const currentColors = currentPlan
     ? getPlanColors(currentPlan.code)
     : getPlanColors("GUEST");
+
+  const [selectMode, setSelectMode] = useState<SelectMode>("tarotist");
 
   return (
     <div className="main-container">
@@ -200,12 +202,16 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
       {carouselType === "portrait" && (
         <TarotistCarouselPortrait
           availableTarotists={availableTarotists}
+          selectedTarotist={selectedTarotist}
+          setSelectedTarotist={setSelectedTarotist}
           currentPlan={currentPlan}
           getTarotistColor={getTarotistColor}
           renderStars={renderStars}
           onChangePlan={handleChangePlan}
           isChangingPlan={isChangingPlan}
           onSelectTarotist={setSelectedTarotist}
+          selectMode={selectMode}
+          setSelectMode={setSelectMode}
         />
       )}
 
@@ -228,7 +234,7 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
         selectedTarotist={selectedTarotist}
         setSelectedTarotist={setSelectedTarotist}
         canUseTarotist={canUseTarotist}
-        handleChangePlan={handleChangePlan}
+        onChangePlan={handleChangePlan}
         isChangingPlan={isChangingPlan}
         setImageViewTarotist={setImageViewTarotist}
         imageViewTarotist={imageViewTarotist}

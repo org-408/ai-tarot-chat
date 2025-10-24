@@ -2,9 +2,12 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
+import type { SelectMode, UserPlan } from "../types";
 
-interface TarotistCarouselEmblaProps {
+interface TarotistCarouselPortraitProps {
   availableTarotists: Tarotist[];
+  selectedTarotist: Tarotist | null;
+  setSelectedTarotist: (tarotist: Tarotist) => void;
   currentPlan: Plan;
   getTarotistColor: (tarotist: Tarotist) => {
     primary: string;
@@ -14,25 +17,26 @@ interface TarotistCarouselEmblaProps {
     button: string;
   };
   renderStars: (quality: number) => string;
-  onChangePlan: (planCode: string) => void;
+  onChangePlan: (planCode: UserPlan) => void;
   isChangingPlan: boolean;
   onSelectTarotist?: (tarotist: Tarotist) => void;
+  selectMode: SelectMode;
+  setSelectMode: (mode: SelectMode) => void;
 }
 
-const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
+const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   availableTarotists,
+  selectedTarotist,
+  setSelectedTarotist,
   currentPlan,
   getTarotistColor,
   renderStars,
   onChangePlan,
   isChangingPlan,
   onSelectTarotist,
+  selectMode: mode,
+  setSelectMode,
 }) => {
-  const [mode, setMode] = useState<"selection" | "chat">("selection");
-  const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
-    null
-  );
-
   const canUseTarotist = (requiredPlan: Plan) => {
     return requiredPlan.no <= currentPlan.no;
   };
@@ -71,31 +75,32 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  const handleStartReading = (tarotist: Tarotist) => {
+  const handleSelectTarotist = (tarotist: Tarotist) => {
     setSelectedTarotist(tarotist);
-    setMode("chat");
     if (onSelectTarotist) {
       onSelectTarotist(tarotist);
     }
+    setSelectMode("portrait");
   };
 
   if (availableTarotists.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        占い師が見つかりません
-      </div>
+      <div className="text-center text-gray-500">占い師が見つかりません</div>
     );
   }
 
   // チャットモード - 肖像画表示
-  if (mode === "chat" && selectedTarotist) {
+  if (mode !== "tarotist" && selectedTarotist) {
     const colors = getTarotistColor(selectedTarotist);
 
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full h-[45vh] p-4"
+        className="w-full p-4 z-10"
+        onClick={() => {
+          if (onSelectTarotist) onSelectTarotist(selectedTarotist);
+        }}
       >
         <div className="h-full rounded-3xl overflow-hidden shadow-xl relative">
           {/* 肖像画 - 全面 */}
@@ -154,8 +159,8 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
 
           {/* 占い師変更ボタン - 右下にひっそり配置 */}
           <button
-            onClick={() => setMode("selection")}
-            className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/70 hover:bg-white/90 transition-all shadow-md"
+            onClick={() => setSelectMode("tarotist")}
+            className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 transition-all shadow-md"
           >
             占い師を変更
           </button>
@@ -166,9 +171,27 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
 
   // 選択モード - 全画面カルーセル
   return (
-    <div className="relative w-full h-screen flex flex-col">
+    <div
+      className="relative w-full flex flex-col overflow-hidden"
+      style={{ height: "100%" }}
+    >
+      {/* スワイプヒント */}
+      <motion.div
+        className="text-center py-4"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: [1, 0.5, 1] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+      >
+        <span
+          className="text-gray-800 bg-white/70
+            backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
+        >
+          ← 占い師を選んでください →
+        </span>
+      </motion.div>
+
       {/* メインカルーセル */}
-      <div className="flex-1 overflow-hidden" ref={emblaRef}>
+      <div className="flex-1 overflow-hidden min-h-0" ref={emblaRef}>
         <div className="flex h-full touch-pan-y">
           {availableTarotists.map((tarotist, index) => {
             const isAvailable = canUseTarotist(tarotist.plan!);
@@ -185,7 +208,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
                     scale: isActive ? 1 : 0.85,
                   }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="h-full flex items-center justify-center py-8"
+                  className="h-full flex items-center justify-center"
                 >
                   {/* カード */}
                   <div
@@ -224,7 +247,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
 
                         {/* 下部グラデーション */}
                         <div
-                          className="absolute inset-x-0 bottom-0 h-32"
+                          className="absolute inset-x-0 bottom-0 h-28"
                           style={{
                             background: `linear-gradient(to top, ${colors.bg}, transparent)`,
                           }}
@@ -320,8 +343,8 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
                           <>
                             {isAvailable ? (
                               <motion.button
-                                onClick={() => handleStartReading(tarotist)}
-                                className="w-full py-3 rounded-lg text-white font-bold text-base shadow-lg"
+                                onClick={() => handleSelectTarotist(tarotist)}
+                                className="w-full py-2 rounded-xl text-white font-bold text-base shadow-lg"
                                 style={{
                                   backgroundColor: colors.button,
                                 }}
@@ -334,10 +357,12 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
                               <motion.button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onChangePlan(tarotist.plan?.code || "GUEST");
+                                  onChangePlan(
+                                    (tarotist.plan?.code as UserPlan) || "GUEST"
+                                  );
                                 }}
                                 disabled={isChangingPlan}
-                                className="w-full py-3 rounded-lg text-white font-bold text-base shadow-lg disabled:opacity-50"
+                                className="w-full py-2 rounded-xl text-white font-bold text-base shadow-lg disabled:opacity-50"
                                 style={{
                                   backgroundColor:
                                     tarotist.plan?.accentColor || colors.button,
@@ -403,30 +428,22 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
       </button>
 
       {/* ドットインジケーター */}
-      <div className="flex items-center justify-center gap-2 py-6">
+      <div className="flex items-center justify-center gap-2 pt-6">
         {scrollSnaps.map((_, index) => (
           <button
             key={index}
-            className={`h-2 rounded-full transition-all ${
-              index === selectedIndex ? "w-8 bg-purple-500" : "w-2 bg-gray-300"
+            className={`h-4 mx-2 rounded-full transition-all ${
+              index === selectedIndex
+                ? "w-8 h-6 bg-purple-500"
+                : "w-4 bg-gray-300"
             }`}
             onClick={() => scrollTo(index)}
             aria-label={`占い師 ${index + 1} を表示`}
           />
         ))}
       </div>
-
-      {/* スワイプヒント */}
-      <motion.div
-        className="text-center pb-4"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ delay: 3, duration: 1 }}
-      >
-        <span className="text-sm text-gray-400">← スワイプして選択 →</span>
-      </motion.div>
     </div>
   );
 };
 
-export default TarotistCarouselEmbla;
+export default TarotistCarouselPortrait;

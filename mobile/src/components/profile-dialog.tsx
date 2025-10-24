@@ -1,4 +1,5 @@
 import type { Tarotist } from "../../../shared/lib/types";
+import type { UserPlan } from "../types";
 
 interface ProfileDialogProps {
   // for profile
@@ -9,7 +10,7 @@ interface ProfileDialogProps {
   setImageViewTarotist: (tarotist: Tarotist | null) => void;
   hasButton?: boolean;
   canUseTarotist?: (planCode: string) => boolean;
-  handleChangePlan?: (planCode: string) => void;
+  onChangePlan?: (planCode: UserPlan) => void;
   isChangingPlan?: boolean;
 }
 
@@ -20,11 +21,15 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
   setImageViewTarotist,
   hasButton = false,
   canUseTarotist = () => false,
-  handleChangePlan = () => {},
+  onChangePlan = () => {},
   isChangingPlan,
 }) => {
   const renderStars = (quality: number) => {
     return "⭐️".repeat(quality);
+  };
+
+  const handleChangePlan = (requiredPlan: UserPlan) => {
+    onChangePlan(requiredPlan);
   };
 
   return (
@@ -114,7 +119,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleChangePlan(selectedTarotist.plan!.code);
+                    handleChangePlan(selectedTarotist.plan!.code as UserPlan);
                     setSelectedTarotist(null);
                   }}
                   disabled={isChangingPlan}

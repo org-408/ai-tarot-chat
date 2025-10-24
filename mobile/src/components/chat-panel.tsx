@@ -181,7 +181,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   };
 
   const handleRevealAll = useCallback(() => {
-    if (currentPlan.code !== "PREMIUM") {
+    if (currentPlan.code !== "MASTER") {
       const prompt =
         "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
       sendMessage({ text: prompt });
@@ -266,7 +266,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
 
       {/* 即答方式のヒント及びボタン表示 */}
-      {currentPlan.code !== "PREMIUM" && (
+      {currentPlan.code !== "MASTER" && (
         <RevealPromptPanel
           onRequestRevealAll={onRequestRevealAll}
           isAllRevealed={isRevealingComplete}
@@ -289,7 +289,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      {currentPlan.code === "PREMIUM" && (
+      {currentPlan.code === "MASTER" && (
         <motion.div
           className="px-4 py-3 bg-transparent border-1 shadow"
           animate={{
