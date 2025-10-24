@@ -396,9 +396,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const spreadItems: AccordionItem[] = [
     {
       id: "spread",
-      title: `利用するスプレッド: ${
-        selectedSpread?.name || "選択してください"
-      }`,
+      title: `スプレッド: ${selectedSpread?.name || "選択してください"}`,
       subtitle: selectedSpread
         ? selectedSpread.guide ||
           `使用するタロットカード枚数：${selectedSpread.cells?.length || 0}枚`
