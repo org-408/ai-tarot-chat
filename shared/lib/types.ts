@@ -228,10 +228,10 @@ export type SpreadCell = {
   id?: string;
   x: number;
   y: number;
-  vLabel?: string | null;
-  hLabel?: string | null;
-  vOrder?: number | null;
-  hOrder?: number | null;
+  order: number;
+  position: string; // 位置名
+  description?: string; // 位置説明
+  isHorizontal: boolean; // 横向きかどうか
   spreadId: string;
   spread?: Spread;
 };
@@ -371,8 +371,11 @@ export type DrawnCard = {
   keywords: string[]; // その時点でのキーワードのスナップショット
   x: number;
   y: number;
-  isReversed: boolean;
   order: number;
+  position: string; // スプレッド上の位置名
+  description: string; // カードの説明文（その時点でのスナップショット）
+  isHorizontal: boolean; // 横向きかどうか
+  isReversed: boolean; // 逆位置かどうか
   createdAt: Date;
 };
 
@@ -506,7 +509,7 @@ export type ReadingInput = Omit<
 
 export type DrawnCardInput = Omit<
   DrawnCard,
-  "id" | "createdAt" | "reading" | "card"
+  "id" | "createdAt" | "reading" | "cardId"
 >;
 
 export type ChatMessageInput = Omit<
@@ -646,16 +649,3 @@ export type AppStateCheckLog = {
   appVersion?: string;
   path?: string;
 };
-
-// カード配置情報の型
-export interface CardPlacement {
-  id: string;
-  number: number;
-  gridX: number;
-  gridY: number;
-  rotation: number;
-  card: TarotCard;
-  isReversed: boolean;
-  position: string;
-  description: string;
-}

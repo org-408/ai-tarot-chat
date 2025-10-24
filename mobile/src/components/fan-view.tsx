@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import React from "react";
-import type { CardPlacement, TarotCard } from "../../../shared/lib/types";
+import type { DrawnCard, TarotCard } from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
 
 const VIEW_HEIGHT_MAX = 300;
 
 interface FanViewProps {
-  drawnCards: CardPlacement[];
-  selectedCard: CardPlacement | null;
+  drawnCards: DrawnCard[];
+  selectedCard: DrawnCard | null;
   flippedCards: Set<string>;
-  onCardClick: (card: CardPlacement) => void;
+  onCardClick: (card: DrawnCard) => void;
   onToggleFlip: (cardId: string) => void;
   getCardImagePath: (card: TarotCard, isBack?: boolean) => string;
 }
@@ -91,7 +91,7 @@ const FanView: React.FC<FanViewProps> = ({
                   style={{ backfaceVisibility: "hidden" }}
                 >
                   <img
-                    src={getCardImagePath(card.card, true)}
+                    src={getCardImagePath(card.card!, true)}
                     alt="Card Back"
                     className="w-full h-full object-cover"
                   />
@@ -104,14 +104,14 @@ const FanView: React.FC<FanViewProps> = ({
                   }}
                 >
                   <img
-                    src={getCardImagePath(card.card)}
-                    alt={card.card.name}
+                    src={getCardImagePath(card.card!)}
+                    alt={card.card!.name}
                     className={`w-full h-full object-cover ${
                       card.isReversed ? "transform rotate-180" : ""
                     }`}
                   />
                   <div className="absolute top-1 left-1 w-6 h-6 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-xs font-bold">
-                    {card.number}
+                    {card.order}
                   </div>
                 </div>
               </motion.div>

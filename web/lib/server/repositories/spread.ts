@@ -70,10 +70,12 @@ export class SpreadRepository extends BaseRepository {
             create: cells.map((cell) => ({
               x: cell.x,
               y: cell.y,
-              vLabel: cell.vLabel || null,
-              hLabel: cell.hLabel || null,
-              vOrder: cell.vOrder || null,
-              hOrder: cell.hOrder || null,
+              order: cell.order,
+              position: cell.position,
+              description:
+                cell.description ||
+                `このカードの位置は${cell.position}を示しています`,
+              isHorizontal: cell.isHorizontal || false,
             })),
           },
         }),
@@ -113,10 +115,12 @@ export class SpreadRepository extends BaseRepository {
             create: cells.map((cell) => ({
               x: cell.x,
               y: cell.y,
-              vLabel: cell.vLabel || null,
-              hLabel: cell.hLabel || null,
-              vOrder: cell.vOrder || null,
-              hOrder: cell.hOrder || null,
+              order: cell.order,
+              position: cell.position,
+              description:
+                cell.description ||
+                `このカードの位置は${cell.position}を示しています`,
+              isHorizontal: cell.isHorizontal,
             })),
           },
         }),
@@ -173,10 +177,12 @@ export class SpreadRepository extends BaseRepository {
             create: cells.map((cell) => ({
               x: cell.x,
               y: cell.y,
-              vLabel: cell.vLabel || null,
-              hLabel: cell.hLabel || null,
-              vOrder: cell.vOrder || null,
-              hOrder: cell.hOrder || null,
+              order: cell.order,
+              position: cell.position,
+              description:
+                cell.description ||
+                `このカードの位置は${cell.position}を示しています`,
+              isHorizontal: cell.isHorizontal || false,
             })),
           },
         }),
@@ -285,10 +291,12 @@ export class SpreadRepository extends BaseRepository {
       data: {
         x: cell.x,
         y: cell.y,
-        vLabel: cell.vLabel,
-        hLabel: cell.hLabel,
-        vOrder: cell.vOrder,
-        hOrder: cell.hOrder,
+        order: cell.order,
+        position: cell.position,
+        description:
+          cell.description ||
+          `このカードの位置は${cell.position}を示しています`,
+        isHorizontal: cell.isHorizontal,
         spreadId: cell.spreadId,
       },
     });
@@ -305,7 +313,7 @@ export class SpreadRepository extends BaseRepository {
   async getCellsBySpreadId(spreadId: string): Promise<SpreadCell[]> {
     return await this.db.spreadCell.findMany({
       where: { spreadId },
-      orderBy: [{ vOrder: "asc" }, { hOrder: "asc" }],
+      orderBy: [{ order: "asc" }],
     });
   }
 
@@ -318,10 +326,10 @@ export class SpreadRepository extends BaseRepository {
       data: {
         x: cellData.x,
         y: cellData.y,
-        vLabel: cellData.vLabel || null,
-        hLabel: cellData.hLabel || null,
-        vOrder: cellData.vOrder || null,
-        hOrder: cellData.hOrder || null,
+        order: cellData.order,
+        position: cellData.position,
+        description: cellData.description,
+        isHorizontal: cellData.isHorizontal,
       },
     });
   }

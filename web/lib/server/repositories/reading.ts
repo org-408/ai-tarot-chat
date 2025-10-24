@@ -31,8 +31,10 @@ export class ReadingRepository extends BaseRepository {
                 cardId: card.cardId,
                 x: card.x,
                 y: card.y,
-                isReversed: card.isReversed,
                 order: card.order,
+                position: card.position,
+                description: card.description,
+                isReversed: card.isReversed,
               })),
             }
           : undefined,
@@ -149,8 +151,10 @@ export class ReadingRepository extends BaseRepository {
         cardId: drawnCard.cardId,
         x: drawnCard.x,
         y: drawnCard.y,
-        isReversed: drawnCard.isReversed,
         order: drawnCard.order,
+        position: drawnCard.position,
+        description: drawnCard.description,
+        isReversed: drawnCard.isReversed,
       },
     });
 

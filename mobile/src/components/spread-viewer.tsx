@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
-import type { CardPlacement, TarotCard } from "../../../shared/lib/types";
+import type { DrawnCard, TarotCard } from "../../../shared/lib/types";
 
 interface SpreadViewerProps {
-  drawnCards: CardPlacement[];
+  drawnCards: DrawnCard[];
 }
 
 const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
   const [crossFlipped, setCrossFlipped] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
+  const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
   const [imageCache, setImageCache] = useState<{ [key: string]: boolean }>({});
 
   // 画像の存在確認を初回のみ実施
   useEffect(() => {
     if (!drawnCards.length) return;
     drawnCards.forEach((placement) => {
-      const path = `/cards/${placement.card.code}.png`;
+      const path = `/cards/${placement.card!.code}.png`;
       if (imageCache[path] === undefined) {
         fetch(path, { method: "HEAD", cache: "force-cache" })
           .then((res) => {
@@ -45,9 +45,9 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
   }, []);
 
   const gridCols =
-    drawnCards.length > 0 ? Math.max(...drawnCards.map((c) => c.gridX)) + 1 : 4;
+    drawnCards.length > 0 ? Math.max(...drawnCards.map((c) => c.x)) + 1 : 4;
   const gridRows =
-    drawnCards.length > 0 ? Math.max(...drawnCards.map((c) => c.gridY)) + 1 : 4;
+    drawnCards.length > 0 ? Math.max(...drawnCards.map((c) => c.y)) + 1 : 4;
 
   const cardSize = 60;
   const colGap = 6;
@@ -59,18 +59,18 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
 
   const getZIndex = (cardNumber: number) => {
     const crossCards = drawnCards.filter(
-      (c) => c.rotation === 90 || c.rotation === 0
+      (c) => c.isHorizontal || !c.isHorizontal
     );
     if (crossCards.length >= 2) {
-      if (cardNumber === crossCards[0].number) return crossFlipped ? 20 : 10;
-      if (cardNumber === crossCards[1].number) return crossFlipped ? 10 : 20;
+      if (cardNumber === crossCards[0].order) return crossFlipped ? 20 : 10;
+      if (cardNumber === crossCards[1].order) return crossFlipped ? 10 : 20;
     }
     return 5;
   };
 
   // カード画像コンポーネント
   interface TarotCardImageProps {
-    placement: CardPlacement;
+    placement: DrawnCard;
     width?: number | string;
     height?: number | string;
     className?: string;
@@ -90,7 +90,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
     height = `${GRID_CARD_HEIGHT}px`,
     className = "",
   }) => {
-    const path = getCardImagePath(placement.card);
+    const path = getCardImagePath(placement.card!);
     const exists = imageCache[path];
     return (
       <div
@@ -98,12 +98,12 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
         style={{ width, height }}
       >
         <div className="absolute -top-1 -left-1 w-4 h-4 bg-purple-600 text-white text-[7px] font-bold rounded-full flex items-center justify-center z-10">
-          {placement.number}
+          {placement.order}
         </div>
         {exists && (
           <img
             src={path}
-            alt={placement.card.name}
+            alt={placement.card!.name}
             className={`w-full h-full object-cover rounded border-2 shadow-md ${
               placement.isReversed
                 ? "border-red-500 transform rotate-180"
@@ -115,10 +115,10 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
         {!exists && (
           <div className="w-full h-full bg-purple-100 rounded border-2 border-amber-600 shadow-md flex flex-col items-center justify-center p-0.5">
             <div className="text-base">
-              {placement.card.type === "major" ? "🌟" : "🎴"}
+              {placement.card!.type === "major" ? "🌟" : "🎴"}
             </div>
             <div className="text-[6px] font-bold text-gray-800 text-center leading-tight">
-              {placement.card.name}
+              {placement.card!.name}
             </div>
             {placement.isReversed && (
               <div className="text-[6px] text-red-600">逆位置</div>
@@ -155,11 +155,11 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
                 <div
                   key={placement.id}
                   style={{
-                    gridColumn: placement.gridX + 1,
-                    gridRow: placement.gridY + 1,
-                    transform: `rotate(${placement.rotation}deg)`,
+                    gridColumn: placement.x + 1,
+                    gridRow: placement.y + 1,
+                    transform: `rotate(${placement.isHorizontal ? 90 : 0}deg)`,
                     transformOrigin: "center center",
-                    zIndex: getZIndex(placement.number),
+                    zIndex: getZIndex(placement.order),
                     transition: "z-index 0.5s ease-in-out",
                   }}
                   className="flex items-center justify-center"
@@ -199,7 +199,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
                   >
                     <div className="flex items-center gap-1">
                       <div className="w-4 h-4 bg-purple-600 text-white text-[7px] font-bold rounded-full flex items-center justify-center flex-shrink-0">
-                        {placement.number}
+                        {placement.order}
                       </div>
                       <div className="text-[10px] font-semibold text-purple-900 leading-tight">
                         {placement.position}
@@ -225,7 +225,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
           >
             <div className="flex items-center gap-2 mb-3">
               <div className="w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full flex items-center justify-center">
-                {selectedCard.number}
+                {selectedCard.order}
               </div>
               <h3 className="text-base font-bold text-purple-900">
                 位置の意味:{selectedCard.position}
@@ -243,7 +243,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
             </div>
             <div className="text-sm text-gray-700 mb-2">
               カード:{" "}
-              <span className="font-semibold">{selectedCard.card.name}</span>
+              <span className="font-semibold">{selectedCard.card!.name}</span>
               {selectedCard.isReversed && (
                 <span className="text-red-600 ml-2">(逆位置)</span>
               )}
@@ -251,8 +251,8 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
             <div className="text-xs text-gray-600 mb-2">
               キーワード:{" "}
               {selectedCard.isReversed
-                ? selectedCard.card.reversedKeywords.join("、")
-                : selectedCard.card.uprightKeywords.join("、")}
+                ? selectedCard.card!.reversedKeywords.join("、")
+                : selectedCard.card!.uprightKeywords.join("、")}
             </div>
             <button
               onClick={() => setSelectedCard(null)}

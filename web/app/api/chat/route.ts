@@ -4,7 +4,7 @@ import { createVertex } from "@ai-sdk/google-vertex";
 import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import {
-  CardPlacement,
+  DrawnCard,
   ReadingCategory,
   Spread,
   Tarotist,
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     tarotist: Tarotist;
     spread: Spread;
     category: ReadingCategory;
-    drawnCards: CardPlacement[];
+    drawnCards: DrawnCard[];
   } = await req.json();
   logWithContext("info", "[chat/route] POST req", {
     messages: uiMessages,
@@ -76,12 +76,12 @@ export async function POST(req: Request) {
         drawnCards
           .map(
             (placement) =>
-              `- ${placement.position}(${placement.card.name}${
+              `- ${placement.position}(${placement.card!.name}${
                 placement.isReversed ? "逆位置" : "正位置"
               }): ${
                 placement.isReversed
-                  ? placement.card.reversedKeywords.join(", ")
-                  : placement.card.uprightKeywords.join(", ")
+                  ? placement.card!.reversedKeywords.join(", ")
+                  : placement.card!.uprightKeywords.join(", ")
               }`
           )
           .join("\n")

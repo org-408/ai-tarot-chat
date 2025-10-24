@@ -1,7 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
-import type { CardPlacement, TarotCard } from "../../../shared/lib/types";
+import type { DrawnCard, TarotCard } from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
 
@@ -9,13 +9,13 @@ const VIEW_HEIGHT_MAX = 300;
 
 // カルーセルコンポーネント
 interface CarouselViewProps {
-  drawnCards: CardPlacement[];
+  drawnCards: DrawnCard[];
   currentIndex: number;
   flippedCards: Set<string>;
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   setSwipeOn: (swipeOn: boolean) => void;
   onIndexChange: (index: number) => void;
-  onCardClick: (card: CardPlacement) => void;
+  onCardClick: (card: DrawnCard) => void;
   onToggleFlip: (cardId: string) => void;
   getCardImagePath: (card: TarotCard, isBack?: boolean) => string;
 }
@@ -67,7 +67,7 @@ const CarouselView: React.FC<CarouselViewProps> = ({
   const cardHeight = VIEW_HEIGHT_MAX - 14 * 2;
   const cardWidth = cardHeight * CARD_ASPECT;
 
-  const handleCardInteraction = (card: CardPlacement) => {
+  const handleCardInteraction = (card: DrawnCard) => {
     onCardClick(card);
     onToggleFlip(card.id);
   };
@@ -112,13 +112,13 @@ const CarouselView: React.FC<CarouselViewProps> = ({
                       style={{ backfaceVisibility: "hidden" }}
                     >
                       <img
-                        src={getCardImagePath(card.card, true)}
+                        src={getCardImagePath(card.card!, true)}
                         alt="Card Back"
                         className="w-full h-full object-cover"
                       />
                       {!isFlipped && (
                         <div className="absolute top-2 left-2 w-8 h-8 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-sm font-bold z-10">
-                          {card.number}
+                          {card.order}
                         </div>
                       )}
                     </div>
@@ -132,14 +132,14 @@ const CarouselView: React.FC<CarouselViewProps> = ({
                     >
                       <div className="relative w-full h-full">
                         <img
-                          src={getCardImagePath(card.card)}
-                          alt={card.card.name}
+                          src={getCardImagePath(card.card!)}
+                          alt={card.card!.name}
                           className={`w-full h-full object-cover ${
                             card.isReversed ? "transform rotate-180" : ""
                           }`}
                         />
                         <div className="absolute top-2 left-2 w-8 h-8 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-sm font-bold z-10">
-                          {card.number}
+                          {card.order}
                         </div>
                       </div>
                     </div>

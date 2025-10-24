@@ -1,10 +1,6 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import type {
-  CardPlacement,
-  Spread,
-  TarotCard,
-} from "../../../shared/lib/types";
+import type { DrawnCard, Spread, TarotCard } from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
 
@@ -13,9 +9,9 @@ const VIEW_HEIGHT_MAX = 300;
 
 interface GridViewProps {
   spread: Spread;
-  drawnCards: CardPlacement[];
+  drawnCards: DrawnCard[];
   flippedCards: Set<string>;
-  onCardClick: (card: CardPlacement) => void;
+  onCardClick: (card: DrawnCard) => void;
   onToggleFlip: (cardId: string) => void;
   getCardImagePath: (card: TarotCard, isBack?: boolean) => string;
 }
@@ -29,8 +25,8 @@ const GridView: React.FC<GridViewProps> = ({
   onToggleFlip,
   getCardImagePath,
 }) => {
-  const maxX = Math.max(...drawnCards.map((c) => c.gridX));
-  const maxY = Math.max(...drawnCards.map((c) => c.gridY));
+  const maxX = Math.max(...drawnCards.map((c) => c.x));
+  const maxY = Math.max(...drawnCards.map((c) => c.y));
 
   const GRID_WIDTH_MAX = 4;
   const GRID_HEIGHT_MAX = 4;
@@ -61,7 +57,7 @@ const GridView: React.FC<GridViewProps> = ({
   };
 
   // カードがタップされた時の処理
-  const handleCardInteraction = (card: CardPlacement) => {
+  const handleCardInteraction = (card: DrawnCard) => {
     onCardClick(card);
     onToggleFlip(card.id);
   };
@@ -107,7 +103,7 @@ const GridView: React.FC<GridViewProps> = ({
         }}
       >
         {drawnCards.map((card, index) => {
-          const isHorizontal = card.rotation === 90;
+          const isHorizontal = card.isHorizontal;
           const displayWidth = isHorizontal ? cardHeight : cardWidth;
           const displayHeight = isHorizontal ? cardWidth : cardHeight;
           const isFlipped = flippedCards.has(card.id);
@@ -116,13 +112,13 @@ const GridView: React.FC<GridViewProps> = ({
             <motion.div
               key={card.id}
               style={{
-                gridColumn: card.gridX + 1,
-                gridRow: card.gridY + 1,
+                gridColumn: card.x + 1,
+                gridRow: card.y + 1,
                 width: `${displayWidth}px`,
                 height: `${displayHeight}px`,
                 justifySelf: "center",
                 alignSelf: "center",
-                zIndex: getZIndex(card.number),
+                zIndex: getZIndex(card.order),
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -149,13 +145,13 @@ const GridView: React.FC<GridViewProps> = ({
                   style={{ backfaceVisibility: "hidden" }}
                 >
                   <img
-                    src={getCardImagePath(card.card, true)}
+                    src={getCardImagePath(card.card!, true)}
                     alt="Card Back"
                     className="w-full h-full object-cover"
                   />
                   {!isFlipped && (
                     <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-[10px] font-bold z-10">
-                      {card.number}
+                      {card.order}
                     </div>
                   )}
                 </div>
@@ -168,14 +164,14 @@ const GridView: React.FC<GridViewProps> = ({
                   }}
                 >
                   <img
-                    src={getCardImagePath(card.card)}
-                    alt={card.card.name}
+                    src={getCardImagePath(card.card!)}
+                    alt={card.card!.name}
                     className={`w-full h-full object-cover ${
                       card.isReversed ? "transform rotate-180" : ""
                     }`}
                   />
                   <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-[10px] font-bold z-10">
-                    {card.number}
+                    {card.order}
                   </div>
                 </div>
               </motion.div>

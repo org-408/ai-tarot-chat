@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type {
   AppJWTPayload,
-  CardPlacement,
+  DrawnCard,
   MasterData,
   ReadingCategory,
   Spread,
@@ -43,7 +43,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 }) => {
   const { tarotist, category, spread } = readingData;
 
-  const [drawnCards, setDrawnCards] = useState<CardPlacement[]>([]);
+  const [drawnCards, setDrawnCards] = useState<DrawnCard[]>([]);
 
   const { currentPlan } = useClientStore.getState();
 
@@ -52,7 +52,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     allCards: TarotCard[],
     spreadCells: SpreadCell[],
     count: number
-  ): CardPlacement[] => {
+  ): DrawnCard[] => {
     const shuffled = [...allCards].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, count);
 
@@ -61,17 +61,22 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       const isReversed = Math.random() > 0.5;
 
       return {
-        id: `${card.id}-${index}`,
-        number: cell.vOrder || cell.hOrder || index,
-        gridX: cell.x,
-        gridY: cell.y,
-        rotation: cell.hLabel ? 90 : 0,
-        card,
+        id: `${card.id}-${index}`, // 仮にユニークIDを生成
+        x: cell.x,
+        y: cell.y,
+        order: cell.order || index,
+        position: cell.position || `位置${index + 1}`,
+        description:
+          cell.description ||
+          `このカードの位置は${
+            cell.position || `位置${index + 1}`
+          }を示しています`,
+        isHorizontal: cell.isHorizontal,
         isReversed,
-        position: cell.vLabel || cell.hLabel || `位置${index + 1}`,
-        description: `このカードの位置は${
-          cell.vLabel || cell.hLabel
-        }を示しています`,
+        card,
+        keywords: !isReversed ? card.uprightKeywords : card.reversedKeywords,
+        cardId: card.id,
+        createdAt: new Date(), // 仮の作成日時
       };
     });
   };
@@ -104,7 +109,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   // カードめくり状態・選択カードの管理をここで行う
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
-  const [selectedCard, setSelectedCard] = useState<CardPlacement | null>(null);
+  const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
   const [isRevealingComplete, setIsReadingComplete] = useState(false);
 
   const handleRevealAll = () => {

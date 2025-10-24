@@ -27,13 +27,23 @@ export function SpreadSettings({
   const { x, y } = selected;
   const draftV:
     | SpreadCell
-    | { x: number; y: number; vLabel?: string; vOrder?: number } = cells.find(
-    (c) => c.x === x && c.y === y && c.vLabel != null && c.vLabel != ""
+    | { x: number; y: number; position?: string; order?: number } = cells.find(
+    (c) =>
+      c.x === x &&
+      c.y === y &&
+      c.position != null &&
+      c.position != "" &&
+      !c.isHorizontal
   ) ?? { x, y };
   const draftH:
     | SpreadCell
-    | { x: number; y: number; hLabel?: string; hOrder?: number } = cells.find(
-    (c) => c.x === x && c.y === y && c.hLabel != null && c.hLabel != ""
+    | { x: number; y: number; position?: string; order?: number } = cells.find(
+    (c) =>
+      c.x === x &&
+      c.y === y &&
+      c.position != null &&
+      c.position != "" &&
+      c.isHorizontal
   ) ?? { x, y };
 
   return (
@@ -45,9 +55,9 @@ export function SpreadSettings({
       <div className="grid gap-2">
         <div className="border gap-2 p-2 rounded-md">
           <label className="text-sm font-medium">縦カード 意味</label>
-          <Input value={draftV.vLabel ?? ""} placeholder="例：現在の状況" />
+          <Input value={draftV.position ?? ""} placeholder="例：現在の状況" />
           <label className="text-sm font-medium">縦カードの表示順</label>
-          <Input type="number" disabled value={draftV.vOrder ?? ""} />
+          <Input type="number" disabled value={draftV.order ?? ""} />
         </div>
         <div className="flex gap-2 justify-end">
           <Button variant="destructive" onClick={() => onRemove(x, y)}>
@@ -62,9 +72,9 @@ export function SpreadSettings({
 
         <div className="border gap-2 p-2 rounded-md">
           <label className="text-sm font-medium">横カード 意味</label>
-          <Input value={draftH.hLabel ?? ""} placeholder="例：課題・障害" />
+          <Input value={draftH.position ?? ""} placeholder="例：課題・障害" />
           <label className="text-sm font-medium">横カードの表示順</label>
-          <Input type="number" disabled value={draftH.hOrder ?? ""} />
+          <Input type="number" disabled value={draftH.order ?? ""} />
         </div>
         <div className="flex gap-2 justify-end">
           <Button variant="destructive" onClick={() => onRemove(x, y)}>

@@ -38,8 +38,7 @@ export class Http {
           // 認証エラー時のトークンリフレッシュ処理
           logWithContext(
             "warn",
-            `[ApiClient] Authentication error ${response.status} on ${method} ${path}`,
-            { response }
+            `[ApiClient] Authentication error ${response.status} on ${method} ${path}`
           );
           await this._refresh();
 
@@ -52,9 +51,7 @@ export class Http {
             return retryResponse.data as T;
           }
         }
-        logWithContext("error", `[ApiClient] API Error ${response.status}`, {
-          response,
-        });
+        logWithContext("error", `[ApiClient] API Error ${response.status}`);
         throw new HttpError(
           response.status,
           `API Error ${response.status} ${method} ${path}`,
@@ -62,7 +59,7 @@ export class Http {
         );
       }
 
-      logWithContext("info", "[ApiClient] Response data:");
+      logWithContext("info", "[ApiClient] Response success");
       return response.data as T;
     } catch (error) {
       // ネットワークエラーの変換
@@ -101,8 +98,7 @@ export class Http {
       if (res.status < 200 || res.status >= 300) {
         logWithContext(
           "error",
-          `[ApiClient] Token refresh failed with status: ${res.status}`,
-          { res }
+          `[ApiClient] Token refresh failed with status: ${res.status}`
         );
         throw new HttpError(
           res.status,
@@ -110,7 +106,7 @@ export class Http {
           res
         );
       }
-      logWithContext("info", "[ApiClient] Token refresh successful", { res });
+      logWithContext("info", "[ApiClient] Token refresh successful");
       const { token } = res.data;
       await this.saveAccessToken(token);
       return res;

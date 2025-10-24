@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type {
-  CardPlacement,
+  DrawnCard,
   Plan,
   ReadingCategory,
   Spread,
@@ -20,8 +20,8 @@ interface ChatPanelProps {
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory;
-  drawnCards: CardPlacement[];
-  selectedCard?: CardPlacement | null;
+  drawnCards: DrawnCard[];
+  selectedCard?: DrawnCard | null;
   isRevealingComplete?: boolean;
   onRequestRevealAll?: () => void;
   onBack: () => void;

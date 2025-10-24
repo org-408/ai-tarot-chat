@@ -45,15 +45,7 @@ export default function SpreadsPage() {
     const cells = s?.cells || [];
     const _lastOrder = cells.reduce(
       (max: number, cell: SpreadCell) =>
-        Math.max(
-          max,
-          cell.vOrder !== undefined && cell.vOrder !== null
-            ? cell.vOrder
-            : -Infinity,
-          cell.hOrder !== undefined && cell.hOrder !== null
-            ? cell.hOrder
-            : -Infinity
-        ),
+        Math.max(max, cell.order != null ? cell.order : -Infinity),
       -Infinity
     );
     setLastOrder(

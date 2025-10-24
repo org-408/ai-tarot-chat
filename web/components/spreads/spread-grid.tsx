@@ -51,8 +51,8 @@ export function SpreadGrid({
               if (cs.length > 1) console.log("cs: ", { x, y, cs });
               const isSel = selected && selected.x === x && selected.y === y;
 
-              const hasV = cs.find((c) => c.vLabel != null);
-              const hasH = cs.find((c) => c.hLabel != null);
+              const hasV = cs.find((c) => !c.isHorizontal);
+              const hasH = cs.find((c) => c.isHorizontal);
               if (cs.length > 1) console.log({ x, y, hasV, hasH });
 
               return (
@@ -77,7 +77,7 @@ export function SpreadGrid({
                             "bg-blue-500/80 border-blue-600 text-white shadow z-30"
                           )}
                         >
-                          {hasV.vOrder ?? " "}
+                          {hasV.order ?? " "}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent
@@ -86,7 +86,7 @@ export function SpreadGrid({
                       >
                         <div className="space-y-1">
                           <p className="font-semibold text-sm text-blue-300/80">
-                            {hasV.vLabel || `カード ${hasV.vOrder}`}
+                            {hasV.position || `カード ${hasV.order}`}
                           </p>
                         </div>
                       </TooltipContent>
@@ -112,7 +112,7 @@ export function SpreadGrid({
                             "bg-pink-500/80 border-pink-600 text-white shadow z-40"
                           )}
                         >
-                          {hasH.hOrder ?? " "}
+                          {hasH.order ?? " "}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent
@@ -121,7 +121,7 @@ export function SpreadGrid({
                       >
                         <div className="space-y-1">
                           <p className="font-semibold text-sm text-pink-300/80">
-                            {hasH.hLabel || `カード ${hasH.hOrder}`}
+                            {hasH.position || `カード ${hasH.order}`}
                           </p>
                         </div>
                       </TooltipContent>

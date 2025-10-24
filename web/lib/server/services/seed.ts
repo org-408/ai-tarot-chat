@@ -200,8 +200,8 @@ export class SeedService {
     }
 
     // 真偽値の変換
-    if (value === "true") return true;
-    if (value === "false") return false;
+    if (value.toLowerCase() === "true") return true;
+    if (value.toLowerCase() === "false") return false;
 
     // 配列フィールドの変換（セミコロンまたはスラッシュ区切り）
     if (

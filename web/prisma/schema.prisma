@@ -274,12 +274,12 @@ model SpreadCell {
   id        String   @id @default(cuid())
   x         Int
   y         Int
-  vLabel    String?
-  hLabel    String?
-  vOrder    Int?
-  hOrder    Int?
-  spread    Spread?   @relation(fields: [spreadId], references: [id])
+  order     Int
+  position  String   // 位置名（例："Past", "Present", "Future"）
+  description String @db.Text // 位置説明
+  isHorizontal Boolean @default(false) // 横向きかどうか
   spreadId  String
+  spread    Spread?   @relation(fields: [spreadId], references: [id])
 
   @@index([spreadId])
 }
@@ -445,8 +445,11 @@ model DrawnCard {
   keywords  String[]  // 選択されたキーワード配列
   x Int
   y Int
-  isReversed Boolean
   order     Int      // 引いた順番
+  position  String   // スプレッド上の位置名
+  description String @db.Text // カードの説明文（その時点でのスナップショット）
+  isReversed Boolean  @default(false) // 逆位置かどうか
+  isHorizontal Boolean @default(false) // 横向きかどうか
   createdAt DateTime @default(now())
 
   @@index([readingId])

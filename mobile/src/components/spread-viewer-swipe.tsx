@@ -1,11 +1,7 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import type {
-  CardPlacement,
-  Spread,
-  TarotCard,
-} from "../../../shared/lib/types";
+import type { DrawnCard, Spread, TarotCard } from "../../../shared/lib/types";
 import type { ViewModeType } from "../types";
 import CarouselView from "./carousel-view";
 import GridView from "./grid-view";
@@ -14,11 +10,11 @@ const CARD_ASPECT = 300 / 527;
 
 interface SpreadViewerProps {
   spread: Spread;
-  drawnCards: CardPlacement[];
+  drawnCards: DrawnCard[];
   flippedCards: Set<string>;
   setFlippedCards: React.Dispatch<React.SetStateAction<Set<string>>>;
-  selectedCard: CardPlacement | null;
-  setSelectedCard: React.Dispatch<React.SetStateAction<CardPlacement | null>>;
+  selectedCard: DrawnCard | null;
+  setSelectedCard: React.Dispatch<React.SetStateAction<DrawnCard | null>>;
   viewMode: ViewModeType;
   setViewMode: React.Dispatch<React.SetStateAction<ViewModeType>>;
 }
@@ -49,7 +45,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
     setFlippedCards(newFlipped);
   };
 
-  const handleCardClick = (card: CardPlacement): void => {
+  const handleCardClick = (card: DrawnCard): void => {
     setSelectedCard(card);
   };
 
@@ -234,7 +230,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
               </button>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full flex items-center justify-center">
-                  {selectedCard.number}
+                  {selectedCard.order}
                 </div>
                 <h3 className="text-base font-bold text-purple-900">
                   位置の意味: {selectedCard.position}
@@ -254,8 +250,8 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
                   }}
                 >
                   <img
-                    src={getCardImagePath(selectedCard.card)}
-                    alt={selectedCard.card.name}
+                    src={getCardImagePath(selectedCard.card!)}
+                    alt={selectedCard.card!.name}
                     className={`w-full h-full object-cover ${
                       selectedCard.isReversed ? "transform rotate-180" : ""
                     }`}
@@ -264,7 +260,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
               </div>
               <div className="text-sm text-gray-700 mb-2">
                 カード:{" "}
-                <span className="font-semibold">{selectedCard.card.name}</span>
+                <span className="font-semibold">{selectedCard.card!.name}</span>
                 {selectedCard.isReversed && (
                   <span className="text-red-600 ml-2">(逆位置)</span>
                 )}
@@ -272,8 +268,8 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
               <div className="text-xs text-gray-600 mb-4">
                 キーワード:{" "}
                 {selectedCard.isReversed
-                  ? selectedCard.card.reversedKeywords.join("、")
-                  : selectedCard.card.uprightKeywords.join("、")}
+                  ? selectedCard.card!.reversedKeywords.join("、")
+                  : selectedCard.card!.uprightKeywords.join("、")}
               </div>
             </motion.div>
           </motion.div>
