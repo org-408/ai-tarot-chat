@@ -1,5 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { ChatAnthropic } from "@langchain/anthropic";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { ChatVertexAI } from "@langchain/google-vertexai";
 import { ChatOpenAI } from "@langchain/openai";
 import {
@@ -137,10 +138,10 @@ export async function POST(req: Request) {
     // LangChain 1.0のモデル取得
     const model = getModel(provider);
 
-    // メッセージ履歴を構築
+    // メッセージ履歴を構築 - LangChainのメッセージクラスを使用
     const messages = [
-      { role: "system", content: systemContent },
-      ...clientMessages,
+      new SystemMessage(systemContent),
+      ...clientMessages.map((msg) => new HumanMessage(msg.content)),
     ];
 
     // LangChain 1.0: .stream()でトークンレベルストリーミング
@@ -155,7 +156,7 @@ export async function POST(req: Request) {
             // チャンクからcontentを抽出
             const content = chunk.content;
 
-            if (content) {
+            if (content && typeof content === "string") {
               // SSE形式: data: {chunk}\n\n
               const sseData = `data: ${JSON.stringify({ content })}\n\n`;
               controller.enqueue(encoder.encode(sseData));
@@ -165,9 +166,9 @@ export async function POST(req: Request) {
           // ストリーム終了シグナル
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
-        } catch (error) {
-          console.error("[chat/route] Stream error:", error);
-          controller.error(error);
+        } catch (streamError) {
+          console.error("[chat/route] Stream error:", streamError);
+          controller.error(streamError);
         }
       },
     });
