@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type {
-  CardPlacement,
+  DrawnCard,
   ReadingCategory,
   Spread,
   Tarotist,
@@ -11,7 +11,7 @@ interface UseChatParams {
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory;
-  drawnCards: CardPlacement[];
+  drawnCards: DrawnCard[];
 }
 
 interface UseChatReturn {
