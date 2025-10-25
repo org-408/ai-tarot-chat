@@ -31,7 +31,6 @@ body {
   left: 0;
   right: 0;
   bottom: 0; /* ✅ ボトムナビ削除のため bottom: 0 に変更 */
-  overflow: auto;
   background: transparent;
   padding-bottom: env(safe-area-inset-bottom); /* ✅ セーフエリア対応 */
 }

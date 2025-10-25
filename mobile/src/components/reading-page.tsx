@@ -146,34 +146,50 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         }}
       />
 
-      {/* カード表示エリア */}
-      {drawnCards.length > 0 && (
-        <SpreadViewerSwipe
-          spread={spread}
-          drawnCards={drawnCards}
-          flippedCards={flippedCards}
-          setFlippedCards={setFlippedCards}
-          selectedCard={selectedCard}
-          setSelectedCard={setSelectedCard}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-        />
-      )}
+      <div
+        className="fixed left-0 right-0 h-[45vh] z-10"
+        style={{
+          top: "calc(50px + env(safe-area-inset-top))",
+          maxWidth: "400px",
+          margin: "0 auto",
+        }}
+      >
+        {/* 上半分 */}
+        {/* カード表示エリア */}
+        {drawnCards.length > 0 && (
+          <SpreadViewerSwipe
+            spread={spread}
+            drawnCards={drawnCards}
+            flippedCards={flippedCards}
+            setFlippedCards={setFlippedCards}
+            selectedCard={selectedCard}
+            setSelectedCard={setSelectedCard}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+          />
+        )}
+      </div>
 
-      {/* チャットパネル */}
-      {drawnCards.length > 0 && (
-        <ChatPanel
-          currentPlan={currentPlan!}
-          tarotist={tarotist}
-          spread={spread}
-          category={category}
-          drawnCards={drawnCards}
-          // selectedCard={selectedCard}
-          isRevealingComplete={isRevealingComplete}
-          onRequestRevealAll={handleRevealAll}
-          onBack={handleBack}
-        />
-      )}
+      <div
+        style={{ marginTop: "45vh", height: "55vh" }}
+        className="left-0 right-0 pb-20"
+      >
+        {/* 下半分 */}
+        {/* チャットパネル */}
+        {drawnCards.length > 0 && (
+          <ChatPanel
+            currentPlan={currentPlan!}
+            tarotist={tarotist}
+            spread={spread}
+            category={category}
+            drawnCards={drawnCards}
+            // selectedCard={selectedCard}
+            isRevealingComplete={isRevealingComplete}
+            onRequestRevealAll={handleRevealAll}
+            onBack={handleBack}
+          />
+        )}
+      </div>
 
       {/* 占い師ダイアログ */}
       <ProfileDialog

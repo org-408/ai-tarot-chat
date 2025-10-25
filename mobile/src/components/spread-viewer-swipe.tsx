@@ -196,7 +196,7 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`h-1 rounded-full transition-all ${
+            className={`w-2 h-2 rounded-full transition-all ${
               viewMode === mode
                 ? "bg-purple-400/70 w-8"
                 : "bg-purple-200/40 w-1"

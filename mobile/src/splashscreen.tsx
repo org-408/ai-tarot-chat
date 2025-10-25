@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { DEFAULT_MASTER_DATA } from "./assets/master-data";
 import { DebugMenu } from "./components/debug-menu";
 
 type TarotSplashScreenProps = {
@@ -20,6 +21,17 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
   const [devMenuOpen, setDevMenuOpen] = useState(false);
 
   const cardCss = "w-20 h-35";
+
+  const cards = DEFAULT_MASTER_DATA.decks[0].cards || [];
+
+  const targetCount = 22;
+  const drawRandomCards = Array.from({ length: 2 }, (_, i) => {
+    const randomIndex = Math.floor(Math.random() * targetCount);
+    return {
+      ...cards[randomIndex],
+      instanceId: `drawn-${Date.now()}-${i}`,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4 relative overflow-hidden">
@@ -93,7 +105,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
                   }}
                 >
                   <img
-                    src="/cards/0_fool.png"
+                    src={`/cards/${drawRandomCards[0].code}.png`}
                     alt="The Fool"
                     className="w-full h-full object-cover rounded-lg"
                   />
@@ -132,7 +144,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
                 }}
               >
                 <img
-                  src="/cards/1_magician.png"
+                  src={`/cards/${drawRandomCards[1].code}.png`}
                   alt="The Magician"
                   className="w-full h-full object-cover rounded-lg"
                 />

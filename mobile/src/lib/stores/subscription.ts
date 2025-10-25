@@ -27,6 +27,7 @@ interface SubscriptionState {
   listener: (info: CustomerInfo) => Promise<void>;
   login: (userId: string) => Promise<CustomerInfo>;
   logout: () => Promise<CustomerInfo>;
+  retryInitAndLogin: () => Promise<CustomerInfo>;
   purchasePlan: (targetPlan: Plan) => Promise<CustomerInfo>;
   restorePurchases: () => Promise<CustomerInfo>;
   refreshCustomerInfo: () => Promise<CustomerInfo>;
@@ -222,7 +223,35 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           logWithContext("error", "[SubscriptionStore] Login failed", {
             error: error instanceof Error ? error.message : String(error),
           });
-          throw error;
+
+          // プラン変更の失敗に関わるのでリトライ
+          logWithContext(
+            "info",
+            "[SubscriptionStore] Retrying login to RevenueCat"
+          );
+          try {
+            // 初期化・ログインの再実行
+            const retryInfo = await get().retryInitAndLogin();
+
+            set({
+              customerInfo: retryInfo,
+            });
+
+            logWithContext(
+              "info",
+              "[SubscriptionStore] Login retried and completed successfully"
+            );
+            return retryInfo;
+          } catch (retryError) {
+            const retryErrorMessage =
+              retryError instanceof Error
+                ? retryError.message
+                : String(retryError);
+            logWithContext("error", "[SubscriptionStore] Login retry failed", {
+              error: retryErrorMessage,
+            });
+            throw retryError;
+          }
         }
       },
 
@@ -259,6 +288,49 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           logWithContext("error", "[SubscriptionStore] Logout failed", {
             error: error instanceof Error ? error.message : String(error),
           });
+          throw error;
+        }
+      },
+
+      retryInitAndLogin: async () => {
+        logWithContext(
+          "info",
+          "[SubscriptionStore] Retrying initialization and login"
+        );
+
+        try {
+          // 再初期化
+          await subscriptionService.initialize();
+
+          // 再ログイン
+          const userId = useAuthStore.getState().payload!.user!.id;
+          if (!userId) {
+            throw new Error("User ID is missing for re-login");
+          }
+          const info = await subscriptionService.login(userId);
+
+          set({
+            isInitialized: true,
+            isLoggedIn: true,
+            customerInfo: info,
+          });
+
+          logWithContext(
+            "info",
+            "[SubscriptionStore] Initialization and login retried successfully",
+            {
+              entitlements: Object.keys(info.entitlements.active),
+            }
+          );
+          return info;
+        } catch (error) {
+          logWithContext(
+            "error",
+            "[SubscriptionStore] Retry of initialization and login failed",
+            {
+              error: error instanceof Error ? error.message : String(error),
+            }
+          );
           throw error;
         }
       },
@@ -330,15 +402,8 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           );
 
           try {
-            // 再初期化
-            await get().init();
-
-            // 再ログイン
-            const userId = useAuthStore.getState().payload!.user!.id;
-            if (!userId) {
-              throw new Error("User ID is missing for re-login");
-            }
-            await get().login(userId);
+            // 初期化・ログインを再実行
+            await get().retryInitAndLogin();
 
             // 再購入
             const customerInfo = await subscriptionService.purchase(targetPlan);

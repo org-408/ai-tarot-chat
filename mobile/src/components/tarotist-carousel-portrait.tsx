@@ -48,19 +48,19 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     dragFree: false,
   });
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+    const index = emblaApi.selectedScrollSnap();
+    // スクロール時に対応する占い師も選択状態にする
+    setSelectedTarotist(availableTarotists[index]);
+  }, [emblaApi, availableTarotists, setSelectedTarotist]);
 
   useEffect(() => {
     if (!emblaApi) return;
     setScrollSnaps(emblaApi.scrollSnapList());
     emblaApi.on("select", onSelect);
-    onSelect();
 
     return () => {
       emblaApi.off("select", onSelect);
@@ -82,6 +82,22 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     }
     setSelectMode("portrait");
   };
+
+  // selectModeが変わった時に現在の占い師位置にスクロール
+  useEffect(() => {
+    if (!emblaApi || !selectedTarotist || mode !== "tarotist") return;
+
+    const currentIndex = availableTarotists.findIndex(
+      (t) => t.no === selectedTarotist.no
+    );
+
+    if (currentIndex !== -1) {
+      // 次のフレームまで待ってからスクロール（Emblaの初期化完了を待つ）
+      requestAnimationFrame(() => {
+        emblaApi.scrollTo(currentIndex, false);
+      });
+    }
+  }, [mode, emblaApi, selectedTarotist, availableTarotists]);
 
   if (availableTarotists.length === 0) {
     return (
@@ -195,7 +211,12 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
         <div className="flex h-full touch-pan-y">
           {availableTarotists.map((tarotist, index) => {
             const isAvailable = canUseTarotist(tarotist.plan!);
-            const isActive = index === selectedIndex;
+            const currentIndex = selectedTarotist
+              ? availableTarotists.findIndex(
+                  (t) => t.no === selectedTarotist.no
+                )
+              : 0;
+            const isActive = index === currentIndex;
             const colors = getTarotistColor(tarotist);
 
             return (
@@ -360,6 +381,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                                   onChangePlan(
                                     (tarotist.plan?.code as UserPlan) || "GUEST"
                                   );
+                                  handleSelectTarotist(tarotist);
                                 }}
                                 disabled={isChangingPlan}
                                 className="w-full py-2 rounded-xl text-white font-bold text-base shadow-lg disabled:opacity-50"
@@ -433,7 +455,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
           <button
             key={index}
             className={`h-4 mx-2 rounded-full transition-all ${
-              index === selectedIndex
+              index === emblaApi?.selectedScrollSnap()
                 ? "w-8 h-6 bg-purple-500"
                 : "w-4 bg-gray-300"
             }`}

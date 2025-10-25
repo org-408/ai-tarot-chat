@@ -287,12 +287,12 @@ const SalonPage: React.FC<SalonPageProps> = ({
             />
           </div>
 
-          {/* 下半分 */}
-          {/* カテゴリー・スプレッド選択 */}
           <div
             style={{ marginTop: "45vh", height: "55vh" }}
-            className="overflow-auto pb-20"
+            className="overflow-auto pb-53"
           >
+            {/* 下半分 */}
+            {/* カテゴリー・スプレッド選択 */}
             <CategorySpreadSelector
               currentPlan={currentPlan}
               availableCategories={availableCategories}
@@ -303,6 +303,15 @@ const SalonPage: React.FC<SalonPageProps> = ({
               setSelectedSpread={setSelectedSpread}
               userInput={userInput}
               setUserInput={setUserInput}
+            />
+
+            {/* プランアップグレード案内 */}
+            <UpgradeGuide
+              currentPlan={currentPlan}
+              upgradablePlans={upgradablePlans}
+              getPlanColors={getPlanColors}
+              handleChangePlan={handleChangePlan}
+              isChangingPlan={isChangingPlan}
             />
           </div>
 
@@ -330,17 +339,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
             )} */}
           </div>
         </>
-      )}
-
-      {/* プランアップグレード案内 */}
-      {selectMode !== "tarotist" && (
-        <UpgradeGuide
-          currentPlan={currentPlan}
-          upgradablePlans={upgradablePlans}
-          getPlanColors={getPlanColors}
-          handleChangePlan={handleChangePlan}
-          isChangingPlan={isChangingPlan}
-        />
       )}
     </div>
   );
@@ -632,11 +630,11 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
   return (
     <div className="mt-6 space-y-3">
       {currentPlan.code !== "PREMIUM" && (
-        <div className="text-center text-sm text-gray-600 mb-3">
+        <div className="text-center text-sm text-gray-800 mb-3">
           💡 もっと詳しく占うなら
           {upgradablePlans && upgradablePlans.length > 0 && (
-            <div className="mt-6 space-y-3">
-              <div className="text-xs text-center text-gray-500">
+            <div className="mt-1 space-y-3">
+              <div className="text-xs text-center text-gray-800">
                 💡{" "}
                 {isGuest
                   ? "無料登録でもっと楽しむ。本格プランもご用意"

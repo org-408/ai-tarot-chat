@@ -80,7 +80,7 @@ const GridView: React.FC<GridViewProps> = ({
         >
           <div className="relative">
             {/* バッジ本体 - 淡い色で控えめに、横幅を広く */}
-            <div className="relative bg-white/20 backdrop-blur-sm text-purple-600/70 px-8 py-1 rounded-full shadow-sm border border-purple-100/40">
+            <div className="relative bg-white/20 backdrop-blur-sm text-purple-600/70 px-2 py-1 rounded-full shadow-sm border border-purple-100/40">
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <span className="text-sm font-normal tracking-wide opacity-70">
                   {spread.name}
