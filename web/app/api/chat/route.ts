@@ -1,5 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
+import { google } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
@@ -9,6 +10,8 @@ import {
   Spread,
   Tarotist,
 } from "../../../../shared/lib/types";
+
+const debugMode = process.env.DEBUG_MODE === "true";
 
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
@@ -32,11 +35,12 @@ const providers = {
   gpt41: openai("gpt-4.1"),
   gpt5: openai("gpt-5"),
   claude_s: anthropic("claude-sonnet-4-5"),
+  google: google("gemini-2.5-pro"),
 };
 
 export async function POST(req: Request) {
   const {
-    messages: uiMessages,
+    messages: clientMessages,
     tarotist,
     spread,
     category,
@@ -48,13 +52,6 @@ export async function POST(req: Request) {
     category: ReadingCategory;
     drawnCards: DrawnCard[];
   } = await req.json();
-  logWithContext("info", "[chat/route] POST req", {
-    messages: uiMessages,
-    tarotist,
-    spread,
-    category,
-    path: "/api/chat",
-  });
   const provider =
     tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 
@@ -119,20 +116,34 @@ export async function POST(req: Request) {
     `- です・ます調で話すこと\n` +
     `- 1回の回答は200文字以上300文字以内とすること\n`;
 
-  console.log(`[chat/route] `, {
-    uiMessages,
+  logWithContext("info", "[chat/route] POST req", {
+    messages: clientMessages,
+    tarotist,
+    spread,
+    category,
+    debugMode,
+    system,
+    provider,
+    path: "/api/chat",
+  });
+  console.log(`[chat/route] Received POST request`, {
+    clientMessages,
     tarotist,
     spread,
     category,
     drawnCards,
+    debugMode,
     system,
     provider,
+    path: "/api/chat",
   });
 
-  const messages = convertToModelMessages(uiMessages);
+  const messages = convertToModelMessages(clientMessages);
 
   const result = streamText({
-    model: providers[provider as keyof typeof providers],
+    model: debugMode
+      ? providers["google"]
+      : providers[provider as keyof typeof providers],
     messages: messages.length > 0 ? messages : [{ role: "user", content: "" }],
     system,
     // onChunk: (chunk) => {
