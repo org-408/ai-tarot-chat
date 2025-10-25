@@ -9,7 +9,7 @@
     "db:generate": "npx prisma generate",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio",
-    "db:seed": "tsx prisma/seed.ts && tsx prisma/seed-master.ts",
+    "db:seed": "tsx prisma/seed.ts && tsx prisma/generate-master.ts",
     "db:master": "tsx prisma/generate-master.ts",
     "ui:add": "npx shadcn@latest add ",
     "dev": "next dev --turbopack",
