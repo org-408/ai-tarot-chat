@@ -73,9 +73,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
   }, [messages, status]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
 
   // キーボード高さの検出 - マウント時に即座にセットアップ
   useEffect(() => {
@@ -216,6 +217,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     };
   }, [isRevealingComplete]);
 
+  useEffect(() => {
+    console.log("status changed:", status);
+  }, [status]);
+
   return (
     <div className="fixed bottom-0 left-0 right-0 h-1/2 bg-white flex flex-col shadow-[0_-4px_12px_rgba(0,0,0,0.08),0_-2px_4px_rgba(0,0,0,0.04)]">
       {/* Messages Area */}
@@ -241,19 +246,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           );
         })}
 
-        {status === "streaming" && (
+        {(status === "submitted" || status === "streaming") && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                className="w-4 h-4 bg-gray-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0ms" }}
               />
               <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                className="w-4 h-4 bg-gray-400 rounded-full animate-bounce"
                 style={{ animationDelay: "150ms" }}
               />
               <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                className="w-4 h-4 bg-gray-400 rounded-full animate-bounce"
                 style={{ animationDelay: "300ms" }}
               />
             </div>
