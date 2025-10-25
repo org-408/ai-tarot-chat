@@ -11,7 +11,7 @@ import {
   Tarotist,
 } from "../../../../shared/lib/types";
 
-const debugMode = process.env.DEBUG_MODE === "true";
+const debugMode = process.env.AI_DEBUG_MODE === "true";
 
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
