@@ -66,11 +66,13 @@ const SalonPage: React.FC<SalonPageProps> = ({
       const tarotistPlan = masterData.plans?.find(
         (p: Plan) => p.code === tarotist.plan!.code
       );
-      return (
-        tarotistPlan &&
-        tarotistPlan.no <= (currentPlan!.no || 0) &&
-        tarotist.provider !== "OFFLINE" // TODO:OFFLINEプランの占い師は除外
-      );
+      // UIを変更し、全員見せるようにしたので修正
+      return (tarotistPlan && tarotistPlan.no >= 0) || !tarotistPlan;
+      // return (
+      //   tarotistPlan &&
+      //   tarotistPlan.no <= (currentPlan!.no || 0) &&
+      //   tarotist.provider !== "OFFLINE" // TODO:OFFLINEプランの占い師は除外
+      // );
     });
   }, [masterData, currentPlan]);
 
