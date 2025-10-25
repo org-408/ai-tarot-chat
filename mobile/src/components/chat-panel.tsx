@@ -4,7 +4,7 @@ import { Keyboard } from "@capacitor/keyboard";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type {
   DrawnCard,
   Plan,
@@ -180,17 +180,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setIsFocused(false);
   };
 
-  const handleRevealAll = useCallback(() => {
-    if (currentPlan.code !== "MASTER") {
-      const prompt =
-        "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
-      sendMessage({ text: prompt });
-    }
-  }, [currentPlan.code, sendMessage]);
-
   useEffect(() => {
-    if (isRevealingComplete) handleRevealAll();
-  }, [isRevealingComplete, handleRevealAll]);
+    if (isRevealingComplete) {
+      if (currentPlan.code !== "MASTER") {
+        const prompt =
+          "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
+        sendMessage({ text: prompt });
+      }
+    }
+  }, [currentPlan.code, isRevealingComplete, sendMessage]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
