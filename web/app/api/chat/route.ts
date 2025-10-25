@@ -1,4 +1,5 @@
 import { logWithContext } from "@/lib/server/logger/logger";
+import { createResponse } from "better-sse";
 import { createAgent } from "langchain";
 import {
   DrawnCard,
@@ -31,7 +32,7 @@ function getModelString(provider: string): string {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     const {
       messages: clientMessages,
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
       spread: Spread;
       category: ReadingCategory;
       drawnCards: DrawnCard[];
-    } = await req.json();
+    } = await request.json();
 
     logWithContext("info", "[chat/route] POST req", {
       messages: clientMessages,
@@ -116,72 +117,63 @@ export async function POST(req: Request) {
       `- です・ます調で話すこと\n` +
       `- 1回の回答は200文字以上300文字以内とすること\n`;
 
-    console.log(`[chat/route] LangChain 1.0 streaming`, {
+    console.log(`[chat/route] LangChain 1.0 + better-sse streaming`, {
       clientMessages,
       tarotist,
       provider,
+      systemPrompt,
       modelString: getModelString(provider),
     });
 
-    // LangChain 1.0: createAgentでエージェント作成
-    const agent = createAgent({
-      model: getModelString(provider),
-      tools: [], // タロット占いではツール不要
-      systemPrompt,
-    });
+    // better-sse の createResponse を使用
+    return createResponse(request, async (session) => {
+      try {
+        // LangChain 1.0: createAgentでエージェント作成
+        const agent = createAgent({
+          model: getModelString(provider),
+          tools: [], // タロット占いではツール不要
+          systemPrompt,
+        });
 
-    // メッセージ履歴を構築
-    const messages = clientMessages.map((msg) => ({
-      role: msg.role as "user" | "assistant",
-      content: msg.content,
-    }));
+        // メッセージ履歴を構築
+        const messages = clientMessages.map((msg) => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+        }));
 
-    // LangChain 1.0: streamMode: "messages" でトークンレベルストリーミング
-    const stream = await agent.stream({ messages }, { streamMode: "messages" });
+        // LangChain 1.0: streamMode: "messages" でトークンレベルストリーミング
+        const stream = await agent.stream(
+          { messages },
+          { streamMode: "messages" }
+        );
 
-    // ReadableStreamを作成してSSE形式で返す
-    const encoder = new TextEncoder();
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        try {
-          // streamMode: "messages" は [token, metadata] のタプルを返す
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          for await (const [token, metadata] of stream) {
-            // contentBlocksから実際のテキストを抽出
-            if (token.contentBlocks && Array.isArray(token.contentBlocks)) {
-              for (const block of token.contentBlocks) {
-                if (block.type === "text" && block.text) {
-                  // SSE形式: data: {content}\n\n
-                  const sseData = `data: ${JSON.stringify({
-                    content: block.text,
-                  })}\n\n`;
-                  controller.enqueue(encoder.encode(sseData));
-                }
+        // better-sse でストリーム送信 NOTE: metadataは現状使っていない。使用したい場合は[token, metadata]の形で受け取る
+        for await (const [token] of stream) {
+          // contentBlocksから実際のテキストを抽出
+          if (token.contentBlocks && Array.isArray(token.contentBlocks)) {
+            for (const block of token.contentBlocks) {
+              if (block.type === "text" && block.text) {
+                // better-sse の push メソッドでSSE送信
+                await session.push({ content: block.text }, "message");
               }
             }
           }
-
-          // ストリーム終了シグナル
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          controller.close();
-        } catch (streamError) {
-          console.error("[chat/route] Stream error:", streamError);
-          const errorMessage =
-            streamError instanceof Error
-              ? streamError.message
-              : "Unknown error";
-          controller.error(new Error(errorMessage));
         }
-      },
-    });
 
-    return new Response(readableStream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-        "X-Accel-Buffering": "no", // nginx buffering無効化
-      },
+        // 終了シグナル
+        await session.push("[DONE]", "done");
+      } catch (streamError) {
+        console.error("[chat/route] Stream error:", streamError);
+        await session.push(
+          {
+            error:
+              streamError instanceof Error
+                ? streamError.message
+                : "Streaming error occurred",
+          },
+          "error"
+        );
+      }
     });
   } catch (error) {
     console.error("[chat/route] Error:", error);
