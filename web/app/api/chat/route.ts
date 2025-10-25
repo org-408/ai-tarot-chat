@@ -125,9 +125,9 @@ export async function POST(req: Request) {
     model: providers[provider as keyof typeof providers],
     messages,
     system,
-    // onChunk: (chunk) => {
-    //   console.log(`[chat/route] chunk: `, chunk);
-    // },
+    onChunk: (chunk) => {
+      console.log(`[chat/route] chunk: `, chunk);
+    },
   });
 
   // AI SDK v5の標準レスポンス形式

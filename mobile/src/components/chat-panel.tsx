@@ -38,7 +38,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
-  const { setInput, messages, handleSubmit, status } = useChat({
+  const [inputValue, setInputValue] = useState("");
+  const { messages, handleSubmit, status } = useChat({
     api: `${domain}/api/chat`,
     body: {
       tarotist,
@@ -54,7 +55,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     },
   });
 
-  const [inputValue, setInputValue] = useState("");
+  // const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [isKeyboardReady, setIsKeyboardReady] = useState(false);
@@ -140,7 +141,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
-      setInput(inputValue.trim());
+      setInputValue(inputValue.trim());
       handleSubmit();
       setInputValue("");
       if (textareaRef.current) {
@@ -178,16 +179,30 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setIsFocused(false);
   };
 
+  const [sentComplete, setSentComplete] = useState(false);
+
   useEffect(() => {
-    if (isRevealingComplete) {
+    console.log(
+      "[ChatPanel] isRevealingComplete or input changed:",
+      isRevealingComplete,
+      sentComplete,
+      currentPlan.code !== "MASTER"
+    );
+    if (isRevealingComplete && !sentComplete) {
       if (currentPlan.code !== "MASTER") {
         const prompt =
           "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
-        setInput(prompt);
         handleSubmit();
+        setInputValue("");
+        setSentComplete(true);
+        console.log("[ChatPanel] Sent prompt after revealing complete:", {
+          prompt,
+          sentComplete,
+        });
       }
     }
-  }, [currentPlan.code, isRevealingComplete, handleSubmit, setInput]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealingComplete, sentComplete]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
