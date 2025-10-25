@@ -1,5 +1,7 @@
+import { useChat } from "@ai-sdk/react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
+import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -10,7 +12,6 @@ import type {
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
-import { useChat } from "../lib/hooks/use-chat";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
 
@@ -36,19 +37,24 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onRequestRevealAll,
   onBack,
 }) => {
-  // カスタムフック useChat を使用 - ストリーミングロジックを完全隠蔽
-  const {
-    messages,
-    currentStreamingMessage,
-    status,
-    error,
-    sendMessage,
-    stopStreaming,
-  } = useChat({
-    tarotist,
-    spread,
-    category,
-    drawnCards,
+  const domain = import.meta.env.VITE_BFF_URL;
+
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: `${domain}/api/chat`,
+      body: {
+        tarotist,
+        spread,
+        category,
+        drawnCards,
+      },
+    }),
+    onError: (err) => {
+      console.error("Chat error:", err);
+    },
+    onFinish: (message) => {
+      console.log("Chat finished:", message);
+    },
   });
 
   const [inputValue, setInputValue] = useState("");
@@ -58,20 +64,25 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // メッセージ変更時にログ出力（デバッグ用）
+  // デバッグ用: messagesの変更を監視
   useEffect(() => {
     console.log("Messages updated:", messages.length, "Status:", status);
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      console.log("Last message:", lastMessage);
+    }
   }, [messages, status]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, currentStreamingMessage]);
+  }, [messages]);
 
-  // キーボード高さの検出
+  // キーボード高さの検出 - マウント時に即座にセットアップ
   useEffect(() => {
     let showListener: PluginListenerHandle | undefined;
     let hideListener: PluginListenerHandle | undefined;
 
+    // Capacitor Keyboard API(ネイティブ環境)
     const setupCapacitorListeners = async () => {
       try {
         showListener = await Keyboard.addListener(
@@ -86,18 +97,22 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           setKeyboardHeight(0);
         });
 
+        // リスナー登録完了
         setIsKeyboardReady(true);
-      } catch (listenerError) {
+      } catch (error) {
+        // Capacitor が利用できない環境(Web)ではフォールバックを使用
         console.log(
           "Capacitor Keyboard not available, using web fallback",
-          listenerError
+          error
         );
-        setIsKeyboardReady(true);
+        setIsKeyboardReady(true); // Web環境でも準備完了とする
       }
     };
 
+    // 即座にセットアップ開始
     setupCapacitorListeners();
 
+    // Web環境のフォールバック(visualViewport)
     const handleResize = () => {
       if (window.visualViewport) {
         const offset = window.innerHeight - window.visualViewport.height;
@@ -108,8 +123,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       }
     };
 
+    // visualViewportも即座に登録
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", handleResize);
+      // 初回チェック
       const initialOffset = window.innerHeight - window.visualViewport.height;
       if (initialOffset > 0) {
         setKeyboardHeight(initialOffset);
@@ -124,50 +141,44 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     };
   }, []);
 
-  const handleSendMessage = useCallback(() => {
-    if (inputValue.trim() && status !== "streaming") {
-      sendMessage(inputValue.trim());
+  const handleSendMessage = () => {
+    if (inputValue.trim()) {
+      sendMessage({ text: inputValue.trim() });
       setInputValue("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
     }
-  }, [inputValue, status, sendMessage]);
+  };
 
-  const handleStopStreaming = useCallback(() => {
-    stopStreaming();
-  }, [stopStreaming]);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSendMessage();
-      }
-    },
-    [handleSendMessage]
-  );
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setInputValue(e.target.value);
-      e.target.style.height = "auto";
-      e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-    },
-    []
-  );
-
-  const handleFocus = useCallback(() => {
+  const handleFocus = () => {
     setIsFocused(true);
+
+    // キーボードの準備ができている場合は即座にスクロール
+    // そうでない場合は少し待つ
     const scrollDelay = isKeyboardReady ? 100 : 300;
+
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, scrollDelay);
-  }, [isKeyboardReady]);
+  };
 
-  const handleBlur = useCallback(() => {
+  const handleBlur = () => {
     setIsFocused(false);
-  }, []);
+  };
 
   useEffect(() => {
     if (isRevealingComplete) {
@@ -183,6 +194,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showBackButton, setShowBackButton] = useState(false);
 
+  // スクロールが一番下か判定;
   useEffect(() => {
     const container = messagesEndRef.current?.parentElement;
     if (!container) return;
@@ -196,6 +208,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     };
 
     container.addEventListener("scroll", handleScroll);
+
     handleScroll();
 
     return () => {
@@ -207,31 +220,28 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     <div className="fixed bottom-0 left-0 right-0 h-1/2 bg-white flex flex-col shadow-[0_-4px_12px_rgba(0,0,0,0.08),0_-2px_4px_rgba(0,0,0,0.04)]">
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {messages.map(
-          (message: { id: string; role: string; content: string }) => (
-            <div key={message.id}>
+        {messages.map((message, index) => {
+          const textContent = message.parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join("");
+
+          return (
+            <div key={index}>
               {message.role === "user" ? (
                 <div className="bg-gray-100 rounded-3xl px-4 py-3 inline-block max-w-[85%]">
                   <p className="text-base text-gray-900 whitespace-pre-wrap">
-                    {message.content}
+                    {textContent}
                   </p>
                 </div>
               ) : (
-                <MessageContent content={message.content} />
+                <MessageContent content={textContent} />
               )}
             </div>
-          )
-        )}
+          );
+        })}
 
-        {/* 現在ストリーミング中のメッセージ */}
-        {status === "streaming" && currentStreamingMessage && (
-          <div>
-            <MessageContent content={currentStreamingMessage} />
-          </div>
-        )}
-
-        {/* ローディングインジケーター */}
-        {status === "streaming" && !currentStreamingMessage && (
+        {status === "streaming" && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
@@ -250,17 +260,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         )}
 
-        {/* エラー表示 */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 即答方式のパネル及びボタン表示 */}
+      {/* 即答方式のヒント及びボタン表示 */}
       {currentPlan.code !== "MASTER" && (
         <RevealPromptPanel
           onRequestRevealAll={onRequestRevealAll}
@@ -268,10 +271,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         />
       )}
 
-      {/* Back Button */}
+      {/* Back Button - スクロールが一番下の時だけ表示 */}
       {isRevealingComplete && (
         <motion.button
-          key="back-button"
+          key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.7, y: 40 }}
@@ -283,7 +286,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         </motion.button>
       )}
 
-      {/* Input Area */}
+      {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
       {currentPlan.code === "MASTER" && (
         <motion.div
           className="px-4 py-3 bg-transparent border-1 shadow"
@@ -311,24 +314,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400
               focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={status === "streaming"}
             />
-            {status === "streaming" ? (
-              <button
-                onClick={handleStopStreaming}
-                className="absolute right-2 bottom-2 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center transition-colors"
-              >
-                <span className="text-xs">■</span>
-              </button>
-            ) : (
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
-                className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
-              >
-                <ArrowUp size={18} strokeWidth={2.5} />
-              </button>
-            )}
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim() || status === "streaming"}
+              className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
+            >
+              <ArrowUp size={18} strokeWidth={2.5} />
+            </button>
           </div>
         </motion.div>
       )}
