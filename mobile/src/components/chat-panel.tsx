@@ -39,7 +39,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const domain = import.meta.env.VITE_BFF_URL;
 
   const [inputValue, setInputValue] = useState("");
-  const { messages, handleSubmit, status } = useChat({
+  const { input, setInput, messages, handleSubmit, status } = useChat({
     api: `${domain}/api/chat`,
     body: {
       tarotist,
@@ -188,13 +188,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       sentComplete,
       currentPlan.code !== "MASTER"
     );
-    if (isRevealingComplete && !sentComplete) {
+    if (isRevealingComplete) {
       if (currentPlan.code !== "MASTER") {
         const prompt =
           "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
-        handleSubmit();
-        setInputValue("");
-        setSentComplete(true);
+        if (!input && !sentComplete) {
+          setInput(prompt);
+        } else {
+          handleSubmit();
+          setInput("");
+          setSentComplete(true);
+        }
         console.log("[ChatPanel] Sent prompt after revealing complete:", {
           prompt,
           sentComplete,
@@ -202,7 +206,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRevealingComplete, sentComplete]);
+  }, [isRevealingComplete, input, sentComplete]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
