@@ -1,7 +1,6 @@
 import { useChat } from "@ai-sdk/react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
-import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -39,16 +38,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: `${domain}/api/chat`,
-      body: {
-        tarotist,
-        spread,
-        category,
-        drawnCards,
-      },
-    }),
+  const { setInput, messages, handleSubmit, status } = useChat({
+    api: `${domain}/api/chat`,
+    body: {
+      tarotist,
+      spread,
+      category,
+      drawnCards,
+    },
     onError: (err) => {
       console.error("Chat error:", err);
     },
@@ -143,7 +140,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
-      sendMessage({ text: inputValue.trim() });
+      setInput(inputValue.trim());
+      handleSubmit();
       setInputValue("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -185,10 +183,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       if (currentPlan.code !== "MASTER") {
         const prompt =
           "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
-        sendMessage({ text: prompt });
+        setInput(prompt);
+        handleSubmit();
       }
     }
-  }, [currentPlan.code, isRevealingComplete, sendMessage]);
+  }, [currentPlan.code, isRevealingComplete, handleSubmit, setInput]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

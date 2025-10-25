@@ -2,7 +2,7 @@ import { logWithContext } from "@/lib/server/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { openai } from "@ai-sdk/openai";
-import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { streamText, UIMessage } from "ai";
 import {
   DrawnCard,
   ReadingCategory,
@@ -36,7 +36,7 @@ const providers = {
 
 export async function POST(req: Request) {
   const {
-    messages: uiMessages,
+    messages: clientMessages,
     tarotist,
     spread,
     category,
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     drawnCards: DrawnCard[];
   } = await req.json();
   logWithContext("info", "[chat/route] POST req", {
-    messages: uiMessages,
+    messages: clientMessages,
     tarotist,
     spread,
     category,
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
     `- 1回の回答は200文字以上300文字以内とすること\n`;
 
   console.log(`[chat/route] `, {
-    uiMessages,
+    clientMessages,
     tarotist,
     spread,
     category,
@@ -119,11 +119,11 @@ export async function POST(req: Request) {
     provider,
   });
 
-  const messages = convertToModelMessages(uiMessages);
+  const messages = clientMessages;
 
   const result = streamText({
     model: providers[provider as keyof typeof providers],
-    messages: messages.length > 0 ? messages : [{ role: "user", content: "" }],
+    messages,
     system,
     // onChunk: (chunk) => {
     //   console.log(`[chat/route] chunk: `, chunk);
@@ -131,5 +131,5 @@ export async function POST(req: Request) {
   });
 
   // AI SDK v5の標準レスポンス形式
-  return result.toUIMessageStreamResponse();
+  return result.toDataStreamResponse();
 }
