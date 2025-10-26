@@ -174,11 +174,5 @@ export async function POST(req: Request) {
   });
 
   // テキストストリームのレスポンス（v5公式の推し）
-  return result.toTextStreamResponse({
-    headers: {
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-      "X-Accel-Buffering": "no",
-    },
-  });
+  return result.toTextStreamResponse({});
 }
