@@ -149,9 +149,9 @@ export async function POST(req: Request) {
       : providers[provider as keyof typeof providers],
     messages: messages.length > 0 ? messages : [{ role: "user", content: "" }],
     system,
-    // onChunk: (chunk) => {
-    //   console.log(`[chat/route] chunk: `, chunk);
-    // },
+    onChunk: (chunk) => {
+      console.log(`[chat/route] chunk: `, chunk);
+    },
   });
 
   // AI SDK v5の標準レスポンス形式
