@@ -20,26 +20,6 @@ const debugMode = process.env.AI_DEBUG_MODE === "true" && false; // 一時的に
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
 
-// CORS 共通処理
-function cors(origin?: string) {
-  const headers = new Headers();
-  if (origin?.startsWith("capacitor://") || origin?.includes("localhost")) {
-    headers.set("Access-Control-Allow-Origin", origin);
-  }
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set("Vary", "Origin");
-  return headers;
-}
-
-// ✅ プリフライト (OPTIONS)
-export async function OPTIONS(req: Request) {
-  return new Response(null, {
-    status: 204,
-    headers: cors(req.headers.get("origin") ?? ""),
-  });
-}
-
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
   project: process.env.GOOGLE_VERTEX_PROJECT!,
@@ -195,6 +175,10 @@ export async function POST(req: Request) {
 
   // テキストストリームのレスポンス（v5公式の推し）
   return result.toTextStreamResponse({
-    headers: cors(req.headers.get("origin") ?? ""),
+    headers: {
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
   });
 }
