@@ -146,15 +146,15 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         }}
       />
 
+      {/* 上半分 */}
       <div
-        className="fixed left-0 right-0 h-[45vh] z-10"
+        className="fixed left-0 right-0 z-10"
         style={{
           top: "calc(50px + env(safe-area-inset-top))",
-          maxWidth: "400px",
+          height: "45vh",
           margin: "0 auto",
         }}
       >
-        {/* 上半分 */}
         {/* カード表示エリア */}
         {drawnCards.length > 0 && (
           <SpreadViewerSwipe
@@ -170,11 +170,14 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         )}
       </div>
 
+      {/* 下半分 */}
       <div
-        style={{ marginTop: "45vh", height: "55vh" }}
-        className="left-0 right-0 pb-20"
+        className="fixed left-0 right-0 overflow-auto"
+        style={{
+          top: "calc(45vh + 50px + env(safe-area-inset-top))",
+          bottom: 0,
+        }}
       >
-        {/* 下半分 */}
         {/* チャットパネル */}
         {drawnCards.length > 0 && (
           <ChatPanel

@@ -174,8 +174,9 @@ const SalonPage: React.FC<SalonPageProps> = ({
     console.log("[SalonPage] availableTarotists changed", availableTarotists);
     if (availableTarotists.length > 0 && !selectedTarotist) {
       setSelectedTarotist(lastTarotist || availableTarotists[0]);
+      setLastTarotist(lastTarotist || availableTarotists[0]);
     }
-  }, [availableTarotists, lastTarotist, selectedTarotist]);
+  }, [availableTarotists, lastTarotist, selectedTarotist, setLastTarotist]);
 
   useEffect(() => {
     console.log("[SalonPage] availableCategories changed", availableCategories);
@@ -262,15 +263,13 @@ const SalonPage: React.FC<SalonPageProps> = ({
         />
       ) : (
         <>
+          {/* 上半分 */}
           <div
             className="fixed left-0 right-0 h-[45vh] z-10"
             style={{
               top: "calc(50px + env(safe-area-inset-top))",
-              maxWidth: "400px",
-              margin: "0 auto",
             }}
           >
-            {/* 上半分 */}
             {/* 占い師肖像画モード */}
             <TarotistCarouselPortrait
               availableTarotists={availableTarotists}
@@ -287,11 +286,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
             />
           </div>
 
+          {/* 下半分 */}
           <div
-            style={{ marginTop: "45vh", height: "55vh" }}
-            className="overflow-auto pb-53"
+            className="fixed left-0 right-0 overflow-auto px-1 pb-25"
+            style={{
+              top: "calc(45vh + 50px + env(safe-area-inset-top))",
+              bottom: 0,
+            }}
           >
-            {/* 下半分 */}
             {/* カテゴリー・スプレッド選択 */}
             <CategorySpreadSelector
               currentPlan={currentPlan}
@@ -433,10 +435,14 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       </motion.div>
 
       {/* カテゴリー選択アコーディオン */}
-      <Accordion items={categoryItems} />
+      <div className="m-1">
+        <Accordion items={categoryItems} />
+      </div>
 
       {/* スプレッド選択アコーディオン */}
-      <Accordion items={spreadItems} />
+      <div className="m-1">
+        <Accordion items={spreadItems} />
+      </div>
 
       {/* 即答・パーソナルモード選択 */}
       {/* {currentPlan?.hasPersonal && (
@@ -481,7 +487,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           </div>
         </div>
       )} */}
-
       {/* パーソナル占い用のユーザー入力欄 */}
       {/* {personalMode === "personal" && (
         <div className="mb-6">
@@ -495,7 +500,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           />
         </div>
       )} */}
-
       {/* カテゴリー選択 */}
       {/* {personalMode === "selector" && (
         <ScrollableRadioSelector
@@ -506,7 +510,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           maxVisibleItems={3}
         />
       )} */}
-
       {/* TODO: AIモード選択 */}
       {/* {currentPlan?.hasPersonal && (
         <div className="mb-6">
@@ -545,7 +548,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           </div>
         </div>
       )} */}
-
       {/* スプレッド選択 */}
       {/* {aiMode === "manual" && (
         <ScrollableRadioSelector

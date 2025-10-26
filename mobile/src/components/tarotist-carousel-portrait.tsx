@@ -85,7 +85,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
   // selectModeが変わった時に現在の占い師位置にスクロール
   useEffect(() => {
-    if (!emblaApi || !selectedTarotist || mode !== "tarotist") return;
+    if (!emblaApi || !selectedTarotist) return;
 
     const currentIndex = availableTarotists.findIndex(
       (t) => t.no === selectedTarotist.no
@@ -113,7 +113,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full p-4 z-10"
+        className="w-full h-full p-2 z-10"
         onClick={() => {
           if (onSelectTarotist) onSelectTarotist(selectedTarotist);
         }}
@@ -159,6 +159,16 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                 }}
               >
                 {selectedTarotist.name}
+              </h2>
+              <h2
+                className="text-xl font-bold drop-shadow-lg"
+                style={{
+                  color: colors.accent,
+                  textShadow:
+                    "2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)",
+                }}
+              >
+                ({selectedTarotist.name})
               </h2>
             </div>
             <p
@@ -315,6 +325,16 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                               }}
                             >
                               {tarotist.name}
+                            </h3>
+                            <h3
+                              className="text-base font-bold drop-shadow-lg"
+                              style={{
+                                color: colors.accent,
+                                textShadow:
+                                  "2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)",
+                              }}
+                            >
+                              ({tarotist.name})
                             </h3>
                           </div>
                           <p

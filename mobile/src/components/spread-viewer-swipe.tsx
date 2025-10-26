@@ -102,9 +102,9 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full bg-white flex flex-col">
       <motion.div
-        className="bg-white backdrop-blur-md rounded-2xl sm:p-4
+        className="w-full flex-1 backdrop-blur-md rounded-2xl sm:p-4
           border border-white/10 relative shadow-xs z-30"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -191,12 +191,12 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
         </AnimatePresence>
       </motion.div>
 
-      <div className="flex justify-center gap-3 mt-3">
+      <div className="w-full flex justify-center gap-3 p-1 bg-white">
         {(["grid", "carousel"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`w-2 h-2 rounded-full transition-all ${
+            className={`w-3 h-3 rounded-full transition-all ${
               viewMode === mode
                 ? "bg-purple-400/70 w-8"
                 : "bg-purple-200/40 w-1"

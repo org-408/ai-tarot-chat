@@ -184,8 +184,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   useEffect(() => {
     if (isRevealingComplete) {
       if (currentPlan.code !== "MASTER") {
-        const prompt =
-          "自己紹介と、カード解釈、最終的な占い結果を丁寧に教えてください。";
+        const prompt = "占ってください。";
         sendMessage({ text: prompt });
       }
     }
@@ -222,9 +221,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [status]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-1/2 bg-white flex flex-col shadow-[0_-4px_12px_rgba(0,0,0,0.08),0_-2px_4px_rgba(0,0,0,0.04)]">
+    <div className="w-full h-full flex flex-col">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-10">
         {messages.map((message, index) => {
           const textContent = message.parts
             .filter((part) => part.type === "text")

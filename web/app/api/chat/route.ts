@@ -1,7 +1,11 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { anthropic } from "@ai-sdk/anthropic";
+import { cerebras } from "@ai-sdk/cerebras";
+import { deepinfra } from "@ai-sdk/deepinfra";
 import { google } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
+import { groq } from "@ai-sdk/groq";
+import { mistral } from "@ai-sdk/mistral";
 import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import {
@@ -11,7 +15,10 @@ import {
   Tarotist,
 } from "../../../../shared/lib/types";
 
-const debugMode = process.env.AI_DEBUG_MODE === "true";
+const debugMode = process.env.AI_DEBUG_MODE === "true" && false; // 一時的に無効化
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Render の関数切断対策にも有効
 
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
@@ -37,6 +44,18 @@ const providers = {
   claude_s: anthropic("claude-sonnet-4-5"),
   google: google("gemini-2.5-pro"),
 };
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const freeProviders = [
+  { groq1: groq("openai/gpt-oss-120b"), ratio: 25 }, // 250K TPM / 1K RPM 月単位の制限は表向きはない
+  { groq2: groq("llama-3.3-70b-versatile"), ratio: 25 }, // 300K TPM / 1K RPM 月単位の制限は表向きはない
+  { cerebras1: cerebras("gpt-oss-120b"), ratio: 15 }, // 60K TPM / 1M TPH / 1M TPD / 30 RPM / 90 RPH / 14.4K RPD 月単位の制限は表向きはない
+  { cerebras2: cerebras("llama-3.3-70b"), ratio: 15 }, // 60K TPM / 1M TPH / 1M TPD / 30 RPM / 90 RPH / 14.4K RPD 月単位の制限は表向きはない
+  { deepinfra1: deepinfra("openai/gpt-oss-120b"), ratio: 10 },
+  { deepinfra2: deepinfra("meta-llama/Llama-3.3-70B-Instruct"), ratio: 0 },
+  { mistral1: mistral("mistral-small-latest"), ratio: 5 },
+  { mistral2: mistral("open-mistral-nemo"), ratio: 5 },
+];
 
 export async function POST(req: Request) {
   const {
@@ -154,6 +173,14 @@ export async function POST(req: Request) {
     },
   });
 
-  // AI SDK v5の標準レスポンス形式
-  return result.toUIMessageStreamResponse();
+  // テキストストリームのレスポンス（v5公式の推し）
+  return result.toTextStreamResponse({
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      // Nginx系が間に入る場合の保険（Render単体でも害はない）
+      "X-Accel-Buffering": "no",
+    },
+  });
 }

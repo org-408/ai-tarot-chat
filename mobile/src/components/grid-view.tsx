@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { DrawnCard, Spread, TarotCard } from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
@@ -25,6 +25,20 @@ const GridView: React.FC<GridViewProps> = ({
   onToggleFlip,
   getCardImagePath,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [viewHeight, setViewHeight] = useState(VIEW_HEIGHT_MAX);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setViewHeight(containerRef.current.offsetHeight);
+      }
+    };
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
   const maxX = Math.max(...drawnCards.map((c) => c.x));
   const maxY = Math.max(...drawnCards.map((c) => c.y));
 
@@ -36,7 +50,7 @@ const GridView: React.FC<GridViewProps> = ({
 
   const cardHeight = Math.min(
     (VIEW_WIDTH_MAX - colGap * 2) / Math.min(maxX + 1, GRID_WIDTH_MAX),
-    (VIEW_HEIGHT_MAX - rowGap * 2) / Math.min(maxY + 1, GRID_HEIGHT_MAX)
+    (viewHeight - rowGap * 2) / Math.min(maxY + 1, GRID_HEIGHT_MAX)
   );
   const cardWidth = cardHeight * CARD_ASPECT;
   const cellSize = cardHeight;
@@ -63,25 +77,19 @@ const GridView: React.FC<GridViewProps> = ({
   };
 
   return (
-    <div
-      className="overflow-x-auto pb-2 flex justify-center items-center relative"
-      style={{
-        width: `${VIEW_WIDTH_MAX}px`,
-        height: `${VIEW_HEIGHT_MAX}px`,
-      }}
-    >
+    <div className="w-full h-full overflow-x-auto pb-2 flex justify-center items-center relative">
       {/* 🔥 スプレッド名 -洗練されたバッジ */}
       {spread && (
         <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="absolute top-0.5 right-0.5 z-30 pointer-events-none"
+          initial={{ y: 0, opacity: 1 }}
+          animate={{ y: 10, opacity: 0 }}
+          transition={{ duration: 3, delay: 10 }}
+          className="absolute top-8 left-1/2 z-30 pointer-events-none"
         >
           <div className="relative">
             {/* バッジ本体 - 淡い色で控えめに、横幅を広く */}
             <div className="relative bg-white/20 backdrop-blur-sm text-purple-600/70 px-2 py-1 rounded-full shadow-sm border border-purple-100/40">
-              <div className="flex items-center gap-2 whitespace-nowrap">
+              <div className="flex gap-2 whitespace-nowrap">
                 <span className="text-sm font-normal tracking-wide opacity-70">
                   {spread.name}
                 </span>
@@ -92,6 +100,7 @@ const GridView: React.FC<GridViewProps> = ({
       )}
 
       <div
+        ref={containerRef}
         className="relative mx-auto"
         style={{
           display: "grid",
@@ -99,7 +108,6 @@ const GridView: React.FC<GridViewProps> = ({
           gridTemplateRows: `repeat(${maxY + 1}, ${cellSize}px)`,
           columnGap: `${colGap}px`,
           rowGap: `${rowGap}px`,
-          minWidth: "300px",
         }}
       >
         {drawnCards.map((card, index) => {
