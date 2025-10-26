@@ -176,10 +176,8 @@ export async function POST(req: Request) {
   // テキストストリームのレスポンス（v5公式の推し）
   return result.toTextStreamResponse({
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
-      // Nginx系が間に入る場合の保険（Render単体でも害はない）
       "X-Accel-Buffering": "no",
     },
   });
