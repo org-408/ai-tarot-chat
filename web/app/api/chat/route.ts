@@ -18,7 +18,7 @@ import {
 const debugMode = process.env.AI_DEBUG_MODE === "true" && false; // 一時的に無効化
 
 export const dynamic = "force-dynamic";
-// export const maxDuration = 60; // Render の関数切断対策にも有効
+export const maxDuration = 60; // Render の関数切断対策にも有効
 
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
@@ -174,5 +174,11 @@ export async function POST(req: Request) {
   });
 
   // テキストストリームのレスポンス（v5公式の推し）
-  return result.toTextStreamResponse({});
+  return result.toUIMessageStreamResponse({
+    headers: {
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
