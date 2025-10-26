@@ -1,3 +1,4 @@
+// middleware.ts
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
@@ -11,7 +12,7 @@ export default auth((req) => {
     res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.headers.set(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
+      "Content-Type, Authorization, User-Agent, X-Requested-With, Accept, Accept-Language" // ← ここに User-Agent を追加
     );
     res.headers.set("Vary", "Origin");
   }
