@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { DrawnCard, Spread, TarotCard } from "../../../shared/lib/types";
 
 const CARD_ASPECT = 300 / 527;
@@ -26,17 +26,33 @@ const GridView: React.FC<GridViewProps> = ({
   getCardImagePath,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [viewWidth, setViewWidth] = useState(VIEW_WIDTH_MAX);
   const [viewHeight, setViewHeight] = useState(VIEW_HEIGHT_MAX);
 
-  useEffect(() => {
-    const updateHeight = () => {
+  useLayoutEffect(() => {
+    const updateViewSize = () => {
       if (containerRef.current) {
+        setViewWidth(containerRef.current.offsetWidth);
         setViewHeight(containerRef.current.offsetHeight);
+        console.log("Updated view size:", {
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight,
+        });
       }
     };
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    updateViewSize();
+
+    let observer: ResizeObserver | undefined;
+    if (containerRef.current && typeof window.ResizeObserver !== "undefined") {
+      observer = new window.ResizeObserver(updateViewSize);
+      observer.observe(containerRef.current);
+    }
+    window.addEventListener("resize", updateViewSize);
+
+    return () => {
+      window.removeEventListener("resize", updateViewSize);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   const maxX = Math.max(...drawnCards.map((c) => c.x));
@@ -49,7 +65,7 @@ const GridView: React.FC<GridViewProps> = ({
   const rowGap = 8;
 
   const cardHeight = Math.min(
-    (VIEW_WIDTH_MAX - colGap * 2) / Math.min(maxX + 1, GRID_WIDTH_MAX),
+    (viewWidth - colGap * 2) / Math.min(maxX + 1, GRID_WIDTH_MAX),
     (viewHeight - rowGap * 2) / Math.min(maxY + 1, GRID_HEIGHT_MAX)
   );
   const cardWidth = cardHeight * CARD_ASPECT;
@@ -77,7 +93,10 @@ const GridView: React.FC<GridViewProps> = ({
   };
 
   return (
-    <div className="w-full h-full overflow-x-auto pb-2 flex justify-center items-center relative">
+    <div
+      ref={containerRef}
+      className="w-full h-full overflow-x-auto pb-2 flex justify-center items-center relative"
+    >
       {/* 🔥 スプレッド名 -洗練されたバッジ */}
       {spread && (
         <motion.div
@@ -100,7 +119,6 @@ const GridView: React.FC<GridViewProps> = ({
       )}
 
       <div
-        ref={containerRef}
         className="relative mx-auto"
         style={{
           display: "grid",
