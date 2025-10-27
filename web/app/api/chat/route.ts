@@ -6,7 +6,7 @@ import { google } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { groq } from "@ai-sdk/groq";
 import { mistral } from "@ai-sdk/mistral";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI, openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import {
   DrawnCard,
@@ -15,10 +15,18 @@ import {
   Tarotist,
 } from "../../../../shared/lib/types";
 
-const debugMode = process.env.AI_DEBUG_MODE === "true" && false; // 一時的に無効化
+const debugMode = process.env.AI_DEBUG_MODE === "true";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
+
+// Home Server 用のプロバイダ追加
+const ollama = createOpenAI({
+  apiKey: process.env.ARIADNE_API_KEY!,
+  baseURL: "https://ariadne-llm.com",
+});
+
+const ariadne = ollama("llama3.3-ariadne");
 
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
@@ -45,17 +53,36 @@ const providers = {
   google: google("gemini-2.5-pro"),
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const freeProviders = [
-  { groq1: groq("openai/gpt-oss-120b"), ratio: 25 }, // 250K TPM / 1K RPM 月単位の制限は表向きはない
-  { groq2: groq("llama-3.3-70b-versatile"), ratio: 25 }, // 300K TPM / 1K RPM 月単位の制限は表向きはない
-  { cerebras1: cerebras("gpt-oss-120b"), ratio: 15 }, // 60K TPM / 1M TPH / 1M TPD / 30 RPM / 90 RPH / 14.4K RPD 月単位の制限は表向きはない
-  { cerebras2: cerebras("llama-3.3-70b"), ratio: 15 }, // 60K TPM / 1M TPH / 1M TPD / 30 RPM / 90 RPH / 14.4K RPD 月単位の制限は表向きはない
-  { deepinfra1: deepinfra("openai/gpt-oss-120b"), ratio: 10 },
-  { deepinfra2: deepinfra("meta-llama/Llama-3.3-70B-Instruct"), ratio: 0 },
-  { mistral1: mistral("mistral-small-latest"), ratio: 5 },
-  { mistral2: mistral("open-mistral-nemo"), ratio: 5 },
+  { groq1: groq("openai/gpt-oss-120b"), ratio: 25, enalbed: true }, // 250K TPM / 1K RPM 月単位の制限は表向きはない
+  { groq2: groq("llama-3.3-70b-versatile"), ratio: 25, enalbed: true }, // 300K TPM / 1K RPM 月単位の制限は表向きはない
+  { cerebras1: cerebras("gpt-oss-120b"), ratio: 15, enalbed: true }, // 60K TPM / 1M TPH / 1M TPD / 30 RPM / 90 RPH / 14.4K RPD 月単位の制限は表向きはない
+  { cerebras2: cerebras("llama-3.3-70b"), ratio: 15, enalbed: true }, // 60K TPM / 1M TPH / 1M TPD / 30 RPM / 90 RPH / 14.4K RPD 月単位の制限は表向きはない
+  { deepinfra1: deepinfra("openai/gpt-oss-120b"), ratio: 10, enalbed: true },
+  {
+    deepinfra2: deepinfra("meta-llama/Llama-3.3-70B-Instruct"),
+    ratio: 0,
+    enalbed: true,
+  },
+  { mistral1: mistral("mistral-small-latest"), ratio: 5, enalbed: true },
+  { mistral2: mistral("open-mistral-nemo"), ratio: 5, enalbed: true },
 ];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function selectProvider() {
+  // ランダムにフリープロバイダを選択するロジックをここに実装
+  const ratioSum = freeProviders.reduce((sum, p) => sum + p.ratio, 0);
+  const rand = Math.random() * ratioSum;
+  let cumulative = 0;
+  for (const providerObj of freeProviders) {
+    cumulative += providerObj.ratio;
+    if (rand < cumulative) {
+      return Object.values(providerObj)[0];
+    }
+  }
+  // フォールバック
+  return freeProviders[0];
+}
 
 export async function POST(req: Request) {
   const {
@@ -163,7 +190,9 @@ export async function POST(req: Request) {
   const messages = convertToModelMessages(clientMessages);
 
   const result = streamText({
-    model: debugMode
+    model: ariadne
+      ? ariadne
+      : debugMode
       ? providers["google"]
       : providers[provider as keyof typeof providers],
     messages: messages.length > 0 ? messages : [{ role: "user", content: "" }],
