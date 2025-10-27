@@ -24,6 +24,15 @@ export const maxDuration = 60; // Render の関数切断対策にも有効
 const ollama = createOpenAI({
   apiKey: process.env.ARIADNE_API_KEY!,
   baseURL: "https://ariadne-llm.com",
+  fetch: async (url, init) => {
+    return fetch(url, {
+      ...init,
+      headers: {
+        ...init?.headers,
+        "X-API-Key": process.env.ARIADNE_API_KEY!,
+      },
+    });
+  },
 });
 
 const ariadne = ollama("llama3.3-ariadne");
