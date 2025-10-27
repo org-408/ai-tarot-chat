@@ -31,8 +31,13 @@ const ollama = createOllama({
 
 const homeProviders = {
   gpt5nano: ollama("qwen2.5:14b-instruct-q4_K_M"),
-  gpt5: ollama("llama3.1:8b-instruct-q4_K_M"),
-  claude_s: ollama("qwen2.5:7b-instruct-q4_K_M"),
+  gemini25: ollama("llama3.1:8b-instruct-q4_K_M"),
+  gemini25pro: groq("openai/gpt-oss-120b"),
+  claude_h: groq("llama-3.3-70b-versatile"),
+  gpt41: cerebras("gpt-oss-120b"),
+  gpt5: deepinfra("openai/gpt-oss-120b"),
+  claude_s: mistral("mistral-small-latest"),
+  google: mistral("open-mistral-nemo"),
 };
 
 // Google Vertex AI用の認証設定
