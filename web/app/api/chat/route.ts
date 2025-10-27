@@ -6,8 +6,9 @@ import { google } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { groq } from "@ai-sdk/groq";
 import { mistral } from "@ai-sdk/mistral";
-import { createOpenAI, openai } from "@ai-sdk/openai";
+import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { createOllama } from "ollama-ai-provider-v2";
 import {
   DrawnCard,
   ReadingCategory,
@@ -21,17 +22,10 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
 
 // Home Server 用のプロバイダ追加
-const ollama = createOpenAI({
-  apiKey: process.env.ARIADNE_API_KEY!,
+const ollama = createOllama({
   baseURL: "https://ariadne-llm.com",
-  fetch: async (url, init) => {
-    return fetch(url, {
-      ...init,
-      headers: {
-        ...init?.headers,
-        "X-API-Key": process.env.ARIADNE_API_KEY!,
-      },
-    });
+  headers: {
+    "X-API-Key": process.env.ARIADNE_API_KEY!,
   },
 });
 
