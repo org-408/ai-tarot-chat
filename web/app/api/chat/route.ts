@@ -29,7 +29,7 @@ const ollama = createOllama({
   },
 });
 
-const ariadne = ollama("llama3.3-ariadne");
+const ariadne = ollama("llama3.3:70b-instruct-q2_K");
 
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
