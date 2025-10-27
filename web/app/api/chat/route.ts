@@ -23,7 +23,7 @@ export const maxDuration = 60; // Render の関数切断対策にも有効
 
 // Home Server 用のプロバイダ追加
 const ollama = createOllama({
-  baseURL: "https://ariadne-llm.com",
+  baseURL: "https://ariadne-llm.com/api",
   headers: {
     "X-API-Key": process.env.ARIADNE_API_KEY!,
   },
