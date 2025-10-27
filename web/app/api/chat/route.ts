@@ -32,7 +32,7 @@ const ollama = createOllama({
 const homeProviders = {
   gpt5nano: ollama("qwen2.5:14b-instruct-q4_K_M"),
   gpt5: ollama("llama3.1:8b-instruct-q4_K_M"),
-  claude: ollama("qwen2.5:7b-instruct-q4_K_M"),
+  claude_s: ollama("qwen2.5:7b-instruct-q4_K_M"),
 };
 
 // Google Vertex AI用の認証設定
