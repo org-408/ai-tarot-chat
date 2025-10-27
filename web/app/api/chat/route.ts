@@ -35,9 +35,9 @@ const homeProviders = {
   gemini25pro: groq("openai/gpt-oss-120b"),
   claude_h: groq("llama-3.3-70b-versatile"),
   gpt41: cerebras("gpt-oss-120b"),
-  gpt5: deepinfra("openai/gpt-oss-120b"),
-  claude_s: mistral("mistral-small-latest"),
-  google: mistral("open-mistral-nemo"),
+  gpt5: mistral("mistral-small-latest"),
+  claude_s: mistral("open-mistral-nemo"),
+  google: deepinfra("openai/gpt-oss-120b"),
 };
 
 // Google Vertex AI用の認証設定
