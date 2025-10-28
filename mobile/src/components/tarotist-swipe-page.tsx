@@ -5,7 +5,7 @@ import type {
   Plan,
   Tarotist,
 } from "../../../shared/lib/types";
-import type { SelectMode, UserPlan } from "../types";
+import type { UserPlan } from "../types";
 import ProfileDialog from "./profile-dialog";
 // 新しいコンポーネントをインポート
 import TarotistCarouselEmbla from "./tarotist-carousel-embla";
@@ -28,9 +28,6 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   isChangingPlan,
 }) => {
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
-    null
-  );
-  const [imageViewTarotist, setImageViewTarotist] = useState<Tarotist | null>(
     null
   );
 
@@ -110,8 +107,6 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   const currentColors = currentPlan
     ? getPlanColors(currentPlan.code)
     : getPlanColors("GUEST");
-
-  const [selectMode, setSelectMode] = useState<SelectMode>("tarotist");
 
   return (
     <div className="main-container">
@@ -201,17 +196,10 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
       )}
       {carouselType === "portrait" && (
         <TarotistCarouselPortrait
-          availableTarotists={availableTarotists}
-          selectedTarotist={selectedTarotist}
-          setSelectedTarotist={setSelectedTarotist}
+          masterData={masterData}
           currentPlan={currentPlan}
-          getTarotistColor={getTarotistColor}
-          renderStars={renderStars}
           onChangePlan={handleChangePlan}
           isChangingPlan={isChangingPlan}
-          onSelectTarotist={setSelectedTarotist}
-          selectMode={selectMode}
-          setSelectMode={setSelectMode}
         />
       )}
 
@@ -230,16 +218,16 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
       </div>
 
       {/* プロフィール拡大ダイアログ & 画像全画面表示ダイアログ */}
-      <ProfileDialog
-        selectedTarotist={selectedTarotist}
-        setSelectedTarotist={setSelectedTarotist}
-        canUseTarotist={canUseTarotist}
-        onChangePlan={handleChangePlan}
-        isChangingPlan={isChangingPlan}
-        setImageViewTarotist={setImageViewTarotist}
-        imageViewTarotist={imageViewTarotist}
-        hasButton
-      />
+      {selectedTarotist && (
+        <ProfileDialog
+          selectedTarotist={selectedTarotist}
+          profileClicked={!!selectedTarotist}
+          hasButton
+          currentPlan={currentPlan}
+          onChangePlan={handleChangePlan}
+          isChangingPlan={isChangingPlan}
+        />
+      )}
     </div>
   );
 };

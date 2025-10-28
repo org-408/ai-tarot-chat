@@ -49,6 +49,13 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       description: "スワイプで占い師を選ぶ",
     },
     {
+      id: "swipeableDemo",
+      label: "新サロンページ",
+      icon: "👱‍♀️",
+      available: true,
+      description: "サロン・占い統合デモ",
+    },
+    {
       id: "plans",
       label: "プラン",
       icon: "💎",

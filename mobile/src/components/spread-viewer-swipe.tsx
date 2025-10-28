@@ -1,8 +1,9 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import type { DrawnCard, Spread, TarotCard } from "../../../shared/lib/types";
-import type { ViewModeType } from "../types";
+import type { DrawnCard, Spread } from "../../../shared/lib/types";
+import { getCardImagePath } from "../lib/utils/salon";
+import type { SpreadViewModeType } from "../types";
 import CarouselView from "./carousel-view";
 import GridView from "./grid-view";
 
@@ -11,25 +12,21 @@ const CARD_ASPECT = 300 / 527;
 interface SpreadViewerProps {
   spread: Spread;
   drawnCards: DrawnCard[];
-  flippedCards: Set<string>;
-  setFlippedCards: React.Dispatch<React.SetStateAction<Set<string>>>;
-  selectedCard: DrawnCard | null;
-  setSelectedCard: React.Dispatch<React.SetStateAction<DrawnCard | null>>;
-  viewMode: ViewModeType;
-  setViewMode: React.Dispatch<React.SetStateAction<ViewModeType>>;
+  isRevealingComplete?: boolean;
+  setIsRevealingComplete?: (complete: boolean) => void;
 }
 
 // メインコンポーネント
 const SpreadViewer: React.FC<SpreadViewerProps> = ({
   spread,
   drawnCards,
-  flippedCards,
-  setFlippedCards,
-  selectedCard,
-  setSelectedCard,
-  viewMode,
-  setViewMode,
+  isRevealingComplete,
+  setIsRevealingComplete,
 }) => {
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
+  const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
+  const [viewMode, setViewMode] = useState<SpreadViewModeType>("grid");
+
   const dialogCardWidth = 240;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showHint, setShowHint] = useState(true);
@@ -44,6 +41,31 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
     }
     setFlippedCards(newFlipped);
   };
+
+  // isRevealingCompleteが、親により、trueになったら、全カードを裏返す
+  useEffect(() => {
+    if (isRevealingComplete) {
+      const allCardIds = drawnCards.map((card) => card.id);
+      setFlippedCards(new Set(allCardIds));
+    }
+  }, [isRevealingComplete, drawnCards]);
+
+  // カードが全部捲られたら後、ダイアログが閉じられたら isRevealingComplete を true にする
+  useEffect(() => {
+    if (
+      flippedCards.size > 0 &&
+      flippedCards.size === drawnCards.length &&
+      !selectedCard &&
+      setIsRevealingComplete
+    ) {
+      setTimeout(() => {
+        console.log(
+          "全てのカードが捲られました。isRevealingComplete を true に設定します。"
+        );
+        setIsRevealingComplete(true);
+      }, 1000);
+    }
+  }, [flippedCards, drawnCards.length, setIsRevealingComplete, selectedCard]);
 
   const handleCardClick = (card: DrawnCard): void => {
     setSelectedCard(card);
@@ -91,16 +113,6 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
     }
   };
 
-  const getCardImagePath = (
-    card: TarotCard,
-    isBack: boolean = false
-  ): string => {
-    if (isBack) {
-      return "/cards/back.png";
-    }
-    return `/cards/${card.code}.png`;
-  };
-
   return (
     <div className="w-full h-full bg-white flex flex-col">
       <motion.div
@@ -120,7 +132,6 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
               flippedCards={flippedCards}
               onCardClick={handleCardClick}
               onToggleFlip={toggleFlip}
-              getCardImagePath={getCardImagePath}
             />
           )}
           {viewMode === "carousel" && (
@@ -134,7 +145,6 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
               onIndexChange={setCurrentIndex}
               onCardClick={handleCardClick}
               onToggleFlip={toggleFlip}
-              getCardImagePath={getCardImagePath}
             />
           )}
         </AnimatePresence>

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { DrawnCard, Spread, TarotCard } from "../../../shared/lib/types";
+import type { DrawnCard, Spread } from "../../../shared/lib/types";
+import { getCardImagePath } from "../lib/utils/salon";
 
 const CARD_ASPECT = 300 / 527;
 
@@ -13,7 +14,6 @@ interface GridViewProps {
   flippedCards: Set<string>;
   onCardClick: (card: DrawnCard) => void;
   onToggleFlip: (cardId: string) => void;
-  getCardImagePath: (card: TarotCard, isBack?: boolean) => string;
 }
 
 // グリッドコンポーネント
@@ -23,7 +23,6 @@ const GridView: React.FC<GridViewProps> = ({
   flippedCards,
   onCardClick,
   onToggleFlip,
-  getCardImagePath,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewWidth, setViewWidth] = useState(VIEW_WIDTH_MAX);

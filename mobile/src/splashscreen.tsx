@@ -25,15 +25,18 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
   const cards = DEFAULT_MASTER_DATA.decks[0].cards || [];
 
   const targetCount = 22;
+  const shuffledCount = 3;
+  let shuffled = [...cards.slice(0, targetCount)];
+  for (let i = 0; i < shuffledCount; i++) {
+    shuffled = shuffled.sort(() => Math.random() - 0.5);
+  }
   const [drawRandomCards] = useState(() =>
-    Array.from({ length: 2 }, (_, i) => {
-      const randomIndex = Math.floor(Math.random() * targetCount);
-      return {
-        ...cards[randomIndex],
-        instanceId: `drawn-${Date.now()}-${i}`,
-      };
-    })
+    shuffled.slice(0, 2).map((card, i) => ({
+      ...card,
+      instanceId: `drawn-${Date.now()}-${i}`,
+    }))
   );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4 relative overflow-hidden">
       {/* 開発メニュー（環境変数で制御） */}

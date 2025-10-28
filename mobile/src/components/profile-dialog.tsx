@@ -1,44 +1,57 @@
-import type { Tarotist } from "../../../shared/lib/types";
+import { useEffect, useState } from "react";
+import type { Plan, Tarotist } from "../../../shared/lib/types";
+import { canUseTarotist, renderStars } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 
 interface ProfileDialogProps {
+  // for selectedTarotist
+  selectedTarotist: Tarotist;
   // for profile
-  selectedTarotist: Tarotist | null;
-  setSelectedTarotist: (tarotist: Tarotist | null) => void;
+  profileClicked?: boolean;
   // for image view
-  imageViewTarotist?: Tarotist | null;
-  setImageViewTarotist: (tarotist: Tarotist | null) => void;
+  imageViewClicked?: boolean;
+  // plan button display
   hasButton?: boolean;
-  canUseTarotist?: (planCode: string) => boolean;
+  currentPlan?: Plan;
   onChangePlan?: (planCode: UserPlan) => void;
   isChangingPlan?: boolean;
 }
 
 const ProfileDialog: React.FC<ProfileDialogProps> = ({
   selectedTarotist,
-  setSelectedTarotist,
-  imageViewTarotist,
-  setImageViewTarotist,
-  hasButton = false,
-  canUseTarotist = () => false,
+  profileClicked = false,
+  imageViewClicked = false,
+  hasButton = true,
+  currentPlan,
   onChangePlan = () => {},
   isChangingPlan,
 }) => {
-  const renderStars = (quality: number) => {
-    return "⭐️".repeat(quality);
-  };
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showImageViewDialog, setShowImageViewDialog] = useState(false);
 
   const handleChangePlan = (requiredPlan: UserPlan) => {
     onChangePlan(requiredPlan);
   };
 
+  useEffect(() => {
+    if (profileClicked) {
+      setShowProfileDialog(true);
+    }
+  }, [profileClicked]);
+
+  useEffect(() => {
+    if (imageViewClicked) {
+      setShowImageViewDialog(true);
+    }
+  }, [imageViewClicked]);
+
   return (
     <>
       {/* プロフィール拡大ダイアログ */}
-      {selectedTarotist && (
+      {showProfileDialog && selectedTarotist && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedTarotist(null)}
+          onClick={() => setShowProfileDialog(false)}
         >
           <div
             className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto"
@@ -67,7 +80,8 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 className="w-48 h-48 rounded-xl object-cover shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setImageViewTarotist(selectedTarotist);
+                  setShowProfileDialog(false);
+                  setShowImageViewDialog(true);
                 }}
                 onError={(e) => {
                   e.currentTarget.src =
@@ -115,12 +129,12 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
             {/* アクションボタン */}
             {hasButton ? (
-              !canUseTarotist(selectedTarotist.plan?.code || "GUEST") ? (
+              !canUseTarotist(selectedTarotist.plan!, currentPlan!) ? (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleChangePlan(selectedTarotist.plan!.code as UserPlan);
-                    setSelectedTarotist(null);
+                    setShowProfileDialog(false);
                   }}
                   disabled={isChangingPlan}
                   className="w-full py-3 px-4 text-xs text-white rounded-lg font-medium transition-all mb-3 shadow-md"
@@ -138,7 +152,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                   style={{
                     borderColor: selectedTarotist.accentColor,
                     color: selectedTarotist.accentColor,
-                    backgroundColor: `${selectedTarotist.primaryColor}80`,
+                    backgroundColor: `${selectedTarotist.primaryColor}80`, // 80 -> 透明度50%
                   }}
                 >
                   ✓ この占い師は利用可能です
@@ -148,7 +162,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
             {/* 閉じるボタン */}
             <button
-              onClick={() => setSelectedTarotist(null)}
+              onClick={() => setShowProfileDialog(false)}
               className="w-full text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg py-2 font-medium transition-colors"
             >
               閉じる
@@ -158,10 +172,10 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
       )}
 
       {/* 画像全画面表示ダイアログ */}
-      {imageViewTarotist && (
+      {showImageViewDialog && selectedTarotist && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60]"
-          onClick={() => setImageViewTarotist(null)}
+          onClick={() => setShowImageViewDialog(false)}
         >
           <div className="relative w-full h-full flex flex-col items-center justify-center p-4">
             {/* 閉じるボタン */}
@@ -178,20 +192,16 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 className="text-2xl font-bold mb-1"
                 style={{ fontFamily: "'Brush Script MT', cursive" }}
               >
-                {imageViewTarotist.icon} {imageViewTarotist.name}
+                {selectedTarotist.icon} {selectedTarotist.name}
               </div>
-              <div className="text-sm opacity-90">
-                {imageViewTarotist.title}
-              </div>
-              <div className="text-sm opacity-80">
-                {imageViewTarotist.trait}
-              </div>
+              <div className="text-sm opacity-90">{selectedTarotist.title}</div>
+              <div className="text-sm opacity-80">{selectedTarotist.trait}</div>
             </div>
 
             {/* 画像 */}
             <img
-              src={`/tarotists/${imageViewTarotist.name}.png`}
-              alt={imageViewTarotist.title}
+              src={`/tarotists/${selectedTarotist.name}.png`}
+              alt={selectedTarotist.title}
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
               onError={(e) => {

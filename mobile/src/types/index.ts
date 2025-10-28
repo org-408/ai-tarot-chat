@@ -10,11 +10,12 @@ export type PageType =
   | "plans"
   | "tarotist"
   | "tarotistSwipe"
+  | "swipeableDemo"
   | "history"
   | "settings";
-export type SelectMode = "tarotist" | "portrait" | "category" | "spread";
+export type SelectTargetMode = "tarotist" | "portrait" | "category" | "spread";
 
-export type ViewModeType = "grid" | "carousel";
+export type SpreadViewModeType = "grid" | "carousel";
 
 export interface NavigationItem {
   id: PageType;

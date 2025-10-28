@@ -21,9 +21,8 @@ interface ChatPanelProps {
   spread: Spread;
   category: ReadingCategory;
   drawnCards: DrawnCard[];
-  selectedCard?: DrawnCard | null;
   isRevealingComplete?: boolean;
-  onRequestRevealAll?: () => void;
+  setIsRevealingComplete?: React.Dispatch<React.SetStateAction<boolean>>;
   onBack: () => void;
 }
 
@@ -34,7 +33,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   category,
   drawnCards,
   isRevealingComplete,
-  onRequestRevealAll,
+  setIsRevealingComplete,
   onBack,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
@@ -270,7 +269,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* 即答方式のヒント及びボタン表示 */}
       {currentPlan.code !== "MASTER" && (
         <RevealPromptPanel
-          onRequestRevealAll={onRequestRevealAll}
+          setIsRevealingComplete={setIsRevealingComplete}
           isAllRevealed={isRevealingComplete}
         />
       )}

@@ -1,7 +1,8 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
-import type { DrawnCard, TarotCard } from "../../../shared/lib/types";
+import type { DrawnCard } from "../../../shared/lib/types";
+import { getCardImagePath } from "../lib/utils/salon";
 
 const CARD_ASPECT = 300 / 527;
 
@@ -17,7 +18,6 @@ interface CarouselViewProps {
   onIndexChange: (index: number) => void;
   onCardClick: (card: DrawnCard) => void;
   onToggleFlip: (cardId: string) => void;
-  getCardImagePath: (card: TarotCard, isBack?: boolean) => string;
 }
 
 const CarouselView: React.FC<CarouselViewProps> = ({
@@ -28,7 +28,6 @@ const CarouselView: React.FC<CarouselViewProps> = ({
   onIndexChange,
   onCardClick,
   onToggleFlip,
-  getCardImagePath,
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true, // ← ぐるぐる回せるように

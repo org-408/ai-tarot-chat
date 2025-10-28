@@ -12,6 +12,7 @@ import PlansPage from "./components/plans-page";
 import ReadingPage from "./components/reading-page";
 import SalonPage from "./components/salon-page";
 import SidebarMenu from "./components/sidebar-menu";
+import SwipeableDemo from "./components/swipeable-demo";
 import TarotistPage from "./components/tarotist-page";
 import TarotistSwipePage from "./components/tarotist-swipe-page";
 import { useAuth } from "./lib/hooks/use-auth";
@@ -20,7 +21,7 @@ import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import TarotSplashScreen from "./splashscreen";
-import type { PageType, UserPlan, ViewModeType } from "./types";
+import type { PageType, UserPlan } from "./types";
 
 function App() {
   // ✅ デバッグメニュー有効化フラグ
@@ -29,7 +30,6 @@ function App() {
   const [pageType, setPageType] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
-  const [viewMode, setViewMode] = useState<ViewModeType>("grid");
 
   const [readingData, setReadingData] = useState<{
     tarotist: Tarotist;
@@ -202,11 +202,11 @@ function App() {
   // 🔥 占い開始
   const handleStartReading = (
     tarotist: Tarotist,
-    spread: Spread,
-    category: ReadingCategory
+    category: ReadingCategory,
+    spread: Spread
   ) => {
-    console.log(`占い開始: spread=${spread}, category=${category}`);
-    setReadingData({ tarotist, spread, category });
+    console.log(`占い開始: category=${category}, spread=${spread}`);
+    setReadingData({ tarotist, category, spread });
     setPageType("reading");
   };
 
@@ -309,8 +309,6 @@ function App() {
             payload={payload}
             masterData={masterData}
             readingData={readingData!}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
             onBack={handleBackFromReading}
           />
         );
@@ -340,6 +338,17 @@ function App() {
             payload={payload}
             currentPlan={currentPlan!}
             masterData={masterData}
+            onChangePlan={handleChangePlan}
+            isChangingPlan={isChangingPlan}
+          />
+        );
+      case "swipeableDemo":
+        return (
+          <SwipeableDemo
+            payload={payload}
+            masterData={masterData}
+            usageStats={usageStats}
+            currentPlan={currentPlan!}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
           />
@@ -592,7 +601,6 @@ function App() {
       <Header
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
-        viewMode={viewMode}
         onMenuClick={() => setSidebarOpen(true)}
       />
       {/* 開発メニュー（環境変数で制御） */}

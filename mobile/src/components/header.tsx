@@ -1,18 +1,18 @@
-import type { PageType, UserPlan, ViewModeType } from "../types";
+import { useSalon } from "../lib/hooks/use-salon";
+import type { PageType, UserPlan } from "../types";
 
 interface HeaderProps {
   currentPlan: UserPlan;
   currentPage: PageType;
-  viewMode: ViewModeType;
   onMenuClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   currentPlan,
   currentPage,
-  viewMode,
   onMenuClick,
 }) => {
+  const { spreadViewerMode } = useSalon();
   console.log(
     `[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`
   );
@@ -58,7 +58,9 @@ const Header: React.FC<HeaderProps> = ({
             return "";
         }
       case "reading":
-        return viewMode === "grid" ? "スプレッド表示" : "個別カード表示";
+        return spreadViewerMode === "grid"
+          ? "スプレッド表示"
+          : "個別カード表示";
       case "plans":
         return "最適なプランを選択してください";
       case "tarotist":

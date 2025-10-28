@@ -1,45 +1,57 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
-import type { Plan, Tarotist } from "../../../shared/lib/types";
-import type { SelectMode, UserPlan } from "../types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { MasterData, Plan, Tarotist } from "../../../shared/lib/types";
+import { useSalonStore } from "../lib/stores/salon";
+import {
+  canUseTarotist,
+  getTarotistColor,
+  renderStars,
+} from "../lib/utils/salon";
+import type { UserPlan } from "../types";
 
 interface TarotistCarouselPortraitProps {
-  availableTarotists: Tarotist[];
-  selectedTarotist: Tarotist | null;
-  setSelectedTarotist: (tarotist: Tarotist) => void;
+  masterData: MasterData;
   currentPlan: Plan;
-  getTarotistColor: (tarotist: Tarotist) => {
-    primary: string;
-    secondary: string;
-    accent: string;
-    bg: string;
-    button: string;
-  };
-  renderStars: (quality: number) => string;
   onChangePlan: (planCode: UserPlan) => void;
   isChangingPlan: boolean;
-  onSelectTarotist?: (tarotist: Tarotist) => void;
-  selectMode: SelectMode;
-  setSelectMode: (mode: SelectMode) => void;
+  onClickTarotist?: (tarotist: Tarotist) => void;
 }
 
 const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
-  availableTarotists,
-  selectedTarotist,
-  setSelectedTarotist,
+  masterData,
   currentPlan,
-  getTarotistColor,
-  renderStars,
   onChangePlan,
   isChangingPlan,
-  onSelectTarotist,
-  selectMode: mode,
-  setSelectMode,
+  onClickTarotist,
 }) => {
-  const canUseTarotist = (requiredPlan: Plan) => {
-    return requiredPlan.no <= currentPlan.no;
-  };
+  const {
+    selectedTarotist,
+    setSelectedTarotist,
+    selectedTargetMode,
+    setSelectedTargetMode,
+  } = useSalonStore();
+
+  // 占い師の取得とフィルタリング
+  const availableTarotists = useMemo(() => {
+    if (!masterData.tarotists || !currentPlan) return [];
+
+    return masterData.tarotists.filter((tarotist: Tarotist) => {
+      // 全員見せるように変更
+      return !!tarotist;
+    });
+  }, [masterData, currentPlan]);
+
+  useEffect(() => {
+    console.log(
+      "[TarotistPortrait] availableTarotists or selectedTarotist changed",
+      availableTarotists,
+      selectedTarotist
+    );
+    if (availableTarotists.length > 0 && !selectedTarotist) {
+      setSelectedTarotist(selectedTarotist || availableTarotists[0]);
+    }
+  }, [availableTarotists, selectedTarotist, setSelectedTarotist]);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -77,27 +89,25 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
   const handleSelectTarotist = (tarotist: Tarotist) => {
     setSelectedTarotist(tarotist);
-    if (onSelectTarotist) {
-      onSelectTarotist(tarotist);
-    }
-    setSelectMode("portrait");
+    setSelectedTargetMode("portrait");
   };
 
   // selectModeが変わった時に現在の占い師位置にスクロール
   useEffect(() => {
     if (!emblaApi || !selectedTarotist) return;
 
-    const currentIndex = availableTarotists.findIndex(
+    const selectedIndex = availableTarotists.findIndex(
       (t) => t.no === selectedTarotist.no
     );
+    const currentIndex = emblaApi?.selectedScrollSnap();
 
-    if (currentIndex !== -1) {
+    if (selectedIndex !== currentIndex) {
       // 次のフレームまで待ってからスクロール（Emblaの初期化完了を待つ）
       requestAnimationFrame(() => {
-        emblaApi.scrollTo(currentIndex, false);
+        emblaApi.scrollTo(selectedIndex, false);
       });
     }
-  }, [mode, emblaApi, selectedTarotist, availableTarotists]);
+  }, [availableTarotists, emblaApi, selectedTargetMode, selectedTarotist]);
 
   if (availableTarotists.length === 0) {
     return (
@@ -106,7 +116,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   }
 
   // チャットモード - 肖像画表示
-  if (mode !== "tarotist" && selectedTarotist) {
+  if (selectedTargetMode !== "tarotist" && selectedTarotist) {
     const colors = getTarotistColor(selectedTarotist);
 
     return (
@@ -115,7 +125,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="w-full h-full p-2 z-10"
         onClick={() => {
-          if (onSelectTarotist) onSelectTarotist(selectedTarotist);
+          if (onClickTarotist) onClickTarotist(selectedTarotist);
         }}
       >
         <div className="h-full rounded-3xl overflow-hidden shadow-xl relative">
@@ -185,7 +195,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
           {/* 占い師変更ボタン - 右下にひっそり配置 */}
           <button
-            onClick={() => setSelectMode("tarotist")}
+            onClick={() => setSelectedTargetMode("tarotist")}
             className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 transition-all shadow-md"
           >
             占い師を変更
@@ -220,7 +230,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
       <div className="flex-1 overflow-hidden min-h-0" ref={emblaRef}>
         <div className="flex h-full touch-pan-y">
           {availableTarotists.map((tarotist, index) => {
-            const isAvailable = canUseTarotist(tarotist.plan!);
+            const isAvailable = canUseTarotist(tarotist.plan!, currentPlan);
             const currentIndex = selectedTarotist
               ? availableTarotists.findIndex(
                   (t) => t.no === selectedTarotist.no

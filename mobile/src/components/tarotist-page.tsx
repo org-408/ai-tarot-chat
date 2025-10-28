@@ -5,6 +5,12 @@ import type {
   Plan,
   Tarotist,
 } from "../../../shared/lib/types";
+import {
+  canUseTarotist,
+  getPlanColors,
+  getTarotistColor,
+  renderStars,
+} from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 import ProfileDialog from "./profile-dialog";
 
@@ -26,10 +32,6 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
   );
-  const [imageViewTarotist, setImageViewTarotist] = useState<Tarotist | null>(
-    null
-  );
-
   const availableTarotists =
     masterData.tarotists!.filter(
       (tarotist) => tarotist.plan!.code !== "OFFLINE" // OFFLINEは非表示 TODO: 自動化予定
@@ -39,76 +41,10 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
     onChangePlan(requiredPlan as UserPlan);
   };
 
-  const canUseTarotist = (requiredPlan: string) => {
-    const planHierarchy: Record<string, number> = {
-      GUEST: 0,
-      FREE: 1,
-      STANDARD: 2,
-      PREMIUM: 3,
-    };
-    return planHierarchy[currentPlan.code] >= planHierarchy[requiredPlan];
-  };
-
-  const renderStars = (quality: number) => {
-    return "⭐️".repeat(quality);
-  };
-
-  // プラン色を取得（統一化）
-  const getPlanColors = (planCode: string) => {
-    const plan = masterData.plans.find((p: Plan) => p.code === planCode);
-    if (
-      !plan ||
-      !plan.primaryColor ||
-      !plan.secondaryColor ||
-      !plan.accentColor
-    ) {
-      // フォールバック
-      return {
-        primary: "#F9FAFB",
-        secondary: "#E5E7EB",
-        accent: "#6B7280",
-      };
-    }
-
-    return {
-      primary: plan.primaryColor,
-      secondary: plan.secondaryColor,
-      accent: plan.accentColor,
-    };
-  };
-
-  // 占い師ごとの色を取得(DBからの色情報、なければプランのデフォルト色)
-  const getTarotistColor = (tarotist: Tarotist) => {
-    // MasterDataから色情報を取得(primary/secondary/accent)
-    const primary = tarotist.primaryColor;
-    const secondary = tarotist.secondaryColor;
-    const accent = tarotist.accentColor;
-
-    // 占い師固有の色がある場合はそれを使用
-    if (primary && secondary && accent) {
-      return {
-        primary,
-        secondary,
-        accent,
-        // 後方互換性のため
-        bg: primary,
-        button: accent,
-      };
-    }
-
-    // なければプランのデフォルト色を使用
-    const planColors = getPlanColors(tarotist.plan?.code || "GUEST");
-    return {
-      ...planColors,
-      // 後方互換性のため
-      bg: planColors.primary,
-      button: planColors.accent,
-    };
-  };
-
+  const plans = masterData.plans || [];
   const currentColors = currentPlan
-    ? getPlanColors(currentPlan.code)
-    : getPlanColors("GUEST");
+    ? getPlanColors(currentPlan.code, plans)
+    : getPlanColors("GUEST", plans);
 
   return (
     <div className="main-container">
@@ -142,7 +78,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
         {availableTarotists
           ?.sort((a, b) => (a.no || 0) - (b.no || 0))
           .map((tarotist) => {
-            const isAvailable = canUseTarotist(tarotist.plan?.code || "GUEST");
+            const isAvailable = canUseTarotist(tarotist.plan!, currentPlan);
             const requiresUpgrade = !isAvailable;
             const colors = getTarotistColor(tarotist);
 
@@ -278,16 +214,16 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
       </div>
 
       {/* プロフィール拡大ダイアログ & 画像全画面表示ダイアログ */}
-      <ProfileDialog
-        selectedTarotist={selectedTarotist}
-        setSelectedTarotist={setSelectedTarotist}
-        canUseTarotist={canUseTarotist}
-        onChangePlan={handleChangePlan}
-        isChangingPlan={isChangingPlan}
-        setImageViewTarotist={setImageViewTarotist}
-        imageViewTarotist={imageViewTarotist}
-        hasButton
-      />
+      {selectedTarotist && (
+        <ProfileDialog
+          selectedTarotist={selectedTarotist}
+          profileClicked={!!selectedTarotist}
+          hasButton
+          currentPlan={currentPlan}
+          onChangePlan={handleChangePlan}
+          isChangingPlan={isChangingPlan}
+        />
+      )}
     </div>
   );
 };
