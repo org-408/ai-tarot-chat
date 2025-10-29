@@ -64,6 +64,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
+    console.log("[TarotistPortrait] onSelect called");
     const index = emblaApi.selectedScrollSnap();
     // スクロール時に対応する占い師も選択状態にする
     setSelectedTarotist(availableTarotists[index]);
@@ -95,17 +96,24 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   // selectModeが変わった時に現在の占い師位置にスクロール
   useEffect(() => {
     if (!emblaApi || !selectedTarotist) return;
+    console.log(
+      "[TarotistPortrait] selectedTargetMode or selectedTarotist changed",
+      selectedTargetMode,
+      selectedTarotist
+    );
 
     const selectedIndex = availableTarotists.findIndex(
       (t) => t.no === selectedTarotist.no
     );
     const currentIndex = emblaApi?.selectedScrollSnap();
 
+    console.log(
+      "[TarotistPortrait] Scrolling to selectedIndex",
+      selectedIndex,
+      currentIndex
+    );
     if (selectedIndex !== currentIndex) {
-      // 次のフレームまで待ってからスクロール（Emblaの初期化完了を待つ）
-      requestAnimationFrame(() => {
-        emblaApi.scrollTo(selectedIndex, false);
-      });
+      emblaApi.scrollTo(selectedIndex, true); // ← jump=trueで即座に切り替え
     }
   }, [availableTarotists, emblaApi, selectedTargetMode, selectedTarotist]);
 
