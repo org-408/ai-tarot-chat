@@ -4,19 +4,8 @@ import { BaseRepository } from "./base";
 export class ReadingRepository extends BaseRepository {
   // ==================== Reading ====================
   async createReading(
-    reading: Omit<
-      Reading,
-      | "id"
-      | "createdAt"
-      | "updatedAt"
-      | "client"
-      | "device"
-      | "tarotist"
-      | "spread"
-      | "category"
-      | "chatMessages"
-    >
-  ): Promise<string> {
+    reading: Omit<Reading, "id" | "createdAt" | "updatedAt">
+  ): Promise<Reading> {
     const created = await this.db.reading.create({
       data: {
         clientId: reading.clientId,
@@ -38,10 +27,30 @@ export class ReadingRepository extends BaseRepository {
               })),
             }
           : undefined,
+        chatMessages: Array.isArray(reading.chatMessages)
+          ? {
+              create: reading.chatMessages.map((message) => ({
+                clientId: reading.clientId,
+                deviceId: reading.deviceId,
+                tarotistId: reading.tarotistId,
+                chatType: message.chatType,
+                role: message.role,
+                message: message.message,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        client: true,
+        tarotist: true,
+        spread: true,
+        category: true,
+        cards: true,
+        chatMessages: true,
       },
     });
 
-    return created.id;
+    return created as unknown as Reading; // 型アサーションを追加s
   }
 
   async getReadingById(id: string): Promise<Reading | null> {
@@ -61,14 +70,14 @@ export class ReadingRepository extends BaseRepository {
 
   async getReadingsByClientId(
     clientId: string,
-    limit = 20,
-    offset = 0
+    take = 20,
+    skip = 0
   ): Promise<Reading[]> {
     return (await this.db.reading.findMany({
       where: { clientId },
       orderBy: { createdAt: "desc" },
-      take: limit,
-      skip: offset,
+      take,
+      skip,
       include: {
         client: true,
         device: true,

@@ -354,6 +354,7 @@ export type Reading = {
   spread?: Spread | null;
   categoryId?: string | null;
   category?: ReadingCategory | null;
+  customQuestion?: string | null;
   cards: DrawnCard[];
   createdAt: Date;
   updatedAt: Date;
@@ -607,6 +608,11 @@ export type UsageStats = {
   lastReadingDate?: Date | null;
   lastCelticReadingDate?: Date | null;
   lastPersonalReadingDate?: Date | null;
+};
+
+export type SaveReadingResponse = {
+  usage: UsageStats;
+  reading: Reading;
 };
 
 // ログモデル

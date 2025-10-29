@@ -1,9 +1,19 @@
-import type { Client, UsageStats } from "@/../shared/lib/types";
+import type {
+  ChatMessage,
+  Client,
+  DrawnCard,
+  Reading,
+  ReadingCategory,
+  Spread,
+  Tarotist,
+  UsageStats,
+} from "@/../shared/lib/types";
 import { logWithContext } from "@/lib/server/logger/logger";
 import {
   BaseRepository,
   clientRepository,
   planRepository,
+  readingRepository,
 } from "@/lib/server/repositories";
 import { isSameDayJST } from "@/lib/utils/date";
 
@@ -259,19 +269,134 @@ export class ClientService {
     );
   }
 
-  async readingDone(clientId: string, category: string, spreadId: string) {
+  /**
+   * 占い履歴取得（ビジネスロジック）
+   * 読み取り専用のため、トランザクションは不要
+   * clientService に集約
+   */
+  async getReadingHistory(
+    clientId: string,
+    take = 20,
+    skip = 0
+  ): Promise<Reading[]> {
+    const client = await clientRepository.getClientById(clientId);
+    if (!client) throw new Error("Client not found");
+
+    const plan = await planRepository.getPlanById(client.planId);
+    if (!plan) throw new Error("Plan not found");
+
+    // プランに履歴機能がない場合はエラー
+    if (!plan.hasHistory) {
+      throw new Error("History feature not available in current plan");
+    }
+
+    return await readingRepository.getReadingsByClientId(clientId, take, skip);
+  }
+
+  /**
+   *
+   * @param clientId
+   * @param category
+   * @param spreadId
+   * @returns
+   */
+  async saveReading(params: {
+    clientId: string;
+    deviceId: string;
+    tarotist: Tarotist;
+    category?: ReadingCategory;
+    customQuestion?: string;
+    spread: Spread;
+    cards: DrawnCard[];
+    chatMessages: ChatMessage[];
+  }) {
     logWithContext("info", "Marking reading as done", {
-      clientId,
-      category,
-      spreadId,
+      params,
     });
+    const {
+      clientId,
+      deviceId,
+      tarotist,
+      category,
+      customQuestion,
+      spread,
+      cards,
+      chatMessages,
+    } = params;
 
     // トランザクションで処理
     return BaseRepository.transaction(
-      { client: clientRepository },
-      async ({ client: clientRepo }) => {
+      { client: clientRepository, reading: readingRepository },
+      async ({ client: clientRepo, reading: ReadingRepo }) => {
         const client = await clientRepo.getClientById(clientId);
         if (!client) throw new Error("Client not found");
+        logWithContext("info", "Fetched client", { client, clientId });
+
+        // 占い履歴保存
+        const newReading = await ReadingRepo.createReading({
+          clientId,
+          deviceId,
+          tarotistId: tarotist.id,
+          categoryId: category?.id,
+          customQuestion: customQuestion,
+          spreadId: spread.id,
+          cards,
+          chatMessages,
+        });
+        logWithContext("info", "Saved new reading", {
+          readingId: newReading.id,
+        });
+        // 利用回数カウントアップ
+        const isCeltic = spread.code.toLowerCase().includes("celtic");
+        if (!customQuestion && !category) {
+          // どちらか一方は必要
+          logWithContext(
+            "error",
+            "Either customQuestion or category must be provided",
+            {
+              clientId,
+              tarotistId: tarotist.id,
+              spreadId: spread.id,
+              spreadCode: spread.code,
+            }
+          );
+          throw new Error("Either customQuestion or category must be provided");
+        } else if (customQuestion && customQuestion.trim().length > 0) {
+          client.dailyPersonalCount += 1;
+          client.lastPersonalReadingDate = new Date();
+        } else if (isCeltic) {
+          client.dailyCelticsCount += 1;
+          client.lastCelticReadingDate = new Date();
+        } else {
+          client.dailyReadingsCount += 1;
+          client.lastReadingDate = new Date();
+        }
+        logWithContext("info", "Incremented client usage counts", {
+          clientId,
+          isCeltic,
+          dailyReadingsCount: client.dailyReadingsCount,
+          dailyCelticsCount: client.dailyCelticsCount,
+          dailyPersonalCount: client.dailyPersonalCount,
+        });
+        await clientRepo.updateClient(clientId, {
+          dailyReadingsCount: client.dailyReadingsCount,
+          dailyCelticsCount: client.dailyCelticsCount,
+          dailyPersonalCount: client.dailyPersonalCount,
+          lastReadingDate: client.lastReadingDate,
+          lastCelticReadingDate: client.lastCelticReadingDate,
+          lastPersonalReadingDate: client.lastPersonalReadingDate,
+        });
+
+        // 最新の利用状況を取得して返す
+        const usage = await this.getUsageAndReset(clientId, "SAVE_READING");
+        logWithContext("info", "Created new reading", {
+          usage,
+          reading: newReading,
+        });
+        return {
+          usage,
+          reading: newReading,
+        };
       }
     );
   }

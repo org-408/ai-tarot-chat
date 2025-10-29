@@ -421,6 +421,7 @@ model Reading {
   spread        Spread    @relation(fields: [spreadId], references: [id])
   categoryId    String?
   category      ReadingCategory? @relation(fields: [categoryId], references: [id])
+  customQuestion String?   @db.Text // ユーザーが入力したカスタム質問
   cards         DrawnCard[]  // 選択されたカード配列
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
