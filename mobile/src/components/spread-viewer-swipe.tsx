@@ -201,17 +201,18 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({
         </AnimatePresence>
       </motion.div>
 
+      {/* ビューモード切替ボタン */}
       <div className="w-full flex justify-center gap-3 p-1 bg-white">
         {(["grid", "carousel"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              viewMode === mode
-                ? "bg-purple-400/70 w-8"
-                : "bg-purple-200/40 w-1"
+            className={`w-24 h-4 text-xs rounded-full transition-all ${
+              viewMode === mode ? "bg-purple-400/70" : "bg-purple-200/40"
             }`}
-          />
+          >
+            {mode === "grid" ? "スプレッド表示" : "個別カード表示"}
+          </button>
         ))}
       </div>
 

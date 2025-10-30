@@ -16,12 +16,14 @@ interface SalonState {
   drawnCards: DrawnCard[];
   selectedTargetMode: SelectTargetMode;
   spreadViewerMode: SpreadViewModeType;
+  isPersonal: boolean;
   setSelectedTarotist: (tarotist: Tarotist) => void;
   setSelectedCategory: (category: ReadingCategory) => void;
   setSelectedSpread: (spread: Spread) => void;
   setDrawnCards: (cards: DrawnCard[]) => void;
   setSelectedTargetMode: (mode: SelectTargetMode) => void;
   setSpreadViewerMode: (mode: SpreadViewModeType) => void;
+  setIsPersonal: (isPersonal: boolean) => void;
 }
 
 export const useSalonStore = create<SalonState>()(
@@ -33,12 +35,14 @@ export const useSalonStore = create<SalonState>()(
       drawnCards: [],
       selectedTargetMode: "tarotist",
       spreadViewerMode: "grid",
+      isPersonal: false,
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
       setSelectedCategory: (category) => set({ selectedCategory: category }),
       setSelectedSpread: (spread) => set({ selectedSpread: spread }),
       setDrawnCards: (cards) => set({ drawnCards: cards }),
       setSelectedTargetMode: (mode) => set({ selectedTargetMode: mode }),
       setSpreadViewerMode: (mode) => set({ spreadViewerMode: mode }),
+      setIsPersonal: (isPersonal) => set({ isPersonal }),
     }),
     {
       name: "salon-storage",

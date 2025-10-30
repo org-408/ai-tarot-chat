@@ -503,10 +503,7 @@ export type TarotistWithPlanCode = Omit<TarotistInput, "planId"> & {
   planCode: string;
 };
 
-export type ReadingInput = Omit<
-  Reading,
-  "id" | "createdAt" | "updatedAt" | "client" | "spread" | "category"
->;
+export type ReadingInput = Omit<Reading, "id" | "createdAt" | "updatedAt">;
 
 export type DrawnCardInput = Omit<
   DrawnCard,

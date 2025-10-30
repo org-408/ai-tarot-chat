@@ -108,6 +108,9 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
     ? getPlanColors(currentPlan.code)
     : getPlanColors("GUEST");
 
+  const [showProfileView, setShowProfileView] = useState(false);
+  const [showImageView, setShowImageView] = useState(false);
+
   return (
     <div className="main-container">
       {/* ヘッダー */}
@@ -221,7 +224,10 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
       {selectedTarotist && (
         <ProfileDialog
           selectedTarotist={selectedTarotist}
-          profileClicked={!!selectedTarotist}
+          showProfileView={showProfileView}
+          setShowProfileView={setShowProfileView}
+          showImageView={showImageView}
+          setShowImageView={setShowImageView}
           hasButton
           currentPlan={currentPlan}
           onChangePlan={handleChangePlan}

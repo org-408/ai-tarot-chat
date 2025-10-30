@@ -102,11 +102,11 @@ const GridView: React.FC<GridViewProps> = ({
           initial={{ y: 0, opacity: 1 }}
           animate={{ y: 10, opacity: 0 }}
           transition={{ duration: 3, delay: 10 }}
-          className="absolute top-8 left-1/2 z-30 pointer-events-none"
+          className="absolute top-8 z-30 pointer-events-none"
         >
           <div className="relative">
             {/* バッジ本体 - 淡い色で控えめに、横幅を広く */}
-            <div className="relative bg-white/20 backdrop-blur-sm text-purple-600/70 px-2 py-1 rounded-full shadow-sm border border-purple-100/40">
+            <div className="relative bg-white/70 backdrop-blur-sm text-purple-600/70 px-2 py-1 rounded-full shadow-sm border border-purple-100/40">
               <div className="flex gap-2 whitespace-nowrap">
                 <span className="text-sm font-normal tracking-wide opacity-70">
                   {spread.name}

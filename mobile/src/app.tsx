@@ -236,6 +236,9 @@ function App() {
     isChangingPlan,
   ]);
 
+  // 占い師プロフィールダイアログ管理
+  const [showProfile, setShowProfile] = useState(false);
+
   // 初期化中またはデータロード中
   if (
     !isInitialized ||
@@ -309,6 +312,8 @@ function App() {
             payload={payload}
             masterData={masterData}
             readingData={readingData!}
+            showProfile={showProfile}
+            setShowProfile={setShowProfile}
             onBack={handleBackFromReading}
           />
         );
@@ -602,6 +607,8 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen(true)}
+        showProfile={showProfile}
+        setShowProfile={setShowProfile}
       />
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (

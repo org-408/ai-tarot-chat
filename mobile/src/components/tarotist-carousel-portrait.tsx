@@ -13,8 +13,8 @@ import type { UserPlan } from "../types";
 interface TarotistCarouselPortraitProps {
   masterData: MasterData;
   currentPlan: Plan;
-  onChangePlan: (planCode: UserPlan) => void;
-  isChangingPlan: boolean;
+  onChangePlan?: (planCode: UserPlan) => void;
+  isChangingPlan?: boolean;
   onClickTarotist?: (tarotist: Tarotist) => void;
 }
 
@@ -416,7 +416,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                               <motion.button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onChangePlan(
+                                  onChangePlan!(
                                     (tarotist.plan?.code as UserPlan) || "GUEST"
                                   );
                                   handleSelectTarotist(tarotist);

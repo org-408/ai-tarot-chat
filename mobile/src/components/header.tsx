@@ -5,27 +5,32 @@ interface HeaderProps {
   currentPlan: UserPlan;
   currentPage: PageType;
   onMenuClick: () => void;
+  showProfile: boolean;
+  setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Header: React.FC<HeaderProps> = ({
   currentPlan,
   currentPage,
   onMenuClick,
+  showProfile,
+  setShowProfile,
 }) => {
-  const { spreadViewerMode } = useSalon();
+  const { selectedTarotist, isPersonal } = useSalon();
   console.log(
     `[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`
   );
   const getHeaderTitle = () => {
     switch (currentPage) {
       case "salon":
+      case "reading":
         switch (currentPlan) {
           case "FREE":
-            return "🔮 今日のタロット占い";
+            return "🔮 タロット占い";
           case "STANDARD":
-            return "⭐ スタンダード占い";
+            return "⭐ 本格タロット占い";
           case "PREMIUM":
-            return "🤖 AIタロットプレミアム";
+            return isPersonal ? "🤖 パーソナル占い" : "本格タロット占い";
           default:
             return "🔮 タロット占い";
         }
@@ -58,9 +63,7 @@ const Header: React.FC<HeaderProps> = ({
             return "";
         }
       case "reading":
-        return spreadViewerMode === "grid"
-          ? "スプレッド表示"
-          : "個別カード表示";
+        return `占い師: ${selectedTarotist!.name}`;
       case "plans":
         return "最適なプランを選択してください";
       case "tarotist":
@@ -98,8 +101,14 @@ const Header: React.FC<HeaderProps> = ({
           </svg>
         </button>
 
-        <h1 className="header-title">{getHeaderTitle()}</h1>
-        {getSubtitle() && <p className="header-subtitle">{getSubtitle()}</p>}
+        <div
+          onClick={() => {
+            setShowProfile(!showProfile);
+          }}
+        >
+          <h1 className="header-title">{getHeaderTitle()}</h1>
+          {getSubtitle() && <p className="header-subtitle">{getSubtitle()}</p>}
+        </div>
       </div>
     </header>
   );

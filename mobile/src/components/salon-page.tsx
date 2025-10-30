@@ -104,8 +104,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
             <TarotistCarouselPortrait
               masterData={masterData}
               currentPlan={currentPlan}
-              onChangePlan={handleChangePlan}
-              isChangingPlan={isChangingPlan}
             />
           </div>
 

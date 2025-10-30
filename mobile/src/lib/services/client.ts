@@ -1,4 +1,9 @@
-import type { UsageStats } from "../../../../shared/lib/types";
+import type {
+  Reading,
+  ReadingInput,
+  SaveReadingResponse,
+  UsageStats,
+} from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/api-client";
@@ -106,6 +111,69 @@ export class ClientService {
         newPlanCode,
         error: error instanceof Error ? error.message : String(error),
       });
+      throw error;
+    }
+  }
+
+  // ============================================
+  // Reading 関連
+  // ============================================
+
+  /**
+   * 占い結果を保存する
+   */
+  async saveReading(newReading: ReadingInput): Promise<SaveReadingResponse> {
+    logWithContext("info", "[ClientService] Saving new reading", {
+      newReading,
+    });
+
+    try {
+      const result = await apiClient.post<SaveReadingResponse>(
+        "/api/clients/readings",
+        newReading
+      );
+
+      logWithContext("info", "[ClientService] Reading saved", {
+        usage: result.usage,
+        reading: result.reading,
+      });
+      return result;
+    } catch (error) {
+      logWithContext("error", "[ClientService] Failed to save reading", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * 占い履歴を取得する
+   */
+  async getReadingHistory(take?: number, skip?: number): Promise<Reading[]> {
+    logWithContext("info", "[ClientService] Fetching reading history", {
+      take,
+      skip,
+    });
+    try {
+      const readings = await apiClient.get<Reading[]>(
+        "/api/clients/readings" + take && skip
+          ? `?take=${take}&skip=${skip}`
+          : !skip
+          ? `?take=${take}`
+          : ""
+      );
+      logWithContext("info", "[ClientService] Reading history fetched", {
+        count: readings.length,
+      });
+      return readings;
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[ClientService] Failed to fetch reading history",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
       throw error;
     }
   }

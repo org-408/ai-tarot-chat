@@ -12,12 +12,14 @@ export function useSalon() {
     drawnCards,
     selectedTargetMode,
     spreadViewerMode,
+    isPersonal,
     setSelectedTarotist,
     setSelectedCategory,
     setSelectedSpread,
     setDrawnCards,
     setSelectedTargetMode,
     setSpreadViewerMode,
+    setIsPersonal,
   } = useSalonStore();
 
   return {
@@ -30,6 +32,7 @@ export function useSalon() {
     drawnCards,
     selectedTargetMode,
     spreadViewerMode,
+    isPersonal,
 
     // ============================================
     // アクション
@@ -40,5 +43,6 @@ export function useSalon() {
     setDrawnCards,
     setSelectedTargetMode,
     setSpreadViewerMode,
+    setIsPersonal,
   };
 }

@@ -10,12 +10,17 @@ import { useClientStore } from "../stores/client";
 export function useClient() {
   const {
     isReady,
-    currentPlan,
     usage,
+    currentPlan,
+    readings,
+    take,
+    skip,
+    error,
     init,
     refreshUsage,
     checkAndResetIfNeeded,
-    decrementOptimistic,
+    saveReading,
+    fetchReadings,
   } = useClientStore();
 
   return {
@@ -28,6 +33,10 @@ export function useClient() {
     remainingReadings: usage?.remainingReadings ?? 0,
     remainingCeltics: usage?.remainingCeltics ?? 0,
     remainingPersonal: usage?.remainingPersonal ?? 0,
+    readings,
+    take,
+    skip,
+    error,
 
     // ============================================
     // アクション
@@ -35,7 +44,8 @@ export function useClient() {
     init,
     refreshUsage,
     checkAndResetIfNeeded,
-    decrementOptimistic,
+    saveReading,
+    fetchReadings,
 
     // ⚠️ プラン変更は useLifecycle().changePlan() を使用
   };

@@ -1,11 +1,8 @@
 import type {
-  ChatMessage,
   Client,
-  DrawnCard,
   Reading,
-  ReadingCategory,
-  Spread,
-  Tarotist,
+  ReadingInput,
+  SaveReadingResponse,
   UsageStats,
 } from "@/../shared/lib/types";
 import { logWithContext } from "@/lib/server/logger/logger";
@@ -300,49 +297,37 @@ export class ClientService {
    * @param spreadId
    * @returns
    */
-  async saveReading(params: {
-    clientId: string;
-    deviceId: string;
-    tarotist: Tarotist;
-    category?: ReadingCategory;
-    customQuestion?: string;
-    spread: Spread;
-    cards: DrawnCard[];
-    chatMessages: ChatMessage[];
-  }) {
+  async saveReading(params: ReadingInput): Promise<SaveReadingResponse> {
     logWithContext("info", "Marking reading as done", {
       params,
     });
-    const {
-      clientId,
-      deviceId,
-      tarotist,
-      category,
-      customQuestion,
-      spread,
-      cards,
-      chatMessages,
-    } = params;
-
     // トランザクションで処理
     return BaseRepository.transaction(
       { client: clientRepository, reading: readingRepository },
       async ({ client: clientRepo, reading: ReadingRepo }) => {
-        const client = await clientRepo.getClientById(clientId);
-        if (!client) throw new Error("Client not found");
+        const {
+          client,
+          clientId,
+          deviceId,
+          tarotist,
+          category,
+          customQuestion,
+          spread,
+        } = params;
+        if (
+          !client ||
+          !clientId ||
+          !deviceId ||
+          !tarotist ||
+          (!category && !customQuestion) ||
+          (category && customQuestion) ||
+          !spread
+        )
+          throw new Error("Bad Request: missing parameters");
         logWithContext("info", "Fetched client", { client, clientId });
 
         // 占い履歴保存
-        const newReading = await ReadingRepo.createReading({
-          clientId,
-          deviceId,
-          tarotistId: tarotist.id,
-          categoryId: category?.id,
-          customQuestion: customQuestion,
-          spreadId: spread.id,
-          cards,
-          chatMessages,
-        });
+        const newReading = await ReadingRepo.createReading(params);
         logWithContext("info", "Saved new reading", {
           readingId: newReading.id,
         });

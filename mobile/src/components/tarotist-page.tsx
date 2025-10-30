@@ -46,6 +46,9 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
     ? getPlanColors(currentPlan.code, plans)
     : getPlanColors("GUEST", plans);
 
+  const [showProfileView, setShowProfileView] = useState(false);
+  const [showImageView, setShowImageView] = useState(false);
+
   return (
     <div className="main-container">
       {/* ヘッダー */}
@@ -217,7 +220,10 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
       {selectedTarotist && (
         <ProfileDialog
           selectedTarotist={selectedTarotist}
-          profileClicked={!!selectedTarotist}
+          showProfileView={showProfileView}
+          setShowProfileView={setShowProfileView}
+          showImageView={showImageView}
+          setShowImageView={setShowImageView}
           hasButton
           currentPlan={currentPlan}
           onChangePlan={handleChangePlan}

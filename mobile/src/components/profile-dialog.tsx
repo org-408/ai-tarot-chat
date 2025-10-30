@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
 import { canUseTarotist, renderStars } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
@@ -7,9 +7,11 @@ interface ProfileDialogProps {
   // for selectedTarotist
   selectedTarotist: Tarotist;
   // for profile
-  profileClicked?: boolean;
+  showProfileView?: boolean;
+  setShowProfileView?: React.Dispatch<React.SetStateAction<boolean>>;
   // for image view
-  imageViewClicked?: boolean;
+  showImageView?: boolean;
+  setShowImageView?: React.Dispatch<React.SetStateAction<boolean>>;
   // plan button display
   hasButton?: boolean;
   currentPlan?: Plan;
@@ -19,39 +21,26 @@ interface ProfileDialogProps {
 
 const ProfileDialog: React.FC<ProfileDialogProps> = ({
   selectedTarotist,
-  profileClicked = false,
-  imageViewClicked = false,
+  showProfileView = false,
+  setShowProfileView,
+  showImageView = false,
+  setShowImageView,
   hasButton = true,
   currentPlan,
   onChangePlan = () => {},
   isChangingPlan,
 }) => {
-  const [showProfileDialog, setShowProfileDialog] = useState(false);
-  const [showImageViewDialog, setShowImageViewDialog] = useState(false);
-
   const handleChangePlan = (requiredPlan: UserPlan) => {
     onChangePlan(requiredPlan);
   };
 
-  useEffect(() => {
-    if (profileClicked) {
-      setShowProfileDialog(true);
-    }
-  }, [profileClicked]);
-
-  useEffect(() => {
-    if (imageViewClicked) {
-      setShowImageViewDialog(true);
-    }
-  }, [imageViewClicked]);
-
   return (
     <>
       {/* プロフィール拡大ダイアログ */}
-      {showProfileDialog && selectedTarotist && (
+      {showProfileView && setShowProfileView && selectedTarotist && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowProfileDialog(false)}
+          onClick={() => setShowProfileView(false)}
         >
           <div
             className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto"
@@ -80,8 +69,8 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                 className="w-48 h-48 rounded-xl object-cover shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowProfileDialog(false);
-                  setShowImageViewDialog(true);
+                  setShowProfileView(false);
+                  if (setShowImageView) setShowImageView(true);
                 }}
                 onError={(e) => {
                   e.currentTarget.src =
@@ -134,7 +123,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     handleChangePlan(selectedTarotist.plan!.code as UserPlan);
-                    setShowProfileDialog(false);
+                    setShowProfileView(false);
                   }}
                   disabled={isChangingPlan}
                   className="w-full py-3 px-4 text-xs text-white rounded-lg font-medium transition-all mb-3 shadow-md"
@@ -162,7 +151,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
 
             {/* 閉じるボタン */}
             <button
-              onClick={() => setShowProfileDialog(false)}
+              onClick={() => setShowProfileView(false)}
               className="w-full text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg py-2 font-medium transition-colors"
             >
               閉じる
@@ -172,10 +161,10 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
       )}
 
       {/* 画像全画面表示ダイアログ */}
-      {showImageViewDialog && selectedTarotist && (
+      {showImageView && setShowImageView && selectedTarotist && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60]"
-          onClick={() => setShowImageViewDialog(false)}
+          onClick={() => setShowImageView(false)}
         >
           <div className="relative w-full h-full flex flex-col items-center justify-center p-4">
             {/* 閉じるボタン */}

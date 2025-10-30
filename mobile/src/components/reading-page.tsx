@@ -14,6 +14,7 @@ import { drawRandomCards } from "../lib/utils/salon";
 import { ChatPanel } from "./chat-panel";
 import ShuffleDialog from "./shuffle-dialog";
 import SpreadViewerSwipe from "./spread-viewer-swipe";
+import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 
 interface ReadingData {
   tarotist: Tarotist;
@@ -25,6 +26,8 @@ interface ReadingPageProps {
   payload: AppJWTPayload;
   masterData: MasterData;
   readingData: ReadingData;
+  showProfile: boolean;
+  setShowProfile: (show: boolean) => void;
   onBack: () => void;
 }
 
@@ -32,9 +35,11 @@ interface ReadingPageProps {
 const ReadingPage: React.FC<ReadingPageProps> = ({
   masterData,
   readingData,
+  showProfile,
+  setShowProfile,
   onBack,
 }) => {
-  const { setSpreadViewerMode } = useSalon();
+  const { selectedTargetMode, setSpreadViewerMode } = useSalon();
   const { tarotist, category, spread } = readingData;
 
   const [drawnCards, setDrawnCards] = useState<DrawnCard[]>([]);
@@ -86,9 +91,20 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           height: "45vh",
           margin: "0 auto",
         }}
+        onClick={() => {
+          if (showProfile) setShowProfile(false);
+        }}
       >
+        {/* プロフィール表示エリア */}
+        {showProfile && currentPlan && selectedTargetMode === "portrait" && (
+          <TarotistCarouselPortrait
+            masterData={masterData}
+            currentPlan={currentPlan}
+          />
+        )}
+
         {/* カード表示エリア */}
-        {drawnCards.length > 0 && (
+        {!showProfile && drawnCards.length > 0 && (
           <SpreadViewerSwipe
             spread={spread}
             drawnCards={drawnCards}

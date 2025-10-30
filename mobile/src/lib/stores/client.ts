@@ -1,10 +1,22 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { Plan, UsageStats } from "../../../../shared/lib/types";
+import type {
+  Plan,
+  Reading,
+  ReadingInput,
+  UsageStats,
+} from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { clientService } from "../services/client";
 import { getTodayJST } from "../utils/date";
+
+export type PaginationParams = {
+  take?: number;
+  skip?: number;
+  next?: boolean;
+  prev?: boolean;
+};
 
 interface ClientState {
   // ============================================
@@ -15,18 +27,34 @@ interface ClientState {
   lastFetchedDate: string | null;
 
   // ============================================
+  // 占い履歴
+  // ============================================
+  readings: Reading[];
+  take: number;
+  skip: number;
+
+  // ============================================
   // プラン変更の状態
   // ============================================
   currentPlan: Plan | null;
 
   // ============================================
-  // アクション: 利用状況
+  // エラー状態管理
+  // ============================================
+  error: Error | null;
+
+  // ============================================
+  // アクション: 利用状況・占い履歴管理
   // ============================================
   init: () => Promise<void>;
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
-  decrementOptimistic: (type: "readings" | "celtics" | "personal") => void;
+  saveReading: (data: ReadingInput) => Promise<void>;
+  fetchReadings: (params: PaginationParams) => Promise<void>;
+  setParams: (params: PaginationParams) => { take: number; skip: number };
+  setTake: (take: number) => void;
+  setSkip: (skip: number) => void;
 
   // ============================================
   // リセット
@@ -56,12 +84,17 @@ export const useClientStore = create<ClientState>()(
       currentPlan: null,
       usage: null,
       lastFetchedDate: null,
+      readings: [],
+      take: 20,
+      skip: 0,
+      error: null,
 
       // ============================================
       // 初期化
       // ============================================
       init: async () => {
         logWithContext("info", "[ClientStore] Initializing");
+        set({ isReady: false, error: null });
 
         try {
           // ✅ サーバーから利用状況を取得
@@ -76,6 +109,7 @@ export const useClientStore = create<ClientState>()(
             usage,
             lastFetchedDate: today,
             isReady: true,
+            error: null,
           });
 
           logWithContext("info", "[ClientStore] Initialized successfully", {
@@ -88,7 +122,10 @@ export const useClientStore = create<ClientState>()(
           });
 
           // 初期化失敗でも isReady を true にして先に進める
-          set({ isReady: true });
+          set({
+            isReady: true,
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
         }
       },
 
@@ -96,6 +133,8 @@ export const useClientStore = create<ClientState>()(
       // プラン変更
       // ============================================
       changePlan: async (newPlan: Plan) => {
+        set({ error: null });
+
         logWithContext("info", "[ClientStore] Changing plan", {
           newPlanCode: newPlan.code,
         });
@@ -118,7 +157,8 @@ export const useClientStore = create<ClientState>()(
             newPlan.code
           );
           if (!success || !usage) {
-            throw new Error("Server plan change failed");
+            set({ error: new Error("Server plan change failed") });
+            return;
           }
 
           const today = getTodayJST();
@@ -135,7 +175,9 @@ export const useClientStore = create<ClientState>()(
           logWithContext("error", "[ClientStore] Plan change failed", {
             error: error instanceof Error ? error.message : String(error),
           });
-          throw error;
+          set({
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
         }
       },
 
@@ -143,6 +185,8 @@ export const useClientStore = create<ClientState>()(
       // 利用状況の更新
       // ============================================
       refreshUsage: async () => {
+        set({ error: null });
+
         logWithContext("info", "[ClientStore] Refreshing usage");
 
         try {
@@ -161,7 +205,9 @@ export const useClientStore = create<ClientState>()(
           logWithContext("error", "[ClientStore] Failed to refresh usage", {
             error: error instanceof Error ? error.message : String(error),
           });
-          throw error;
+          set({
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
         }
       },
 
@@ -169,6 +215,8 @@ export const useClientStore = create<ClientState>()(
       // 日付チェック & リセット
       // ============================================
       checkAndResetIfNeeded: async () => {
+        set({ error: null });
+
         logWithContext("info", "[ClientStore] Checking date change");
 
         try {
@@ -177,6 +225,7 @@ export const useClientStore = create<ClientState>()(
 
           if (lastDate === today) {
             logWithContext("info", "[ClientStore] Same day, no reset needed");
+            set({ error: null });
             return false;
           }
 
@@ -201,38 +250,103 @@ export const useClientStore = create<ClientState>()(
           logWithContext("error", "[ClientStore] Date check failed", {
             error: error instanceof Error ? error.message : String(error),
           });
+          set({
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
           return false;
         }
       },
 
       // ============================================
-      // 楽観的更新
+      // 占い結果の保存
       // ============================================
-      decrementOptimistic: (type: "readings" | "celtics" | "personal") => {
-        const { usage } = get();
-        if (!usage) return;
+      saveReading: async (data: ReadingInput) => {
+        set({ error: null });
 
-        const fieldMap = {
-          readings: "remainingReadings",
-          celtics: "remainingCeltics",
-          personal: "remainingPersonal",
-        } as const;
+        logWithContext("info", "[ClientStore] Saving reading", { data });
 
-        const field = fieldMap[type];
+        try {
+          // サーバーに保存をリクエスト、返却値は Reading + UsageStats
+          const result = await clientService.saveReading(data);
+          logWithContext("info", "[ClientStore] Reading saved", { result });
 
-        set({
-          usage: {
-            ...usage,
-            [field]: Math.max(0, usage[field] - 1),
-          },
-        });
-
-        logWithContext("info", "[ClientStore] Optimistic decrement", {
-          type,
-          remaining: usage[field] - 1,
-        });
+          // 履歴に追加
+          const { reading, usage } = result;
+          const { readings } = get();
+          set({ usage, readings: [reading, ...readings] });
+        } catch (error) {
+          logWithContext("error", "[ClientStore] Failed to save reading", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          set({
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+        }
       },
 
+      // ============================================
+      // 占い履歴の取得
+      // ============================================
+      fetchReadings: async (params: PaginationParams) => {
+        set({ error: null });
+
+        // parameter 管理
+        const { take, skip } = get().setParams(params);
+
+        logWithContext("info", "[ClientStore] Fetching readings", {
+          take,
+          skip,
+        });
+
+        try {
+          const fetchedReadings = await clientService.getReadingHistory(
+            take,
+            skip
+          );
+          logWithContext("info", "[ClientStore] Readings fetched", {
+            count: fetchedReadings.length,
+          });
+
+          const { readings } = get();
+          // 既存の履歴に追加
+          set({ readings: [...readings, ...fetchedReadings] });
+        } catch (error) {
+          logWithContext("error", "[ClientStore] Failed to fetch readings", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          set({
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+        }
+      },
+      setParams: (params: PaginationParams) => {
+        const take = params.take ?? get().take;
+        const skip = params.take
+          ? 0
+          : params.skip
+          ? params.skip - (params.skip % take) // params.skip が take の倍数になるように調整
+          : params.next
+          ? get().skip + take
+          : params.prev
+          ? Math.max(0, get().skip - take)
+          : get().skip;
+        set({ take, skip });
+        logWithContext("info", "[ClientStore] Setting pagination params", {
+          take,
+          skip,
+        });
+        return { take, skip };
+      },
+      setTake: (take: number) => {
+        logWithContext("info", "[ClientStore] Setting take", { take });
+        set({ take, skip: 0 });
+      },
+      setSkip: (skip: number) => {
+        logWithContext("info", "[ClientStore] Setting skip", { skip });
+        set({ skip: skip - (skip % get().take) }); // skip が take の倍数になるように調整
+      },
+
+      // ============================================
       // ============================================
       // リセット
       // ============================================

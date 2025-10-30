@@ -1,11 +1,9 @@
-import type { DrawnCard, Reading } from "@/../shared/lib/types";
+import type { DrawnCard, Reading, ReadingInput } from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class ReadingRepository extends BaseRepository {
   // ==================== Reading ====================
-  async createReading(
-    reading: Omit<Reading, "id" | "createdAt" | "updatedAt">
-  ): Promise<Reading> {
+  async createReading(reading: ReadingInput): Promise<Reading> {
     const created = await this.db.reading.create({
       data: {
         clientId: reading.clientId,
