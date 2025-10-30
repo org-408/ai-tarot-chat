@@ -307,7 +307,7 @@ export class ClientService {
       async ({ client: clientRepo, reading: ReadingRepo }) => {
         const {
           clientId,
-          deviceId,
+          deviceId: payloadDeviceId,
           tarotist,
           category,
           customQuestion,
@@ -317,7 +317,7 @@ export class ClientService {
         } = params;
         if (
           !clientId ||
-          !deviceId ||
+          !payloadDeviceId ||
           !tarotist ||
           (!category && !customQuestion) ||
           (category && customQuestion) ||
@@ -327,7 +327,7 @@ export class ClientService {
         ) {
           logWithContext("error", "Bad Request: missing parameters", {
             clientId,
-            deviceId,
+            payloadDeviceId,
             tarotist,
             category,
             customQuestion,
@@ -340,10 +340,15 @@ export class ClientService {
 
         // クライアント取得
         const client = await clientRepo.getClientById(clientId);
-        if (!client) {
-          logWithContext("error", "Client not found", { clientId });
-          throw new Error("Client not found");
+        const device = await clientRepo.getDeviceByDeviceId(payloadDeviceId);
+        if (!client || !device) {
+          logWithContext("error", "Client or Device not found", {
+            clientId,
+            payloadDeviceId,
+          });
+          throw new Error("Client or Device not found");
         }
+        const deviceId = device.id;
 
         logWithContext("info", "Fetched client", {
           clientId,
@@ -354,6 +359,9 @@ export class ClientService {
           cards,
           chatMessages,
         });
+
+        // deviceId をセットし直す(payload の deviceId とテーブルの deviceId は別物)
+        params.deviceId = deviceId;
 
         // 占い履歴保存
         const newReading = await ReadingRepo.createReading(params);
