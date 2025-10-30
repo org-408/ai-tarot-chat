@@ -5,6 +5,8 @@ import { storeRepository } from "../../lib/repositories/store";
 import { authService } from "../../lib/services/auth";
 import { logWithContext } from "../logger/logger";
 import { HttpError, isNetworkError } from "../utils/api-client";
+import { useClientStore } from "./client";
+import { useMasterStore } from "./master";
 
 interface AuthState {
   // 状態
@@ -209,6 +211,17 @@ export const useAuthStore = create<AuthState>()(
             payload,
             isAuthenticated: !!payload.user,
           });
+
+          // currentPlan を同期
+          const currentPlan = await useClientStore.getState().currentPlan;
+          if (currentPlan!.code === "GUEST") {
+            const free = useMasterStore.getState().getPlan("FREE")!;
+            useClientStore.getState().setPlan(free);
+            logWithContext(
+              "info",
+              "[AuthStore] Synchronized client plan to FREE after login"
+            );
+          }
           return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Login failed:", { error });

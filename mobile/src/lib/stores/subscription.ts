@@ -32,6 +32,9 @@ interface SubscriptionState {
   restorePurchases: () => Promise<CustomerInfo>;
   refreshCustomerInfo: () => Promise<CustomerInfo>;
   openManage: () => Promise<void>;
+  getAppUserId: () => Promise<string>;
+  isAnonymous: () => Promise<boolean>;
+  getCurrentPlan: () => Promise<Plan>;
   clearError: () => void;
   reset: () => void;
 }
@@ -521,6 +524,104 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             error: error instanceof Error ? error.message : String(error),
           });
           throw error;
+        }
+      },
+
+      // ============================================
+      // AppUserIDを取得
+      // ============================================
+      getAppUserId: async () => {
+        logWithContext("info", "[SubscriptionStore] Getting App User ID");
+
+        try {
+          const appUserId = await subscriptionService.getAppUserId();
+
+          logWithContext(
+            "info",
+            "[SubscriptionStore] App User ID retrieved successfully",
+            { appUserId }
+          );
+          return appUserId;
+        } catch (error) {
+          logWithContext(
+            "error",
+            "[SubscriptionStore] Failed to get App User ID",
+            {
+              error: error instanceof Error ? error.message : String(error),
+            }
+          );
+          throw error;
+        }
+      },
+
+      // ============================================
+      // 匿名ユーザーかどうか判定
+      // ============================================
+      isAnonymous: async () => {
+        logWithContext(
+          "info",
+          "[SubscriptionStore] Checking if user is anonymous"
+        );
+        try {
+          const isAnonymous = await subscriptionService.isAnonymous();
+          logWithContext(
+            "info",
+            "[SubscriptionStore] isAnonymous check completed",
+            { isAnonymous }
+          );
+          return isAnonymous;
+        } catch (error) {
+          logWithContext(
+            "error",
+            "[SubscriptionStore] Failed to check if user is anonymous",
+            {
+              error: error instanceof Error ? error.message : String(error),
+            }
+          );
+          throw error;
+        }
+      },
+
+      // ============================================
+      // 現在のプランを取得
+      // ============================================
+      getCurrentPlan: async () => {
+        const plans = useMasterStore.getState().masterData?.plans;
+
+        const customerInfo = await subscriptionService.getCustomerInfo();
+
+        if (!customerInfo || !plans) {
+          logWithContext(
+            "info",
+            "[SubscriptionStore] Cannot determine current plan - missing data"
+          );
+          throw new Error("Cannot determine current plan - missing data");
+        }
+        const activeEntitlements = Object.keys(
+          customerInfo.entitlements.active
+        );
+        const currentPlan = plans.find((plan) =>
+          activeEntitlements.includes(getEntitlementIdentifier(plan.code))
+        );
+
+        if (currentPlan) {
+          logWithContext(
+            "info",
+            "[SubscriptionStore] Current plan determined",
+            { plan: currentPlan.code }
+          );
+          return currentPlan;
+        } else {
+          logWithContext(
+            "info",
+            "[SubscriptionStore] No active plan found in CustomerInfo"
+          );
+          // サインイン状態からプランを判定
+          const isAuthenticated = useAuthStore.getState().isAuthenticated;
+
+          return plans.find(
+            (plan) => plan.code === (isAuthenticated ? "FREE" : "GUEST")
+          )!;
         }
       },
 

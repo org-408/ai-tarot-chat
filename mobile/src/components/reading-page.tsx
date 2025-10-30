@@ -76,6 +76,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const handleBack = () => {
     // 戻るボタン押下時にviewModeをgridに戻す
     setSpreadViewerMode("grid");
+    // プロフィール表示を元に戻す
+    setShowProfile(false);
+    // 親コンポーネントのonBackを呼び出す
     onBack();
   };
 

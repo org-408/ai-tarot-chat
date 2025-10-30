@@ -51,8 +51,7 @@ function App() {
     cleanup,
     clearDateChanged,
     clearError,
-    getInitStepLabel,
-    getResumeStepLabel,
+    getStepLabel,
     getOfflineModeLabel,
     login: appLogin,
     logout: appLogout,
@@ -253,7 +252,7 @@ function App() {
       <TarotSplashScreen
         message={
           !isInitialized
-            ? getInitStepLabel()
+            ? getStepLabel()
             : !authIsReady
             ? "認証情報を確認中..."
             : !clientIsReady
@@ -576,7 +575,7 @@ function App() {
       {/* 🔥 リフレッシュ中インジケーター */}
       {isRefreshing && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white p-2 rounded-full text-xs shadow-lg">
-          🔄 {getResumeStepLabel()}
+          🔄 {getStepLabel()}
         </div>
       )}
       {/* ✅ オフライン通知 */}

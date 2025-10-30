@@ -21,8 +21,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
 }) => {
   const lifecycle = useLifecycle();
   const {
-    currentInitStep,
-    currentResumeStep,
+    currentStep,
     isOffline,
     offlineMode,
     lastError,
@@ -108,12 +107,10 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
               </div>
               <div className="space-y-0.5 text-gray-600">
                 <div>
-                  Init:{" "}
-                  <span className="text-purple-600">{currentInitStep}</span>
+                  Init: <span className="text-purple-600">{currentStep}</span>
                 </div>
                 <div>
-                  Resume:{" "}
-                  <span className="text-purple-600">{currentResumeStep}</span>
+                  Resume: <span className="text-purple-600">{currentStep}</span>
                 </div>
                 <div>
                   Offline:{" "}

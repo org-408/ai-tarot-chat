@@ -70,6 +70,50 @@ export class SubscriptionService {
   }
 
   /**
+   * 登録ユーザーIDを取得
+   */
+  async getAppUserId(): Promise<string> {
+    try {
+      const result = await Purchases.getAppUserID();
+      logWithContext("info", "[SubscriptionService] Fetched App User ID", {
+        result,
+      });
+      return result.appUserID;
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to fetch App User ID",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * 匿名ユーザーかどうかを判定
+   */
+  async isAnonymous(): Promise<boolean> {
+    try {
+      const result = await Purchases.isAnonymous();
+      logWithContext("info", "[SubscriptionService] Checked anonymous status", {
+        result,
+      });
+      return result.isAnonymous;
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to check anonymous status",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
+      throw error;
+    }
+  }
+
+  /**
    * 購読状態を取得
    */
   async getCustomerInfo(): Promise<CustomerInfo> {

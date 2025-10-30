@@ -47,6 +47,7 @@ interface ClientState {
   // アクション: 利用状況・占い履歴管理
   // ============================================
   init: () => Promise<void>;
+  setPlan: (plan: Plan) => void; // for lifecycle store
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
@@ -129,6 +130,13 @@ export const useClientStore = create<ClientState>()(
             error: error instanceof Error ? error : new Error(String(error)),
           });
         }
+      },
+
+      setPlan: (plan: Plan) => {
+        logWithContext("info", "[ClientStore] Setting current plan", {
+          planCode: plan.code,
+        });
+        set({ currentPlan: plan });
       },
 
       // ============================================

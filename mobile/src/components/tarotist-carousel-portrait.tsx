@@ -148,7 +148,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
           />
 
           {/* 下部グラデーション - 占い師カラー + 黒で重ねがけ */}
-          <div
+          {/* <div
             className="absolute inset-x-0 bottom-0 h-40"
             style={{
               background: `linear-gradient(to top, ${colors.primary}e6, transparent)`,
@@ -159,7 +159,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
             style={{
               background: `linear-gradient(to top, rgba(0,0,0,0.5), transparent)`,
             }}
-          />
+          /> */}
 
           {/* 名前と特徴 - 下部に浮かせて表示 */}
           <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -295,12 +295,12 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                         />
 
                         {/* 下部グラデーション */}
-                        <div
+                        {/* <div
                           className="absolute inset-x-0 bottom-0 h-28"
                           style={{
                             background: `linear-gradient(to top, ${colors.bg}, transparent)`,
                           }}
-                        />
+                        /> */}
 
                         {/* プランバッジ */}
                         <div

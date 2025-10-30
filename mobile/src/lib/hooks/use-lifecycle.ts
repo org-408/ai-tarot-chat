@@ -17,8 +17,7 @@ export function useLifecycle() {
     error,
 
     // ✅ デバッグ用状態
-    currentInitStep,
-    currentResumeStep,
+    currentStep,
     lastError,
 
     // ✅ オフライン状態
@@ -39,8 +38,7 @@ export function useLifecycle() {
     reset,
 
     // ✅ ヘルパー
-    getInitStepLabel,
-    getResumeStepLabel,
+    getStepLabel,
     getOfflineModeLabel,
   } = useLifecycleStore();
 
@@ -55,8 +53,7 @@ export function useLifecycle() {
     error,
 
     // ✅ デバッグ用状態
-    currentInitStep,
-    currentResumeStep,
+    currentStep,
     lastError,
 
     // ✅ オフライン状態
@@ -77,8 +74,7 @@ export function useLifecycle() {
     reset,
 
     // ✅ ヘルパー
-    getInitStepLabel,
-    getResumeStepLabel,
+    getStepLabel,
     getOfflineModeLabel,
   };
 }

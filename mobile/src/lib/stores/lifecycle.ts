@@ -8,21 +8,17 @@ import { HttpError, isNetworkError } from "../utils/api-client";
 import { useAuthStore } from "./auth";
 
 // ✅ 初期化ステップの定義（デバッグ用）
-type InitStep =
+type LifecycleStep =
   | "idle"
   | "auth"
   | "subscription"
   | "client"
   | "master"
-  | "complete";
-
-type ResumeStep =
-  | "idle"
-  | "auth"
-  | "subscription"
-  | "client"
-  | "master"
-  | "complete";
+  | "sync"
+  | "complete"
+  | "login"
+  | "logout"
+  | "changePlan";
 
 interface LifecycleState {
   // 状態
@@ -33,10 +29,9 @@ interface LifecycleState {
   error: Error | null;
 
   // ✅ デバッグ用の状態追加
-  currentInitStep: InitStep;
-  currentResumeStep: ResumeStep;
+  currentStep: LifecycleStep;
   lastError: {
-    step: InitStep | ResumeStep;
+    step: LifecycleStep;
     error: Error;
     timestamp: Date;
   } | null;
@@ -57,6 +52,7 @@ interface LifecycleState {
   init: () => Promise<void>;
   setup: () => void;
   cleanup: () => void;
+  syncSubscription: () => Promise<void>;
   onResume: () => Promise<void>;
   onPause: () => Promise<void>;
   clearDateChanged: () => void;
@@ -65,11 +61,11 @@ interface LifecycleState {
   logout: () => Promise<void>;
   getCurrentPlan: () => Plan | null;
   changePlan: (newPlan: Plan) => Promise<void>;
+  errorProcessing: (step: LifecycleStep, error: Error, timestamp: Date) => void;
   reset: () => void;
 
   // ✅ デバッグ用ヘルパー
-  getInitStepLabel: () => string;
-  getResumeStepLabel: () => string;
+  getStepLabel: () => string;
   getOfflineModeLabel: () => string;
 }
 
@@ -92,8 +88,7 @@ export const useLifecycleStore = create<LifecycleState>()(
       dateChanged: false,
       lastResumedAt: null,
       error: null,
-      currentInitStep: "idle",
-      currentResumeStep: "idle",
+      currentStep: "idle",
       lastError: null,
       isOffline: false,
       offlineMode: "none",
@@ -146,7 +141,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             set({
               isRefreshing: true,
               error: null,
-              currentInitStep: "idle",
+              currentStep: "idle",
               lastError: null,
               isOffline: false,
               offlineMode: "none",
@@ -155,7 +150,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             // ========================================
             // ✅ ステップ1: 認証初期化
             // ========================================
-            set({ currentInitStep: "auth" });
+            set({ currentStep: "auth" });
             logWithContext("info", "[Lifecycle] Step 1/4: Initializing auth");
 
             try {
@@ -203,7 +198,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                   set({
                     isInitialized: true,
                     isRefreshing: false,
-                    currentInitStep: "complete",
+                    currentStep: "complete",
                   });
 
                   return; // 初期化終了
@@ -229,7 +224,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             // ========================================
             // ✅ ステップ2: サブスクリプション初期化
             // ========================================
-            set({ currentInitStep: "subscription" });
+            set({ currentStep: "subscription" });
             logWithContext(
               "info",
               "[Lifecycle] Step 2/4: Initializing subscription"
@@ -239,6 +234,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               await useSubscriptionStore.getState().init();
             } catch (error) {
               // サブスクリプションは非致命的
+              get().errorProcessing("subscription", error as Error, new Date());
               if (isNetworkError(error)) {
                 logWithContext(
                   "warn",
@@ -267,7 +263,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             // ========================================
             // ✅ ステップ3: クライアント初期化
             // ========================================
-            set({ currentInitStep: "client" });
+            set({ currentStep: "client" });
             logWithContext("info", "[Lifecycle] Step 3/4: Initializing client");
 
             try {
@@ -309,7 +305,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             // ========================================
             // ✅ ステップ4: マスターデータ初期化
             // ========================================
-            set({ currentInitStep: "master" });
+            set({ currentStep: "master" });
             logWithContext(
               "info",
               "[Lifecycle] Step 4/4: Initializing master data"
@@ -360,7 +356,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             }
 
             // ========================================
-            // ステップ5. setup
+            // ✅ ステップ5. setup
             // ========================================
             get().setup();
 
@@ -369,7 +365,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               isInitialized: true,
               isRefreshing: false,
               lastResumedAt: new Date(),
-              currentInitStep: "complete",
+              currentStep: "complete",
             });
 
             const { isOffline, offlineMode } = get();
@@ -379,6 +375,11 @@ export const useLifecycleStore = create<LifecycleState>()(
               isOffline,
               offlineMode,
             });
+
+            // ========================================
+            // ✅ ステップ6.サブスクリプションの購入状況の同期
+            // ========================================
+            await get().syncSubscription();
           } catch (error) {
             logWithContext("error", "[Lifecycle] Initialization failed", {
               error,
@@ -388,7 +389,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               isInitialized: true,
               isRefreshing: false,
               error: error as Error,
-              currentInitStep: "idle",
+              currentStep: "idle",
             });
           } finally {
             // ✅ Promiseを解放(次回起動時に再初期化可能に)
@@ -420,6 +421,80 @@ export const useLifecycleStore = create<LifecycleState>()(
         if (appStateListener) {
           appStateListener.remove();
           appStateListener = null;
+        }
+      },
+
+      syncSubscription: async () => {
+        logWithContext(
+          "info",
+          "[Lifecycle] Syncing all state with subscription"
+        );
+        try {
+          const subscriptionStore = useSubscriptionStore.getState();
+
+          const isAnonymous = await subscriptionStore.isAnonymous();
+          const appUserId = await subscriptionStore.getAppUserId();
+          // authStore と同期
+          if (!isAnonymous && appUserId) {
+            // 強制的にログイン状態にする(isAuthenticated を無視して同期)
+            logWithContext(
+              "info",
+              "[Lifecycle] Syncing auth state with subscription"
+            );
+            const result = await useAuthStore.getState().login();
+            logWithContext(
+              "info",
+              "[Lifecycle] Auth synced with subscription",
+              {
+                result,
+              }
+            );
+            if (appUserId !== result.user?.id) {
+              logWithContext(
+                "info",
+                "[Lifecycle] Logging in to subscription with correct user ID",
+                { appUserId, user: result.user }
+              );
+              throw new Error("Subscription and Auth user ID mismatch");
+            }
+            // 強制的にSubscription側もログイン状態にする
+            await subscriptionStore.login(appUserId);
+          } else if (isAnonymous) {
+            // 強制的にログアウト状態にする
+            logWithContext(
+              "info",
+              "[Lifecycle] Logging out auth and subscription"
+            );
+            await useAuthStore.getState().logout();
+            await subscriptionStore.logout();
+          }
+          // プラン状態も同期
+          const currentPlan = get().getCurrentPlan();
+          const subscriptionPlan = await subscriptionStore.getCurrentPlan();
+          if (currentPlan !== subscriptionPlan) {
+            logWithContext(
+              "info",
+              "[Lifecycle] Syncing plan with subscription",
+              { currentPlan, subscriptionPlan }
+            );
+            await get().changePlan(currentPlan!);
+          }
+        } catch (error) {
+          get().errorProcessing("sync", error as Error, new Date());
+        }
+      },
+
+      errorProcessing: (step: LifecycleStep, error: Error, timestamp: Date) => {
+        logWithContext("error", "[Lifecycle] Processing error", {
+          step,
+          error,
+          timestamp,
+        });
+        set({ lastError: { step, error, timestamp } });
+        if (isNetworkError(error)) {
+          set({ isOffline: true });
+        } else {
+          throw error;
         }
       },
 
@@ -460,7 +535,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           isRefreshing: true,
           dateChanged: false,
           error: null,
-          currentResumeStep: "idle",
+          currentStep: "idle",
           lastError: null,
           isOffline: false, // ✅ レジューム時はオフライン状態をリセット
         });
@@ -471,7 +546,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           // ========================================
           // 1. 認証トークンのリフレッシュ
           // ========================================
-          set({ currentResumeStep: "auth" });
+          set({ currentStep: "auth" });
           logWithContext("info", "[Lifecycle] Step 1/4: Refreshing auth token");
 
           try {
@@ -519,7 +594,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           // 2. RevenueCat の強制初期化
           // NOTE: RevenueCat と Store の同期を保証するため
           // ========================================
-          set({ currentResumeStep: "subscription" });
+          set({ currentStep: "subscription" });
           logWithContext(
             "info",
             "[Lifecycle] Step 2/4: Initializing RevenueCat"
@@ -583,7 +658,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             clientStore.isReady &&
             !get().isOffline
           ) {
-            set({ currentResumeStep: "client" });
+            set({ currentStep: "client" });
             logWithContext(
               "info",
               "[Lifecycle] Step 3/4: Refreshing client usage"
@@ -628,7 +703,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           // 4. マスターデータのバージョンチェック
           // ========================================
           if (useMasterStore.getState().isReady && !get().isOffline) {
-            set({ currentResumeStep: "master" });
+            set({ currentStep: "master" });
             logWithContext(
               "info",
               "[Lifecycle] Step 4/4: Checking master data version"
@@ -650,6 +725,10 @@ export const useLifecycleStore = create<LifecycleState>()(
                 // 必要に応じてここで更新
                 await useMasterStore.getState().refresh();
               }
+              // =======================================
+              // 5. サブスクリプションの同期
+              // =======================================
+              await get().syncSubscription();
             } catch (error) {
               if (isNetworkError(error)) {
                 logWithContext(
@@ -693,7 +772,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             isRefreshing: false,
             dateChanged,
             lastResumedAt: currentDate,
-            currentResumeStep: "complete",
+            currentStep: "complete",
           });
 
           const { isOffline, offlineMode } = get();
@@ -706,7 +785,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           set({
             isRefreshing: false,
             error: error as Error,
-            currentResumeStep: "idle",
+            currentStep: "idle",
           });
         }
       },
@@ -767,7 +846,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           });
         } catch (error) {
           logWithContext("error", "[Lifecycle] Login failed", { error });
-          throw error;
+          get().errorProcessing("login", error as Error, new Date());
         } finally {
           set({ isLoggingIn: false });
         }
@@ -817,7 +896,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           });
         } catch (error) {
           logWithContext("error", "[Lifecycle] Logout failed", { error });
-          throw error;
+          get().errorProcessing("logout", error as Error, new Date());
         } finally {
           set({ isLoggingOut: false });
         }
@@ -857,7 +936,6 @@ export const useLifecycleStore = create<LifecycleState>()(
           logWithContext("warn", "[Lifecycle] Plan change already in progress");
           return;
         }
-        set({ isChangingPlan: true, planChangeError: null });
 
         if (currentPlanCode === newPlan.code) {
           logWithContext("info", "[Lifecycle] Already on target plan");
@@ -866,9 +944,13 @@ export const useLifecycleStore = create<LifecycleState>()(
 
         if (newPlan.code === "GUEST") {
           logWithContext("warn", "[Lifecycle] Cannot change to GUEST plan");
-          set({ planChangeError: "GUESTプランへの変更はできません" });
+          set({
+            planChangeError: "GUESTプランへの変更はできません",
+          });
           return;
         }
+
+        set({ isChangingPlan: true, planChangeError: null });
 
         logWithContext("info", "[Lifecycle] Starting plan change", {
           from: currentPlanCode,
@@ -894,7 +976,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               "error",
               "[Lifecycle] Auth payload missing after login"
             );
-            throw new Error("Authentication failed, payload is null");
+            throw new Error("認証情報が取得できません");
           }
 
           if (!subscriptionStore.isLoggedIn) {
@@ -907,15 +989,16 @@ export const useLifecycleStore = create<LifecycleState>()(
                   authPayload: payload,
                 }
               );
-              throw new Error("User ID is missing after login");
+              throw new Error("ユーザー情報が取得できません");
             }
+
             info = await subscriptionStore.login(userId);
             if (!info) {
               logWithContext(
                 "error",
                 "[Lifecycle] Subscription info missing after login"
               );
-              throw new Error("Subscription login failed, info is null");
+              throw new Error("サブスクリプション情報が取得できません");
             }
             logWithContext("info", "[Lifecycle] Logging into subscription", {
               userId,
@@ -934,9 +1017,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                 "error",
                 "[Lifecycle] CustomerInfo missing for purchase"
               );
-              throw new Error(
-                "CustomerInfo is null, cannot proceed with purchase"
-              );
+              throw new Error("サブスクリプション情報が取得できません");
             }
             const hasEntitlement =
               customerInfo.entitlements.active[targetEntitlement];
@@ -960,6 +1041,18 @@ export const useLifecycleStore = create<LifecycleState>()(
                         : String(purchaseError),
                   }
                 );
+                // 購入がキャンセルした場合の処理
+                if (subscriptionStore.purchaseError?.includes("キャンセル")) {
+                  logWithContext(
+                    "info",
+                    "[Lifecycle] Purchase cancelled by user"
+                  );
+                  set({
+                    isChangingPlan: false,
+                    planChangeError: "購入がキャンセルされました",
+                  });
+                  return;
+                }
                 throw purchaseError;
               }
             }
@@ -988,8 +1081,6 @@ export const useLifecycleStore = create<LifecycleState>()(
             isChangingPlan: false,
             planChangeError: `プラン変更に失敗しました: ${errorMessage}`,
           });
-
-          throw error;
         }
       },
 
@@ -1005,8 +1096,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           dateChanged: false,
           lastResumedAt: null,
           error: null,
-          currentInitStep: "idle",
-          currentResumeStep: "idle",
+          currentStep: "idle",
           lastError: null,
           isOffline: false,
           offlineMode: "none",
@@ -1016,28 +1106,19 @@ export const useLifecycleStore = create<LifecycleState>()(
       },
 
       // ✅ デバッグ用ヘルパー
-      getInitStepLabel: () => {
-        const step = get().currentInitStep;
+      getStepLabel: () => {
+        const step = get().currentStep;
         const labels = {
           idle: "待機中",
           auth: "認証初期化中 (1/4)",
           subscription: "サブスク初期化中 (2/4)",
           client: "クライアント初期化中 (3/4)",
           master: "マスターデータ初期化中 (4/4)",
+          sync: "サブスクリプション状態同期中",
           complete: "初期化完了",
-        };
-        return labels[step];
-      },
-
-      getResumeStepLabel: () => {
-        const step = get().currentResumeStep;
-        const labels = {
-          idle: "待機中",
-          auth: "認証更新中 (1/4)",
-          subscription: "サブスク同期中 (2/4)",
-          client: "利用状況更新中 (3/4)",
-          master: "マスターデータ確認中 (4/4)",
-          complete: "更新完了",
+          login: "ログイン中",
+          logout: "ログアウト中",
+          changePlan: "プラン変更中",
         };
         return labels[step];
       },
