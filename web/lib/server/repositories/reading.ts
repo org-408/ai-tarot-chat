@@ -16,7 +16,8 @@ export class ReadingRepository extends BaseRepository {
         deviceId: reading.deviceId!,
         tarotistId: reading.tarotistId!,
         spreadId: reading.spreadId!,
-        categoryId: reading.categoryId,
+        categoryId: reading.category!.id,
+        customQuestion: reading.customQuestion,
         cards: Array.isArray(reading.cards)
           ? {
               create: reading.cards.map((card) => ({
