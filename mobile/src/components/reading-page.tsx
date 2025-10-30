@@ -63,15 +63,21 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   // カードめくり状態・選択カードの管理をここで行う
   const [isRevealingComplete, setIsReadingComplete] = useState(false);
 
+  useEffect(() => {
+    console.log("isRevealingComplete changed:", isRevealingComplete);
+    if (isRevealingComplete) {
+      // カードめくり完了時の処理
+      console.log("Card revealing is complete.");
+      // プロフィール表示に切り替え TODO: 将来的に占い師のアニメーションを入れる
+      setShowProfile(true);
+    }
+  }, [isRevealingComplete, setShowProfile]);
+
   const handleBack = () => {
     // 戻るボタン押下時にviewModeをgridに戻す
     setSpreadViewerMode("grid");
     onBack();
   };
-
-  useEffect(() => {
-    console.log("isRevealingComplete:", isRevealingComplete);
-  }, [isRevealingComplete]);
 
   return (
     <div className="main-container">
