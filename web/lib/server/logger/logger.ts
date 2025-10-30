@@ -4,7 +4,7 @@ import Transport from "winston-transport";
 
 // ログのメタデータ型定義
 type LogMetadata = {
-  clientId?: string;
+  clientId?: string | null;
   path?: string;
   service?: string;
   [key: string]: unknown;

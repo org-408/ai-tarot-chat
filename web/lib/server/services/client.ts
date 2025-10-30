@@ -297,11 +297,7 @@ export class ClientService {
    * @param spreadId
    * @returns
    */
-  async saveReading(
-    clientId: string,
-    deviceId: string,
-    params: ReadingInput
-  ): Promise<SaveReadingResponse> {
+  async saveReading(params: ReadingInput): Promise<SaveReadingResponse> {
     logWithContext("info", "Marking reading as done", {
       params,
     });
@@ -309,17 +305,25 @@ export class ClientService {
     return BaseRepository.transaction(
       { client: clientRepository, reading: readingRepository },
       async ({ client: clientRepo, reading: ReadingRepo }) => {
-        const { tarotist, category, customQuestion, spread } = params;
-        // クライアント取得
-        const client = await clientRepo.getClientById(clientId);
+        const {
+          clientId,
+          deviceId,
+          tarotist,
+          category,
+          customQuestion,
+          spread,
+          cards,
+          chatMessages,
+        } = params;
         if (
-          !client ||
           !clientId ||
           !deviceId ||
           !tarotist ||
           (!category && !customQuestion) ||
           (category && customQuestion) ||
-          !spread
+          !spread ||
+          !cards ||
+          !chatMessages
         ) {
           logWithContext("error", "Bad Request: missing parameters", {
             clientId,
@@ -328,10 +332,28 @@ export class ClientService {
             category,
             customQuestion,
             spread,
+            cards,
+            chatMessages,
           });
           throw new Error("Bad Request: missing parameters");
         }
-        logWithContext("info", "Fetched client", { client, clientId });
+
+        // クライアント取得
+        const client = await clientRepo.getClientById(clientId);
+        if (!client) {
+          logWithContext("error", "Client not found", { clientId });
+          throw new Error("Client not found");
+        }
+
+        logWithContext("info", "Fetched client", {
+          clientId,
+          deviceId,
+          tarotist,
+          category,
+          spread,
+          cards,
+          chatMessages,
+        });
 
         // 占い履歴保存
         const newReading = await ReadingRepo.createReading(params);

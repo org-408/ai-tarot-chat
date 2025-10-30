@@ -4,12 +4,18 @@ import { BaseRepository } from "./base";
 export class ReadingRepository extends BaseRepository {
   // ==================== Reading ====================
   async createReading(reading: ReadingInput): Promise<Reading> {
+    const tarotist = await this.db.tarotist.findUnique({
+      where: { id: reading.tarotistId! },
+    });
+    if (!tarotist) {
+      throw new Error("Invalid tarotistId");
+    }
     const created = await this.db.reading.create({
       data: {
-        clientId: reading.clientId,
-        deviceId: reading.deviceId,
-        tarotistId: reading.tarotistId,
-        spreadId: reading.spreadId,
+        clientId: reading.clientId!,
+        deviceId: reading.deviceId!,
+        tarotistId: reading.tarotistId!,
+        spreadId: reading.spreadId!,
         categoryId: reading.categoryId,
         cards: Array.isArray(reading.cards)
           ? {
@@ -25,18 +31,16 @@ export class ReadingRepository extends BaseRepository {
               })),
             }
           : undefined,
-        chatMessages: Array.isArray(reading.chatMessages)
-          ? {
-              create: reading.chatMessages.map((message) => ({
-                clientId: reading.clientId,
-                deviceId: reading.deviceId,
-                tarotistId: reading.tarotistId,
-                chatType: message.chatType,
-                role: message.role,
-                message: message.message,
-              })),
-            }
-          : undefined,
+        chatMessages: {
+          create: reading.chatMessages.map((message) => ({
+            clientId: reading.clientId,
+            deviceId: reading.deviceId,
+            tarotistId: reading.tarotistId,
+            chatType: message.chatType,
+            role: message.role,
+            message: message.message,
+          })),
+        },
       },
       include: {
         client: true,

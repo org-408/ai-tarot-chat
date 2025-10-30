@@ -3,7 +3,7 @@ import { CapacitorHttp } from "@capacitor/core";
 export const logWithContext = (
   level: "info" | "error" | "warn" | "debug",
   message: string,
-  context?: { clientId?: string; path?: string; [key: string]: unknown },
+  context?: { clientId?: string | null; path?: string; [key: string]: unknown },
   source: string = "mobile"
 ) => {
   // コンソールにも出力（開発時に便利）

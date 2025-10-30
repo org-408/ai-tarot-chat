@@ -478,10 +478,10 @@ model ChatMessage {
   id        String   @id @default(cuid())
   clientId  String?
   client    Client?  @relation(fields: [clientId], references: [id])
-  deviceId  String
-  device    Device   @relation(fields: [deviceId], references: [id])
-  tarotistId String
-  tarotist   Tarotist @relation(fields: [tarotistId], references: [id])
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [id])
+  tarotistId String?
+  tarotist   Tarotist? @relation(fields: [tarotistId], references: [id])
   chatType   ChatType
   readingId  String
   reading    Reading  @relation(fields: [readingId], references: [id])

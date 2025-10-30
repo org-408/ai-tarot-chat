@@ -1,7 +1,7 @@
 export const logWithContext = (
   level: "info" | "error" | "warn" | "debug",
   message: string,
-  context?: { clientId?: string; path?: string; [key: string]: unknown },
+  context?: { clientId?: string | null; path?: string; [key: string]: unknown },
   source: string = "web_app"
 ) => {
   // コンソールにも出力（開発時に便利）

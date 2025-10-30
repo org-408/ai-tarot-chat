@@ -29,11 +29,12 @@ export async function POST(request: NextRequest) {
       readingData,
     });
 
-    const result = await clientService.saveReading(
-      clientId,
-      deviceId,
-      readingData
-    );
+    // clientId, deviceId をセット
+    readingData.clientId = clientId;
+    readingData.deviceId = deviceId;
+
+    // 占い結果の保存
+    const result = await clientService.saveReading(readingData);
     logWithContext("info", "占い結果保存完了", {
       clientId,
       result,

@@ -344,17 +344,17 @@ export type Tarotist = {
 // リーディング履歴モデル
 export type Reading = {
   id: string;
-  clientId: string;
-  client?: Client | null;
-  deviceId: string;
-  device?: Device | null;
-  tarotistId: string;
-  tarotist?: Tarotist | null;
-  spreadId: string;
-  spread?: Spread | null;
+  clientId?: string | null;
+  client?: Client;
+  deviceId?: string | null;
+  device?: Device;
+  tarotistId: string | null;
+  tarotist?: Tarotist;
+  spreadId: string | null;
+  spread?: Spread;
   categoryId?: string | null;
-  category?: ReadingCategory | null;
-  customQuestion?: string | null;
+  category?: ReadingCategory;
+  customQuestion?: string;
   cards: DrawnCard[];
   createdAt: Date;
   updatedAt: Date;
@@ -384,7 +384,7 @@ export type DrawnCard = {
 export type ChatMessage = {
   id: string;
   clientId?: string | null;
-  client?: Client | null;
+  client?: Client;
   deviceId?: string | null;
   device?: Device;
   tarotistId: string;
@@ -505,7 +505,7 @@ export type TarotistWithPlanCode = Omit<TarotistInput, "planId"> & {
 
 export type ReadingInput = Omit<
   Reading,
-  "id" | "clientId" | "deviceId" | "createdAt" | "updatedAt" | "chatMessages"
+  "id" | "createdAt" | "updatedAt" | "chatMessages"
 > & { chatMessages: ChatMessageInput[] };
 
 export type DrawnCardInput = Omit<

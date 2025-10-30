@@ -1,5 +1,4 @@
 import type { ChatMessage } from "@/../shared/lib/types";
-import { convertFromPrismaProviderKey } from "../../utils/prisma";
 import { BaseRepository } from "./base";
 
 export class ChatRepository extends BaseRepository {
@@ -25,42 +24,32 @@ export class ChatRepository extends BaseRepository {
   }
 
   async getMessagesByReadingId(readingId: string): Promise<ChatMessage[]> {
-    return (
-      await this.db.chatMessage.findMany({
-        where: { readingId },
-        orderBy: { createdAt: "asc" },
-        include: {
-          client: true,
-          tarotist: true,
-        },
-      })
-    ).map((msg) => {
-      const { client, tarotist, ...rest } = msg;
-      tarotist.provider = convertFromPrismaProviderKey(tarotist.provider);
-      return { ...rest, tarotist, client };
-    });
+    return (await this.db.chatMessage.findMany({
+      where: { readingId },
+      orderBy: { createdAt: "asc" },
+    })) as unknown as ChatMessage[];
   }
 
   async getMessagesByClientId(
     clientId: string,
     limit = 100
   ): Promise<ChatMessage[]> {
-    return await this.db.chatMessage.findMany({
+    return (await this.db.chatMessage.findMany({
       where: { clientId },
       orderBy: { createdAt: "desc" },
       take: limit,
-    });
+    })) as unknown as ChatMessage[];
   }
 
   async getMessagesByDeviceId(
     deviceId: string,
     limit = 100
   ): Promise<ChatMessage[]> {
-    return await this.db.chatMessage.findMany({
+    return (await this.db.chatMessage.findMany({
       where: { deviceId },
       orderBy: { createdAt: "desc" },
       take: limit,
-    });
+    })) as unknown as ChatMessage[];
   }
 
   async deleteMessagesByReadingId(readingId: string): Promise<void> {
