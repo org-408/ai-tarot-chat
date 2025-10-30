@@ -12,6 +12,7 @@ import type {
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
+import { useClient } from "../lib/hooks/use-client";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
 
@@ -215,9 +216,48 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     };
   }, [isRevealingComplete]);
 
+  // 占い結果の保存
+  const { saveReading } = useClient();
+
   useEffect(() => {
-    console.log("status changed:", status);
-  }, [status]);
+    console.log(
+      "isRevealingComplete or messages or status changed:",
+      isRevealingComplete,
+      messages,
+      status
+    );
+    if (isRevealingComplete && messages.length > 0 && status === "ready") {
+      console.log("All messages revealed.");
+      // 占い結果を保存する（即答方式の場合）
+      saveReading({
+        tarotistId: tarotist.id,
+        tarotist,
+        spreadId: spread.id,
+        spread,
+        category,
+        cards: drawnCards,
+        chatMessages: messages.map((msg) => ({
+          tarotistId: tarotist.id,
+          tarotist,
+          chatType: msg.role === "user" ? "USER_QUESTION" : "FINAL_READING",
+          role: msg.role === "user" ? "USER" : "TAROTIST",
+          message: msg.parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join(""),
+        })),
+      });
+    }
+  }, [
+    category,
+    drawnCards,
+    isRevealingComplete,
+    messages,
+    saveReading,
+    spread,
+    status,
+    tarotist,
+  ]);
 
   return (
     <div className="w-full h-full flex flex-col">

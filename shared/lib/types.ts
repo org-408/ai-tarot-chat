@@ -385,7 +385,7 @@ export type ChatMessage = {
   id: string;
   clientId?: string | null;
   client?: Client | null;
-  deviceId: string;
+  deviceId?: string | null;
   device?: Device;
   tarotistId: string;
   tarotist?: Tarotist;
@@ -503,7 +503,10 @@ export type TarotistWithPlanCode = Omit<TarotistInput, "planId"> & {
   planCode: string;
 };
 
-export type ReadingInput = Omit<Reading, "id" | "createdAt" | "updatedAt">;
+export type ReadingInput = Omit<
+  Reading,
+  "id" | "clientId" | "deviceId" | "createdAt" | "updatedAt" | "chatMessages"
+> & { chatMessages: ChatMessageInput[] };
 
 export type DrawnCardInput = Omit<
   DrawnCard,
@@ -512,7 +515,7 @@ export type DrawnCardInput = Omit<
 
 export type ChatMessageInput = Omit<
   ChatMessage,
-  "id" | "createdAt" | "client" | "device" | "tarotist" | "reading"
+  "id" | "readingId" | "createdAt"
 >;
 
 export type FavoriteSpreadInput = Omit<

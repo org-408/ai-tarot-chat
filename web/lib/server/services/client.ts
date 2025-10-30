@@ -297,7 +297,11 @@ export class ClientService {
    * @param spreadId
    * @returns
    */
-  async saveReading(params: ReadingInput): Promise<SaveReadingResponse> {
+  async saveReading(
+    clientId: string,
+    deviceId: string,
+    params: ReadingInput
+  ): Promise<SaveReadingResponse> {
     logWithContext("info", "Marking reading as done", {
       params,
     });
@@ -305,15 +309,9 @@ export class ClientService {
     return BaseRepository.transaction(
       { client: clientRepository, reading: readingRepository },
       async ({ client: clientRepo, reading: ReadingRepo }) => {
-        const {
-          client,
-          clientId,
-          deviceId,
-          tarotist,
-          category,
-          customQuestion,
-          spread,
-        } = params;
+        const { tarotist, category, customQuestion, spread } = params;
+        // クライアント取得
+        const client = await clientRepo.getClientById(clientId);
         if (
           !client ||
           !clientId ||
@@ -322,8 +320,17 @@ export class ClientService {
           (!category && !customQuestion) ||
           (category && customQuestion) ||
           !spread
-        )
+        ) {
+          logWithContext("error", "Bad Request: missing parameters", {
+            clientId,
+            deviceId,
+            tarotist,
+            category,
+            customQuestion,
+            spread,
+          });
           throw new Error("Bad Request: missing parameters");
+        }
         logWithContext("info", "Fetched client", { client, clientId });
 
         // 占い履歴保存

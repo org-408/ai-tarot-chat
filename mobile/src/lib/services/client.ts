@@ -128,6 +128,7 @@ export class ClientService {
     });
 
     try {
+      // clientId, deviceId は token から自動付与される前提
       const result = await apiClient.post<SaveReadingResponse>(
         "/api/clients/readings",
         newReading

@@ -104,6 +104,8 @@ export const useClientStore = create<ClientState>()(
 
           await clientService.saveLastFetchedDate(today);
 
+          await clientService.getReadingHistory(get().take, get().skip);
+
           set({
             currentPlan,
             usage,
