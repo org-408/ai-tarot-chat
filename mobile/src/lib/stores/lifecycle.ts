@@ -14,7 +14,6 @@ type LifecycleStep =
   | "subscription"
   | "client"
   | "master"
-  | "sync"
   | "complete"
   | "login"
   | "logout"
@@ -52,7 +51,6 @@ interface LifecycleState {
   init: () => Promise<void>;
   setup: () => void;
   cleanup: () => void;
-  syncSubscription: () => Promise<void>;
   onResume: () => Promise<void>;
   onPause: () => Promise<void>;
   clearDateChanged: () => void;
@@ -375,11 +373,6 @@ export const useLifecycleStore = create<LifecycleState>()(
               isOffline,
               offlineMode,
             });
-
-            // ========================================
-            // ✅ ステップ6.サブスクリプションの購入状況の同期
-            // ========================================
-            await get().syncSubscription();
           } catch (error) {
             logWithContext("error", "[Lifecycle] Initialization failed", {
               error,
@@ -421,66 +414,6 @@ export const useLifecycleStore = create<LifecycleState>()(
         if (appStateListener) {
           appStateListener.remove();
           appStateListener = null;
-        }
-      },
-
-      syncSubscription: async () => {
-        logWithContext(
-          "info",
-          "[Lifecycle] Syncing all state with subscription"
-        );
-        try {
-          const subscriptionStore = useSubscriptionStore.getState();
-
-          const isAnonymous = await subscriptionStore.isAnonymous();
-          const appUserId = await subscriptionStore.getAppUserId();
-          // authStore と同期
-          if (!isAnonymous && appUserId) {
-            // 強制的にログイン状態にする(isAuthenticated を無視して同期)
-            logWithContext(
-              "info",
-              "[Lifecycle] Syncing auth state with subscription"
-            );
-            const result = await useAuthStore.getState().login();
-            logWithContext(
-              "info",
-              "[Lifecycle] Auth synced with subscription",
-              {
-                result,
-              }
-            );
-            if (appUserId !== result.user?.id) {
-              logWithContext(
-                "info",
-                "[Lifecycle] Logging in to subscription with correct user ID",
-                { appUserId, user: result.user }
-              );
-              throw new Error("Subscription and Auth user ID mismatch");
-            }
-            // 強制的にSubscription側もログイン状態にする
-            await subscriptionStore.login(appUserId);
-          } else if (isAnonymous) {
-            // 強制的にログアウト状態にする
-            logWithContext(
-              "info",
-              "[Lifecycle] Logging out auth and subscription"
-            );
-            await useAuthStore.getState().logout();
-            await subscriptionStore.logout();
-          }
-          // プラン状態も同期
-          const currentPlan = get().getCurrentPlan();
-          const subscriptionPlan = await subscriptionStore.getCurrentPlan();
-          if (currentPlan !== subscriptionPlan) {
-            logWithContext(
-              "info",
-              "[Lifecycle] Syncing plan with subscription",
-              { currentPlan, subscriptionPlan }
-            );
-            await get().changePlan(currentPlan!);
-          }
-        } catch (error) {
-          get().errorProcessing("sync", error as Error, new Date());
         }
       },
 
@@ -725,10 +658,6 @@ export const useLifecycleStore = create<LifecycleState>()(
                 // 必要に応じてここで更新
                 await useMasterStore.getState().refresh();
               }
-              // =======================================
-              // 5. サブスクリプションの同期
-              // =======================================
-              await get().syncSubscription();
             } catch (error) {
               if (isNetworkError(error)) {
                 logWithContext(

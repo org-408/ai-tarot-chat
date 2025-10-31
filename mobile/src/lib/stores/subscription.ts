@@ -1,7 +1,8 @@
+import { Dialog } from "@capacitor/dialog";
 import type { CustomerInfo } from "@revenuecat/purchases-capacitor";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { Plan } from "../../../../shared/lib/types";
+import type { AppJWTPayload, Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { subscriptionService } from "../services/subscription";
@@ -20,11 +21,20 @@ interface SubscriptionState {
   isPurchasing: boolean;
   purchaseError: string | null;
 
+  // 復元アラート情報
+  restoreAlert: {
+    shouldShow: boolean;
+    hasUnrestoredPurchase: boolean;
+    hasShown: boolean;
+  } | null;
+
   // ============================================
   // アクション
   // ============================================
   init: () => Promise<void>;
   listener: (info: CustomerInfo) => Promise<void>;
+  _checkRestoreStatus: () => Promise<void>;
+  dismissRestoreAlert: () => void;
   login: (userId: string) => Promise<CustomerInfo>;
   logout: () => Promise<CustomerInfo>;
   retryInitAndLogin: () => Promise<CustomerInfo>;
@@ -61,6 +71,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       customerInfo: null,
       isPurchasing: false,
       purchaseError: null,
+      restoreAlert: null,
 
       // ============================================
       // 初期化
@@ -68,12 +79,15 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       init: async () => {
         const { isInitialized } = get();
 
-        if (isInitialized) {
-          logWithContext("info", "[SubscriptionStore] Already initialized");
-          return;
-        }
+        logWithContext("info", "[SubscriptionStore] Initializing", {
+          isInitialized,
+        });
 
-        logWithContext("info", "[SubscriptionStore] Initializing");
+        // 毎回強制的に初期化する方針に変更。念のためロジックは残す
+        // if (isInitialized) {
+        //   logWithContext("info", "[SubscriptionStore] Already initialized");
+        //   return;
+        // }
 
         try {
           // RevenueCatを初期化
@@ -94,6 +108,9 @@ export const useSubscriptionStore = create<SubscriptionState>()(
                 entitlements: Object.keys(customerInfo.entitlements.active),
               }
             );
+
+            // ✅ 復元状態チェック
+            await get()._checkRestoreStatus();
 
             // CustomerInfo変更リスナーを設定
             await subscriptionService.setupCustomerInfoListener(get().listener);
@@ -200,6 +217,150 @@ export const useSubscriptionStore = create<SubscriptionState>()(
         }
       },
 
+      /**
+       * ✅ 内部メソッド：復元状態チェック
+       */
+      _checkRestoreStatus: async () => {
+        logWithContext("info", "[Subscription] Checking restore status");
+        const { customerInfo, restoreAlert } = get();
+        const authStore = useAuthStore.getState();
+
+        const isGuest = !authStore.isAuthenticated;
+
+        // 購読がなく、ゲストユーザーじゃない場合は復元不要
+        if (!isGuest) {
+          set({ restoreAlert: null });
+          logWithContext("info", "[Subscription] No restore needed");
+          return;
+        }
+
+        // ✅ ゲストの場合、syncPurchases で購買情報を同期（OSプロンプトなし）
+        logWithContext("info", "[Subscription] Guest user, syncing purchases");
+
+        let syncedInfo: CustomerInfo;
+        try {
+          // ✅ syncPurchases を実行
+          await subscriptionService.syncPurchases();
+
+          // 最新の CustomerInfo を取得
+          syncedInfo = await subscriptionService.getCustomerInfo();
+          set({ customerInfo: syncedInfo });
+
+          logWithContext(
+            "info",
+            "[Subscription] Purchases synced successfully",
+            {
+              entitlements: Object.keys(syncedInfo.entitlements.active),
+            }
+          );
+        } catch (error) {
+          logWithContext("error", "[Subscription] Sync failed", { error });
+          // エラーでも既存の customerInfo を使う
+          syncedInfo = customerInfo!;
+        }
+
+        // ✅ 購買状態をチェック
+        const hasSubscription = syncedInfo
+          ? Object.keys(syncedInfo.entitlements.active).length > 0
+          : false;
+
+        if (!hasSubscription) {
+          set({ restoreAlert: null });
+          logWithContext("info", "[Subscription] No subscription found");
+          return;
+        }
+
+        const hasShownInThisSession = restoreAlert?.hasShown || false;
+
+        if (!hasShownInThisSession) {
+          logWithContext("info", "[Subscription] Showing restore alert");
+
+          // ✅ 情報提示型（確認のみ）
+          await Dialog.alert({
+            title: "過去の購入が見つかりました",
+            message: "課金情報が復元されますので、サインインしてください。",
+            buttonTitle: "OK",
+          });
+
+          // ✅ OK 押したら即サインイン
+          logWithContext(
+            "info",
+            "[Subscription] User acknowledged, proceeding to sign in"
+          );
+
+          let payload: AppJWTPayload | null = null;
+          try {
+            payload = await useAuthStore.getState().login();
+            logWithContext("info", "[Subscription] Sign in completed");
+          } catch (error) {
+            logWithContext("error", "[Subscription] Sign in failed", { error });
+            // サインイン失敗してもセッション中は表示済みとする
+          }
+
+          if (payload && payload.user) {
+            try {
+              // ✅ サインイン後、RevenueCatにもログイン
+              await get().login(payload.user.id);
+              logWithContext(
+                "info",
+                "[Subscription] RevenueCat login after sign in completed"
+              );
+
+              // 念の為、syncPurchases も実行
+              await subscriptionService.syncPurchases();
+              logWithContext(
+                "info",
+                "[Subscription] syncPurchases after sign in completed"
+              );
+
+              // CustomerInfoを更新
+              const updatedInfo = await subscriptionService.getCustomerInfo();
+              set({ customerInfo: updatedInfo });
+              logWithContext(
+                "info",
+                "[Subscription] CustomerInfo updated after sign in",
+                {
+                  entitlements: Object.keys(updatedInfo.entitlements.active),
+                }
+              );
+            } catch (error) {
+              logWithContext(
+                "error",
+                "[Subscription] RevenueCat login after sign in failed",
+                { error }
+              );
+            }
+          }
+        }
+
+        set({
+          restoreAlert: {
+            shouldShow: false,
+            hasUnrestoredPurchase: true,
+            hasShown: true,
+          },
+        });
+        logWithContext("info", "[Subscription] Checking restore completed");
+      },
+
+      /**
+       * ✅ アラート非表示（シンプル化）NOTE: 一応用意するが、UI上はOKのみ開放している
+       */
+      dismissRestoreAlert: () => {
+        const current = get().restoreAlert;
+        if (current) {
+          set({
+            restoreAlert: {
+              ...current,
+              shouldShow: false,
+              hasShown: true, // ← これで永続化される
+            },
+          });
+        }
+
+        logWithContext("info", "[Subscription] Restore alert dismissed");
+      },
+
       // ============================================
       // ログイン
       // ============================================
@@ -216,7 +377,8 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           // RevenueCatにログイン（匿名ユーザーとして）
           const customerInfo = await subscriptionService.login(userId);
 
-          set({ isLoggedIn: true, customerInfo });
+          // restoreAlert をここでリセットする（復元完了扱い）
+          set({ isLoggedIn: true, customerInfo, restoreAlert: null });
 
           logWithContext("info", "[SubscriptionStore] Logged in successfully", {
             entitlements: Object.keys(customerInfo.entitlements.active),

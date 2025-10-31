@@ -41,7 +41,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: `${domain}/api/chat`,
+      api: `${domain}/api/readings/simple`,
       body: {
         tarotist,
         spread,

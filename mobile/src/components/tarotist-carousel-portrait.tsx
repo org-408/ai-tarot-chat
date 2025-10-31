@@ -123,6 +123,19 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     );
   }
 
+  // プラン変更処理
+  const handleChangePlan = (requiredPlan: UserPlan, tarotist: Tarotist) => {
+    try {
+      if (onChangePlan) {
+        onChangePlan(requiredPlan);
+        // プラン変更後に選択占い師を設定
+        handleSelectTarotist(tarotist);
+      }
+    } catch (error) {
+      console.error("プラン変更中にエラーが発生しました:", error);
+    }
+  };
+
   // チャットモード - 肖像画表示
   if (selectedTargetMode !== "tarotist" && selectedTarotist) {
     const colors = getTarotistColor(selectedTarotist);
@@ -416,10 +429,10 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                               <motion.button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onChangePlan!(
-                                    (tarotist.plan?.code as UserPlan) || "GUEST"
+                                  handleChangePlan(
+                                    tarotist.plan!.code as UserPlan,
+                                    tarotist
                                   );
-                                  handleSelectTarotist(tarotist);
                                 }}
                                 disabled={isChangingPlan}
                                 className="w-full py-2 rounded-xl text-white font-bold text-base shadow-lg disabled:opacity-50"

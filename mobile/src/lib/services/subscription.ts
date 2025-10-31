@@ -4,6 +4,7 @@ import {
   type CustomerInfo,
   LOG_LEVEL,
   Purchases,
+  type PurchasesCallbackId,
 } from "@revenuecat/purchases-capacitor";
 import { RevenueCatUI } from "@revenuecat/purchases-capacitor-ui";
 import type { Plan } from "../../../../shared/lib/types";
@@ -21,6 +22,9 @@ import { getPackageIdentifier } from "../utils/plan-utils";
  * - Customer Centerの表示
  */
 export class SubscriptionService {
+  // ✅ コールバックIDを保持
+  private listenerCallbackId: PurchasesCallbackId | null = null;
+
   /**
    * RevenueCatの初期化
    */
@@ -148,7 +152,23 @@ export class SubscriptionService {
     handler: (info: CustomerInfo) => Promise<void> | void
   ): Promise<void> {
     try {
-      await Purchases.addCustomerInfoUpdateListener(handler);
+      // 既存のリスナーがあれば削除
+      if (this.listenerCallbackId) {
+        await Purchases.removeCustomerInfoUpdateListener({
+          listenerToRemove: this.listenerCallbackId,
+        });
+
+        logWithContext(
+          "info",
+          "[SubscriptionService] Existing CustomerInfo listener removed",
+          { callbackId: this.listenerCallbackId }
+        );
+      }
+
+      // 新しいリスナーを登録
+      this.listenerCallbackId = await Purchases.addCustomerInfoUpdateListener(
+        handler
+      );
 
       logWithContext(
         "info",
@@ -320,6 +340,29 @@ export class SubscriptionService {
       logWithContext("error", "[SubscriptionService] Restore failed", {
         error: error instanceof Error ? error.message : String(error),
       });
+      throw error;
+    }
+  }
+
+  /**
+   * ✅ 購買情報を同期（OSプロンプトなし）
+   */
+  async syncPurchases(): Promise<void> {
+    try {
+      logWithContext("info", "[SubscriptionService] Syncing purchases");
+      await Purchases.syncPurchases();
+      logWithContext(
+        "info",
+        "[SubscriptionService] Purchases synced successfully"
+      );
+    } catch (error) {
+      logWithContext(
+        "error",
+        "[SubscriptionService] Failed to sync purchases",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
       throw error;
     }
   }
