@@ -109,6 +109,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           <TarotistCarouselPortrait
             masterData={masterData}
             currentPlan={currentPlan}
+            readonly={true}
           />
         )}
 

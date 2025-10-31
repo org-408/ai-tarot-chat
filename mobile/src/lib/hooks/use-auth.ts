@@ -11,6 +11,7 @@ export function useAuth() {
     isReady,
     payload,
     isAuthenticated,
+    token,
     init,
     login,
     logout,
@@ -27,6 +28,7 @@ export function useAuth() {
     // トークン情報（主にデバッグ用）
     payload,
     deviceId: payload?.deviceId || null,
+    token,
 
     // 認証のアクション
     init,

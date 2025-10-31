@@ -12,6 +12,7 @@ import type {
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
+import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
@@ -39,9 +40,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
+  const { token } = useAuth();
+
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: `${domain}/api/readings/simple`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: {
         tarotist,
         spread,

@@ -13,6 +13,7 @@ interface AuthState {
   isReady: boolean;
   payload: AppJWTPayload | null;
   isAuthenticated: boolean;
+  token: string | null;
 
   // アクション
   init: () => Promise<void>;
@@ -42,6 +43,7 @@ export const useAuthStore = create<AuthState>()(
       isReady: false,
       payload: null,
       isAuthenticated: false,
+      token: null,
 
       init: async () => {
         try {
@@ -63,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
               "[AuthStore] Device registration successful:"
             );
           } else {
+            set({ token: stored.token });
             // トークンあり → デコード & 整合性チェック
             const payload = await authService.decodeStoredToken(stored.token);
             logWithContext("info", "[AuthStore] Decoded token payload:", {
@@ -90,6 +93,11 @@ export const useAuthStore = create<AuthState>()(
 
               try {
                 await get().refresh();
+
+                logWithContext(
+                  "info",
+                  "[AuthStore] Token verification successful"
+                );
               } catch (refreshError) {
                 logWithContext("error", "[AuthStore] Refresh error in init:", {
                   error: refreshError,
@@ -146,6 +154,8 @@ export const useAuthStore = create<AuthState>()(
                       isAuthenticated: !!payload.user,
                     });
                   }
+                  const newStored = await authService.getStoredPayload();
+                  set({ token: newStored.token });
                 } else {
                   // ✅ 不明なエラー → ログのみ
                   logWithContext(
@@ -171,6 +181,8 @@ export const useAuthStore = create<AuthState>()(
           });
           set({ isReady: true }); // エラーでも isReady は true にする
         }
+        const newStored = await authService.getStoredPayload();
+        set({ token: newStored.token });
       },
 
       registerDevice: async () => {
@@ -189,6 +201,8 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: !!payload.user,
             }
           );
+          const stored = await authService.getStoredPayload();
+          set({ token: stored.token });
           return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Device registration failed:", {
@@ -222,6 +236,8 @@ export const useAuthStore = create<AuthState>()(
               "[AuthStore] Synchronized client plan to FREE after login"
             );
           }
+          const stored = await authService.getStoredPayload();
+          set({ token: stored.token });
           return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Login failed:", { error });
@@ -239,6 +255,8 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
           });
           logWithContext("info", "[AuthStore] Logout successful");
+          const stored = await authService.getStoredPayload();
+          set({ token: stored.token });
           return payload;
         } catch (error) {
           logWithContext("error", "[AuthStore] Logout failed:", { error });
@@ -279,6 +297,8 @@ export const useAuthStore = create<AuthState>()(
                 isAuthenticated: !!newPayload.user,
               }
             );
+            const newStored = await authService.getStoredPayload();
+            set({ token: newStored.token });
             return newPayload;
           } catch (refreshError) {
             // ✅ ネットワークエラーチェック
@@ -312,6 +332,8 @@ export const useAuthStore = create<AuthState>()(
                   "[AuthStore] Device re-registered successfully",
                   { payload }
                 );
+                const newStored = await authService.getStoredPayload();
+                set({ token: newStored.token });
                 return payload; // ✅ 成功として扱う
               }
 
@@ -324,8 +346,6 @@ export const useAuthStore = create<AuthState>()(
             logWithContext("error", "[AuthStore] Unknown error during refresh");
             throw refreshError;
           }
-
-          logWithContext("info", "[AuthStore] Refresh completed");
         } catch (error) {
           logWithContext("error", "[AuthStore] Refresh failed:", { error });
           throw error; // ✅ エラーを上位に伝播

@@ -16,6 +16,7 @@ interface TarotistCarouselPortraitProps {
   onChangePlan?: (planCode: UserPlan) => void;
   isChangingPlan?: boolean;
   onClickTarotist?: (tarotist: Tarotist) => void;
+  readonly?: boolean;
 }
 
 const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
@@ -24,6 +25,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   onChangePlan,
   isChangingPlan,
   onClickTarotist,
+  readonly = false,
 }) => {
   const {
     selectedTarotist,
@@ -215,12 +217,14 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
           </div>
 
           {/* 占い師変更ボタン - 右下にひっそり配置 */}
-          <button
-            onClick={() => setSelectedTargetMode("tarotist")}
-            className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 transition-all shadow-md"
-          >
-            占い師を変更
-          </button>
+          {!readonly && (
+            <button
+              onClick={() => setSelectedTargetMode("tarotist")}
+              className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 transition-all shadow-md"
+            >
+              占い師を変更
+            </button>
+          )}
         </div>
       </motion.div>
     );

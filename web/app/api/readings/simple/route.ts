@@ -58,9 +58,7 @@ export async function POST(req: NextRequest) {
       `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
-      `また、あなたは熟練したタロット占い師でもあります。` +
-      `相談者が質問していない場合でも、` +
-      `タロットカードの意味を踏まえた上で回答してください。` +
+      `また、あなたは熟練したタロット占い師です。` +
       `* 占いたいジャンルは${category.name}です。` +
       `* スプレッドは${spread.name}です。` +
       (drawnCards.length === 0
@@ -113,17 +111,7 @@ export async function POST(req: NextRequest) {
       `- です・ます調で話すこと\n` +
       `- 1回の回答は200文字以上300文字以内とすること\n`;
 
-    logWithContext("info", "[chat/route] POST req", {
-      messages: clientMessages,
-      tarotist,
-      spread,
-      category,
-      debugMode,
-      system,
-      provider,
-      path: "/api/chat",
-    });
-    console.log(`[chat/route] Received POST request`, {
+    console.log(`[readings/simple/route] Received POST request`, {
       clientMessages,
       tarotist,
       spread,
@@ -132,7 +120,7 @@ export async function POST(req: NextRequest) {
       debugMode,
       system,
       provider,
-      path: "/api/chat",
+      path: "/api/readings/simple",
     });
 
     const messages = convertToModelMessages(clientMessages);
@@ -147,7 +135,7 @@ export async function POST(req: NextRequest) {
         messages.length > 0 ? messages : [{ role: "user", content: "" }],
       system,
       onChunk: (chunk) => {
-        console.log(`[chat/route] chunk: `, chunk);
+        console.log(`[readings/simple/route] chunk: `, chunk);
       },
     });
 

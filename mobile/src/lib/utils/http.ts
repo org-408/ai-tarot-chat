@@ -142,11 +142,11 @@ export class Http {
     return response;
   }
 
-  private static async getAccessToken(): Promise<string | null> {
+  static async getAccessToken(): Promise<string | null> {
     return await storeRepository.get<string>(this.TOKEN_KEY);
   }
 
-  private static async saveAccessToken(token: string): Promise<void> {
+  static async saveAccessToken(token: string): Promise<void> {
     await storeRepository.set(this.TOKEN_KEY, token);
   }
 }
