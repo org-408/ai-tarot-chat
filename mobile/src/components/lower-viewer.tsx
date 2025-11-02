@@ -21,7 +21,8 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
   isChangingPlan,
   onBack,
 }) => {
-  const { lowerViewerMode, setLowerViewerMode } = useSalon();
+  const { isPersonal, setIsPersonal, lowerViewerMode, setLowerViewerMode } =
+    useSalon();
   const [showHint, setShowHint] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -39,6 +40,7 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
 
   useEffect(() => {
     setLowerViewerMode("selector");
+    setIsPersonal(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -47,7 +49,8 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
     const index = emblaApi.selectedScrollSnap();
     setSelectedIndex(index);
     setLowerViewerMode(index === 0 ? "selector" : "personal");
-  }, [emblaApi, setLowerViewerMode]);
+    setIsPersonal(index === 1);
+  }, [emblaApi, setLowerViewerMode, setIsPersonal]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -107,7 +110,9 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
           <div className="embla__slide flex-[0_0_100%] min-w-0 h-full">
             {/* 🔥 このスライド内でスクロール */}
             <div className="w-full h-full overflow-y-auto px-1 pb-4">
-              {selectedIndex === 1 && <ChatPanel onBack={onBack} />}
+              {selectedIndex === 1 && isPersonal && (
+                <ChatPanel key={"personal"} onBack={onBack} />
+              )}
             </div>
           </div>
         </div>

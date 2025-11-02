@@ -186,7 +186,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
   useEffect(() => {
     if (isRevealingCompleted) {
       if (currentPlan.code !== "MASTER") {
-        const prompt = "占ってください。";
+        const prompt = "よろしくお願いします。";
         sendMessage({ text: prompt });
       }
     }
@@ -306,7 +306,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
       </div>
 
       {/* 即答方式のヒント及びボタン表示 */}
-      {currentPlan.code !== "MASTER" && (
+      {!isPersonal && (
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
@@ -326,7 +326,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
       )}
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      {currentPlan.code === "MASTER" && (
+      {isPersonal && (
         <motion.div
           className="px-4 py-3 bg-transparent border-1 shadow"
           animate={{

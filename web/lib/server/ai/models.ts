@@ -20,13 +20,13 @@ const ollama = createOllama({
 });
 
 export const homeProviders = {
-  gpt5nano: ollama("llama3.1:8b-instruct-q4_K_M"),
-  gemini25: ollama("qwen2.5:14b-instruct-q4_K_M"),
-  gemini25pro: ollama("qwen2.5:14b-instruct-q5_k_m"),
-  claude_h: ollama("qwen2.5:32b-instruct-q3_K_S"),
-  gpt41: ollama("qwen2.5:32b-instruct-q3_K_M"),
-  gpt5: ollama("qwen3:30b-a3b"),
-  claude_s: ollama("llama3.3:70b-instruct-q2_K"),
+  gpt5nano: ollama("llama3.1:8b-instruct-q8_0"),
+  gemini25: ollama("llama3.1:8b-instruct-fp16"),
+  gemini25pro: ollama("qwen3:14b-q4_K_M"),
+  claude_h: ollama("qwen3:14b-q8_0"),
+  gpt41: ollama("gemma3:12b"),
+  gpt5: ollama("gemma3:27b"),
+  claude_s: ollama("gpt-oss:latest"),
   google: deepinfra("openai/gpt-oss-120b"),
 };
 
