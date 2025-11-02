@@ -20,6 +20,17 @@ const ollama = createOllama({
 });
 
 export const homeProviders = {
+  gpt5nano: ollama("llama3.1:8b-instruct-q4_K_M"),
+  gemini25: ollama("qwen2.5:14b-instruct-q4_K_M"),
+  gemini25pro: ollama("qwen2.5:14b-instruct-q5_k_m"),
+  claude_h: ollama("qwen2.5:32b-instruct-q3_K_S"),
+  gpt41: ollama("qwen2.5:32b-instruct-q3_K_M"),
+  gpt5: ollama("qwen3:30b-a3b"),
+  claude_s: ollama("llama3.3:70b-instruct-q2_K"),
+  google: deepinfra("openai/gpt-oss-120b"),
+};
+
+export const homeFreeProviders = {
   gpt5nano: mistral("open-mistral-nemo"),
   gemini25: ollama("qwen2.5:14b-instruct-q4_K_M"),
   gemini25pro: mistral("mistral-small-latest"),

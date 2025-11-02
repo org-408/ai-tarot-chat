@@ -118,7 +118,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
               bottom: 0,
             }}
           >
-            {currentPlan.code !== "PREMIUM" && (
+            {!currentPlan.hasPersonal && (
               <>
                 {/* カテゴリー・スプレッド選択 */}
                 <CategorySpreadSelector
@@ -132,7 +132,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                 />
               </>
             )}
-            {currentPlan.code === "PREMIUM" && (
+            {currentPlan.hasPersonal && (
               <LowerViewer
                 handleChangePlan={handleChangePlan}
                 handleStartReading={handleStartReading}
