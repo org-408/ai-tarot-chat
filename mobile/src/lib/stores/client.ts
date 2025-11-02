@@ -10,6 +10,7 @@ import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { clientService } from "../services/client";
 import { getTodayJST } from "../utils/date";
+import { useMasterStore } from "./master";
 
 export type PaginationParams = {
   take?: number;
@@ -36,7 +37,7 @@ interface ClientState {
   // ============================================
   // プラン変更の状態
   // ============================================
-  currentPlan: Plan | null;
+  currentPlan: Plan;
 
   // ============================================
   // エラー状態管理
@@ -63,6 +64,11 @@ interface ClientState {
   reset: () => void;
 }
 
+// masterストアからGUESTプラン取得
+const guestPlan = useMasterStore
+  .getState()
+  .masterData.plans.find((p) => p.code === "GUEST");
+
 /**
  * Client Store
  *
@@ -82,7 +88,7 @@ export const useClientStore = create<ClientState>()(
       // 初期状態
       // ============================================
       isReady: false,
-      currentPlan: null,
+      currentPlan: guestPlan!,
       usage: null,
       lastFetchedDate: null,
       readings: [],
@@ -364,7 +370,7 @@ export const useClientStore = create<ClientState>()(
         logWithContext("info", "[ClientStore] Resetting to initial state");
         set({
           isReady: false,
-          currentPlan: null,
+          currentPlan: guestPlan,
           usage: null,
           lastFetchedDate: null,
         });

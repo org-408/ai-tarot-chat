@@ -12,7 +12,7 @@ import type { UserPlan } from "../types";
 
 interface TarotistCarouselPortraitProps {
   masterData: MasterData;
-  currentPlan: Plan;
+  currentPlan?: Plan;
   onChangePlan?: (planCode: UserPlan) => void;
   isChangingPlan?: boolean;
   onClickTarotist?: (tarotist: Tarotist) => void;
@@ -36,13 +36,13 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
   // 占い師の取得とフィルタリング
   const availableTarotists = useMemo(() => {
-    if (!masterData.tarotists || !currentPlan) return [];
+    if (!masterData.tarotists) return [];
 
     return masterData.tarotists.filter((tarotist: Tarotist) => {
       // 全員見せるように変更
       return !!tarotist;
     });
-  }, [masterData, currentPlan]);
+  }, [masterData]);
 
   useEffect(() => {
     console.log(
@@ -255,7 +255,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
       <div className="flex-1 overflow-hidden min-h-0" ref={emblaRef}>
         <div className="flex h-full touch-pan-y">
           {availableTarotists.map((tarotist, index) => {
-            const isAvailable = canUseTarotist(tarotist.plan!, currentPlan);
+            const isAvailable = canUseTarotist(tarotist.plan!, currentPlan!);
             const currentIndex = selectedTarotist
               ? availableTarotists.findIndex(
                   (t) => t.no === selectedTarotist.no

@@ -12,6 +12,7 @@ import { useSalon } from "../lib/hooks/use-salon";
 import type { UserPlan } from "../types";
 import CategorySpreadSelector from "./category-spread-selector";
 import CurrentPlanView from "./current-plan-view";
+import LowerViewer from "./lower-viewer";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 import UpgradeGuide from "./upgrade-guide";
 
@@ -43,15 +44,17 @@ const SalonPage: React.FC<SalonPageProps> = ({
     selectedTarotist,
     selectedCategory,
     selectedSpread,
+    init,
   } = useSalon();
+
+  useEffect(() => {
+    console.log("[SalonPage] Mounted");
+    init();
+  }, [init]);
 
   useEffect(() => {
     console.log("[SalonPage] isChangingPlan changed", isChangingPlan);
   }, [isChangingPlan]);
-
-  const upgradablePlans = masterData!.plans
-    ?.filter((p: Plan) => p.no > (currentPlan?.no || 0))
-    .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
   useMemo(() => {
     console.log("[SalonPage] masterData or usageStats changed", {
@@ -109,27 +112,34 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
           {/* 下半分 */}
           <div
-            className="fixed left-0 right-0 overflow-auto px-1 pb-25"
+            className="fixed left-0 right-0 px-1 pb-25 h-[55vh]"
             style={{
               top: "calc(45vh + 50px + env(safe-area-inset-top))",
               bottom: 0,
             }}
           >
-            {/* カテゴリー・スプレッド選択 */}
-            <CategorySpreadSelector
-              masterData={masterData}
-              currentPlan={currentPlan}
-              handleStartReading={handleStartReading}
-            />
+            {currentPlan.code !== "PREMIUM" && (
+              <>
+                {/* カテゴリー・スプレッド選択 */}
+                <CategorySpreadSelector
+                  handleStartReading={handleStartReading}
+                />
 
-            {/* プランアップグレード案内 */}
-            <UpgradeGuide
-              masterData={masterData}
-              currentPlan={currentPlan}
-              upgradablePlans={upgradablePlans}
-              handleChangePlan={handleChangePlan}
-              isChangingPlan={isChangingPlan}
-            />
+                {/* プランアップグレード案内 */}
+                <UpgradeGuide
+                  handleChangePlan={handleChangePlan}
+                  isChangingPlan={isChangingPlan}
+                />
+              </>
+            )}
+            {currentPlan.code === "PREMIUM" && (
+              <LowerViewer
+                handleChangePlan={handleChangePlan}
+                handleStartReading={handleStartReading}
+                isChangingPlan={isChangingPlan}
+                onBack={() => {}}
+              />
+            )}
           </div>
         </>
       )}

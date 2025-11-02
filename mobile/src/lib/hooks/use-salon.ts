@@ -10,15 +10,22 @@ export function useSalon() {
     selectedCategory,
     selectedSpread,
     drawnCards,
+    isRevealingCompleted,
     selectedTargetMode,
     spreadViewerMode,
+    upperViewerMode,
+    lowerViewerMode,
     isPersonal,
+    init,
     setSelectedTarotist,
     setSelectedCategory,
     setSelectedSpread,
     setDrawnCards,
+    setIsRevealingCompleted,
     setSelectedTargetMode,
     setSpreadViewerMode,
+    setUpperViewerMode,
+    setLowerViewerMode,
     setIsPersonal,
   } = useSalonStore();
 
@@ -30,19 +37,26 @@ export function useSalon() {
     selectedCategory,
     selectedSpread,
     drawnCards,
+    isRevealingCompleted,
     selectedTargetMode,
     spreadViewerMode,
+    upperViewerMode,
+    lowerViewerMode,
     isPersonal,
 
     // ============================================
     // アクション
     // ============================================
+    init,
     setSelectedTarotist,
     setSelectedCategory,
     setSelectedSpread,
     setDrawnCards,
+    setIsRevealingCompleted,
     setSelectedTargetMode,
     setSpreadViewerMode,
+    setUpperViewerMode,
+    setLowerViewerMode,
     setIsPersonal,
   };
 }

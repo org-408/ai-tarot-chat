@@ -7,41 +7,86 @@ import type {
   Tarotist,
 } from "../../../../shared/lib/types";
 import { storeRepository } from "../../lib/repositories/store";
-import type { SelectTargetMode, SpreadViewModeType } from "../../types";
+import type {
+  LowerViewerModeType,
+  SelectTargetMode,
+  SpreadViewModeType,
+  UpperViewerModeType,
+} from "../../types";
+import { useMasterStore } from "./master";
 
 interface SalonState {
-  selectedTarotist: Tarotist | null;
-  selectedCategory: ReadingCategory | null;
-  selectedSpread: Spread | null;
+  selectedTarotist: Tarotist;
+  selectedCategory: ReadingCategory;
+  customeQuestion: string;
+  selectedSpread: Spread;
   drawnCards: DrawnCard[];
+  isRevealingCompleted: boolean;
   selectedTargetMode: SelectTargetMode;
   spreadViewerMode: SpreadViewModeType;
+  upperViewerMode: UpperViewerModeType;
+  lowerViewerMode: LowerViewerModeType;
   isPersonal: boolean;
+  init: () => void;
   setSelectedTarotist: (tarotist: Tarotist) => void;
   setSelectedCategory: (category: ReadingCategory) => void;
+  setCustomeQuestion: (question: string) => void;
   setSelectedSpread: (spread: Spread) => void;
   setDrawnCards: (cards: DrawnCard[]) => void;
+  setIsRevealingCompleted: (completed: boolean) => void;
   setSelectedTargetMode: (mode: SelectTargetMode) => void;
   setSpreadViewerMode: (mode: SpreadViewModeType) => void;
+  setUpperViewerMode: (mode: UpperViewerModeType) => void;
+  setLowerViewerMode: (mode: LowerViewerModeType) => void;
   setIsPersonal: (isPersonal: boolean) => void;
 }
+
+// 初期値をマスターデータから取得する
+const initialTarotist: Tarotist = useMasterStore
+  .getState()
+  .masterData.tarotists.find((t) => t.plan?.code === "GUEST")!;
+const initialCategory: ReadingCategory = useMasterStore
+  .getState()
+  .masterData.categories.find((c) => c.no === 1)!;
+const initialSpread: Spread = useMasterStore
+  .getState()
+  .masterData.spreads.find((s) => s.plan?.code === "GUEST")!;
 
 export const useSalonStore = create<SalonState>()(
   persist(
     (set) => ({
-      selectedTarotist: null,
-      selectedCategory: null,
-      selectedSpread: null,
+      selectedTarotist: initialTarotist,
+      selectedCategory: initialCategory,
+      customeQuestion: "",
+      selectedSpread: initialSpread,
       drawnCards: [],
+      isRevealingCompleted: false,
       selectedTargetMode: "tarotist",
       spreadViewerMode: "grid",
+      upperViewerMode: "profile",
+      lowerViewerMode: "selector",
       isPersonal: false,
+      init: () => {
+        set({
+          drawnCards: [],
+          isRevealingCompleted: false,
+          spreadViewerMode: "grid",
+          upperViewerMode: "profile",
+          lowerViewerMode: "selector",
+          isPersonal: false,
+        });
+      },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
       setSelectedCategory: (category) => set({ selectedCategory: category }),
+      setCustomeQuestion: (question) => set({ customeQuestion: question }),
       setSelectedSpread: (spread) => set({ selectedSpread: spread }),
       setDrawnCards: (cards) => set({ drawnCards: cards }),
+      setIsRevealingCompleted: (completed) =>
+        set({ isRevealingCompleted: completed }),
       setSelectedTargetMode: (mode) => set({ selectedTargetMode: mode }),
       setSpreadViewerMode: (mode) => set({ spreadViewerMode: mode }),
+      setUpperViewerMode: (mode) => set({ upperViewerMode: mode }),
+      setLowerViewerMode: (mode) => set({ lowerViewerMode: mode }),
       setIsPersonal: (isPersonal) => set({ isPersonal }),
     }),
     {

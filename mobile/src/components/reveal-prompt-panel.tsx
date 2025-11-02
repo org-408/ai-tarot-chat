@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
 import React from "react";
+import { useSalon } from "../lib/hooks/use-salon";
 
 interface RevealPromptPanelProps {
-  setIsRevealingComplete?: React.Dispatch<React.SetStateAction<boolean>>;
   isAllRevealed?: boolean;
 }
 
 export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
-  setIsRevealingComplete,
   isAllRevealed,
 }) => {
+  const { setIsRevealingCompleted } = useSalon();
+
   if (isAllRevealed) {
     return null;
   }
@@ -25,7 +26,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
         damping: 30,
         mass: 0.8,
       }}
-      className="fixed bottom-0 left-0 right-0 px-4 py-3 bg-transparent"
+      className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-transparent"
     >
       <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)] px-4 py-4">
         {/* 1行目: テキスト */}
@@ -48,7 +49,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
         {/* 2行目: ボタン */}
         <button
           onClick={() => {
-            if (setIsRevealingComplete) setIsRevealingComplete(true);
+            if (setIsRevealingCompleted) setIsRevealingCompleted(true);
           }}
           disabled={isAllRevealed}
           className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold shadow-2xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all flex items-center justify-center gap-2"

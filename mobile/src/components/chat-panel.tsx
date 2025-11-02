@@ -5,46 +5,41 @@ import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import type {
-  DrawnCard,
-  Plan,
-  ReadingCategory,
-  Spread,
-  Tarotist,
-} from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
+import { useSalon } from "../lib/hooks/use-salon";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
 
+/**
+ * NOTE: useChat の API 定義を安定させるため、 key= を利用して、確実にアンマウント、マウントさせること
+ */
+
 interface ChatPanelProps {
-  currentPlan: Plan;
-  tarotist: Tarotist;
-  spread: Spread;
-  category: ReadingCategory;
-  drawnCards: DrawnCard[];
-  isRevealingComplete?: boolean;
-  setIsRevealingComplete?: React.Dispatch<React.SetStateAction<boolean>>;
   onBack: () => void;
 }
 
-export const ChatPanel: React.FC<ChatPanelProps> = ({
-  currentPlan,
-  tarotist,
-  spread,
-  category,
-  drawnCards,
-  isRevealingComplete,
-  setIsRevealingComplete,
-  onBack,
-}) => {
+export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
   const { token } = useAuth();
 
+  const { currentPlan, saveReading } = useClient();
+
+  const {
+    selectedTarotist: tarotist,
+    selectedCategory: category,
+    selectedSpread: spread,
+    drawnCards,
+    isRevealingCompleted,
+    isPersonal,
+  } = useSalon();
+
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: `${domain}/api/readings/simple`,
+      api: !isPersonal
+        ? `${domain}/api/readings/simple`
+        : `${domain}/api/readings/personal`,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -189,13 +184,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   };
 
   useEffect(() => {
-    if (isRevealingComplete) {
+    if (isRevealingCompleted) {
       if (currentPlan.code !== "MASTER") {
         const prompt = "占ってください。";
         sendMessage({ text: prompt });
       }
     }
-  }, [currentPlan.code, isRevealingComplete, sendMessage]);
+  }, [currentPlan.code, isRevealingCompleted, sendMessage]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -207,7 +202,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     if (!container) return;
 
     const handleScroll = () => {
-      if (!isRevealingComplete) return;
+      if (!isRevealingCompleted) return;
       const isBottom =
         container.scrollHeight - container.scrollTop - container.clientHeight <
         10;
@@ -221,19 +216,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     return () => {
       container.removeEventListener("scroll", handleScroll);
     };
-  }, [isRevealingComplete]);
-
-  // 占い結果の保存
-  const { saveReading } = useClient();
+  }, [isRevealingCompleted]);
 
   useEffect(() => {
     console.log(
-      "isRevealingComplete or messages or status changed:",
-      isRevealingComplete,
+      "isRevealingCompleted or messages or status changed:",
+      isRevealingCompleted,
       messages,
       status
     );
-    if (isRevealingComplete && messages.length > 0 && status === "ready") {
+    if (isRevealingCompleted && messages.length > 0 && status === "ready") {
       console.log("All messages revealed.");
       // 占い結果を保存する（即答方式の場合）
       saveReading({
@@ -258,7 +250,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [
     category,
     drawnCards,
-    isRevealingComplete,
+    isRevealingCompleted,
     messages,
     saveReading,
     spread,
@@ -267,7 +259,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   ]);
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col relative">
       {/* Messages Area */}
       <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-10">
         {messages.map((message, index) => {
@@ -315,21 +307,18 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       {/* 即答方式のヒント及びボタン表示 */}
       {currentPlan.code !== "MASTER" && (
-        <RevealPromptPanel
-          setIsRevealingComplete={setIsRevealingComplete}
-          isAllRevealed={isRevealingComplete}
-        />
+        <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
       {/* Back Button - スクロールが一番下の時だけ表示 */}
-      {isRevealingComplete && (
+      {isRevealingCompleted && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.7, y: 40 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
+          className="absolute bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
           onClick={onBack}
         >
           <span>← 戻る</span>

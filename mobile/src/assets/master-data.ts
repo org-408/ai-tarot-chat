@@ -1,5 +1,7 @@
 // Auto-generated - DO NOT EDIT
-// Generated at: 2025-10-31T16:16:23.141Z
+// Generated at: 2025-11-01T23:56:25.337Z
+
+import type { MasterData } from "../../../shared/lib/types";
 
 export const DEFAULT_MASTER_DATA = {
   version: "1.0.0",
@@ -21,7 +23,7 @@ export const DEFAULT_MASTER_DATA = {
         "1日1回のみ利用可能",
         "基本スプレッド(3種類)",
         "恋愛・仕事・今日の運勢",
-        "広告表示あり"
+        "広告表示あり",
       ],
       maxReadings: 1,
       maxCeltics: 0,
@@ -29,7 +31,7 @@ export const DEFAULT_MASTER_DATA = {
       hasPersonal: false,
       hasHistory: false,
       createdAt: new Date("2025-10-31T16:13:05.128Z"),
-      updatedAt: new Date("2025-10-31T16:13:05.128Z")
+      updatedAt: new Date("2025-10-31T16:13:05.128Z"),
     },
     {
       id: "cmhf1yd7t000189zt7g9eelhi",
@@ -49,7 +51,7 @@ export const DEFAULT_MASTER_DATA = {
         "占い履歴を保存可能",
         "基本スプレッド(3種類)",
         "恋愛・仕事・今日の運勢",
-        "広告表示あり"
+        "広告表示あり",
       ],
       maxReadings: 3,
       maxCeltics: 0,
@@ -57,7 +59,7 @@ export const DEFAULT_MASTER_DATA = {
       hasPersonal: false,
       hasHistory: true,
       createdAt: new Date("2025-10-31T16:13:05.513Z"),
-      updatedAt: new Date("2025-10-31T16:13:05.513Z")
+      updatedAt: new Date("2025-10-31T16:13:05.513Z"),
     },
     {
       id: "cmhf1ydcv000289ztvb6vrs67",
@@ -76,7 +78,7 @@ export const DEFAULT_MASTER_DATA = {
         "1日3回7枚以内スプレッドが利用可能",
         "または、1日1回ケルト十字が利用可能",
         "占い履歴を保存可能",
-        "広告表示なし"
+        "広告表示なし",
       ],
       maxReadings: 3,
       maxCeltics: 1,
@@ -84,7 +86,7 @@ export const DEFAULT_MASTER_DATA = {
       hasPersonal: false,
       hasHistory: true,
       createdAt: new Date("2025-10-31T16:13:05.695Z"),
-      updatedAt: new Date("2025-10-31T16:13:05.695Z")
+      updatedAt: new Date("2025-10-31T16:13:05.695Z"),
     },
     {
       id: "cmhf1ydi5000389zt7n1qsy3c",
@@ -104,7 +106,7 @@ export const DEFAULT_MASTER_DATA = {
         "1日1回パーソナル占いが利用可能",
         "*パーソナル占いでは、占う内容の入力、結果への質問が可能",
         "占い履歴を保存可能",
-        "広告表示なし"
+        "広告表示なし",
       ],
       maxReadings: 3,
       maxCeltics: 3,
@@ -112,8 +114,8 @@ export const DEFAULT_MASTER_DATA = {
       hasPersonal: true,
       hasHistory: true,
       createdAt: new Date("2025-10-31T16:13:05.885Z"),
-      updatedAt: new Date("2025-10-31T16:13:05.885Z")
-    }
+      updatedAt: new Date("2025-10-31T16:13:05.885Z"),
+    },
   ],
   levels: [
     {
@@ -123,7 +125,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "初心者",
       description: "タロット初心者でも簡単に使えるシンプルなスプレッド",
       createdAt: new Date("2025-10-31T16:13:06.254Z"),
-      updatedAt: new Date("2025-10-31T16:13:06.254Z")
+      updatedAt: new Date("2025-10-31T16:13:06.254Z"),
     },
     {
       id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -132,7 +134,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "中級者",
       description: "基本を理解している方向けの少し複雑なスプレッド",
       createdAt: new Date("2025-10-31T16:13:06.724Z"),
-      updatedAt: new Date("2025-10-31T16:13:06.724Z")
+      updatedAt: new Date("2025-10-31T16:13:06.724Z"),
     },
     {
       id: "cmhf1yeaw000789zttivsstx2",
@@ -141,7 +143,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "上級者",
       description: "タロットの知識が豊富な方向けの複雑なスプレッド",
       createdAt: new Date("2025-10-31T16:13:06.920Z"),
-      updatedAt: new Date("2025-10-31T16:13:06.920Z")
+      updatedAt: new Date("2025-10-31T16:13:06.920Z"),
     },
     {
       id: "cmhf1yeg2000889ztz3svycaq",
@@ -150,8 +152,8 @@ export const DEFAULT_MASTER_DATA = {
       name: "最上級",
       description: "熟練者向けの高度な分析が必要な複雑なスプレッド",
       createdAt: new Date("2025-10-31T16:13:07.107Z"),
-      updatedAt: new Date("2025-10-31T16:13:07.107Z")
-    }
+      updatedAt: new Date("2025-10-31T16:13:07.107Z"),
+    },
   ],
   categories: [
     {
@@ -160,7 +162,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "恋愛",
       description: "恋愛に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:14.766Z"),
-      updatedAt: new Date("2025-10-31T16:13:14.766Z")
+      updatedAt: new Date("2025-10-31T16:13:14.766Z"),
     },
     {
       id: "cmhf1ykcu000m89ztzn86fj7b",
@@ -168,7 +170,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "仕事",
       description: "仕事に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:14.766Z"),
-      updatedAt: new Date("2025-10-31T16:13:14.766Z")
+      updatedAt: new Date("2025-10-31T16:13:14.766Z"),
     },
     {
       id: "cmhf1ykcu000o89ztukp700pe",
@@ -176,7 +178,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "今日の運勢",
       description: "今日の運勢に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:14.766Z"),
-      updatedAt: new Date("2025-10-31T16:13:14.766Z")
+      updatedAt: new Date("2025-10-31T16:13:14.766Z"),
     },
     {
       id: "cmhf1ykcu000q89ztcei10i6n",
@@ -184,7 +186,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "学業",
       description: "学業に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:14.766Z"),
-      updatedAt: new Date("2025-10-31T16:13:14.766Z")
+      updatedAt: new Date("2025-10-31T16:13:14.766Z"),
     },
     {
       id: "cmhf1ykcu000s89ztpnvn9jea",
@@ -192,7 +194,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "健康",
       description: "健康に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:14.766Z"),
-      updatedAt: new Date("2025-10-31T16:13:14.766Z")
+      updatedAt: new Date("2025-10-31T16:13:14.766Z"),
     },
     {
       id: "cmhf1ykcu000u89ztxepxyta9",
@@ -200,7 +202,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "金運",
       description: "金運に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:14.766Z"),
-      updatedAt: new Date("2025-10-31T16:13:14.766Z")
+      updatedAt: new Date("2025-10-31T16:13:14.766Z"),
     },
     {
       id: "cmhf1z7ix002e89zteylf7g94",
@@ -208,7 +210,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "人間関係",
       description: "人間関係に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:13:44.794Z"),
-      updatedAt: new Date("2025-10-31T16:13:44.794Z")
+      updatedAt: new Date("2025-10-31T16:13:44.794Z"),
     },
     {
       id: "cmhf1zokd004389zt82c45oou",
@@ -216,7 +218,7 @@ export const DEFAULT_MASTER_DATA = {
       name: "心理",
       description: "心理に関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:14:06.877Z"),
-      updatedAt: new Date("2025-10-31T16:14:06.877Z")
+      updatedAt: new Date("2025-10-31T16:14:06.877Z"),
     },
     {
       id: "cmhf202vl006g89ztx4g146zf",
@@ -224,8 +226,8 @@ export const DEFAULT_MASTER_DATA = {
       name: "スピリチュアル",
       description: "スピリチュアルに関するタロットリーディング",
       createdAt: new Date("2025-10-31T16:14:25.424Z"),
-      updatedAt: new Date("2025-10-31T16:14:25.424Z")
-    }
+      updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+    },
   ],
   spreads: [
     {
@@ -248,8 +250,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "占う対象",
           description: "このカードの位置は占う対象を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1ykct000h89zt3u5mawfo"
-        }
+          spreadId: "cmhf1ykct000h89zt3u5mawfo",
+        },
       ],
       level: {
         id: "cmhf1ydse000589ztsw2va227",
@@ -258,7 +260,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "初心者",
         description: "タロット初心者でも簡単に使えるシンプルなスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.254Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.254Z")
+        updatedAt: new Date("2025-10-31T16:13:06.254Z"),
       },
       plan: {
         id: "cmhf1ycx4000089zt7nzu40yd",
@@ -277,7 +279,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回のみ利用可能",
           "基本スプレッド(3種類)",
           "恋愛・仕事・今日の運勢",
-          "広告表示あり"
+          "広告表示あり",
         ],
         maxReadings: 1,
         maxCeltics: 0,
@@ -285,7 +287,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: false,
         createdAt: new Date("2025-10-31T16:13:05.128Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.128Z")
+        updatedAt: new Date("2025-10-31T16:13:05.128Z"),
       },
       categories: [
         {
@@ -298,8 +300,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1ykcu000r89ztqmkbso2c",
@@ -311,8 +313,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1ykcu000p89zt4av4q0ka",
@@ -324,8 +326,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1ykcu000n89ztbujo5pum",
@@ -337,8 +339,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1ykcu000l89zt8fi1hwa1",
@@ -350,8 +352,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1ykcu000j89zt3yxj06iv",
@@ -363,10 +365,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1yqld000v89ztgtq0inv3",
@@ -388,7 +390,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "過去",
           description: "このカードの位置は過去を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yqld000v89ztgtq0inv3"
+          spreadId: "cmhf1yqld000v89ztgtq0inv3",
         },
         {
           id: "cmhf1yqld000x89ztwa555hli",
@@ -398,7 +400,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在",
           description: "このカードの位置は現在を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yqld000v89ztgtq0inv3"
+          spreadId: "cmhf1yqld000v89ztgtq0inv3",
         },
         {
           id: "cmhf1yqld000y89ztbjhhbivf",
@@ -408,8 +410,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "未来",
           description: "このカードの位置は未来を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yqld000v89ztgtq0inv3"
-        }
+          spreadId: "cmhf1yqld000v89ztgtq0inv3",
+        },
       ],
       level: {
         id: "cmhf1ydse000589ztsw2va227",
@@ -418,7 +420,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "初心者",
         description: "タロット初心者でも簡単に使えるシンプルなスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.254Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.254Z")
+        updatedAt: new Date("2025-10-31T16:13:06.254Z"),
       },
       plan: {
         id: "cmhf1ycx4000089zt7nzu40yd",
@@ -437,7 +439,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回のみ利用可能",
           "基本スプレッド(3種類)",
           "恋愛・仕事・今日の運勢",
-          "広告表示あり"
+          "広告表示あり",
         ],
         maxReadings: 1,
         maxCeltics: 0,
@@ -445,7 +447,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: false,
         createdAt: new Date("2025-10-31T16:13:05.128Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.128Z")
+        updatedAt: new Date("2025-10-31T16:13:05.128Z"),
       },
       categories: [
         {
@@ -458,8 +460,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yqle001789ztrt0e9pu3",
@@ -471,8 +473,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yqle001589zt7hmbswa8",
@@ -484,8 +486,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yqle001389zttc1pbqlo",
@@ -497,8 +499,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yqle001189zttwu9p006",
@@ -510,8 +512,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yqle000z89ztslwqppgk",
@@ -523,10 +525,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1yuew001b89ztb0srunc5",
@@ -548,7 +550,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "状況",
           description: "このカードの位置は状況を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yuew001b89ztb0srunc5"
+          spreadId: "cmhf1yuew001b89ztb0srunc5",
         },
         {
           id: "cmhf1yuew001d89ztpwbxyw3b",
@@ -558,7 +560,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "行動",
           description: "このカードの位置は行動を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yuew001b89ztb0srunc5"
+          spreadId: "cmhf1yuew001b89ztb0srunc5",
         },
         {
           id: "cmhf1yuew001e89zt4gbnxdb4",
@@ -568,8 +570,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "結果",
           description: "このカードの位置は結果を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yuew001b89ztb0srunc5"
-        }
+          spreadId: "cmhf1yuew001b89ztb0srunc5",
+        },
       ],
       level: {
         id: "cmhf1ydse000589ztsw2va227",
@@ -578,7 +580,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "初心者",
         description: "タロット初心者でも簡単に使えるシンプルなスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.254Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.254Z")
+        updatedAt: new Date("2025-10-31T16:13:06.254Z"),
       },
       plan: {
         id: "cmhf1ycx4000089zt7nzu40yd",
@@ -597,7 +599,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回のみ利用可能",
           "基本スプレッド(3種類)",
           "恋愛・仕事・今日の運勢",
-          "広告表示あり"
+          "広告表示あり",
         ],
         maxReadings: 1,
         maxCeltics: 0,
@@ -605,7 +607,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: false,
         createdAt: new Date("2025-10-31T16:13:05.128Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.128Z")
+        updatedAt: new Date("2025-10-31T16:13:05.128Z"),
       },
       categories: [
         {
@@ -618,8 +620,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yuex001n89ztottlvx6y",
@@ -631,8 +633,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yuew001l89zt8hzib1lz",
@@ -644,8 +646,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yuew001j89zt46bv2ven",
@@ -657,8 +659,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yuew001h89ztg8sfice0",
@@ -670,8 +672,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1yuew001f89ztx5x97tst",
@@ -683,10 +685,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1yxox001r89ztcaaxp1oi",
@@ -708,7 +710,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "心",
           description: "このカードの位置は心を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yxox001r89ztcaaxp1oi"
+          spreadId: "cmhf1yxox001r89ztcaaxp1oi",
         },
         {
           id: "cmhf1yxox001t89ztu30i4rlg",
@@ -718,7 +720,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "体",
           description: "このカードの位置は体を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yxox001r89ztcaaxp1oi"
+          spreadId: "cmhf1yxox001r89ztcaaxp1oi",
         },
         {
           id: "cmhf1yxox001u89zt7a93foel",
@@ -728,8 +730,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "魂",
           description: "このカードの位置は魂を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1yxox001r89ztcaaxp1oi"
-        }
+          spreadId: "cmhf1yxox001r89ztcaaxp1oi",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -738,7 +740,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -757,7 +759,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -765,7 +767,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -778,10 +780,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1z0na001x89zth6qeksm2",
@@ -803,7 +805,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "心の状態",
           description: "このカードの位置は心の状態を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z0na001x89zth6qeksm2"
+          spreadId: "cmhf1z0na001x89zth6qeksm2",
         },
         {
           id: "cmhf1z0na001z89ztk8ezxr5i",
@@ -813,7 +815,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在の愛",
           description: "このカードの位置は現在の愛を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z0na001x89zth6qeksm2"
+          spreadId: "cmhf1z0na001x89zth6qeksm2",
         },
         {
           id: "cmhf1z0na002089zt2cbgaqhi",
@@ -823,8 +825,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "未来の愛",
           description: "このカードの位置は未来の愛を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z0na001x89zth6qeksm2"
-        }
+          spreadId: "cmhf1z0na001x89zth6qeksm2",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -833,7 +835,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -852,7 +854,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -860,7 +862,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -873,10 +875,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1z4ua002389zt32x89epj",
@@ -898,7 +900,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "あなたの強み",
           description: "このカードの位置はあなたの強みを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z4ua002389zt32x89epj"
+          spreadId: "cmhf1z4ua002389zt32x89epj",
         },
         {
           id: "cmhf1z4ua002589ztrukqg2r9",
@@ -908,7 +910,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "相手の印象",
           description: "このカードの位置は相手の印象を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z4ua002389zt32x89epj"
+          spreadId: "cmhf1z4ua002389zt32x89epj",
         },
         {
           id: "cmhf1z4ua002689zt1162ig5g",
@@ -918,8 +920,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "結果",
           description: "このカードの位置は結果を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z4ua002389zt32x89epj"
-        }
+          spreadId: "cmhf1z4ua002389zt32x89epj",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -928,7 +930,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -947,7 +949,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -955,7 +957,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -968,10 +970,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1z7ix002989ztohvbnuk4",
@@ -993,7 +995,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "あなた",
           description: "このカードの位置はあなたを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z7ix002989ztohvbnuk4"
+          spreadId: "cmhf1z7ix002989ztohvbnuk4",
         },
         {
           id: "cmhf1z7ix002b89ztn8igq2bz",
@@ -1003,7 +1005,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "相手",
           description: "このカードの位置は相手を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z7ix002989ztohvbnuk4"
+          spreadId: "cmhf1z7ix002989ztohvbnuk4",
         },
         {
           id: "cmhf1z7ix002c89zt9mjvc7o7",
@@ -1013,8 +1015,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "関係性",
           description: "このカードの位置は関係性を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z7ix002989ztohvbnuk4"
-        }
+          spreadId: "cmhf1z7ix002989ztohvbnuk4",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1023,7 +1025,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1042,7 +1044,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1050,7 +1052,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1063,10 +1065,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1z9ya002f89zt5e388stp",
@@ -1088,7 +1090,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "過去の関係",
           description: "このカードの位置は過去の関係を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z9ya002f89zt5e388stp"
+          spreadId: "cmhf1z9ya002f89zt5e388stp",
         },
         {
           id: "cmhf1z9ya002h89ztvn29uiw7",
@@ -1098,7 +1100,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在の状況",
           description: "このカードの位置は現在の状況を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z9ya002f89zt5e388stp"
+          spreadId: "cmhf1z9ya002f89zt5e388stp",
         },
         {
           id: "cmhf1z9ya002i89zthz21cnh1",
@@ -1108,7 +1110,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "相手の気持ち",
           description: "このカードの位置は相手の気持ちを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z9ya002f89zt5e388stp"
+          spreadId: "cmhf1z9ya002f89zt5e388stp",
         },
         {
           id: "cmhf1z9ya002j89ztvxxdab7f",
@@ -1118,8 +1120,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "復縁可能性",
           description: "このカードの位置は復縁可能性を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1z9ya002f89zt5e388stp"
-        }
+          spreadId: "cmhf1z9ya002f89zt5e388stp",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1128,7 +1130,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1147,7 +1149,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1155,7 +1157,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1168,10 +1170,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zc44002m89zts1092chn",
@@ -1193,7 +1195,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "心の健康",
           description: "このカードの位置は心の健康を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zc44002m89zts1092chn"
+          spreadId: "cmhf1zc44002m89zts1092chn",
         },
         {
           id: "cmhf1zc44002o89zt0sd19xpe",
@@ -1203,7 +1205,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "体の健康",
           description: "このカードの位置は体の健康を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zc44002m89zts1092chn"
+          spreadId: "cmhf1zc44002m89zts1092chn",
         },
         {
           id: "cmhf1zc44002p89ztk7w0lagc",
@@ -1213,7 +1215,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "必要な行動",
           description: "このカードの位置は必要な行動を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zc44002m89zts1092chn"
+          spreadId: "cmhf1zc44002m89zts1092chn",
         },
         {
           id: "cmhf1zc44002q89zticzr22je",
@@ -1223,8 +1225,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "回復の兆し",
           description: "このカードの位置は回復の兆しを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zc44002m89zts1092chn"
-        }
+          spreadId: "cmhf1zc44002m89zts1092chn",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1233,7 +1235,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1252,7 +1254,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1260,7 +1262,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1273,10 +1275,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zdwa002t89ztegiu71g7",
@@ -1298,7 +1300,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "リスク",
           description: "このカードの位置はリスクを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zdwa002t89ztegiu71g7"
+          spreadId: "cmhf1zdwa002t89ztegiu71g7",
         },
         {
           id: "cmhf1zdwa002v89zto7f4was3",
@@ -1308,7 +1310,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "リターン",
           description: "このカードの位置はリターンを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zdwa002t89ztegiu71g7"
+          spreadId: "cmhf1zdwa002t89ztegiu71g7",
         },
         {
           id: "cmhf1zdwa002w89ztqmrbd2ag",
@@ -1318,7 +1320,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "タイミング",
           description: "このカードの位置はタイミングを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zdwa002t89ztegiu71g7"
+          spreadId: "cmhf1zdwa002t89ztegiu71g7",
         },
         {
           id: "cmhf1zdwa002x89ztvno7yxf5",
@@ -1328,8 +1330,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "結果",
           description: "このカードの位置は結果を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zdwa002t89ztegiu71g7"
-        }
+          spreadId: "cmhf1zdwa002t89ztegiu71g7",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1338,7 +1340,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1357,7 +1359,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1365,7 +1367,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1378,10 +1380,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zftc003089ztft7jo4nz",
@@ -1403,7 +1405,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在",
           description: "このカードの位置は現在を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zftc003089ztft7jo4nz"
+          spreadId: "cmhf1zftc003089ztft7jo4nz",
         },
         {
           id: "cmhf1zftc003289ztjle3o56r",
@@ -1413,7 +1415,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "過去",
           description: "このカードの位置は過去を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zftc003089ztft7jo4nz"
+          spreadId: "cmhf1zftc003089ztft7jo4nz",
         },
         {
           id: "cmhf1zftc003389ztkldqdaar",
@@ -1423,7 +1425,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "課題",
           description: "このカードの位置は課題を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zftc003089ztft7jo4nz"
+          spreadId: "cmhf1zftc003089ztft7jo4nz",
         },
         {
           id: "cmhf1zftc003489ztobq1o52q",
@@ -1433,7 +1435,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "未来",
           description: "このカードの位置は未来を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zftc003089ztft7jo4nz"
+          spreadId: "cmhf1zftc003089ztft7jo4nz",
         },
         {
           id: "cmhf1zftc003589ztttd3mddf",
@@ -1443,8 +1445,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "アドバイス",
           description: "このカードの位置はアドバイスを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zftc003089ztft7jo4nz"
-        }
+          spreadId: "cmhf1zftc003089ztft7jo4nz",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1453,7 +1455,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1472,7 +1474,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1480,7 +1482,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1493,8 +1495,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1zftd003c89zttoi4nrtn",
@@ -1506,8 +1508,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1zftd003a89ztvlh2msl2",
@@ -1519,8 +1521,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1zftd003889ztt9nc2pgq",
@@ -1532,8 +1534,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1zftd003689zt6ic8a07u",
@@ -1545,10 +1547,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zk2d003g89ztlhun5lbu",
@@ -1570,7 +1572,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現状",
           description: "このカードの位置は現状を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zk2d003g89ztlhun5lbu"
+          spreadId: "cmhf1zk2d003g89ztlhun5lbu",
         },
         {
           id: "cmhf1zk2e003i89ztjwr8zdky",
@@ -1580,7 +1582,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "準備度",
           description: "このカードの位置は準備度を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zk2d003g89ztlhun5lbu"
+          spreadId: "cmhf1zk2d003g89ztlhun5lbu",
         },
         {
           id: "cmhf1zk2e003j89ztmmql39zg",
@@ -1590,7 +1592,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "出会い方",
           description: "このカードの位置は出会い方を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zk2d003g89ztlhun5lbu"
+          spreadId: "cmhf1zk2d003g89ztlhun5lbu",
         },
         {
           id: "cmhf1zk2e003k89zt7rip6ydj",
@@ -1600,7 +1602,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "相手像",
           description: "このカードの位置は相手像を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zk2d003g89ztlhun5lbu"
+          spreadId: "cmhf1zk2d003g89ztlhun5lbu",
         },
         {
           id: "cmhf1zk2e003l89zt4zn5lrst",
@@ -1610,8 +1612,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "時期",
           description: "このカードの位置は時期を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zk2d003g89ztlhun5lbu"
-        }
+          spreadId: "cmhf1zk2d003g89ztlhun5lbu",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1620,7 +1622,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1639,7 +1641,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1647,7 +1649,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1660,10 +1662,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zmie003o89ztn1mdptj6",
@@ -1685,7 +1687,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現状",
           description: "このカードの位置は現状を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zmie003o89ztn1mdptj6"
+          spreadId: "cmhf1zmie003o89ztn1mdptj6",
         },
         {
           id: "cmhf1zmie003q89ztk0xytaje",
@@ -1695,7 +1697,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "原因",
           description: "このカードの位置は原因を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zmie003o89ztn1mdptj6"
+          spreadId: "cmhf1zmie003o89ztn1mdptj6",
         },
         {
           id: "cmhf1zmie003r89zthzjozhdg",
@@ -1705,7 +1707,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ブロック",
           description: "このカードの位置はブロックを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zmie003o89ztn1mdptj6"
+          spreadId: "cmhf1zmie003o89ztn1mdptj6",
         },
         {
           id: "cmhf1zmie003s89ztj1ai567z",
@@ -1715,7 +1717,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "解決法",
           description: "このカードの位置は解決法を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zmie003o89ztn1mdptj6"
+          spreadId: "cmhf1zmie003o89ztn1mdptj6",
         },
         {
           id: "cmhf1zmie003t89zt37dpr6y2",
@@ -1725,8 +1727,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "成功後",
           description: "このカードの位置は成功後を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zmie003o89ztn1mdptj6"
-        }
+          spreadId: "cmhf1zmie003o89ztn1mdptj6",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1735,7 +1737,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1754,7 +1756,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1762,7 +1764,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1775,10 +1777,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zokc003w89ztv44ip744",
@@ -1800,7 +1802,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現状",
           description: "このカードの位置は現状を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zokc003w89ztv44ip744"
+          spreadId: "cmhf1zokc003w89ztv44ip744",
         },
         {
           id: "cmhf1zokd003y89zt71rirml3",
@@ -1810,7 +1812,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "原因",
           description: "このカードの位置は原因を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zokc003w89ztv44ip744"
+          spreadId: "cmhf1zokc003w89ztv44ip744",
         },
         {
           id: "cmhf1zokd003z89ztkv8so5up",
@@ -1820,7 +1822,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ブロック",
           description: "このカードの位置はブロックを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zokc003w89ztv44ip744"
+          spreadId: "cmhf1zokc003w89ztv44ip744",
         },
         {
           id: "cmhf1zokd004089ztca2vyt0h",
@@ -1830,7 +1832,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "解決法",
           description: "このカードの位置は解決法を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zokc003w89ztv44ip744"
+          spreadId: "cmhf1zokc003w89ztv44ip744",
         },
         {
           id: "cmhf1zokd004189zt3nydn6xb",
@@ -1840,8 +1842,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "成功後",
           description: "このカードの位置は成功後を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zokc003w89ztv44ip744"
-        }
+          spreadId: "cmhf1zokc003w89ztv44ip744",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1850,7 +1852,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1869,7 +1871,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1877,7 +1879,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -1890,10 +1892,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "心理",
             description: "心理に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:06.877Z"),
-            updatedAt: new Date("2025-10-31T16:14:06.877Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:14:06.877Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zqpw004489zthq5ttltt",
@@ -1915,7 +1917,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現状",
           description: "このカードの位置は現状を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zqpw004489zthq5ttltt"
+          spreadId: "cmhf1zqpw004489zthq5ttltt",
         },
         {
           id: "cmhf1zqpw004689ztd27jquz5",
@@ -1925,7 +1927,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "仕事・学業",
           description: "このカードの位置は仕事・学業を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zqpw004489zthq5ttltt"
+          spreadId: "cmhf1zqpw004489zthq5ttltt",
         },
         {
           id: "cmhf1zqpw004789ztfc7x82m2",
@@ -1935,7 +1937,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "バランス",
           description: "このカードの位置はバランスを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zqpw004489zthq5ttltt"
+          spreadId: "cmhf1zqpw004489zthq5ttltt",
         },
         {
           id: "cmhf1zqpw004889ztjp4vunyv",
@@ -1945,7 +1947,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "プライベート",
           description: "このカードの位置はプライベートを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zqpw004489zthq5ttltt"
+          spreadId: "cmhf1zqpw004489zthq5ttltt",
         },
         {
           id: "cmhf1zqpw004989zt0929gmcz",
@@ -1955,8 +1957,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "未来",
           description: "このカードの位置は未来を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zqpw004489zthq5ttltt"
-        }
+          spreadId: "cmhf1zqpw004489zthq5ttltt",
+        },
       ],
       level: {
         id: "cmhf1ye5g000689ztm8v9nhbn",
@@ -1965,7 +1967,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "中級者",
         description: "基本を理解している方向けの少し複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.724Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.724Z")
+        updatedAt: new Date("2025-10-31T16:13:06.724Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -1984,7 +1986,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -1992,7 +1994,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2005,8 +2007,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1zqpw004a89zt0271fdgj",
@@ -2018,10 +2020,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zszy004e89zt7i6374a5",
@@ -2043,7 +2045,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在の状況",
           description: "このカードの位置は現在の状況を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zszy004e89zt7i6374a5"
+          spreadId: "cmhf1zszy004e89zt7i6374a5",
         },
         {
           id: "cmhf1zszz004g89ztt38ygdsf",
@@ -2053,7 +2055,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "収入",
           description: "このカードの位置は収入を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zszy004e89zt7i6374a5"
+          spreadId: "cmhf1zszy004e89zt7i6374a5",
         },
         {
           id: "cmhf1zszz004h89zt4mn8zgk9",
@@ -2063,7 +2065,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "支出",
           description: "このカードの位置は支出を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zszy004e89zt7i6374a5"
+          spreadId: "cmhf1zszy004e89zt7i6374a5",
         },
         {
           id: "cmhf1zszz004i89zt309fam4p",
@@ -2073,7 +2075,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "投資運",
           description: "このカードの位置は投資運を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zszy004e89zt7i6374a5"
+          spreadId: "cmhf1zszy004e89zt7i6374a5",
         },
         {
           id: "cmhf1zszz004j89zt21yrc83g",
@@ -2083,7 +2085,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "節約法",
           description: "このカードの位置は節約法を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zszy004e89zt7i6374a5"
+          spreadId: "cmhf1zszy004e89zt7i6374a5",
         },
         {
           id: "cmhf1zszz004k89ztsdo5pvva",
@@ -2093,8 +2095,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "金運",
           description: "このカードの位置は金運を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zszy004e89zt7i6374a5"
-        }
+          spreadId: "cmhf1zszy004e89zt7i6374a5",
+        },
       ],
       level: {
         id: "cmhf1yeaw000789zttivsstx2",
@@ -2103,7 +2105,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "上級者",
         description: "タロットの知識が豊富な方向けの複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.920Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.920Z")
+        updatedAt: new Date("2025-10-31T16:13:06.920Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -2122,7 +2124,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -2130,7 +2132,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2143,10 +2145,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zuzj004n89ztdhtadjoz",
@@ -2168,7 +2170,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "あなた",
           description: "このカードの位置はあなたを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zuzj004n89ztdhtadjoz"
+          spreadId: "cmhf1zuzj004n89ztdhtadjoz",
         },
         {
           id: "cmhf1zuzj004p89ztga4f6wj5",
@@ -2178,7 +2180,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "パートナー",
           description: "このカードの位置はパートナーを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zuzj004n89ztdhtadjoz"
+          spreadId: "cmhf1zuzj004n89ztdhtadjoz",
         },
         {
           id: "cmhf1zuzj004q89zt6rwdh9dh",
@@ -2188,7 +2190,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "強み",
           description: "このカードの位置は強みを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zuzj004n89ztdhtadjoz"
+          spreadId: "cmhf1zuzj004n89ztdhtadjoz",
         },
         {
           id: "cmhf1zuzj004r89ztrmq81zmv",
@@ -2198,7 +2200,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "課題",
           description: "このカードの位置は課題を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zuzj004n89ztdhtadjoz"
+          spreadId: "cmhf1zuzj004n89ztdhtadjoz",
         },
         {
           id: "cmhf1zuzj004s89ztr6in9ki2",
@@ -2208,7 +2210,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "アドバイス",
           description: "このカードの位置はアドバイスを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zuzj004n89ztdhtadjoz"
+          spreadId: "cmhf1zuzj004n89ztdhtadjoz",
         },
         {
           id: "cmhf1zuzk004t89ztdh6ti3tp",
@@ -2218,8 +2220,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "未来",
           description: "このカードの位置は未来を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zuzj004n89ztdhtadjoz"
-        }
+          spreadId: "cmhf1zuzj004n89ztdhtadjoz",
+        },
       ],
       level: {
         id: "cmhf1yeaw000789zttivsstx2",
@@ -2228,7 +2230,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "上級者",
         description: "タロットの知識が豊富な方向けの複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.920Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.920Z")
+        updatedAt: new Date("2025-10-31T16:13:06.920Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -2247,7 +2249,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -2255,7 +2257,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2268,10 +2270,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zwrf004w89zt87m2tmyt",
@@ -2293,7 +2295,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在の状態",
           description: "このカードの位置は現在の状態を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zwrf004w89zt87m2tmyt"
+          spreadId: "cmhf1zwrf004w89zt87m2tmyt",
         },
         {
           id: "cmhf1zwrf004y89ztbf5vn5bg",
@@ -2303,7 +2305,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "根本原因",
           description: "このカードの位置は根本原因を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zwrf004w89zt87m2tmyt"
+          spreadId: "cmhf1zwrf004w89zt87m2tmyt",
         },
         {
           id: "cmhf1zwrf004z89zt2eqsgyro",
@@ -2313,7 +2315,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "治療法",
           description: "このカードの位置は治療法を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zwrf004w89zt87m2tmyt"
+          spreadId: "cmhf1zwrf004w89zt87m2tmyt",
         },
         {
           id: "cmhf1zwrf005089ztu5e72jzg",
@@ -2323,7 +2325,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "心の癒し",
           description: "このカードの位置は心の癒しを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zwrf004w89zt87m2tmyt"
+          spreadId: "cmhf1zwrf004w89zt87m2tmyt",
         },
         {
           id: "cmhf1zwrf005189zthosqun5j",
@@ -2333,7 +2335,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "体の癒し",
           description: "このカードの位置は体の癒しを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zwrf004w89zt87m2tmyt"
+          spreadId: "cmhf1zwrf004w89zt87m2tmyt",
         },
         {
           id: "cmhf1zwrf005289ztzy7l47js",
@@ -2343,8 +2345,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "完全回復",
           description: "このカードの位置は完全回復を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zwrf004w89zt87m2tmyt"
-        }
+          spreadId: "cmhf1zwrf004w89zt87m2tmyt",
+        },
       ],
       level: {
         id: "cmhf1yeaw000789zttivsstx2",
@@ -2353,7 +2355,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "上級者",
         description: "タロットの知識が豊富な方向けの複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.920Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.920Z")
+        updatedAt: new Date("2025-10-31T16:13:06.920Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -2372,7 +2374,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -2380,7 +2382,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2393,10 +2395,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf1zyp0005589ztucfep7c9",
@@ -2418,7 +2420,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現状",
           description: "このカードの位置は現状を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
         },
         {
           id: "cmhf1zyp1005789ztfgnmhpsa",
@@ -2428,7 +2430,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "課題",
           description: "このカードの位置は課題を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
         },
         {
           id: "cmhf1zyp1005889zt4etbo4ua",
@@ -2438,7 +2440,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "強み",
           description: "このカードの位置は強みを示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
         },
         {
           id: "cmhf1zyp1005989zt9lrdz6lk",
@@ -2448,7 +2450,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "長期目標",
           description: "このカードの位置は長期目標を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
         },
         {
           id: "cmhf1zyp1005a89zt0b0obws6",
@@ -2458,7 +2460,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "行動",
           description: "このカードの位置は行動を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
         },
         {
           id: "cmhf1zyp1005b89ztrhga44so",
@@ -2468,7 +2470,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "機会",
           description: "このカードの位置は機会を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
         },
         {
           id: "cmhf1zyp1005c89zt6bq02xwx",
@@ -2478,8 +2480,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "結果",
           description: "このカードの位置は結果を示しています",
           isHorizontal: false,
-          spreadId: "cmhf1zyp0005589ztucfep7c9"
-        }
+          spreadId: "cmhf1zyp0005589ztucfep7c9",
+        },
       ],
       level: {
         id: "cmhf1yeaw000789zttivsstx2",
@@ -2488,7 +2490,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "上級者",
         description: "タロットの知識が豊富な方向けの複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.920Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.920Z")
+        updatedAt: new Date("2025-10-31T16:13:06.920Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -2507,7 +2509,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -2515,7 +2517,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2528,8 +2530,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf1zyp1005d89ztozelw3sv",
@@ -2541,10 +2543,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf2013k005h89ztiuk9pmjd",
@@ -2566,7 +2568,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現状",
           description: "このカードの位置は現状を示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
         },
         {
           id: "cmhf2013k005j89ztjaf1ts8u",
@@ -2576,7 +2578,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "精神",
           description: "このカードの位置は精神を示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
         },
         {
           id: "cmhf2013k005k89zt39zxn4ka",
@@ -2586,7 +2588,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "肉体",
           description: "このカードの位置は肉体を示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
         },
         {
           id: "cmhf2013k005l89ztff8xax3r",
@@ -2596,7 +2598,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "行動",
           description: "このカードの位置は行動を示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
         },
         {
           id: "cmhf2013k005m89zt1bgrzxdx",
@@ -2606,7 +2608,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "栄養",
           description: "このカードの位置は栄養を示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
         },
         {
           id: "cmhf2013k005n89ztw2bys0x0",
@@ -2616,7 +2618,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "運動",
           description: "このカードの位置は運動を示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
         },
         {
           id: "cmhf2013k005o89ztt7w3tm31",
@@ -2626,8 +2628,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "バランス",
           description: "このカードの位置はバランスを示しています",
           isHorizontal: false,
-          spreadId: "cmhf2013k005h89ztiuk9pmjd"
-        }
+          spreadId: "cmhf2013k005h89ztiuk9pmjd",
+        },
       ],
       level: {
         id: "cmhf1yeaw000789zttivsstx2",
@@ -2636,7 +2638,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "上級者",
         description: "タロットの知識が豊富な方向けの複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.920Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.920Z")
+        updatedAt: new Date("2025-10-31T16:13:06.920Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -2655,7 +2657,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -2663,7 +2665,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2676,10 +2678,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf202vj005r89zt8t00qmv3",
@@ -2701,7 +2703,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "過去",
           description: "このカードの位置は過去を示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
         },
         {
           id: "cmhf202vk005t89zttpbx4btl",
@@ -2711,7 +2713,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在",
           description: "このカードの位置は現在を示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
         },
         {
           id: "cmhf202vk005u89zta5lcqwzo",
@@ -2721,7 +2723,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "隠れた影響",
           description: "このカードの位置は隠れた影響を示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
         },
         {
           id: "cmhf202vk005v89zt5v8lc7ob",
@@ -2731,7 +2733,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "あなたのアプローチ",
           description: "このカードの位置はあなたのアプローチを示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
         },
         {
           id: "cmhf202vk005w89ztmp4dos7e",
@@ -2741,7 +2743,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "周囲の影響",
           description: "このカードの位置は周囲の影響を示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
         },
         {
           id: "cmhf202vk005x89ztcaz4scqn",
@@ -2751,7 +2753,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "すべきこと",
           description: "このカードの位置はすべきことを示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
         },
         {
           id: "cmhf202vk005y89ztraa1na5i",
@@ -2761,8 +2763,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "結果",
           description: "このカードの位置は結果を示しています",
           isHorizontal: false,
-          spreadId: "cmhf202vj005r89zt8t00qmv3"
-        }
+          spreadId: "cmhf202vj005r89zt8t00qmv3",
+        },
       ],
       level: {
         id: "cmhf1yeaw000789zttivsstx2",
@@ -2771,7 +2773,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "上級者",
         description: "タロットの知識が豊富な方向けの複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:06.920Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.920Z")
+        updatedAt: new Date("2025-10-31T16:13:06.920Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -2790,7 +2792,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -2798,7 +2800,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -2811,8 +2813,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "スピリチュアル",
             description: "スピリチュアルに関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:25.424Z"),
-            updatedAt: new Date("2025-10-31T16:14:25.424Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+          },
         },
         {
           id: "cmhf202vl006d89ztkgzlzg2u",
@@ -2824,8 +2826,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "心理",
             description: "心理に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:06.877Z"),
-            updatedAt: new Date("2025-10-31T16:14:06.877Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:06.877Z"),
+          },
         },
         {
           id: "cmhf202vl006b89ztwi5yxqfj",
@@ -2837,8 +2839,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
         },
         {
           id: "cmhf202vl006989zt75i4cltd",
@@ -2850,8 +2852,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf202vk006789ztoma1cbnz",
@@ -2863,8 +2865,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf202vk006589ztq6e7ml72",
@@ -2876,8 +2878,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf202vk006389zt9grfdjla",
@@ -2889,8 +2891,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf202vk006189ztcmbrpka4",
@@ -2902,8 +2904,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf202vk005z89zt23l04ya9",
@@ -2915,10 +2917,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf20809006h89ztk2u4j3bh",
@@ -2940,7 +2942,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "現在の状況",
           description: "このカードの位置は現在の状況を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006j89ztzdtof4p9",
@@ -2950,7 +2952,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "課題・障害",
           description: "このカードの位置は課題・障害を示しています",
           isHorizontal: true,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006k89ztxeab0ll4",
@@ -2960,7 +2962,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "理想・目標",
           description: "このカードの位置は理想・目標を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006l89ztlu3y7icm",
@@ -2970,7 +2972,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "潜在意識",
           description: "このカードの位置は潜在意識を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006m89zt944cnr1r",
@@ -2980,7 +2982,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "過去の影響",
           description: "このカードの位置は過去の影響を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006n89ztafn6hlf0",
@@ -2990,7 +2992,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "近い未来",
           description: "このカードの位置は近い未来を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006o89zt7eoq4dbr",
@@ -3000,7 +3002,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "あなたのアプローチ",
           description: "このカードの位置はあなたのアプローチを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006p89ztl9kbmi1d",
@@ -3010,7 +3012,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "周囲の影響",
           description: "このカードの位置は周囲の影響を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006q89ztdwnmu90p",
@@ -3020,7 +3022,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "希望・恐れ",
           description: "このカードの位置は希望・恐れを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
         },
         {
           id: "cmhf20809006r89ztfrws54ea",
@@ -3030,8 +3032,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "最終結果",
           description: "このカードの位置は最終結果を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20809006h89ztk2u4j3bh"
-        }
+          spreadId: "cmhf20809006h89ztk2u4j3bh",
+        },
       ],
       level: {
         id: "cmhf1yeg2000889ztz3svycaq",
@@ -3040,7 +3042,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "最上級",
         description: "熟練者向けの高度な分析が必要な複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:07.107Z"),
-        updatedAt: new Date("2025-10-31T16:13:07.107Z")
+        updatedAt: new Date("2025-10-31T16:13:07.107Z"),
       },
       plan: {
         id: "cmhf1ydcv000289ztvb6vrs67",
@@ -3059,7 +3061,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -3067,7 +3069,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
       },
       categories: [
         {
@@ -3080,8 +3082,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "スピリチュアル",
             description: "スピリチュアルに関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:25.424Z"),
-            updatedAt: new Date("2025-10-31T16:14:25.424Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+          },
         },
         {
           id: "cmhf2080a007689ztabbpppfq",
@@ -3093,8 +3095,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "心理",
             description: "心理に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:06.877Z"),
-            updatedAt: new Date("2025-10-31T16:14:06.877Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:06.877Z"),
+          },
         },
         {
           id: "cmhf2080a007489zt78cetuku",
@@ -3106,8 +3108,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
         },
         {
           id: "cmhf2080a007289ztfi6ta7tn",
@@ -3119,8 +3121,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf2080a007089ztgsib7m7k",
@@ -3132,8 +3134,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf2080a006y89ztlltjcx0x",
@@ -3145,8 +3147,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf2080a006w89ztjtqjawxl",
@@ -3158,8 +3160,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf2080a006u89ztnj5e5cpc",
@@ -3171,8 +3173,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20809006s89zty4za4sxa",
@@ -3184,10 +3186,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf20dcb007a89zty78nibjl",
@@ -3209,7 +3211,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "1月",
           description: "このカードの位置は1月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcb007c89zt9hsr886q",
@@ -3219,7 +3221,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "2月",
           description: "このカードの位置は2月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcb007d89zt8u50o0sf",
@@ -3229,7 +3231,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "3月",
           description: "このカードの位置は3月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcb007e89zt4yokh8pb",
@@ -3239,7 +3241,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "4月",
           description: "このカードの位置は4月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcb007f89ztwdcp71pv",
@@ -3249,7 +3251,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "5月",
           description: "このカードの位置は5月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007g89ztmivviudc",
@@ -3259,7 +3261,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "6月",
           description: "このカードの位置は6月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007h89zt1489r8ou",
@@ -3269,7 +3271,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "7月",
           description: "このカードの位置は7月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007i89ztth15p3p7",
@@ -3279,7 +3281,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "8月",
           description: "このカードの位置は8月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007j89ztwj6r3j1j",
@@ -3289,7 +3291,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "9月",
           description: "このカードの位置は9月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007k89ztoza6r0k8",
@@ -3299,7 +3301,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "10月",
           description: "このカードの位置は10月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007l89zt0xooqq4g",
@@ -3309,7 +3311,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "11月",
           description: "このカードの位置は11月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
+          spreadId: "cmhf20dcb007a89zty78nibjl",
         },
         {
           id: "cmhf20dcc007m89zt0r92vttg",
@@ -3319,8 +3321,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "12月",
           description: "このカードの位置は12月を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20dcb007a89zty78nibjl"
-        }
+          spreadId: "cmhf20dcb007a89zty78nibjl",
+        },
       ],
       level: {
         id: "cmhf1yeg2000889ztz3svycaq",
@@ -3329,7 +3331,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "最上級",
         description: "熟練者向けの高度な分析が必要な複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:07.107Z"),
-        updatedAt: new Date("2025-10-31T16:13:07.107Z")
+        updatedAt: new Date("2025-10-31T16:13:07.107Z"),
       },
       plan: {
         id: "cmhf1ydn7000489zt4phmbrtm",
@@ -3350,7 +3352,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回詳細パーソナル占いが利用可能(TBD)",
           "*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -3358,7 +3360,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:06.067Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.067Z")
+        updatedAt: new Date("2025-10-31T16:13:06.067Z"),
       },
       categories: [
         {
@@ -3371,8 +3373,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "スピリチュアル",
             description: "スピリチュアルに関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:25.424Z"),
-            updatedAt: new Date("2025-10-31T16:14:25.424Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+          },
         },
         {
           id: "cmhf20dcc008189zt8mr70333",
@@ -3384,8 +3386,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "心理",
             description: "心理に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:06.877Z"),
-            updatedAt: new Date("2025-10-31T16:14:06.877Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:06.877Z"),
+          },
         },
         {
           id: "cmhf20dcc007z89zt09eoei4k",
@@ -3397,8 +3399,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
         },
         {
           id: "cmhf20dcc007x89zthtbvxra2",
@@ -3410,8 +3412,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20dcc007v89ztr0nkuc72",
@@ -3423,8 +3425,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20dcc007t89ztk3zamhx7",
@@ -3436,8 +3438,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20dcc007r89zt17aoy546",
@@ -3449,8 +3451,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20dcc007p89ztac15vsan",
@@ -3462,8 +3464,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20dcc007n89ztil59z4aw",
@@ -3475,10 +3477,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf20hyh008589ztcaei6ssm",
@@ -3500,7 +3502,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "自己",
           description: "このカードの位置は自己を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008789ztui1x52a9",
@@ -3510,7 +3512,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "金銭",
           description: "このカードの位置は金銭を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008889zti9789x8s",
@@ -3520,7 +3522,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "コミュニケーション",
           description: "このカードの位置はコミュニケーションを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008989ztwwwgmuny",
@@ -3530,7 +3532,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "家庭",
           description: "このカードの位置は家庭を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008a89zttk62owh6",
@@ -3540,7 +3542,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "創造",
           description: "このカードの位置は創造を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008b89ztphoj8e0s",
@@ -3550,7 +3552,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "健康",
           description: "このカードの位置は健康を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008c89zty18dp158",
@@ -3560,7 +3562,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "パートナーシップ",
           description: "このカードの位置はパートナーシップを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008d89ztoekg784z",
@@ -3570,7 +3572,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "変化",
           description: "このカードの位置は変化を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008e89ztd9nxumn3",
@@ -3580,7 +3582,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "哲学",
           description: "このカードの位置は哲学を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008f89zt7ims9xqn",
@@ -3590,7 +3592,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "社会",
           description: "このカードの位置は社会を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008g89ztdij009og",
@@ -3600,7 +3602,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "友人",
           description: "このカードの位置は友人を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
         },
         {
           id: "cmhf20hyi008h89zt4reub8ai",
@@ -3610,8 +3612,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "精神",
           description: "このカードの位置は精神を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20hyh008589ztcaei6ssm"
-        }
+          spreadId: "cmhf20hyh008589ztcaei6ssm",
+        },
       ],
       level: {
         id: "cmhf1yeg2000889ztz3svycaq",
@@ -3620,7 +3622,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "最上級",
         description: "熟練者向けの高度な分析が必要な複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:07.107Z"),
-        updatedAt: new Date("2025-10-31T16:13:07.107Z")
+        updatedAt: new Date("2025-10-31T16:13:07.107Z"),
       },
       plan: {
         id: "cmhf1ydn7000489zt4phmbrtm",
@@ -3641,7 +3643,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回詳細パーソナル占いが利用可能(TBD)",
           "*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -3649,7 +3651,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:06.067Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.067Z")
+        updatedAt: new Date("2025-10-31T16:13:06.067Z"),
       },
       categories: [
         {
@@ -3662,8 +3664,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "スピリチュアル",
             description: "スピリチュアルに関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:25.424Z"),
-            updatedAt: new Date("2025-10-31T16:14:25.424Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+          },
         },
         {
           id: "cmhf20hyi008w89zt2qrqzsv6",
@@ -3675,8 +3677,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "心理",
             description: "心理に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:06.877Z"),
-            updatedAt: new Date("2025-10-31T16:14:06.877Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:06.877Z"),
+          },
         },
         {
           id: "cmhf20hyi008u89ztotwp4i4z",
@@ -3688,8 +3690,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
         },
         {
           id: "cmhf20hyi008s89zt5egvy7dc",
@@ -3701,8 +3703,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20hyi008q89ztma62idl0",
@@ -3714,8 +3716,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20hyi008o89zt497j8gb9",
@@ -3727,8 +3729,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20hyi008m89ztgis37qq6",
@@ -3740,8 +3742,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20hyi008k89ztvb94i3qq",
@@ -3753,8 +3755,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20hyi008i89zt5od61vve",
@@ -3766,10 +3768,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf20mps009089zt9bs4f2l7",
@@ -3791,7 +3793,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ケテル",
           description: "このカードの位置はケテルを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009289zti59q3u5m",
@@ -3801,7 +3803,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "コクマー",
           description: "このカードの位置はコクマーを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009389ztx7t8919z",
@@ -3811,7 +3813,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ビナー",
           description: "このカードの位置はビナーを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009489ztzwbjw3qr",
@@ -3821,7 +3823,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ケセド",
           description: "このカードの位置はケセドを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009589zt9448do9y",
@@ -3831,7 +3833,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ゲブラー",
           description: "このカードの位置はゲブラーを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009689zt7c7m1h83",
@@ -3841,7 +3843,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ティファレト",
           description: "このカードの位置はティファレトを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009789zts6n7k896",
@@ -3851,7 +3853,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ネツァク",
           description: "このカードの位置はネツァクを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009889ztibcua4r5",
@@ -3861,7 +3863,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "ホド",
           description: "このカードの位置はホドを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009989ztolm6lt3b",
@@ -3871,7 +3873,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "イエソド",
           description: "このカードの位置はイエソドを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
         },
         {
           id: "cmhf20mps009a89ztuqqijj0n",
@@ -3881,8 +3883,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "マルクト",
           description: "このカードの位置はマルクトを示しています",
           isHorizontal: false,
-          spreadId: "cmhf20mps009089zt9bs4f2l7"
-        }
+          spreadId: "cmhf20mps009089zt9bs4f2l7",
+        },
       ],
       level: {
         id: "cmhf1yeg2000889ztz3svycaq",
@@ -3891,7 +3893,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "最上級",
         description: "熟練者向けの高度な分析が必要な複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:07.107Z"),
-        updatedAt: new Date("2025-10-31T16:13:07.107Z")
+        updatedAt: new Date("2025-10-31T16:13:07.107Z"),
       },
       plan: {
         id: "cmhf1ydn7000489zt4phmbrtm",
@@ -3912,7 +3914,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回詳細パーソナル占いが利用可能(TBD)",
           "*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -3920,7 +3922,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:06.067Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.067Z")
+        updatedAt: new Date("2025-10-31T16:13:06.067Z"),
       },
       categories: [
         {
@@ -3933,10 +3935,10 @@ export const DEFAULT_MASTER_DATA = {
             name: "スピリチュアル",
             description: "スピリチュアルに関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:25.424Z"),
-            updatedAt: new Date("2025-10-31T16:14:25.424Z")
-          }
-        }
-      ]
+            updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+          },
+        },
+      ],
     },
     {
       id: "cmhf20oit009d89zt5tei2kd6",
@@ -3958,7 +3960,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置1",
           description: "このカードの位置は位置1を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009f89zts8d4gusv",
@@ -3968,7 +3970,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置2",
           description: "このカードの位置は位置2を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009g89zt9g9hkj21",
@@ -3978,7 +3980,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置3",
           description: "このカードの位置は位置3を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009h89zt4dxe4vc2",
@@ -3988,7 +3990,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置4",
           description: "このカードの位置は位置4を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009i89ztggdkevzj",
@@ -3998,7 +4000,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置5",
           description: "このカードの位置は位置5を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009j89zt5lslrvnn",
@@ -4008,7 +4010,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置6",
           description: "このカードの位置は位置6を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009k89zt426iyqj6",
@@ -4018,7 +4020,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置7",
           description: "このカードの位置は位置7を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009l89ztvzo0am4o",
@@ -4028,7 +4030,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置8",
           description: "このカードの位置は位置8を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009m89ztaekktsdv",
@@ -4038,7 +4040,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置9",
           description: "このカードの位置は位置9を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009n89ztjoxtg87w",
@@ -4048,7 +4050,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置10",
           description: "このカードの位置は位置10を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009o89zt50dl8fm0",
@@ -4058,7 +4060,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置11",
           description: "このカードの位置は位置11を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009p89ztresun6ye",
@@ -4068,7 +4070,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置12",
           description: "このカードの位置は位置12を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009q89ztn3bandu8",
@@ -4078,7 +4080,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置13",
           description: "このカードの位置は位置13を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009r89ztwayof7vm",
@@ -4088,7 +4090,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置14",
           description: "このカードの位置は位置14を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009s89ztaetqd17z",
@@ -4098,7 +4100,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置15",
           description: "このカードの位置は位置15を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009t89ztbkdmdp3a",
@@ -4108,7 +4110,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置16",
           description: "このカードの位置は位置16を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009u89zt2tmxjlwl",
@@ -4118,7 +4120,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置17",
           description: "このカードの位置は位置17を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009v89ztv0sovgsm",
@@ -4128,7 +4130,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置18",
           description: "このカードの位置は位置18を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009w89ztqjd8ml7e",
@@ -4138,7 +4140,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置19",
           description: "このカードの位置は位置19を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009x89ztkh8i8swx",
@@ -4148,7 +4150,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置20",
           description: "このカードの位置は位置20を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009y89zthw8fbh70",
@@ -4158,7 +4160,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置21",
           description: "このカードの位置は位置21を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu009z89ztn1qbaiup",
@@ -4168,7 +4170,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置22",
           description: "このカードの位置は位置22を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu00a089ztucjhmtgm",
@@ -4178,7 +4180,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置23",
           description: "このカードの位置は位置23を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu00a189ztrga70vzc",
@@ -4188,7 +4190,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置24",
           description: "このカードの位置は位置24を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu00a289ztzcuwhs5a",
@@ -4198,7 +4200,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置25",
           description: "このカードの位置は位置25を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu00a389zt0f8vwc6b",
@@ -4208,7 +4210,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置26",
           description: "このカードの位置は位置26を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiu00a489ztjyx97msq",
@@ -4218,7 +4220,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置27",
           description: "このカードの位置は位置27を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00a589ztjob2vbpk",
@@ -4228,7 +4230,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置28",
           description: "このカードの位置は位置28を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00a689zt2j5vmfpu",
@@ -4238,7 +4240,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置29",
           description: "このカードの位置は位置29を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00a789zt7ao3qrdc",
@@ -4248,7 +4250,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置30",
           description: "このカードの位置は位置30を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00a889zt5iqlk57y",
@@ -4258,7 +4260,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置31",
           description: "このカードの位置は位置31を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00a989zt8mabb8z3",
@@ -4268,7 +4270,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置32",
           description: "このカードの位置は位置32を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00aa89zth5r549qt",
@@ -4278,7 +4280,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置33",
           description: "このカードの位置は位置33を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00ab89ztqm8ege7i",
@@ -4288,7 +4290,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置34",
           description: "このカードの位置は位置34を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00ac89zt28xvrugh",
@@ -4298,7 +4300,7 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置35",
           description: "このカードの位置は位置35を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
         },
         {
           id: "cmhf20oiv00ad89zt30wi2zjt",
@@ -4308,8 +4310,8 @@ export const DEFAULT_MASTER_DATA = {
           position: "位置36",
           description: "このカードの位置は位置36を示しています",
           isHorizontal: false,
-          spreadId: "cmhf20oit009d89zt5tei2kd6"
-        }
+          spreadId: "cmhf20oit009d89zt5tei2kd6",
+        },
       ],
       level: {
         id: "cmhf1yeg2000889ztz3svycaq",
@@ -4318,7 +4320,7 @@ export const DEFAULT_MASTER_DATA = {
         name: "最上級",
         description: "熟練者向けの高度な分析が必要な複雑なスプレッド",
         createdAt: new Date("2025-10-31T16:13:07.107Z"),
-        updatedAt: new Date("2025-10-31T16:13:07.107Z")
+        updatedAt: new Date("2025-10-31T16:13:07.107Z"),
       },
       plan: {
         id: "cmhf1ydn7000489zt4phmbrtm",
@@ -4339,7 +4341,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回詳細パーソナル占いが利用可能(TBD)",
           "*詳細パーソナル占いでは、占う内容・ユーザー状況の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -4347,7 +4349,7 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:06.067Z"),
-        updatedAt: new Date("2025-10-31T16:13:06.067Z")
+        updatedAt: new Date("2025-10-31T16:13:06.067Z"),
       },
       categories: [
         {
@@ -4360,8 +4362,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "スピリチュアル",
             description: "スピリチュアルに関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:25.424Z"),
-            updatedAt: new Date("2025-10-31T16:14:25.424Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:25.424Z"),
+          },
         },
         {
           id: "cmhf20oiw00as89ztvunlkuaz",
@@ -4373,8 +4375,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "心理",
             description: "心理に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:14:06.877Z"),
-            updatedAt: new Date("2025-10-31T16:14:06.877Z")
-          }
+            updatedAt: new Date("2025-10-31T16:14:06.877Z"),
+          },
         },
         {
           id: "cmhf20oiv00aq89ztw4u67zyh",
@@ -4386,8 +4388,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "人間関係",
             description: "人間関係に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:44.794Z"),
-            updatedAt: new Date("2025-10-31T16:13:44.794Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:44.794Z"),
+          },
         },
         {
           id: "cmhf20oiv00ao89ztq1nc8qd4",
@@ -4399,8 +4401,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "金運",
             description: "金運に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20oiv00am89ztoxwikhwz",
@@ -4412,8 +4414,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "健康",
             description: "健康に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20oiv00ak89ztf51qqilo",
@@ -4425,8 +4427,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "学業",
             description: "学業に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20oiv00ai89ztovzni43x",
@@ -4438,8 +4440,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "今日の運勢",
             description: "今日の運勢に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20oiv00ag89ztcuc0w9pa",
@@ -4451,8 +4453,8 @@ export const DEFAULT_MASTER_DATA = {
             name: "仕事",
             description: "仕事に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
         },
         {
           id: "cmhf20oiv00ae89zt74wpc6ew",
@@ -4464,11 +4466,11 @@ export const DEFAULT_MASTER_DATA = {
             name: "恋愛",
             description: "恋愛に関するタロットリーディング",
             createdAt: new Date("2025-10-31T16:13:14.766Z"),
-            updatedAt: new Date("2025-10-31T16:13:14.766Z")
-          }
-        }
-      ]
-    }
+            updatedAt: new Date("2025-10-31T16:13:14.766Z"),
+          },
+        },
+      ],
+    },
   ],
   decks: [
     {
@@ -4479,7 +4481,7 @@ export const DEFAULT_MASTER_DATA = {
       totalCards: 78,
       sources: [
         "Biddy Tarot",
-        "Labyrinthos Academy"
+        "Labyrinthos Academy",
       ],
       optimizedFor: "プロンプト生成",
       primaryFocus: "恋愛リーディング",
@@ -4487,7 +4489,7 @@ export const DEFAULT_MASTER_DATA = {
         "恋愛",
         "仕事",
         "金運",
-        "健康"
+        "健康",
       ],
       status: "完了",
       language: "ja",
@@ -4510,13 +4512,13 @@ export const DEFAULT_MASTER_DATA = {
             "自発性",
             "自由な精神",
             "信頼の飛躍",
-            "可能性"
+            "可能性",
           ],
           reversedKeywords: [
             "無謀さ",
             "踏みとどまる",
             "判断力の欠如",
-            "コミットメントへの恐れ"
+            "コミットメントへの恐れ",
           ],
           promptContext: "愚者は新たな始まりと無限の可能性を表します。リーディングでは、新たなスタートと前途の旅への信頼のエネルギーを強調しましょう。",
           language: "ja",
@@ -4532,7 +4534,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00ax89ztn1fq5u2j",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00az89zt12yd7onp",
@@ -4542,7 +4544,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00ax89ztn1fq5u2j",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00b089zt8e7s17hy",
@@ -4552,7 +4554,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00ax89ztn1fq5u2j",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00b189zt7imrtmg7",
@@ -4562,9 +4564,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00ax89ztn1fq5u2j",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00b289ztwuktrb1t",
@@ -4582,13 +4584,13 @@ export const DEFAULT_MASTER_DATA = {
             "技術",
             "機知",
             "力",
-            "行動"
+            "行動",
           ],
           reversedKeywords: [
             "操作",
             "詐欺",
             "使われていない潜在能力",
-            "集中力の欠如"
+            "集中力の欠如",
           ],
           promptContext: "魔術師は個人的な力と願望を顕現させる能力を表します。行動を起こし、利用可能な資源を使うことに焦点を当てましょう。",
           language: "ja",
@@ -4604,7 +4606,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b289ztwuktrb1t",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00b489ztyhlcm808",
@@ -4614,7 +4616,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b289ztwuktrb1t",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00b589ztabn8o12x",
@@ -4624,7 +4626,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b289ztwuktrb1t",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00b689ztai2w0fi4",
@@ -4634,9 +4636,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b289ztwuktrb1t",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00b789zty0od8uux",
@@ -4653,13 +4655,13 @@ export const DEFAULT_MASTER_DATA = {
             "神秘",
             "潜在意識",
             "内なる知恵",
-            "精神性"
+            "精神性",
           ],
           reversedKeywords: [
             "切断された直感",
             "秘密",
             "抑圧された感情",
-            "内なる声の欠如"
+            "内なる声の欠如",
           ],
           promptContext: "女教皇は内なる知恵と直感を表します。質問者が内側を見て、自分の直感を信頼するよう促しましょう。",
           language: "ja",
@@ -4675,7 +4677,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b789zty0od8uux",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00b989zt8cu436ve",
@@ -4685,7 +4687,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b789zty0od8uux",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ba89ztjrhok8yh",
@@ -4695,7 +4697,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b789zty0od8uux",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bb89ztfnpr132v",
@@ -4705,9 +4707,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00b789zty0od8uux",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00bc89ztoltw03wn",
@@ -4725,14 +4727,14 @@ export const DEFAULT_MASTER_DATA = {
             "豊かさ",
             "自然",
             "育成",
-            "創造性"
+            "創造性",
           ],
           reversedKeywords: [
             "依存",
             "過保護",
             "創造的なブロック",
             "放置",
-            "空虚"
+            "空虚",
           ],
           promptContext: "女帝は豊かさ、創造性、育成のエネルギーを表します。成長と女性的なエネルギーの力を強調しましょう。",
           language: "ja",
@@ -4748,7 +4750,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bc89ztoltw03wn",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00be89ztgx9yx6pe",
@@ -4758,7 +4760,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bc89ztoltw03wn",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bf89ztfrod7zh1",
@@ -4768,7 +4770,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bc89ztoltw03wn",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bg89ztw63q66w9",
@@ -4778,9 +4780,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bc89ztoltw03wn",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00bh89ztows2ew2a",
@@ -4798,14 +4800,14 @@ export const DEFAULT_MASTER_DATA = {
             "コントロール",
             "リーダーシップ",
             "父性",
-            "安定性"
+            "安定性",
           ],
           reversedKeywords: [
             "圧制",
             "硬直性",
             "権力の乱用",
             "規律の欠如",
-            "支配的"
+            "支配的",
           ],
           promptContext: "皇帝は構造、権威、男性的エネルギーを表します。安定性とコントロールを取ることに焦点を当てましょう。",
           language: "ja",
@@ -4821,7 +4823,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bh89ztows2ew2a",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bj89ztzgramw05",
@@ -4831,7 +4833,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bh89ztows2ew2a",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bk89ztuwptld32",
@@ -4841,7 +4843,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bh89ztows2ew2a",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bl89ztpxvp97c9",
@@ -4851,9 +4853,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bh89ztows2ew2a",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00bm89ztps87ye8r",
@@ -4871,14 +4873,14 @@ export const DEFAULT_MASTER_DATA = {
             "精神的指導",
             "教育",
             "制度",
-            "指導"
+            "指導",
           ],
           reversedKeywords: [
             "反抗",
             "非従来的",
             "常識への挑戦",
             "個人的信念",
-            "制限"
+            "制限",
           ],
           promptContext: "教皇は伝統と精神的な指導を表します。従来の知恵と個人的な真実の必要性の両方を考慮しましょう。",
           language: "ja",
@@ -4894,7 +4896,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bm89ztps87ye8r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bo89ztx51bdgvw",
@@ -4904,7 +4906,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bm89ztps87ye8r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bp89ztpvk6qh7z",
@@ -4914,7 +4916,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bm89ztps87ye8r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bq89ztp4p0sv1t",
@@ -4924,9 +4926,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bm89ztps87ye8r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00br89zt746753vk",
@@ -4945,14 +4947,14 @@ export const DEFAULT_MASTER_DATA = {
             "選択",
             "調和",
             "魅力",
-            "ソウルメイト"
+            "ソウルメイト",
           ],
           reversedKeywords: [
             "不協和",
             "不均衡",
             "ミスアライメント",
             "悪い選択",
-            "別離"
+            "別離",
           ],
           promptContext: "恋人は重要な選択とパートナーシップを表します。調和、魅力、価値観の整合性に焦点を当てましょう。",
           language: "ja",
@@ -4968,7 +4970,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00br89zt746753vk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bt89ztg18yj7gq",
@@ -4978,7 +4980,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00br89zt746753vk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bu89zt2ubdemxw",
@@ -4988,7 +4990,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00br89zt746753vk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bv89zt811bozvy",
@@ -4998,9 +5000,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00br89zt746753vk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00bw89ztl6qfgzvj",
@@ -5018,13 +5020,13 @@ export const DEFAULT_MASTER_DATA = {
             "決意",
             "コントロール",
             "旅",
-            "勝利"
+            "勝利",
           ],
           reversedKeywords: [
             "コントロールの欠如",
             "方向性の欠如",
             "攻撃性",
-            "敗北"
+            "敗北",
           ],
           promptContext: "戦車は決意とコントロールを通じた勝利を表します。前進の勢いと障害の克服を強調しましょう。",
           language: "ja",
@@ -5040,7 +5042,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bw89ztl6qfgzvj",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00by89zty7bmznmn",
@@ -5050,7 +5052,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bw89ztl6qfgzvj",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00bz89ztalrxuhl2",
@@ -5060,7 +5062,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bw89ztl6qfgzvj",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00c089ztlkhizgi8",
@@ -5070,9 +5072,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00bw89ztl6qfgzvj",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00c189ztciu57bev",
@@ -5090,14 +5092,14 @@ export const DEFAULT_MASTER_DATA = {
             "慈悲",
             "忍耐",
             "穏やかなコントロール",
-            "回復力"
+            "回復力",
           ],
           reversedKeywords: [
             "自己疑念",
             "弱さ",
             "不安",
             "自信の欠如",
-            "権力の乱用"
+            "権力の乱用",
           ],
           promptContext: "力は内なる力と穏やかなコントロールを表します。慈悲、忍耐、感情的な回復力に焦点を当てましょう。",
           language: "ja",
@@ -5113,7 +5115,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c189ztciu57bev",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00c389ztrzm328e8",
@@ -5123,7 +5125,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c189ztciu57bev",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00c489ztnekaryd9",
@@ -5133,7 +5135,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c189ztciu57bev",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00c589ztn73s97ti",
@@ -5143,9 +5145,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c189ztciu57bev",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00c689ztfgsyup66",
@@ -5163,14 +5165,14 @@ export const DEFAULT_MASTER_DATA = {
             "内なる導き",
             "知恵",
             "孤独",
-            "瞑想"
+            "瞑想",
           ],
           reversedKeywords: [
             "孤立",
             "寂しさ",
             "引きこもり",
             "方向性の喪失",
-            "他者の回避"
+            "他者の回避",
           ],
           promptContext: "隠者は内なる知恵と魂の探求を表します。内省と内なる真実を見つける必要性を強調しましょう。",
           language: "ja",
@@ -5186,7 +5188,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c689ztfgsyup66",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00c889zt081zrux9",
@@ -5196,7 +5198,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c689ztfgsyup66",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00c989ztnp0k0hyn",
@@ -5206,7 +5208,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c689ztfgsyup66",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ca89ztd8tt2yt9",
@@ -5216,9 +5218,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00c689ztfgsyup66",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00cb89zt337bts9u",
@@ -5237,13 +5239,13 @@ export const DEFAULT_MASTER_DATA = {
             "転機",
             "幸運",
             "カルマ",
-            "変化"
+            "変化",
           ],
           reversedKeywords: [
             "不運",
             "コントロールの欠如",
             "否定的な周期",
-            "変化への抵抗"
+            "変化への抵抗",
           ],
           promptContext: "運命の輪は運命と変化の周期を表します。宿命、タイミング、カルマ的な影響に焦点を当てましょう。",
           language: "ja",
@@ -5259,7 +5261,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cb89zt337bts9u",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cd89ztr6t2clrs",
@@ -5269,7 +5271,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cb89zt337bts9u",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ce89zteg1owdko",
@@ -5279,7 +5281,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cb89zt337bts9u",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cf89ztil6hcdpa",
@@ -5289,9 +5291,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cb89zt337bts9u",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00cg89zt70bz2jhb",
@@ -5309,14 +5311,14 @@ export const DEFAULT_MASTER_DATA = {
             "真実",
             "法",
             "バランス",
-            "因果関係"
+            "因果関係",
           ],
           reversedKeywords: [
             "不公平",
             "偏見",
             "不均衡",
             "不誠実",
-            "責任回避"
+            "責任回避",
           ],
           promptContext: "正義は真実、バランス、因果関係を表します。行動の結果と公正さの必要性に焦点を当てましょう。",
           language: "ja",
@@ -5332,7 +5334,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cg89zt70bz2jhb",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ci89ztw81r9ij8",
@@ -5342,7 +5344,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cg89zt70bz2jhb",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cj89ztmbzbt3n5",
@@ -5352,7 +5354,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cg89zt70bz2jhb",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ck89ztgnd6plx7",
@@ -5362,9 +5364,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cg89zt70bz2jhb",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00cl89ztvqfmbm95",
@@ -5382,14 +5384,14 @@ export const DEFAULT_MASTER_DATA = {
             "新たな視点",
             "放棄",
             "一時停止",
-            "降伏"
+            "降伏",
           ],
           reversedKeywords: [
             "抵抗",
             "優柔不断",
             "遅延",
             "不必要な犠牲",
-            "執着"
+            "執着",
           ],
           promptContext: "吊るされた男は放棄と新しい視点を通じた解放を表します。古い考え方を手放し、物事を違う角度から見ることの価値を強調しましょう。",
           language: "ja",
@@ -5405,7 +5407,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cl89ztvqfmbm95",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cn89zt6po990x5",
@@ -5415,7 +5417,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cl89ztvqfmbm95",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00co89zt8cd0ggzi",
@@ -5425,7 +5427,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cl89ztvqfmbm95",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cp89ztao6b5b2k",
@@ -5435,9 +5437,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cl89ztvqfmbm95",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00cq89ztf8205hqi",
@@ -5455,14 +5457,14 @@ export const DEFAULT_MASTER_DATA = {
             "変化",
             "移行",
             "放つこと",
-            "再生"
+            "再生",
           ],
           reversedKeywords: [
             "抵抗",
             "停滞",
             "執着",
             "恐怖",
-            "未完了の変化"
+            "未完了の変化",
           ],
           promptContext: "死神は終わりと変容を表します。終わりは新しい始まりをもたらすこと、そして古いものを放つことで成長が可能になることを強調しましょう。",
           language: "ja",
@@ -5478,7 +5480,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cq89ztf8205hqi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cs89ztlgj9xzwo",
@@ -5488,7 +5490,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cq89ztf8205hqi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ct89ztr5em02r7",
@@ -5498,7 +5500,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cq89ztf8205hqi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cu89ztiugfl9ab",
@@ -5508,9 +5510,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cq89ztf8205hqi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00cv89zt2ksa5rms",
@@ -5528,14 +5530,14 @@ export const DEFAULT_MASTER_DATA = {
             "節度",
             "忍耐",
             "統合",
-            "癒し"
+            "癒し",
           ],
           reversedKeywords: [
             "不均衡",
             "過剰",
             "極端",
             "焦り",
-            "不調和"
+            "不調和",
           ],
           promptContext: "節制はバランス、忍耐、調和を表します。極端を避け、異なる要素を健全に組み合わせることを強調しましょう。",
           language: "ja",
@@ -5551,7 +5553,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cv89zt2ksa5rms",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cx89ztbc75ip4f",
@@ -5561,7 +5563,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cv89zt2ksa5rms",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cy89zt2h1py0ei",
@@ -5571,7 +5573,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cv89zt2ksa5rms",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00cz89zt61xl9bms",
@@ -5581,9 +5583,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00cv89zt2ksa5rms",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00d089ztg8tl5vyi",
@@ -5602,14 +5604,14 @@ export const DEFAULT_MASTER_DATA = {
             "物質主義",
             "制限",
             "執着",
-            "影"
+            "影",
           ],
           reversedKeywords: [
             "解放",
             "独立",
             "離脱",
             "自由",
-            "力の回復"
+            "力の回復",
           ],
           promptContext: "悪魔は束縛と物質的執着を表します。制限を認識し、自らを解放する力に焦点を当てましょう。",
           language: "ja",
@@ -5625,7 +5627,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d089ztg8tl5vyi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00d289zt5dggsstm",
@@ -5635,7 +5637,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d089ztg8tl5vyi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00d389ztap4die3p",
@@ -5645,7 +5647,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d089ztg8tl5vyi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00d489ztcrsdpy75",
@@ -5655,9 +5657,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d089ztg8tl5vyi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00d589zt74ckp6az",
@@ -5675,13 +5677,13 @@ export const DEFAULT_MASTER_DATA = {
             "崩壊",
             "覚醒",
             "啓示",
-            "解放"
+            "解放",
           ],
           reversedKeywords: [
             "混乱の回避",
             "変化への抵抗",
             "緩やかな変容",
-            "恐怖"
+            "恐怖",
           ],
           promptContext: "塔は突然の崩壊と啓示を表します。混乱の中での真実の発見と最終的な解放の可能性を強調しましょう。",
           language: "ja",
@@ -5697,7 +5699,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d589zt74ckp6az",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00d789zt2pfatfeb",
@@ -5707,7 +5709,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d589zt74ckp6az",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00d889ztkwg838dz",
@@ -5717,7 +5719,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d589zt74ckp6az",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00d989ztfas6p1xh",
@@ -5727,9 +5729,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00d589zt74ckp6az",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00da89ztqluv9jpe",
@@ -5747,14 +5749,14 @@ export const DEFAULT_MASTER_DATA = {
             "更新",
             "目的",
             "精神性",
-            "癒し"
+            "癒し",
           ],
           reversedKeywords: [
             "失望",
             "絶望",
             "落胆",
             "無気力",
-            "希望の喪失"
+            "希望の喪失",
           ],
           promptContext: "星は希望、癒し、インスピレーションを表します。困難な時期の後の更新と明るい未来の約束に焦点を当てましょう。",
           language: "ja",
@@ -5770,7 +5772,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00da89ztqluv9jpe",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dc89zttauaqyw6",
@@ -5780,7 +5782,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00da89ztqluv9jpe",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dd89ztg81d9xsw",
@@ -5790,7 +5792,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00da89ztqluv9jpe",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00de89zt975vq5o5",
@@ -5800,9 +5802,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00da89ztqluv9jpe",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00df89ztw7w9z4ml",
@@ -5820,14 +5822,14 @@ export const DEFAULT_MASTER_DATA = {
             "不安",
             "潜在意識",
             "錯覚",
-            "直感"
+            "直感",
           ],
           reversedKeywords: [
             "錯覚の解消",
             "恐怖の解放",
             "明晰さ",
             "混乱の解消",
-            "真実の発見"
+            "真実の発見",
           ],
           promptContext: "月は錯覚と潜在意識を表します。表面下に隠れた真実と、恐怖や不確実性を通じて直感を信頼することの重要性を強調しましょう。",
           language: "ja",
@@ -5843,7 +5845,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00df89ztw7w9z4ml",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dh89ztkshbz9uz",
@@ -5853,7 +5855,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00df89ztw7w9z4ml",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00di89ztwagufq03",
@@ -5863,7 +5865,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00df89ztw7w9z4ml",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dj89zt5r4qlfue",
@@ -5873,9 +5875,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00df89ztw7w9z4ml",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00dk89zthl758nci",
@@ -5893,14 +5895,14 @@ export const DEFAULT_MASTER_DATA = {
             "明晰さ",
             "活力",
             "楽観主義",
-            "真実"
+            "真実",
           ],
           reversedKeywords: [
             "過度の楽観主義",
             "幸福の表面",
             "喪失感",
             "活力不足",
-            "混乱"
+            "混乱",
           ],
           promptContext: "太陽は喜び、明晰さ、そして成功を表します。楽観主義、前向きなエネルギー、そして真実の発見に焦点を当てましょう。",
           language: "ja",
@@ -5916,7 +5918,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dk89zthl758nci",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dm89zt0uq9i2y2",
@@ -5926,7 +5928,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dk89zthl758nci",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dn89ztm3lz2zi8",
@@ -5936,7 +5938,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dk89zthl758nci",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00do89ztnywwbhty",
@@ -5946,9 +5948,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dk89zthl758nci",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00dp89ztrnel0ywp",
@@ -5966,14 +5968,14 @@ export const DEFAULT_MASTER_DATA = {
             "内なる呼びかけ",
             "目覚め",
             "人生の検討",
-            "反省"
+            "反省",
           ],
           reversedKeywords: [
             "自己疑念",
             "内なる声の無視",
             "再生の恐れ",
             "自己批判",
-            "後悔"
+            "後悔",
           ],
           promptContext: "審判は再生と人生の目覚めを表します。過去を振り返り、内なる呼びかけに応えることで新しい始まりを迎えることに焦点を当てましょう。",
           language: "ja",
@@ -5989,7 +5991,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dp89ztrnel0ywp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dr89zt7qq37az6",
@@ -5999,7 +6001,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dp89ztrnel0ywp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00ds89ztwbxcrlqs",
@@ -6009,7 +6011,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dp89ztrnel0ywp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7f00dt89zt33k5snnx",
@@ -6019,9 +6021,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00dp89ztrnel0ywp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7f00du89zt4psrwjs5",
@@ -6039,14 +6041,14 @@ export const DEFAULT_MASTER_DATA = {
             "統合",
             "旅の終わり",
             "達成",
-            "充足"
+            "充足",
           ],
           reversedKeywords: [
             "未完成",
             "近道",
             "遅延",
             "未達成",
-            "閉ざされた周期"
+            "閉ざされた周期",
           ],
           promptContext: "世界は完成と達成を表します。サイクルの終わり、全体的な統合、そして成功裏に完結した旅に焦点を当てましょう。",
           language: "ja",
@@ -6062,7 +6064,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00du89zt4psrwjs5",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00dw89ztbvhbrxaq",
@@ -6072,7 +6074,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00du89zt4psrwjs5",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00dx89zti67khdfb",
@@ -6082,7 +6084,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00du89zt4psrwjs5",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00dy89zt4j3burqx",
@@ -6092,9 +6094,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7f00du89zt4psrwjs5",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00dz89zt4gpmm42n",
@@ -6111,14 +6113,14 @@ export const DEFAULT_MASTER_DATA = {
             "新たな始まり",
             "インスピレーション",
             "潜在能力",
-            "成長"
+            "成長",
           ],
           reversedKeywords: [
             "創造的ブロック",
             "遅延",
             "潜在能力の欠如",
             "目標喪失",
-            "気力低下"
+            "気力低下",
           ],
           promptContext: "ワンドのエースは新たな始まりと創造的可能性を表します。情熱、インスピレーション、そして成長の初期段階を強調しましょう。",
           language: "ja",
@@ -6134,7 +6136,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00dz89zt4gpmm42n",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00e189ztcqhsxhps",
@@ -6144,7 +6146,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00dz89zt4gpmm42n",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00e289zty8lb7q85",
@@ -6154,7 +6156,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00dz89zt4gpmm42n",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00e389ztagrvdtrd",
@@ -6164,9 +6166,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00dz89zt4gpmm42n",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00e489ztyoesnc01",
@@ -6183,14 +6185,14 @@ export const DEFAULT_MASTER_DATA = {
             "進歩",
             "決断",
             "発見",
-            "選択"
+            "選択",
           ],
           reversedKeywords: [
             "恐怖",
             "未決断",
             "優柔不断",
             "停滞",
-            "悪い計画"
+            "悪い計画",
           ],
           promptContext: "ワンドの2は未来計画と決断を表します。可能性を探索し、前進するための選択に焦点を当てましょう。",
           language: "ja",
@@ -6206,7 +6208,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e489ztyoesnc01",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00e689ztk814fil5",
@@ -6216,7 +6218,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e489ztyoesnc01",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00e789ztv9k884bh",
@@ -6226,7 +6228,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e489ztyoesnc01",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00e889ztnyv5wsb9",
@@ -6236,9 +6238,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e489ztyoesnc01",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00e989zt71hf6hfv",
@@ -6255,14 +6257,14 @@ export const DEFAULT_MASTER_DATA = {
             "成長",
             "探検",
             "長期的視野",
-            "前進"
+            "前進",
           ],
           reversedKeywords: [
             "障害",
             "遅延",
             "失望",
             "制限",
-            "連携の欠如"
+            "連携の欠如",
           ],
           promptContext: "ワンドの3は拡大と長期的視野を表します。未来に目を向け、成長と新たな機会の探索に焦点を当てましょう。",
           language: "ja",
@@ -6278,7 +6280,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e989zt71hf6hfv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00eb89zt07rei9tp",
@@ -6288,7 +6290,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e989zt71hf6hfv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ec89zt9qy403ka",
@@ -6298,7 +6300,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e989zt71hf6hfv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ed89zt8oqigurk",
@@ -6308,9 +6310,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00e989zt71hf6hfv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00ee89zt92inyowm",
@@ -6327,14 +6329,14 @@ export const DEFAULT_MASTER_DATA = {
             "調和",
             "家庭",
             "コミュニティ",
-            "完成"
+            "完成",
           ],
           reversedKeywords: [
             "不調和",
             "移行",
             "家庭問題",
             "浪費",
-            "無秩序"
+            "無秩序",
           ],
           promptContext: "ワンドの4は安定、調和、そしてお祝いを表します。コミュニティ、達成感、そして家庭の喜びに焦点を当てましょう。",
           language: "ja",
@@ -6350,7 +6352,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ee89zt92inyowm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00eg89ztmbwnjg1o",
@@ -6360,7 +6362,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ee89zt92inyowm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00eh89ztovivaufd",
@@ -6370,7 +6372,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ee89zt92inyowm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ei89zt9n24k52e",
@@ -6380,9 +6382,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ee89zt92inyowm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00ej89zt5y2tk21o",
@@ -6399,14 +6401,14 @@ export const DEFAULT_MASTER_DATA = {
             "競争",
             "闘争",
             "論争",
-            "緊張"
+            "緊張",
           ],
           reversedKeywords: [
             "妥協",
             "解決",
             "調和",
             "協力",
-            "避ける"
+            "避ける",
           ],
           promptContext: "ワンドの5は対立と競争を表します。闘争がもたらす成長と、意見の相違を通じて達成される成長に焦点を当てましょう。",
           language: "ja",
@@ -6422,7 +6424,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ej89zt5y2tk21o",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00el89ztl712kd6r",
@@ -6432,7 +6434,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ej89zt5y2tk21o",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00em89ztvzhyckst",
@@ -6442,7 +6444,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ej89zt5y2tk21o",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00en89ztqr6atxuk",
@@ -6452,9 +6454,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ej89zt5y2tk21o",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00eo89zt0qmp54sw",
@@ -6471,14 +6473,14 @@ export const DEFAULT_MASTER_DATA = {
             "成功",
             "認識",
             "誇り",
-            "自信"
+            "自信",
           ],
           reversedKeywords: [
             "自我",
             "傲慢",
             "過信",
             "失敗",
-            "落胆"
+            "落胆",
           ],
           promptContext: "ワンドの6は勝利と認識を表します。成功の達成、努力の承認、そして自信の重要性に焦点を当てましょう。",
           language: "ja",
@@ -6494,7 +6496,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00eo89zt0qmp54sw",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00eq89ztkppvd4w9",
@@ -6504,7 +6506,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00eo89zt0qmp54sw",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00er89zt40g4zdny",
@@ -6514,7 +6516,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00eo89zt0qmp54sw",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00es89zt8t98zwsm",
@@ -6524,9 +6526,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00eo89zt0qmp54sw",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00et89zta53lrwph",
@@ -6543,14 +6545,14 @@ export const DEFAULT_MASTER_DATA = {
             "忍耐",
             "挑戦",
             "競争",
-            "毅然とした態度"
+            "毅然とした態度",
           ],
           reversedKeywords: [
             "降伏",
             "圧倒",
             "防御の放棄",
             "不確かさ",
-            "脆弱性"
+            "脆弱性",
           ],
           promptContext: "ワンドの7は防御と忍耐を表します。課題に直面した時の毅然とした態度と、自分の立場を守る勇気に焦点を当てましょう。",
           language: "ja",
@@ -6566,7 +6568,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00et89zta53lrwph",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ev89zt1ycu7kd2",
@@ -6576,7 +6578,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00et89zta53lrwph",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ew89ztg1rlduqu",
@@ -6586,7 +6588,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00et89zta53lrwph",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ex89ztt6e9fpov",
@@ -6596,9 +6598,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00et89zta53lrwph",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00ey89ztxma31s5f",
@@ -6615,14 +6617,14 @@ export const DEFAULT_MASTER_DATA = {
             "行動",
             "空中",
             "動き",
-            "旅"
+            "旅",
           ],
           reversedKeywords: [
             "遅延",
             "欲求不満",
             "障害",
             "内部対立",
-            "焦り"
+            "焦り",
           ],
           promptContext: "ワンドの8は迅速な動きと行動を表します。物事の加速、前進するエネルギー、そして変化の必要性に焦点を当てましょう。",
           language: "ja",
@@ -6638,7 +6640,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ey89ztxma31s5f",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00f089ztq6e75ahw",
@@ -6648,7 +6650,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ey89ztxma31s5f",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00f189zt47iiz5ui",
@@ -6658,7 +6660,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ey89ztxma31s5f",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00f289zt0esx1wy6",
@@ -6668,9 +6670,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00ey89ztxma31s5f",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00f389ztsnveqy7r",
@@ -6687,14 +6689,14 @@ export const DEFAULT_MASTER_DATA = {
             "永続性",
             "勇気",
             "防衛的",
-            "準備"
+            "準備",
           ],
           reversedKeywords: [
             "臆病",
             "疲れ果てた",
             "降伏",
             "偏執",
-            "不必要な防衛"
+            "不必要な防衛",
           ],
           promptContext: "ワンドの9は忍耐と永続性を表します。勇気を持って挑戦に直面し続けることと、最後の障害を乗り越える準備に焦点を当てましょう。",
           language: "ja",
@@ -6710,7 +6712,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f389ztsnveqy7r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00f589ztf9rcy5ux",
@@ -6720,7 +6722,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f389ztsnveqy7r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00f689ztdvg36be2",
@@ -6730,7 +6732,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f389ztsnveqy7r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00f789ztminfmrf8",
@@ -6740,9 +6742,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f389ztsnveqy7r",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00f889ztplsw8elf",
@@ -6759,14 +6761,14 @@ export const DEFAULT_MASTER_DATA = {
             "重荷",
             "圧力",
             "成就",
-            "抑圧"
+            "抑圧",
           ],
           reversedKeywords: [
             "重荷の解放",
             "委任",
             "解放",
             "力の回復",
-            "放棄"
+            "放棄",
           ],
           promptContext: "ワンドの10は重荷と責任を表します。過度のコミットメントと、解放と委任の必要性に焦点を当てましょう。",
           language: "ja",
@@ -6782,7 +6784,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f889ztplsw8elf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fa89ztab1jkxgr",
@@ -6792,7 +6794,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f889ztplsw8elf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fb89ztgueedo21",
@@ -6802,7 +6804,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f889ztplsw8elf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fc89zt2lgpy1mv",
@@ -6812,9 +6814,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00f889ztplsw8elf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00fd89zt74mao0rt",
@@ -6831,14 +6833,14 @@ export const DEFAULT_MASTER_DATA = {
             "発見",
             "冒険",
             "潜在能力",
-            "自由精神"
+            "自由精神",
           ],
           reversedKeywords: [
             "浪費",
             "拘束感",
             "方向性の欠如",
             "変わりやすさ",
-            "優柔不断"
+            "優柔不断",
           ],
           promptContext: "ワンドのページは熱意と発見を表します。新しい可能性への冒険的なアプローチと、若々しい情熱に焦点を当てましょう。",
           language: "ja",
@@ -6854,7 +6856,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fd89zt74mao0rt",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ff89ztlgsooke3",
@@ -6864,7 +6866,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fd89zt74mao0rt",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fg89zt58sc5esd",
@@ -6874,7 +6876,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fd89zt74mao0rt",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fh89zt5ehvvv70",
@@ -6884,9 +6886,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fd89zt74mao0rt",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00fi89ztb0wq3uu9",
@@ -6904,14 +6906,14 @@ export const DEFAULT_MASTER_DATA = {
             "無謀",
             "エネルギー",
             "情熱",
-            "魅力"
+            "魅力",
           ],
           reversedKeywords: [
             "焦燥感",
             "遅延",
             "欲求不満",
             "攻撃性",
-            "衝動性"
+            "衝動性",
           ],
           promptContext: "ワンドのナイトは行動と冒険を表します。情熱的なエネルギーと勢いがあるが、時に衝動的な性質にも焦点を当てましょう。",
           language: "ja",
@@ -6927,7 +6929,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fi89ztb0wq3uu9",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fk89zthmye6u04",
@@ -6937,7 +6939,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fi89ztb0wq3uu9",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fl89zts7gjrkhs",
@@ -6947,7 +6949,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fi89ztb0wq3uu9",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fm89ztuxxhhh8n",
@@ -6957,9 +6959,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fi89ztb0wq3uu9",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00fn89ztt94xcqwf",
@@ -6977,7 +6979,7 @@ export const DEFAULT_MASTER_DATA = {
             "魅力",
             "自信",
             "独立",
-            "社交性"
+            "社交性",
           ],
           reversedKeywords: [
             "要求",
@@ -6985,7 +6987,7 @@ export const DEFAULT_MASTER_DATA = {
             "衰退",
             "嫉妬",
             "復讐",
-            "劣等感"
+            "劣等感",
           ],
           promptContext: "ワンドのクイーンは情熱と決意を表します。魅力、社交性、自信に満ちた独立性に焦点を当てましょう。",
           language: "ja",
@@ -7001,7 +7003,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fn89ztt94xcqwf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fp89ztlgax7vyq",
@@ -7011,7 +7013,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fn89ztt94xcqwf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fq89ztc30hgib9",
@@ -7021,7 +7023,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fn89ztt94xcqwf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fr89ztirs1x59m",
@@ -7031,9 +7033,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fn89ztt94xcqwf",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00fs89zt8ybbi5en",
@@ -7050,7 +7052,7 @@ export const DEFAULT_MASTER_DATA = {
             "ビジョン",
             "起業家精神",
             "誠実さ",
-            "創造性"
+            "創造性",
           ],
           reversedKeywords: [
             "暴君",
@@ -7058,7 +7060,7 @@ export const DEFAULT_MASTER_DATA = {
             "衝動的",
             "厳格",
             "冷淡",
-            "残酷"
+            "残酷",
           ],
           promptContext: "ワンドのキングはリーダーシップとビジョンを表します。創造的な情熱、誠実さ、そして大胆なビジョンを持って前進する能力に焦点を当てましょう。",
           language: "ja",
@@ -7074,7 +7076,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fs89zt8ybbi5en",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fu89ztps8rr652",
@@ -7084,7 +7086,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fs89zt8ybbi5en",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fv89ztm9jvjonb",
@@ -7094,7 +7096,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fs89zt8ybbi5en",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fw89zth3ny4ev8",
@@ -7104,9 +7106,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fs89zt8ybbi5en",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00fx89ztnizc2lfo",
@@ -7123,13 +7125,13 @@ export const DEFAULT_MASTER_DATA = {
             "感情の始まり",
             "スピリチュアルな目覚め",
             "直感",
-            "思いやり"
+            "思いやり",
           ],
           reversedKeywords: [
             "感情のブロック",
             "愛の欠如",
             "空虚さ",
-            "抑圧された感情"
+            "抑圧された感情",
           ],
           promptContext: "カップのエースは新しい感情の始まりを表します。愛、思いやり、そしてスピリチュアルな目覚めに焦点を当てましょう。",
           language: "ja",
@@ -7145,7 +7147,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fx89ztnizc2lfo",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00fz89zt5lttqjcu",
@@ -7155,7 +7157,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fx89ztnizc2lfo",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00g089ztrk3majev",
@@ -7165,7 +7167,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fx89ztnizc2lfo",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00g189ztxvl19vct",
@@ -7175,9 +7177,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00fx89ztnizc2lfo",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00g289ztnq8412ec",
@@ -7194,13 +7196,13 @@ export const DEFAULT_MASTER_DATA = {
             "相互の魅力",
             "統一",
             "結合",
-            "バランスの取れた関係"
+            "バランスの取れた関係",
           ],
           reversedKeywords: [
             "不均衡",
             "壊れた関係",
             "調和の欠如",
-            "断絶"
+            "断絶",
           ],
           promptContext: "カップの2はパートナーシップと相互の魅力を表します。つながり、バランス、そして調和に焦点を当てましょう。",
           language: "ja",
@@ -7216,7 +7218,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g289ztnq8412ec",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00g489zt1vq7bfhr",
@@ -7226,7 +7228,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g289ztnq8412ec",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00g589ztpo2qposf",
@@ -7236,7 +7238,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g289ztnq8412ec",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00g689zttxqeo4b9",
@@ -7246,9 +7248,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g289ztnq8412ec",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00g789zt6i5jawwi",
@@ -7265,13 +7267,13 @@ export const DEFAULT_MASTER_DATA = {
             "お祝い",
             "コミュニティ",
             "創造性",
-            "協力"
+            "協力",
           ],
           reversedKeywords: [
             "噂話",
             "孤立",
             "壊れた友情",
-            "創造的なブロック"
+            "創造的なブロック",
           ],
           promptContext: "カップの3はお祝いとコミュニティを表します。友情、創造性、そしてグループサポートに焦点を当てましょう。",
           language: "ja",
@@ -7287,7 +7289,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g789zt6i5jawwi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00g989zt3ognk5at",
@@ -7297,7 +7299,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g789zt6i5jawwi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ga89ztb4stsh3v",
@@ -7307,7 +7309,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g789zt6i5jawwi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gb89ztz1l3d99l",
@@ -7317,9 +7319,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00g789zt6i5jawwi",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00gc89ztytxm2ogl",
@@ -7336,13 +7338,13 @@ export const DEFAULT_MASTER_DATA = {
             "退屈",
             "見過ごされた機会",
             "内省",
-            "瞑想"
+            "瞑想",
           ],
           reversedKeywords: [
             "自覚",
             "機会の受け入れ",
             "新たな興味",
-            "モチベーション"
+            "モチベーション",
           ],
           promptContext: "カップの4は無関心と見過ごされた機会を表します。自覚と新たな可能性の受け入れに焦点を当てましょう。",
           language: "ja",
@@ -7358,7 +7360,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gc89ztytxm2ogl",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00ge89zt26n609ft",
@@ -7368,7 +7370,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gc89ztytxm2ogl",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gf89ztqyhxf8ly",
@@ -7378,7 +7380,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gc89ztytxm2ogl",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gg89zt125ls9d8",
@@ -7388,9 +7390,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gc89ztytxm2ogl",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00gh89ztf3fhpzgm",
@@ -7407,14 +7409,14 @@ export const DEFAULT_MASTER_DATA = {
             "喪失",
             "悲嘆",
             "後悔",
-            "感情的な痛み"
+            "感情的な痛み",
           ],
           reversedKeywords: [
             "回復",
             "許し",
             "前進",
             "受容",
-            "癒し"
+            "癒し",
           ],
           promptContext: "カップの5は喪失と失望を表します。逆位置の場合は、回復と前進に焦点を当てましょう。",
           language: "ja",
@@ -7430,7 +7432,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gh89ztf3fhpzgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gj89ztg7ug0z2d",
@@ -7440,7 +7442,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gh89ztf3fhpzgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gk89zt01j2cdpc",
@@ -7450,7 +7452,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gh89ztf3fhpzgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gl89zteurwhykx",
@@ -7460,9 +7462,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gh89ztf3fhpzgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00gm89ztx8r2gbbz",
@@ -7479,12 +7481,12 @@ export const DEFAULT_MASTER_DATA = {
             "子供時代の記憶",
             "無邪気さ",
             "再会",
-            "過去のつながり"
+            "過去のつながり",
           ],
           reversedKeywords: [
             "過去に生きること",
             "非現実的な期待",
-            "進歩の欠如"
+            "進歩の欠如",
           ],
           promptContext: "カップの6はノスタルジアと無邪気さを表します。過去のつながりに焦点を当てながらも、前進を促しましょう。",
           language: "ja",
@@ -7500,7 +7502,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gm89ztx8r2gbbz",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00go89ztk4khan0z",
@@ -7510,7 +7512,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gm89ztx8r2gbbz",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gp89ztpwb8xkjv",
@@ -7520,7 +7522,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gm89ztx8r2gbbz",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gq89ztick9ib2g",
@@ -7530,9 +7532,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gm89ztx8r2gbbz",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00gr89zt0508yvgm",
@@ -7549,13 +7551,13 @@ export const DEFAULT_MASTER_DATA = {
             "選択",
             "願望的思考",
             "非現実的",
-            "ファンタジー"
+            "ファンタジー",
           ],
           reversedKeywords: [
             "明晰さ",
             "決断する",
             "現実確認",
-            "集中"
+            "集中",
           ],
           promptContext: "カップの7は幻想と多すぎる選択肢を表します。明晰さと現実的な意思決定に焦点を当てましょう。",
           language: "ja",
@@ -7571,7 +7573,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gr89zt0508yvgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gt89zt57ksp456",
@@ -7581,7 +7583,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gr89zt0508yvgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gu89ztd2ypw8of",
@@ -7591,7 +7593,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gr89zt0508yvgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gv89ztvcbd50bx",
@@ -7601,9 +7603,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gr89zt0508yvgm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00gw89zt39lodgah",
@@ -7620,13 +7622,13 @@ export const DEFAULT_MASTER_DATA = {
             "意味を求める",
             "精神的な旅",
             "放棄",
-            "前進する"
+            "前進する",
           ],
           reversedKeywords: [
             "問題を避ける",
             "コミットメントへの恐れ",
             "停滞",
-            "立ち往生する"
+            "立ち往生する",
           ],
           promptContext: "カップの8はより深い意味を見つけるために立ち去ることを表します。精神的な成長と表面的なものを超えて進むことに焦点を当てましょう。",
           language: "ja",
@@ -7642,7 +7644,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gw89zt39lodgah",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gy89zt6dt46ym5",
@@ -7652,7 +7654,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gw89zt39lodgah",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00gz89ztntm031nr",
@@ -7662,7 +7664,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gw89zt39lodgah",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7g00h089zth4adyicz",
@@ -7672,9 +7674,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00gw89zt39lodgah",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7g00h189ztsp7xnouy",
@@ -7691,14 +7693,14 @@ export const DEFAULT_MASTER_DATA = {
             "満ち足りた気持ち",
             "感情的な充実",
             "願いの成就",
-            "贅沢"
+            "贅沢",
           ],
           reversedKeywords: [
             "強欲",
             "不満",
             "うぬぼれ",
             "物質主義",
-            "叶わぬ願い"
+            "叶わぬ願い",
           ],
           promptContext: "カップの9は感情的な充実と満足を表します。感謝の気持ちに焦点を当てながら、うぬぼれに対して警告しましょう。",
           language: "ja",
@@ -7714,7 +7716,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00h189ztsp7xnouy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00h389ztyls2n8dz",
@@ -7724,7 +7726,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00h189ztsp7xnouy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00h489zti9vycovx",
@@ -7734,7 +7736,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00h189ztsp7xnouy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00h589zt374l9w2f",
@@ -7744,9 +7746,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7g00h189ztsp7xnouy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00h689ztfqgii65g",
@@ -7763,13 +7765,13 @@ export const DEFAULT_MASTER_DATA = {
             "幸福",
             "調和",
             "家族",
-            "祝福"
+            "祝福",
           ],
           reversedKeywords: [
             "壊れた家族",
             "不調和",
             "断絶",
-            "満たされない"
+            "満たされない",
           ],
           promptContext: "カップの10は完全な感情的充実を表します。幸福、調和、そして家族のつながりに焦点を当てましょう。",
           language: "ja",
@@ -7785,7 +7787,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00h689ztfqgii65g",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00h889ztdtlm1gr0",
@@ -7795,7 +7797,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00h689ztfqgii65g",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00h989zt1qshkxpq",
@@ -7805,7 +7807,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00h689ztfqgii65g",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ha89ztcu5whui7",
@@ -7815,9 +7817,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00h689ztfqgii65g",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00hb89zt6fvpwffa",
@@ -7834,13 +7836,13 @@ export const DEFAULT_MASTER_DATA = {
             "直感的",
             "芸術的",
             "敏感",
-            "夢見がち"
+            "夢見がち",
           ],
           reversedKeywords: [
             "感情的未熟さ",
             "気分の変わりやすさ",
             "現実逃避",
-            "非現実的"
+            "非現実的",
           ],
           promptContext: "カップのページは感情的な敏感さと直感を表します。芸術的表現に焦点を当てながら、感情的な成熟を促しましょう。",
           language: "ja",
@@ -7856,7 +7858,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hb89zt6fvpwffa",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hd89ztdub78du1",
@@ -7866,7 +7868,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hb89zt6fvpwffa",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00he89ztn3ur5bdv",
@@ -7876,7 +7878,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hb89zt6fvpwffa",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hf89zt1ileg5r8",
@@ -7886,9 +7888,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hb89zt6fvpwffa",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00hg89ztmrbcoede",
@@ -7905,13 +7907,13 @@ export const DEFAULT_MASTER_DATA = {
             "魅力",
             "理想主義",
             "心に従う",
-            "プロポーズ"
+            "プロポーズ",
           ],
           reversedKeywords: [
             "非現実的",
             "嫉妬",
             "気分の変わりやすさ",
-            "失望"
+            "失望",
           ],
           promptContext: "カップのナイトはロマンティックな理想主義と心に従うことを表します。魅力に焦点を当てながら、非現実的な期待について警告しましょう。",
           language: "ja",
@@ -7927,7 +7929,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hg89ztmrbcoede",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hi89ztj3mcchiz",
@@ -7937,7 +7939,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hg89ztmrbcoede",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hj89ztja1gxc7n",
@@ -7947,7 +7949,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hg89ztmrbcoede",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hk89ztdbx250l5",
@@ -7957,9 +7959,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hg89ztmrbcoede",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00hl89ztqfr9mvrh",
@@ -7976,13 +7978,13 @@ export const DEFAULT_MASTER_DATA = {
             "直感的",
             "思いやりのある",
             "穏やか",
-            "安らぎ"
+            "安らぎ",
           ],
           reversedKeywords: [
             "不安",
             "与えすぎる",
             "殉教",
-            "共依存"
+            "共依存",
           ],
           promptContext: "カップのクイーンは感情の習得と思いやりを表します。直感的な知恵に焦点を当てながら、共依存についての警告をしましょう。",
           language: "ja",
@@ -7998,7 +8000,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hl89ztqfr9mvrh",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hn89ztk3ax2nb6",
@@ -8008,7 +8010,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hl89ztqfr9mvrh",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ho89zt6dt9ywji",
@@ -8018,7 +8020,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hl89ztqfr9mvrh",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hp89ztia2cniyg",
@@ -8028,9 +8030,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hl89ztqfr9mvrh",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00hq89zthj2h4r87",
@@ -8047,13 +8049,13 @@ export const DEFAULT_MASTER_DATA = {
             "知恵",
             "外交",
             "思いやり",
-            "コントロール"
+            "コントロール",
           ],
           reversedKeywords: [
             "感情操作",
             "気分の変わりやすさ",
             "変動性",
-            "抑圧"
+            "抑圧",
           ],
           promptContext: "カップのキングは感情の習得と賢明な思いやりを表します。バランスのとれたリーダーシップに焦点を当てながら、操作についての警告をしましょう。",
           language: "ja",
@@ -8069,7 +8071,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hq89zthj2h4r87",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hs89ztlw92lcju",
@@ -8079,7 +8081,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hq89zthj2h4r87",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ht89ztf2fjoi80",
@@ -8089,7 +8091,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hq89zthj2h4r87",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hu89ztmqe10ssy",
@@ -8099,9 +8101,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hq89zthj2h4r87",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00hv89zt77ybhs1z",
@@ -8119,7 +8121,7 @@ export const DEFAULT_MASTER_DATA = {
             "精神的集中",
             "真実",
             "知性",
-            "新しいアイデア"
+            "新しいアイデア",
           ],
           reversedKeywords: [
             "混乱",
@@ -8127,7 +8129,7 @@ export const DEFAULT_MASTER_DATA = {
             "精神的ブロック",
             "嘘",
             "誤ったコミュニケーション",
-            "遅れた成功"
+            "遅れた成功",
           ],
           promptContext: "ソードのエースは精神的な明晰さと真実を表します。思考の力、新しいアイデア、そして状況を切り開く能力に焦点を当てましょう。",
           language: "ja",
@@ -8143,7 +8145,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hv89zt77ybhs1z",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hx89zt8cain9kg",
@@ -8153,7 +8155,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hv89zt77ybhs1z",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hy89zt7kvp45wd",
@@ -8163,7 +8165,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hv89zt77ybhs1z",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00hz89zt46vw3pyi",
@@ -8173,9 +8175,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00hv89zt77ybhs1z",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00i089zt0gu7inrm",
@@ -8192,13 +8194,13 @@ export const DEFAULT_MASTER_DATA = {
             "難しい選択",
             "バランス",
             "遮断された感情",
-            "優柔不断"
+            "優柔不断",
           ],
           reversedKeywords: [
             "選択を行う",
             "現実に向き合う",
             "緊張の解放",
-            "感情的明晰さ"
+            "感情的明晰さ",
           ],
           promptContext: "ソードの2は難しい選択と決断の回避を表します。バランスの必要性と、最終的には現実に向き合う重要性に焦点を当てましょう。",
           language: "ja",
@@ -8214,7 +8216,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i089zt0gu7inrm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00i289ztbr6d4301",
@@ -8224,7 +8226,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i089zt0gu7inrm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00i389ztziuwmfpj",
@@ -8234,7 +8236,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i089zt0gu7inrm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00i489zthip9dkqs",
@@ -8244,9 +8246,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i089zt0gu7inrm",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00i589ztiovif8eq",
@@ -8264,14 +8266,14 @@ export const DEFAULT_MASTER_DATA = {
             "悲嘆",
             "感情的な痛み",
             "真実",
-            "別離"
+            "別離",
           ],
           reversedKeywords: [
             "回復",
             "許し",
             "癒し",
             "和解",
-            "前進"
+            "前進",
           ],
           promptContext: "ソードの3は心の痛みと悲しみを表します。感情的な痛み、必要な真実、そして最終的には癒しと回復の可能性に焦点を当てましょう。",
           language: "ja",
@@ -8287,7 +8289,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i589ztiovif8eq",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00i789ztnf6ytmbg",
@@ -8297,7 +8299,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i589ztiovif8eq",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00i889zt7s5r767t",
@@ -8307,7 +8309,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i589ztiovif8eq",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00i989ztrn7lqzch",
@@ -8317,9 +8319,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00i589ztiovif8eq",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00ia89ztfy8jd0ke",
@@ -8337,14 +8339,14 @@ export const DEFAULT_MASTER_DATA = {
             "瞑想",
             "熟考",
             "撤退",
-            "受動的回復"
+            "受動的回復",
           ],
           reversedKeywords: [
             "落ち着きのなさ",
             "バーンアウト",
             "疲労",
             "再参加",
-            "行動への復帰"
+            "行動への復帰",
           ],
           promptContext: "ソードの4は休息と回復を表します。瞑想、内省の時間、そして再生のために一歩下がる必要性に焦点を当てましょう。",
           language: "ja",
@@ -8360,7 +8362,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ia89ztfy8jd0ke",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ic89ztbqs1bnkl",
@@ -8370,7 +8372,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ia89ztfy8jd0ke",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00id89ztiykhicm1",
@@ -8380,7 +8382,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ia89ztfy8jd0ke",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ie89ztnn9qz4eg",
@@ -8390,9 +8392,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ia89ztfy8jd0ke",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00if89ztnig3auom",
@@ -8410,14 +8412,14 @@ export const DEFAULT_MASTER_DATA = {
             "どんな犠牲を払っても勝つ",
             "裏切り",
             "敵意",
-            "不名誉"
+            "不名誉",
           ],
           reversedKeywords: [
             "和解",
             "償い",
             "許し",
             "前進",
-            "損失の受け入れ"
+            "損失の受け入れ",
           ],
           promptContext: "ソードの5は葛藤と敗北を表します。争いの代償、不公平な戦術、そして最終的に和解と前進を見つける可能性に焦点を当てましょう。",
           language: "ja",
@@ -8433,7 +8435,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00if89ztnig3auom",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ih89ztth2i0mgz",
@@ -8443,7 +8445,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00if89ztnig3auom",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ii89ztqod9olc5",
@@ -8453,7 +8455,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00if89ztnig3auom",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ij89ztwciekxtf",
@@ -8463,9 +8465,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00if89ztnig3auom",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00ik89ztripg3xjg",
@@ -8483,14 +8485,14 @@ export const DEFAULT_MASTER_DATA = {
             "前進する",
             "旅",
             "精神的な進歩",
-            "前向きな動き"
+            "前向きな動き",
           ],
           reversedKeywords: [
             "立ち往生",
             "前に進めない",
             "変化への抵抗",
             "荷物",
-            "トラブルへの回帰"
+            "トラブルへの回帰",
           ],
           promptContext: "ソードの6は移行と前進を表します。困難を後にし、精神的に進歩し、より平和な水域に向かって旅することに焦点を当てましょう。",
           language: "ja",
@@ -8506,7 +8508,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ik89ztripg3xjg",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00im89zt2ouo6kup",
@@ -8516,7 +8518,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ik89ztripg3xjg",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00in89zt2g3bp653",
@@ -8526,7 +8528,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ik89ztripg3xjg",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00io89zt4rzwwi8o",
@@ -8536,9 +8538,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ik89ztripg3xjg",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00ip89ztlq7xswes",
@@ -8556,14 +8558,14 @@ export const DEFAULT_MASTER_DATA = {
             "こそこそした行動",
             "何かをうまくやり遂げる",
             "騙し",
-            "精神的敏捷性"
+            "精神的敏捷性",
           ],
           reversedKeywords: [
             "告白",
             "捕まる",
             "後悔",
             "明らかになる真実",
-            "良心"
+            "良心",
           ],
           promptContext: "ソードの7は戦略的欺瞞と精神的敏捷性を表します。真実を隠すことの結果と、最終的に明るみに出る秘密に焦点を当てましょう。",
           language: "ja",
@@ -8579,7 +8581,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ip89ztlq7xswes",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ir89zt5hzu05nh",
@@ -8589,7 +8591,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ip89ztlq7xswes",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00is89ztm163pwrr",
@@ -8599,7 +8601,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ip89ztlq7xswes",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00it89ztcri9j3zk",
@@ -8609,9 +8611,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00ip89ztlq7xswes",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00iu89ztt8c03jck",
@@ -8628,14 +8630,14 @@ export const DEFAULT_MASTER_DATA = {
             "幽閉",
             "犠牲者意識",
             "無力感",
-            "孤立"
+            "孤立",
           ],
           reversedKeywords: [
             "自由",
             "自己受容",
             "新しい視点",
             "解放",
-            "出口を見つける"
+            "出口を見つける",
           ],
           promptContext: "ソードの8は自己課した制限と認知的な幽閉を表します。束縛された感覚、そして自分自身を解放するための新しい視点を見つける可能性に焦点を当てましょう。",
           language: "ja",
@@ -8651,7 +8653,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iu89ztt8c03jck",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00iw89zt1eatfrma",
@@ -8661,7 +8663,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iu89ztt8c03jck",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ix89ztzlo8gvrp",
@@ -8671,7 +8673,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iu89ztt8c03jck",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00iy89ztuo5emom5",
@@ -8681,9 +8683,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iu89ztt8c03jck",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00iz89zthlzd8qzk",
@@ -8701,14 +8703,14 @@ export const DEFAULT_MASTER_DATA = {
             "恐怖",
             "抑うつ",
             "悪夢",
-            "精神的苦痛"
+            "精神的苦痛",
           ],
           reversedKeywords: [
             "希望",
             "恐怖の解放",
             "助けを求める",
             "より良い視点",
-            "真実を学ぶ"
+            "真実を学ぶ",
           ],
           promptContext: "ソードの9は不安と恐怖を表します。精神的な苦しみ、そして最終的には助けを求め、より明るい視点を見つける可能性に焦点を当てましょう。",
           language: "ja",
@@ -8724,7 +8726,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iz89zthlzd8qzk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00j189ztg31j6wr1",
@@ -8734,7 +8736,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iz89zthlzd8qzk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00j289zthadu06vv",
@@ -8744,7 +8746,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iz89zthlzd8qzk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00j389zto23i6rt9",
@@ -8754,9 +8756,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00iz89zthlzd8qzk",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00j489zt928rw6ys",
@@ -8774,14 +8776,14 @@ export const DEFAULT_MASTER_DATA = {
             "崩壊",
             "壊滅的な損失",
             "行き詰まり",
-            "犠牲者"
+            "犠牲者",
           ],
           reversedKeywords: [
             "回復",
             "再生",
             "生存",
             "改善",
-            "更新"
+            "更新",
           ],
           promptContext: "ソードの10は終局と底打ちを表します。完全な終わりに直面し、それでもまだ新しい始まりの希望が地平線上に見える可能性に焦点を当てましょう。",
           language: "ja",
@@ -8797,7 +8799,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j489zt928rw6ys",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00j689zta1nsxj2y",
@@ -8807,7 +8809,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j489zt928rw6ys",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00j789zt0vj7oxbq",
@@ -8817,7 +8819,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j489zt928rw6ys",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00j889ztaznz9e91",
@@ -8827,9 +8829,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j489zt928rw6ys",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00j989ztv0pbvrsr",
@@ -8847,14 +8849,14 @@ export const DEFAULT_MASTER_DATA = {
             "新しいアイデア",
             "学生",
             "コミュニケーション",
-            "警戒"
+            "警戒",
           ],
           reversedKeywords: [
             "噂話",
             "散漫な思考",
             "精神的遅延",
             "厳しいコミュニケーション",
-            "欺瞞"
+            "欺瞞",
           ],
           promptContext: "ソードのページは知的好奇心と観察を表します。学ぶ意欲、新しいアイデア、そして時に過度の警戒心に焦点を当てましょう。",
           language: "ja",
@@ -8870,7 +8872,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j989ztv0pbvrsr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jb89ztkugfgzm1",
@@ -8880,7 +8882,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j989ztv0pbvrsr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jc89ztlxnrtj2z",
@@ -8890,7 +8892,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j989ztv0pbvrsr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jd89zt3wmyu96m",
@@ -8900,9 +8902,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00j989ztv0pbvrsr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00je89ztuny953g4",
@@ -8920,14 +8922,14 @@ export const DEFAULT_MASTER_DATA = {
             "ドライブ",
             "勇気",
             "積極性",
-            "決意"
+            "決意",
           ],
           reversedKeywords: [
             "衝動性",
             "無謀",
             "攻撃性",
             "バーンアウト",
-            "疲弊"
+            "疲弊",
           ],
           promptContext: "ソードのナイトは迅速な行動と決断を表します。勇気と野心に焦点を当てながら、バランスを欠いた場合の衝動性と攻撃性の危険性も考慮しましょう。",
           language: "ja",
@@ -8943,7 +8945,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00je89ztuny953g4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jg89zttk4j4mc3",
@@ -8953,7 +8955,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00je89ztuny953g4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jh89ztabtc6v1h",
@@ -8963,7 +8965,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00je89ztuny953g4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ji89ztm7tmj62l",
@@ -8973,9 +8975,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00je89ztuny953g4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00jj89ztqy10tfvv",
@@ -8993,7 +8995,7 @@ export const DEFAULT_MASTER_DATA = {
             "明晰な思考",
             "高潔さ",
             "洞察力",
-            "直接的なコミュニケーション"
+            "直接的なコミュニケーション",
           ],
           reversedKeywords: [
             "冷酷",
@@ -9001,7 +9003,7 @@ export const DEFAULT_MASTER_DATA = {
             "欺瞞",
             "操作",
             "残酷さ",
-            "悪意"
+            "悪意",
           ],
           promptContext: "ソードのクイーンは知的誠実さと明晰さを表します。直接的なコミュニケーション、独立した思考、そして感情と知性のバランスに焦点を当てましょう。",
           language: "ja",
@@ -9017,7 +9019,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jj89ztqy10tfvv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jl89zt50kctg7h",
@@ -9027,7 +9029,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jj89ztqy10tfvv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jm89zt452w0ntx",
@@ -9037,7 +9039,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jj89ztqy10tfvv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jn89zt1pxvwqsu",
@@ -9047,9 +9049,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jj89ztqy10tfvv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00jo89ztsywp48ss",
@@ -9068,14 +9070,14 @@ export const DEFAULT_MASTER_DATA = {
             "真実",
             "論理",
             "合理性",
-            "正義"
+            "正義",
           ],
           reversedKeywords: [
             "権力の乱用",
             "暴政",
             "操作",
             "冷淡さ",
-            "無慈悲さ"
+            "無慈悲さ",
           ],
           promptContext: "ソードのキングは知性と道徳的権威を表します。論理的思考、真実への献身、そして知恵をバランスよく使用する力に焦点を当てましょう。",
           language: "ja",
@@ -9091,7 +9093,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jo89ztsywp48ss",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jq89ztwymtybaq",
@@ -9101,7 +9103,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jo89ztsywp48ss",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jr89ztqnq01do1",
@@ -9111,7 +9113,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jo89ztsywp48ss",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00js89ztx7pphcem",
@@ -9121,9 +9123,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jo89ztsywp48ss",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00jt89zt3zvs2rxu",
@@ -9141,14 +9143,14 @@ export const DEFAULT_MASTER_DATA = {
             "豊かさ",
             "物質的利益",
             "機会",
-            "顕現"
+            "顕現",
           ],
           reversedKeywords: [
             "見逃した機会",
             "計画の欠如",
             "不足",
             "物質的損失",
-            "不適切な投資"
+            "不適切な投資",
           ],
           promptContext: "ペンタクルのエースは物質的な繁栄と新しい機会を表します。具体的な富の始まり、豊かさ、そして地に足のついたリソースに焦点を当てましょう。",
           language: "ja",
@@ -9164,7 +9166,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jt89zt3zvs2rxu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jv89ztxbka3iyd",
@@ -9174,7 +9176,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jt89zt3zvs2rxu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jw89ztrg7cxv1e",
@@ -9184,7 +9186,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jt89zt3zvs2rxu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00jx89zt215kfrjp",
@@ -9194,9 +9196,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jt89zt3zvs2rxu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00jy89ztqxt5kn0e",
@@ -9214,14 +9216,14 @@ export const DEFAULT_MASTER_DATA = {
             "適応力",
             "時間管理",
             "優先順位付け",
-            "やりくり"
+            "やりくり",
           ],
           reversedKeywords: [
             "不均衡",
             "混乱",
             "圧倒",
             "無秩序",
-            "貧弱な優先順位付け"
+            "貧弱な優先順位付け",
           ],
           promptContext: "ペンタクルの2は適応力とバランスを表します。生活の様々な側面のやりくりと柔軟性の必要性に焦点を当てましょう。",
           language: "ja",
@@ -9237,7 +9239,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jy89ztqxt5kn0e",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00k089ztcbx5qya6",
@@ -9247,7 +9249,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jy89ztqxt5kn0e",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00k189zt8ykisl27",
@@ -9257,7 +9259,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jy89ztqxt5kn0e",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00k289ztd34v0h9p",
@@ -9267,9 +9269,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00jy89ztqxt5kn0e",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00k389ztp73n5wc7",
@@ -9287,14 +9289,14 @@ export const DEFAULT_MASTER_DATA = {
             "学習",
             "実行",
             "技能",
-            "熟達"
+            "熟達",
           ],
           reversedKeywords: [
             "チームワークの欠如",
             "不調和",
             "競争",
             "凡庸さ",
-            "貧弱な実行"
+            "貧弱な実行",
           ],
           promptContext: "ペンタクルの3はチームワークとスキルの習得を表します。協力的な努力、専門的な成長、そして共通の目標に向かって協働することに焦点を当てましょう。",
           language: "ja",
@@ -9310,7 +9312,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k389ztp73n5wc7",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00k589zt0bmk8y41",
@@ -9320,7 +9322,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k389ztp73n5wc7",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00k689zt9utfc17f",
@@ -9330,7 +9332,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k389ztp73n5wc7",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00k789ztlt8xrr8v",
@@ -9340,9 +9342,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k389ztp73n5wc7",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00k889ztec3243v4",
@@ -9360,14 +9362,14 @@ export const DEFAULT_MASTER_DATA = {
             "節約",
             "保守主義",
             "安定性",
-            "所有"
+            "所有",
           ],
           reversedKeywords: [
             "強欲",
             "溜め込み",
             "ブロック",
             "過度の制御",
-            "物質主義"
+            "物質主義",
           ],
           promptContext: "ペンタクルの4は安全と保全を表します。物質的な安定を確保することの重要性と、過度な支配や執着のバランスを取る必要性に焦点を当てましょう。",
           language: "ja",
@@ -9383,7 +9385,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k889ztec3243v4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00ka89ztvn0ygui1",
@@ -9393,7 +9395,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k889ztec3243v4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00kb89ztlcczd30z",
@@ -9403,7 +9405,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k889ztec3243v4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00kc89zts4fy54sr",
@@ -9413,9 +9415,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00k889ztec3243v4",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7h00kd89ztli1o7i8k",
@@ -9433,14 +9435,14 @@ export const DEFAULT_MASTER_DATA = {
             "闘争",
             "逆境",
             "貧困",
-            "孤立"
+            "孤立",
           ],
           reversedKeywords: [
             "回復",
             "精神的成長",
             "助けを求める",
             "慈善",
-            "改善"
+            "改善",
           ],
           promptContext: "ペンタクルの5は物質的な苦難と孤立を表します。困難な時期であっても、利用可能な支援と内なる資源を見つけることの重要性に焦点を当てましょう。",
           language: "ja",
@@ -9456,7 +9458,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00kd89ztli1o7i8k",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00kf89zt0jrvovbe",
@@ -9466,7 +9468,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00kd89ztli1o7i8k",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00kg89ztnwwa9uza",
@@ -9476,7 +9478,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00kd89ztli1o7i8k",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7h00kh89ztxjo3w6ph",
@@ -9486,9 +9488,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7h00kd89ztli1o7i8k",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00ki89zttpwp71rr",
@@ -9506,14 +9508,14 @@ export const DEFAULT_MASTER_DATA = {
             "慈善",
             "支援",
             "共有",
-            "バランス"
+            "バランス",
           ],
           reversedKeywords: [
             "負債",
             "不均衡な与え方",
             "利己的",
             "条件付き",
-            "不平等"
+            "不平等",
           ],
           promptContext: "ペンタクルの6は寛大さとバランスを表します。公正な与え合いと受け取り、そして物質的資源を共有する恩恵に焦点を当てましょう。",
           language: "ja",
@@ -9529,7 +9531,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ki89zttpwp71rr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kk89zti84z3ovc",
@@ -9539,7 +9541,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ki89zttpwp71rr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kl89zttgut117y",
@@ -9549,7 +9551,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ki89zttpwp71rr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00km89zttc2i5m45",
@@ -9559,9 +9561,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ki89zttpwp71rr",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00kn89zta6hiu85x",
@@ -9579,14 +9581,14 @@ export const DEFAULT_MASTER_DATA = {
             "投資",
             "評価",
             "成長",
-            "収穫"
+            "収穫",
           ],
           reversedKeywords: [
             "焦り",
             "貧弱な計画",
             "低い見返り",
             "無駄な努力",
-            "不安"
+            "不安",
           ],
           promptContext: "ペンタクルの7は忍耐と評価を表します。努力の結果を待つこと、進捗を振り返ること、そして長期的な投資の価値を認識することに焦点を当てましょう。",
           language: "ja",
@@ -9602,7 +9604,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kn89zta6hiu85x",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kp89ztmkf7e1e9",
@@ -9612,7 +9614,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kn89zta6hiu85x",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kq89ztkppn5d3x",
@@ -9622,7 +9624,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kn89zta6hiu85x",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kr89ztiqtb48tg",
@@ -9632,9 +9634,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kn89zta6hiu85x",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00ks89ztvjeyohuv",
@@ -9652,14 +9654,14 @@ export const DEFAULT_MASTER_DATA = {
             "努力",
             "職人技",
             "質",
-            "献身"
+            "献身",
           ],
           reversedKeywords: [
             "完璧主義",
             "単調な仕事",
             "情熱の欠如",
             "低品質",
-            "手抜き"
+            "手抜き",
           ],
           promptContext: "ペンタクルの8は熟練と勤勉を表します。技能の向上、献身的な努力、そして質の高い仕事を生み出すことに焦点を当てましょう。",
           language: "ja",
@@ -9675,7 +9677,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ks89ztvjeyohuv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00ku89zt9uhsszv5",
@@ -9685,7 +9687,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ks89ztvjeyohuv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kv89ztsstrgoit",
@@ -9695,7 +9697,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ks89ztvjeyohuv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kw89ztu48ncjfi",
@@ -9705,9 +9707,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00ks89ztvjeyohuv",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00kx89zts7i555rx",
@@ -9725,14 +9727,14 @@ export const DEFAULT_MASTER_DATA = {
             "自立",
             "洗練",
             "豊かさ",
-            "報酬"
+            "報酬",
           ],
           reversedKeywords: [
             "見せびらかし",
             "表面的",
             "物質的損失",
             "共依存",
-            "不安"
+            "不安",
           ],
           promptContext: "ペンタクルの9は自立と豊かさを表します。物質的な報酬を享受し、独立を達成し、真の充足感を得ることに焦点を当てましょう。",
           language: "ja",
@@ -9748,7 +9750,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kx89zts7i555rx",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00kz89zt5eit0r3t",
@@ -9758,7 +9760,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kx89zts7i555rx",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00l089ztdmbtr00f",
@@ -9768,7 +9770,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kx89zts7i555rx",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00l189zt146bm3ci",
@@ -9778,9 +9780,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00kx89zts7i555rx",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00l289zty60gd2oy",
@@ -9798,14 +9800,14 @@ export const DEFAULT_MASTER_DATA = {
             "遺産",
             "相続",
             "確立",
-            "永続的な成功"
+            "永続的な成功",
           ],
           reversedKeywords: [
             "家族の葛藤",
             "財務的失敗",
             "不安定な基盤",
             "遺産の喪失",
-            "破産"
+            "破産",
           ],
           promptContext: "ペンタクルの10は永続的な豊かさと遺産を表します。家族の絆、長期的な安定、そして次世代のために作り上げられる富に焦点を当てましょう。",
           language: "ja",
@@ -9821,7 +9823,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l289zty60gd2oy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00l489ztplzzunyy",
@@ -9831,7 +9833,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l289zty60gd2oy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00l589ztsa6m32cy",
@@ -9841,7 +9843,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l289zty60gd2oy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00l689zt0hqfly2h",
@@ -9851,9 +9853,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l289zty60gd2oy",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00l789ztgdaxxb85",
@@ -9871,14 +9873,14 @@ export const DEFAULT_MASTER_DATA = {
             "学習",
             "勤勉",
             "新たな資源",
-            "学生"
+            "学生",
           ],
           reversedKeywords: [
             "先延ばし",
             "進展の欠如",
             "資源の浪費",
             "怠惰",
-            "見逃した機会"
+            "見逃した機会",
           ],
           promptContext: "ペンタクルのページは勤勉な学習と新しい機会を表します。実践的なスキルの開発、物質的な可能性の探求、そして地道な努力に焦点を当てましょう。",
           language: "ja",
@@ -9894,7 +9896,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l789ztgdaxxb85",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00l989ztnaw9nkfy",
@@ -9904,7 +9906,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l789ztgdaxxb85",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00la89zt1vf4d4yg",
@@ -9914,7 +9916,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l789ztgdaxxb85",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lb89zt94yvb5j6",
@@ -9924,9 +9926,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00l789ztgdaxxb85",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00lc89ztnh2d7wye",
@@ -9944,14 +9946,14 @@ export const DEFAULT_MASTER_DATA = {
             "決意",
             "忍耐",
             "努力",
-            "日課"
+            "日課",
           ],
           reversedKeywords: [
             "怠惰",
             "退屈",
             "失敗した投資",
             "停滞",
-            "頑固さ"
+            "頑固さ",
           ],
           promptContext: "ペンタクルのナイトは忍耐と責任を表します。堅実な努力、信頼性、そして目標達成への着実な決意に焦点を当てましょう。",
           language: "ja",
@@ -9967,7 +9969,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lc89ztnh2d7wye",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00le89ztr4ummggc",
@@ -9977,7 +9979,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lc89ztnh2d7wye",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lf89ztadu61dqc",
@@ -9987,7 +9989,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lc89ztnh2d7wye",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lg89zt5d1h3ggj",
@@ -9997,9 +9999,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lc89ztnh2d7wye",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00lh89ztspwav5mu",
@@ -10017,14 +10019,14 @@ export const DEFAULT_MASTER_DATA = {
             "豊かさ",
             "安全",
             "寛大",
-            "繁栄"
+            "繁栄",
           ],
           reversedKeywords: [
             "物質主義",
             "自己中心的",
             "不安",
             "ケチ",
-            "共依存"
+            "共依存",
           ],
           promptContext: "ペンタクルのクイーンは実用的な育成と豊かさを表します。物質的な安定を創出し、寛大さと思いやりを持って資源を管理することに焦点を当てましょう。",
           language: "ja",
@@ -10040,7 +10042,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lh89ztspwav5mu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lj89ztkgeyoc24",
@@ -10050,7 +10052,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lh89ztspwav5mu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lk89ztm7s28i83",
@@ -10060,7 +10062,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lh89ztspwav5mu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00ll89ztrwivg7os",
@@ -10070,9 +10072,9 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lh89ztspwav5mu",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
         },
         {
           id: "cmhf20v7i00lm89zts1ueymxp",
@@ -10090,14 +10092,14 @@ export const DEFAULT_MASTER_DATA = {
             "リーダーシップ",
             "安全",
             "規律",
-            "豊かさ"
+            "豊かさ",
           ],
           reversedKeywords: [
             "強欲",
             "腐敗",
             "物質主義",
             "貧弱なリーダーシップ",
-            "頑固さ"
+            "頑固さ",
           ],
           promptContext: "ペンタクルのキングは豊かさと物質的な成功を表します。賢明なリーダーシップ、財務的安定性、そして規律ある物質的資源の管理に焦点を当てましょう。",
           language: "ja",
@@ -10113,7 +10115,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lm89zts1ueymxp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lo89zt84fnso61",
@@ -10123,7 +10125,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lm89zts1ueymxp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lp89ztqvqacvdf",
@@ -10133,7 +10135,7 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lm89zts1ueymxp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
             },
             {
               id: "cmhf20v7i00lq89ztxuejs2jm",
@@ -10143,12 +10145,12 @@ export const DEFAULT_MASTER_DATA = {
               cardId: "cmhf20v7i00lm89zts1ueymxp",
               language: "ja",
               createdAt: new Date("2025-10-31T16:15:02.137Z"),
-              updatedAt: new Date("2025-10-31T16:15:02.137Z")
-            }
-          ]
-        }
-      ]
-    }
+              updatedAt: new Date("2025-10-31T16:15:02.137Z"),
+            },
+          ],
+        },
+      ],
+    },
   ],
   tarotists: [
     {
@@ -10188,7 +10190,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回のみ利用可能",
           "基本スプレッド(3種類)",
           "恋愛・仕事・今日の運勢",
-          "広告表示あり"
+          "広告表示あり",
         ],
         maxReadings: 1,
         maxCeltics: 0,
@@ -10196,8 +10198,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: false,
         createdAt: new Date("2025-10-31T16:13:05.128Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.128Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.128Z"),
+      },
     },
     {
       id: "cmhf1yfwc000a89zt5ipv46k8",
@@ -10237,7 +10239,7 @@ export const DEFAULT_MASTER_DATA = {
           "占い履歴を保存可能",
           "基本スプレッド(3種類)",
           "恋愛・仕事・今日の運勢",
-          "広告表示あり"
+          "広告表示あり",
         ],
         maxReadings: 3,
         maxCeltics: 0,
@@ -10245,8 +10247,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.513Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.513Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.513Z"),
+      },
     },
     {
       id: "cmhf1ygi1000b89ztbq6i1xui",
@@ -10285,7 +10287,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -10293,8 +10295,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
+      },
     },
     {
       id: "cmhf1yh5g000c89ztn53niy2n",
@@ -10333,7 +10335,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日3回7枚以内スプレッドが利用可能",
           "または、1日1回ケルト十字が利用可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 1,
@@ -10341,8 +10343,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.695Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.695Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.695Z"),
+      },
     },
     {
       id: "cmhf1yhuc000d89ztxq7ppc60",
@@ -10382,7 +10384,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回パーソナル占いが利用可能",
           "*パーソナル占いでは、占う内容の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -10390,8 +10392,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.885Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.885Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.885Z"),
+      },
     },
     {
       id: "cmhf1yiha000e89zt7fm5k8na",
@@ -10431,7 +10433,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回パーソナル占いが利用可能",
           "*パーソナル占いでは、占う内容の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -10439,8 +10441,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.885Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.885Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.885Z"),
+      },
     },
     {
       id: "cmhf1yj1n000f89ztoxtch88k",
@@ -10480,7 +10482,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回パーソナル占いが利用可能",
           "*パーソナル占いでは、占う内容の入力、結果への質問が可能",
           "占い履歴を保存可能",
-          "広告表示なし"
+          "広告表示なし",
         ],
         maxReadings: 3,
         maxCeltics: 3,
@@ -10488,8 +10490,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: true,
         hasHistory: true,
         createdAt: new Date("2025-10-31T16:13:05.885Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.885Z")
-      }
+        updatedAt: new Date("2025-10-31T16:13:05.885Z"),
+      },
     },
     {
       id: "cmhf1yjqr000g89ztzk0aybci",
@@ -10528,7 +10530,7 @@ export const DEFAULT_MASTER_DATA = {
           "1日1回のみ利用可能",
           "基本スプレッド(3種類)",
           "恋愛・仕事・今日の運勢",
-          "広告表示あり"
+          "広告表示あり",
         ],
         maxReadings: 1,
         maxCeltics: 0,
@@ -10536,8 +10538,8 @@ export const DEFAULT_MASTER_DATA = {
         hasPersonal: false,
         hasHistory: false,
         createdAt: new Date("2025-10-31T16:13:05.128Z"),
-        updatedAt: new Date("2025-10-31T16:13:05.128Z")
-      }
-    }
-  ]
-};
+        updatedAt: new Date("2025-10-31T16:13:05.128Z"),
+      },
+    },
+  ],
+} as MasterData;

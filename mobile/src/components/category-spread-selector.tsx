@@ -1,27 +1,25 @@
 import { motion } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import type {
-  MasterData,
-  Plan,
   ReadingCategory,
   Spread,
   SpreadToCategory,
 } from "../../../shared/lib/types";
+import { useClient } from "../lib/hooks/use-client";
+import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import Accordion, { type AccordionItem } from "./accordion";
 import ScrollableRadioSelector from "./scrollable-radio-selector";
 
 interface CategorySpreadSelectorProps {
-  masterData: MasterData;
-  currentPlan: Plan;
   handleStartReading: () => void;
 }
 
 const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
-  masterData,
-  currentPlan,
   handleStartReading: onHandleStartReading,
 }) => {
+  const { masterData } = useMaster();
+  const { currentPlan } = useClient();
   const {
     selectedCategory,
     setSelectedCategory,

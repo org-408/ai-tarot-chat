@@ -17,6 +17,9 @@ export type SelectTargetMode = "tarotist" | "portrait" | "category" | "spread";
 
 export type SpreadViewModeType = "grid" | "carousel";
 
+export type UpperViewerModeType = "profile" | "grid" | "carousel";
+export type LowerViewerModeType = "selector" | "personal";
+
 export interface NavigationItem {
   id: PageType;
   label: string;

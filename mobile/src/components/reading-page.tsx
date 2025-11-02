@@ -1,20 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type {
   AppJWTPayload,
-  DrawnCard,
   MasterData,
   ReadingCategory,
   Spread,
   Tarotist,
 } from "../../../shared/lib/types";
 import { useSalon } from "../lib/hooks/use-salon";
-import { useClientStore } from "../lib/stores/client";
 import { drawRandomCards } from "../lib/utils/salon";
 import { ChatPanel } from "./chat-panel";
 import ShuffleDialog from "./shuffle-dialog";
-import SpreadViewerSwipe from "./spread-viewer-swipe";
-import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
+import UpperViewer from "./upper-viewer";
 
 interface ReadingData {
   tarotist: Tarotist;
@@ -32,21 +29,14 @@ interface ReadingPageProps {
 }
 
 // 77枚のカードデータ（MasterDataにない場合のフォールバック）
-const ReadingPage: React.FC<ReadingPageProps> = ({
-  masterData,
-  readingData,
-  showProfile,
-  setShowProfile,
-  onBack,
-}) => {
-  const { selectedTargetMode, setSpreadViewerMode } = useSalon();
-  const { tarotist, category, spread } = readingData;
-
-  const [drawnCards, setDrawnCards] = useState<DrawnCard[]>([]);
-
-  const { currentPlan } = useClientStore.getState();
-
-  const selectedSpread = masterData.spreads?.find((s) => s.id === spread.id);
+const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
+  const {
+    selectedSpread,
+    drawnCards,
+    setDrawnCards,
+    isRevealingCompleted,
+    setUpperViewerMode,
+  } = useSalon();
 
   // カードを引く（初回のみ）
   useEffect(() => {
@@ -54,30 +44,25 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       const cards = drawRandomCards(masterData, selectedSpread);
       setDrawnCards(cards);
     }
-  }, [masterData, selectedSpread]);
+  }, [masterData, selectedSpread, setDrawnCards]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // カードめくり状態・選択カードの管理をここで行う
-  const [isRevealingComplete, setIsReadingComplete] = useState(false);
-
   useEffect(() => {
-    console.log("isRevealingComplete changed:", isRevealingComplete);
-    if (isRevealingComplete) {
+    console.log("isRevealingComplete changed:", isRevealingCompleted);
+    if (isRevealingCompleted) {
       // カードめくり完了時の処理
       console.log("Card revealing is complete.");
       // プロフィール表示に切り替え TODO: 将来的に占い師のアニメーションを入れる
-      setShowProfile(true);
+      setUpperViewerMode("profile");
     }
-  }, [isRevealingComplete, setShowProfile]);
+  }, [isRevealingCompleted, setUpperViewerMode]);
 
   const handleBack = () => {
     // 戻るボタン押下時にviewModeをgridに戻す
-    setSpreadViewerMode("grid");
-    // プロフィール表示を元に戻す
-    setShowProfile(false);
+    setUpperViewerMode("grid");
     // 親コンポーネントのonBackを呼び出す
     onBack();
   };
@@ -100,28 +85,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           height: "45vh",
           margin: "0 auto",
         }}
-        onClick={() => {
-          if (showProfile) setShowProfile(false);
-        }}
       >
-        {/* プロフィール表示エリア */}
-        {showProfile && currentPlan && selectedTargetMode === "portrait" && (
-          <TarotistCarouselPortrait
-            masterData={masterData}
-            currentPlan={currentPlan}
-            readonly={true}
-          />
-        )}
-
         {/* カード表示エリア */}
-        {!showProfile && drawnCards.length > 0 && (
-          <SpreadViewerSwipe
-            spread={spread}
-            drawnCards={drawnCards}
-            isRevealingComplete={isRevealingComplete}
-            setIsRevealingComplete={setIsReadingComplete}
-          />
-        )}
+        {drawnCards.length > 0 && <UpperViewer />}
       </div>
 
       {/* 下半分 */}
@@ -133,18 +99,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         }}
       >
         {/* チャットパネル */}
-        {drawnCards.length > 0 && (
-          <ChatPanel
-            currentPlan={currentPlan!}
-            tarotist={tarotist}
-            spread={spread}
-            category={category}
-            drawnCards={drawnCards}
-            isRevealingComplete={isRevealingComplete}
-            setIsRevealingComplete={setIsReadingComplete}
-            onBack={handleBack}
-          />
-        )}
+        {drawnCards.length > 0 && <ChatPanel onBack={handleBack} />}
       </div>
     </div>
   );

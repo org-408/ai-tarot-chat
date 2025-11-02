@@ -120,11 +120,6 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
     }
   }, [flippedCards, drawnCards.length]);
 
-  const handleRevealAll = () => {
-    const allCardIds = drawnCards.map((card) => card.id);
-    setFlippedCards(new Set(allCardIds));
-  };
-
   const handleChangePlan = (targetPlan: UserPlan) => {
     onChangePlan(targetPlan);
   };
@@ -214,16 +209,7 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
 
               {/* ビュー2: チャットパネル */}
               {selectedSpread && selectedCategory && selectedTarotist && (
-                <ChatPanel
-                  currentPlan={currentPlan}
-                  tarotist={selectedTarotist}
-                  spread={selectedSpread}
-                  category={selectedCategory}
-                  drawnCards={drawnCards}
-                  isRevealingComplete={isRevealingComplete}
-                  setIsRevealingComplete={handleRevealAll}
-                  onBack={() => setLowerIndex(0)}
-                />
+                <ChatPanel onBack={() => setLowerIndex(0)} />
               )}
             </SwipeableContainer>
           </div>

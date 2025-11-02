@@ -13,7 +13,7 @@ import { masterService } from "../services/master";
 interface MasterState {
   // 状態
   isReady: boolean;
-  masterData: MasterData | null;
+  masterData: MasterData;
   isLoading: boolean;
   error: Error | null;
 
@@ -41,7 +41,7 @@ export const useMasterStore = create<MasterState>()(
   persist(
     (set, get) => ({
       isReady: false,
-      masterData: null,
+      masterData: DEFAULT_MASTER_DATA,
       isLoading: false,
       error: null,
 
@@ -69,7 +69,7 @@ export const useMasterStore = create<MasterState>()(
           // フォールバック: バンドルデータ使用
           console.warn("Using bundled master data", error);
           set({
-            masterData: DEFAULT_MASTER_DATA as unknown as MasterData,
+            masterData: DEFAULT_MASTER_DATA,
             isReady: true,
           });
         }
@@ -151,7 +151,7 @@ export const useMasterStore = create<MasterState>()(
         try {
           logWithContext("info", "[MasterStore] Clearing data");
           set({
-            masterData: null,
+            masterData: DEFAULT_MASTER_DATA,
             isReady: false,
             isLoading: false,
             error: null,
@@ -168,7 +168,7 @@ export const useMasterStore = create<MasterState>()(
         logWithContext("info", "[MasterStore] Resetting state");
         set({
           isReady: false,
-          masterData: null,
+          masterData: DEFAULT_MASTER_DATA,
           isLoading: false,
           error: null,
         });

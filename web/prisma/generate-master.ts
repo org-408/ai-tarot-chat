@@ -23,8 +23,8 @@ function toTypeScriptLiteral(obj: unknown, indent = 0): string {
   if (Array.isArray(obj)) {
     if (obj.length === 0) return "[]";
     const items = obj
-      .map((item) => `${spaces}  ${toTypeScriptLiteral(item, indent + 1)}`)
-      .join(",\n");
+      .map((item) => `${spaces}  ${toTypeScriptLiteral(item, indent + 1)},`)
+      .join("\n");
     return `[\n${items}\n${spaces}]`;
   }
 
@@ -40,9 +40,9 @@ function toTypeScriptLiteral(obj: unknown, indent = 0): string {
         return `${spaces}  ${keyStr}: ${toTypeScriptLiteral(
           value,
           indent + 1
-        )}`;
+        )},`;
       })
-      .join(",\n");
+      .join("\n");
 
     return `{\n${props}\n${spaces}}`;
   }
@@ -65,11 +65,13 @@ async function generateMasterData() {
   // TypeScript構文に変換
   const tsLiteral = toTypeScriptLiteral(masterData);
 
-  // TypeScriptファイルとして生成
+  // TypeScriptファイルとして生成(moble プロジェクト内で利用するため、import も出力)
   const tsContent = `// Auto-generated - DO NOT EDIT
 // Generated at: ${new Date().toISOString()}
 
-export const DEFAULT_MASTER_DATA = ${tsLiteral};
+import type { MasterData } from "../../../shared/lib/types";
+
+export const DEFAULT_MASTER_DATA = ${tsLiteral} as MasterData;
 `;
 
   const tsPath = path.join(__dirname, "../../mobile/src/assets/master-data.ts");

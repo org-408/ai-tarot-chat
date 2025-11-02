@@ -1,24 +1,27 @@
-import type { MasterData, Plan } from "../../../shared/lib/types";
+import type { Plan } from "../../../shared/lib/types";
+import { useClient } from "../lib/hooks/use-client";
+import { useMaster } from "../lib/hooks/use-master";
 import { getPlanColors } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 import Accordion, { type AccordionItem } from "./accordion";
 
 interface UpgradeGuideProps {
-  masterData: MasterData;
-  currentPlan: Plan;
-  upgradablePlans: Plan[];
   handleChangePlan: (targetPlan: UserPlan) => void;
   isChangingPlan: boolean;
 }
 
 const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
-  masterData,
-  currentPlan,
-  upgradablePlans,
   handleChangePlan,
   isChangingPlan,
 }) => {
+  const { masterData } = useMaster();
+  const { currentPlan } = useClient();
+
   const isGuest = currentPlan!.code === "GUEST";
+
+  const upgradablePlans = masterData!.plans
+    ?.filter((p: Plan) => p.no > (currentPlan?.no || 0))
+    .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
   // Accordionのitems配列を作成
   const accordionItems: AccordionItem[] = upgradablePlans.map((plan) => {
