@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       customQuestion: string;
       drawnCards: DrawnCard[];
     } = await req.json();
-    const customQuestion = client Messages.length >= 2 ? clientMessages[2].parts
+    const customQuestion = clientMessages.length >= 2 ? clientMessages[2].parts
       .filter((part) => part.type === "text")
       .map((part) => (part as { text: string }).text)
       .join("") : null;
