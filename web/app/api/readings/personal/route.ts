@@ -55,54 +55,56 @@ export async function POST(req: NextRequest) {
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 
-    // 入力バリデーション
-    if (!customQuestion || customQuestion.trim().length < 5) {
-      logWithContext("warn", "質問が短すぎる", {
-        clientId,
-        questionLength: customQuestion?.length,
-      });
-      return Response.json(
-        { error: "5文字以上で入力してください" },
-        { status: 400 }
-      );
-    }
+    // 入力バリデーション clientMessages.length === 3 のとき質問文チェック
+    if (clientMessages.length === 3) {
+      if (!customQuestion || customQuestion.trim().length < 5) {
+        logWithContext("warn", "質問が短すぎる", {
+          clientId,
+          questionLength: customQuestion?.length,
+        });
+        return Response.json(
+          { error: "5文字以上で入力してください" },
+          { status: 400 }
+        );
+      }
 
-    if (customQuestion.trim().length > 200) {
-      logWithContext("warn", "質問が長すぎる", {
-        clientId,
-        questionLength: customQuestion.length,
-      });
-      return Response.json(
-        { error: "200文字以内で入力してください" },
-        { status: 400 }
-      );
-    }
+      if (customQuestion.trim().length > 200) {
+        logWithContext("warn", "質問が長すぎる", {
+          clientId,
+          questionLength: customQuestion.length,
+        });
+        return Response.json(
+          { error: "200文字以内で入力してください" },
+          { status: 400 }
+        );
+      }
 
-    // モデレーションチェック
-    logWithContext("debug", "モデレーションチェック開始", { clientId });
-    const moderation = await moderatePersonalQuestion(customQuestion);
+      // モデレーションチェック
+      logWithContext("debug", "モデレーションチェック開始", { clientId });
+      const moderation = await moderatePersonalQuestion(customQuestion);
 
-    if (!moderation.allowed) {
-      logWithContext("warn", "モデレーションNG", {
-        clientId,
-        reason: moderation.reason,
-        category: moderation.category,
-      });
-      return Response.json(
-        {
-          error: moderation.message,
+      if (!moderation.allowed) {
+        logWithContext("warn", "モデレーションNG", {
+          clientId,
           reason: moderation.reason,
           category: moderation.category,
-        },
-        { status: 400 }
-      );
-    }
+        });
+        return Response.json(
+          {
+            error: moderation.message,
+            reason: moderation.reason,
+            category: moderation.category,
+          },
+          { status: 400 }
+        );
+      }
 
-    if (moderation.warning) {
-      logWithContext("info", "モデレーション警告", {
-        clientId,
-        warning: moderation.warning,
-      });
+      if (moderation.warning) {
+        logWithContext("info", "モデレーション警告", {
+          clientId,
+          warning: moderation.warning,
+        });
+      }
     }
 
     const spreads = await spreadService.getAllSpreads();
