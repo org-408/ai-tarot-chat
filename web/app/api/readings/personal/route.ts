@@ -51,10 +51,13 @@ export async function POST(req: NextRequest) {
       customQuestion: string;
       drawnCards: DrawnCard[];
     } = await req.json();
-    const customQuestion = clientMessages.length >= 2 ? clientMessages[2].parts
-      .filter((part) => part.type === "text")
-      .map((part) => (part as { text: string }).text)
-      .join("") : null;
+    const customQuestion =
+      clientMessages.length >= 2
+        ? clientMessages[2].parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join("")
+        : null;
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 
@@ -126,7 +129,7 @@ export async function POST(req: NextRequest) {
               (s) => `- ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`
             )
             .join("\n") +
-          `また、提案後に、{スプレッド名}と正確に記述してください。`
+          `また、提案後に、{スプレッド名}という形式で正確に記述してください。`
         : `ユーザーの質問に対して、選ばれたスプレッド「${spread.name}」で占いを行ってください。` +
           `質問内容は「${customQuestion}」です。` +
           (drawnCards.length === 0

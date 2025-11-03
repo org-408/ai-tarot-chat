@@ -36,8 +36,8 @@ export const homeFreeProviders = {
   gemini25pro: mistral("mistral-small-latest"),
   claude_h: cerebras("gpt-oss-120b"),
   gpt41: cerebras("llama-3.3-70b"),
-  gpt5: groq("openai/gpt-oss-120b"),
-  claude_s: groq("llama-3.3-70b-versatile"),
+  gpt5: groq("llama-3.3-70b-versatile"),
+  claude_s: groq("openai/gpt-oss-120b"),
   google: ollama("gemma3:12b"), // 良好
 };
 
