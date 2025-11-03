@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
       messages: clientMessages,
       tarotist,
       spread,
-      customQuestion,
       drawnCards,
     }: {
       messages: UIMessage[];
@@ -52,6 +51,10 @@ export async function POST(req: NextRequest) {
       customQuestion: string;
       drawnCards: DrawnCard[];
     } = await req.json();
+    const customQuestion = clientMessages[2].parts
+      .filter((part) => part.type === "text")
+      .map((part) => (part as { text: string }).text)
+      .join("");
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 

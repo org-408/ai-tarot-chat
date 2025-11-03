@@ -16,15 +16,19 @@ import { RevealPromptPanel } from "./reveal-prompt-panel";
  */
 
 interface ChatPanelProps {
+  onKeyboardHeightChange?: React.Dispatch<React.SetStateAction<number>>;
   onBack: () => void;
 }
 
-export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
+export const ChatPanel: React.FC<ChatPanelProps> = ({
+  onKeyboardHeightChange,
+  onBack,
+}) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
   const { token } = useAuth();
 
-  const { currentPlan, saveReading } = useClient();
+  const { saveReading } = useClient();
 
   const {
     selectedTarotist: tarotist,
@@ -61,8 +65,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
 
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [isFocused, setIsFocused] = useState(false);
-  const [isKeyboardReady, setIsKeyboardReady] = useState(false);
+  const [, setIsFocused] = useState(false);
+  const [, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
@@ -146,6 +150,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
   }, []);
 
   const handleSendMessage = () => {
+    console.log("Sending message:", inputValue);
     if (inputValue.trim()) {
       sendMessage({ text: inputValue.trim() });
       setInputValue("");
@@ -173,11 +178,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
 
     // キーボードの準備ができている場合は即座にスクロール
     // そうでない場合は少し待つ
-    const scrollDelay = isKeyboardReady ? 100 : 300;
+    // const scrollDelay = isKeyboardReady ? 100 : 300;
 
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, scrollDelay);
+    // setTimeout(() => {
+    //   textareaRef.current?.scrollIntoView({ behavior: "smooth" });
+    // }, scrollDelay);
   };
 
   const handleBlur = () => {
@@ -185,13 +190,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
   };
 
   useEffect(() => {
-    if (isRevealingCompleted) {
-      if (currentPlan.code !== "MASTER") {
-        const prompt = "よろしくお願いします。";
-        sendMessage({ text: prompt });
-      }
+    onKeyboardHeightChange?.(keyboardHeight);
+  }, [keyboardHeight, onKeyboardHeightChange]);
+
+  useEffect(() => {
+    if (isRevealingCompleted || isPersonal) {
+      const prompt = "よろしくお願いします。";
+      sendMessage({ text: prompt });
     }
-  }, [currentPlan.code, isRevealingCompleted, sendMessage]);
+  }, [isPersonal, isRevealingCompleted, sendMessage]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -269,6 +276,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
             .filter((part) => part.type === "text")
             .map((part) => (part as { text: string }).text)
             .join("");
+          console.log("Rendering message:", { index, message, textContent });
 
           return (
             <div key={index}>
@@ -331,9 +339,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
       {isPersonal && (
         <motion.div
           className="px-4 py-3 bg-transparent border-1 shadow"
-          animate={{
-            y: isFocused && keyboardHeight > 0 ? -keyboardHeight : 0,
-          }}
           transition={{
             type: "spring",
             stiffness: 300,

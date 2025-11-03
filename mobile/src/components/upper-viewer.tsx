@@ -1,6 +1,7 @@
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { DrawnCard } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
@@ -29,6 +30,23 @@ const UpperViewer: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showHint, setShowHint] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  // カルーセルビュー内でのスワイプ操作制御用
+  const [swipeOn, setSwipeOn] = useState(false);
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: false,
+    startIndex: 0,
+    skipSnaps: false,
+    dragFree: false,
+    // カルーセルビュー表示中かつswipeOnがfalseの場合はスワイプを無効化
+    watchDrag: () => {
+      if (selectedIndex === 2 && !swipeOn) {
+        return false; // カルーセルビュー内でのインタラクション中はUpperViewerのスワイプ無効
+      }
+      return true;
+    },
+  });
 
   const toggleFlip = (cardId: string): void => {
     setShowHint(false); // 🔥 カードタップでヒントを消す
@@ -81,6 +99,39 @@ const UpperViewer: React.FC = () => {
     setSelectedCard(card);
   };
 
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    const index = emblaApi.selectedScrollSnap();
+    setSelectedIndex(index);
+    const modes = ["profile", "grid", "carousel"] as const;
+    setUpperViewerMode(modes[index]);
+  }, [emblaApi, setUpperViewerMode]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const modes = ["profile", "grid", "carousel"];
+    const targetIndex = modes.indexOf(upperViewerMode);
+    if (targetIndex !== -1 && selectedIndex !== targetIndex) {
+      emblaApi.scrollTo(targetIndex);
+    }
+  }, [upperViewerMode, emblaApi, selectedIndex]);
+
+  // カルーセルビューから離れた時はswipeOnをリセット
+  useEffect(() => {
+    if (selectedIndex !== 2) {
+      setSwipeOn(false);
+    }
+  }, [selectedIndex]);
+
   useEffect(() => {
     if (upperViewerMode === "carousel" && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
@@ -104,63 +155,59 @@ const UpperViewer: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // スワイプ操作のハンドラ
-  const [swipeOn, SetSwipeOn] = useState(false);
-
-  const handleDragEnd = (
-    _event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
-  ): void => {
-    const threshold = 50;
-    // カルーセルビューでswipeOnがfalseの場合はスワイプ無効化
-    if (upperViewerMode === "carousel" && !swipeOn) return;
-    if (info.offset.x > threshold) {
-      if (upperViewerMode === "carousel") setUpperViewerMode("grid");
-      else if (upperViewerMode === "grid") setUpperViewerMode("carousel");
-    } else if (info.offset.x < -threshold) {
-      if (upperViewerMode === "grid") setUpperViewerMode("carousel");
-      else if (upperViewerMode === "carousel") setUpperViewerMode("grid");
-    }
-  };
-
   return (
     <div className="w-full h-full bg-white flex flex-col">
-      <motion.div
-        className="w-full flex-1 backdrop-blur-md rounded-2xl sm:p-4
-          border border-white/10 relative shadow-xs z-30"
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.2}
-        onDragEnd={handleDragEnd}
-      >
-        <AnimatePresence mode="wait">
-          {upperViewerMode === "profile" && (
-            <TarotistCarouselPortrait masterData={masterData} readonly={true} />
-          )}
-          {upperViewerMode === "grid" && (
-            <GridView
-              key="grid"
-              spread={spread}
-              drawnCards={drawnCards}
-              flippedCards={flippedCards}
-              onCardClick={handleCardClick}
-              onToggleFlip={toggleFlip}
-            />
-          )}
-          {upperViewerMode === "carousel" && (
-            <CarouselView
-              key="carousel"
-              drawnCards={drawnCards}
-              currentIndex={currentIndex}
-              flippedCards={flippedCards}
-              scrollContainerRef={scrollContainerRef}
-              setSwipeOn={SetSwipeOn}
-              onIndexChange={setCurrentIndex}
-              onCardClick={handleCardClick}
-              onToggleFlip={toggleFlip}
-            />
-          )}
-        </AnimatePresence>
+      {/* Embla Carousel */}
+      <div className="embla relative flex-1" ref={emblaRef}>
+        <div className="embla__container flex h-full">
+          {/* スライド1: プロフィール */}
+          <div className="embla__slide flex-[0_0_100%] min-w-0 h-full">
+            {/* 🔥 このスライド内でスクロール */}
+            <div className="w-full h-full overflow-y-auto px-1 pb-4 backdrop-blur-md rounded-2xl sm:p-4 border border-white/10 shadow-xs">
+              {selectedIndex === 0 && (
+                <TarotistCarouselPortrait
+                  masterData={masterData}
+                  readonly={true}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* スライド2: グリッド */}
+          <div className="embla__slide flex-[0_0_100%] min-w-0 h-full">
+            {/* 🔥 このスライド内でスクロール */}
+            <div className="w-full h-full overflow-y-auto px-1 pb-4 backdrop-blur-md rounded-2xl sm:p-4 border border-white/10 shadow-xs">
+              {selectedIndex === 1 && (
+                <GridView
+                  spread={spread}
+                  drawnCards={drawnCards}
+                  flippedCards={flippedCards}
+                  onCardClick={handleCardClick}
+                  onToggleFlip={toggleFlip}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* スライド3: カルーセル */}
+          <div className="embla__slide flex-[0_0_100%] min-w-0 h-full">
+            {/* 🔥 このスライド内でスクロール */}
+            <div className="w-full h-full overflow-y-auto px-1 pb-4 backdrop-blur-md rounded-2xl sm:p-4 border border-white/10 shadow-xs">
+              {selectedIndex === 2 && (
+                <CarouselView
+                  drawnCards={drawnCards}
+                  currentIndex={currentIndex}
+                  flippedCards={flippedCards}
+                  scrollContainerRef={scrollContainerRef}
+                  setSwipeOn={setSwipeOn}
+                  onIndexChange={setCurrentIndex}
+                  onCardClick={handleCardClick}
+                  onToggleFlip={toggleFlip}
+                />
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* 🔥 操作ヒント - 横長で薄いツールチップ */}
         <AnimatePresence>
@@ -212,16 +259,16 @@ const UpperViewer: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* ビューモード切替ボタン */}
       <div className="w-full flex justify-center gap-3 p-1 bg-white">
-        {(["profile", "grid", "carousel"] as const).map((mode) => (
+        {(["profile", "grid", "carousel"] as const).map((mode, index) => (
           <button
             key={mode}
-            onClick={() => setUpperViewerMode(mode)}
+            onClick={() => emblaApi?.scrollTo(index)}
             className={`w-24 h-4 text-xs rounded-full transition-all ${
-              upperViewerMode === mode ? "bg-purple-400/70" : "bg-purple-200/40"
+              selectedIndex === index ? "bg-purple-400/70" : "bg-purple-200/40"
             }`}
           >
             {mode === "profile"

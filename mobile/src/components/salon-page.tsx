@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import type {
   AppJWTPayload,
   MasterData,
@@ -74,6 +75,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
     onStartReading(selectedTarotist, selectedCategory, selectedSpread);
   };
 
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   return (
     <div className="main-container">
       {/* カレントプラン表示 */}
@@ -98,7 +101,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
         <>
           {/* 上半分 */}
           <div
-            className="fixed left-0 right-0 h-[45vh] z-10"
+            className="fixed left-0 right-0 h-[45vh]"
             style={{
               top: "calc(50px + env(safe-area-inset-top))",
             }}
@@ -111,12 +114,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
           </div>
 
           {/* 下半分 */}
-          <div
-            className="fixed left-0 right-0 px-1 pb-25 h-[55vh]"
+          <motion.div
+            className="fixed left-0 right-0 px-1 pb-25 h-[55vh] z-20"
             style={{
               top: "calc(45vh + 50px + env(safe-area-inset-top))",
               bottom: 0,
             }}
+            animate={{ y: -keyboardHeight }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {!currentPlan.hasPersonal && (
               <>
@@ -134,13 +139,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
             )}
             {currentPlan.hasPersonal && (
               <LowerViewer
+                onKeyboardHeightChange={setKeyboardHeight}
                 handleChangePlan={handleChangePlan}
                 handleStartReading={handleStartReading}
                 isChangingPlan={isChangingPlan}
                 onBack={() => {}}
               />
             )}
-          </div>
+          </motion.div>
         </>
       )}
     </div>

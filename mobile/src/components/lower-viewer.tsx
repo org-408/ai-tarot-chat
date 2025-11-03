@@ -9,6 +9,7 @@ import { ChatPanel } from "./chat-panel";
 import UpgradeGuide from "./upgrade-guide";
 
 interface LowerViewerProps {
+  onKeyboardHeightChange: React.Dispatch<React.SetStateAction<number>>;
   handleChangePlan: (targetPlan: UserPlan) => void;
   handleStartReading: () => void;
   isChangingPlan: boolean;
@@ -16,6 +17,7 @@ interface LowerViewerProps {
 }
 
 const LowerViewer: React.FC<LowerViewerProps> = ({
+  onKeyboardHeightChange,
   handleChangePlan,
   handleStartReading,
   isChangingPlan,
@@ -50,7 +52,8 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
     setSelectedIndex(index);
     setLowerViewerMode(index === 0 ? "selector" : "personal");
     setIsPersonal(index === 1);
-  }, [emblaApi, setLowerViewerMode, setIsPersonal]);
+    onKeyboardHeightChange(0);
+  }, [emblaApi, setLowerViewerMode, setIsPersonal, onKeyboardHeightChange]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -111,7 +114,11 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
             {/* 🔥 このスライド内でスクロール */}
             <div className="w-full h-full overflow-y-auto px-1 pb-4">
               {selectedIndex === 1 && isPersonal && (
-                <ChatPanel key={"personal"} onBack={onBack} />
+                <ChatPanel
+                  key={"personal"}
+                  onKeyboardHeightChange={onKeyboardHeightChange}
+                  onBack={onBack}
+                />
               )}
             </div>
           </div>
