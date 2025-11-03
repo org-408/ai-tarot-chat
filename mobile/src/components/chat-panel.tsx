@@ -65,6 +65,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
   const [isKeyboardReady, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isMessageComplete, setIsMessageComplete] = useState(false);
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -227,6 +228,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
     );
     if (isRevealingCompleted && messages.length > 0 && status === "ready") {
       console.log("All messages revealed.");
+      setIsMessageComplete(true);
       // 占い結果を保存する（即答方式の場合）
       saveReading({
         tarotistId: tarotist.id,
@@ -310,8 +312,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onBack }) => {
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
-      {/* Back Button - スクロールが一番下の時だけ表示 */}
-      {isRevealingCompleted && (
+      {/* Back Button - メッセージを全部受信したら表示 */}
+      {isMessageComplete && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}

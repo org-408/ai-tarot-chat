@@ -1,17 +1,19 @@
 // app/api/readings/personal/route.ts
 
 import { DrawnCard, Spread, Tarotist } from "@/../shared/lib/types";
-import { homeProviders, providers } from "@/lib/server/ai/models";
+import { homeFreeProviders, providers } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService } from "@/lib/server/services/auth";
 import { moderatePersonalQuestion } from "@/lib/server/services/moderation";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+const RETRY_COUNT = 3;
 
 export async function POST(req: NextRequest) {
   let clientId = "";
@@ -130,34 +132,59 @@ export async function POST(req: NextRequest) {
 
     const messages = convertToModelMessages(clientMessages);
 
-    const result = streamText({
-      model: homeProviders
-        ? homeProviders[provider as keyof typeof homeProviders]
-        : debugMode
-        ? providers["google"]
-        : providers[provider as keyof typeof providers],
-      messages:
-        messages.length > 0 ? messages : [{ role: "user", content: "" }],
-      system,
-      onChunk: (chunk) => {
-        console.log(`[readings/personal/route] chunk: `, chunk);
-      },
-    });
+    for (let i = 0; i < RETRY_COUNT; i++) {
+      try {
+        logWithContext("info", "システムプロンプトとメッセージ変換完了", {
+          clientId,
+        });
+        const result = streamText({
+          model:
+            i === 0
+              ? homeFreeProviders
+                ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
+                : debugMode
+                ? providers["google"]
+                : providers[provider as keyof typeof providers]
+              : i === 1
+              ? homeFreeProviders["gemini25"]
+              : homeFreeProviders["google"],
+          messages:
+            messages.length > 0 ? messages : [{ role: "user", content: "" }],
+          system,
+          onChunk: (chunk) => {
+            console.log(`[readings/simple/route] chunk: `, chunk);
+          },
+        });
 
-    // ストリーミングレスポンス返却
-    // 保存はクライアント側で別途実施
-    return result.toUIMessageStreamResponse({
-      headers: {
-        "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
-        "X-Accel-Buffering": "no",
-      },
-    });
+        // テキストストリームのレスポンス（v5公式の推し）
+        return result.toUIMessageStreamResponse({
+          headers: {
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "X-Accel-Buffering": "no",
+          },
+        });
+      } catch (error) {
+        logWithContext("error", `シンプル占い試行${i + 1}回目失敗`, {
+          error,
+          clientId,
+        });
+        if (i === RETRY_COUNT - 1) {
+          throw error;
+        }
+        logWithContext("info", `シンプル占い再試行します ${i + 2}回目`, {
+          clientId,
+        });
+      }
+    }
   } catch (error) {
     logWithContext("error", "パーソナル占いエラー", {
       error,
       clientId,
     });
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error, errorMessage: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

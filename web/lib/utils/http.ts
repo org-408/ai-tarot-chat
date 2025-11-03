@@ -87,7 +87,11 @@ export class Http {
     } catch (error) {
       // ネットワークエラーの変換
       if (error instanceof Error && !(error instanceof HttpError)) {
-        logWithContext("info", "[ApiClient] Network/Request error:", { error });
+        logWithContext("info", "[ApiClient] Network/Request error:", {
+          error,
+          path,
+          method,
+        });
         throw new HttpError(0, `Network error: ${error.message}`, undefined);
       }
       throw error;
@@ -122,7 +126,12 @@ export class Http {
       return res;
     } catch (error) {
       logWithContext("error", "[ApiClient] Token refresh failed:", { error });
-      throw new HttpError(500, "Token refresh failed", undefined);
+      throw new HttpError(500, "Token refresh failed", {
+        data: config,
+        status: 500,
+        headers: new Headers(),
+        url: config.path,
+      });
     }
   }
 

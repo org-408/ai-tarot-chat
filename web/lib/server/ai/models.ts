@@ -20,25 +20,25 @@ const ollama = createOllama({
 });
 
 export const homeProviders = {
-  gpt5nano: ollama("llama3.1:8b-instruct-q8_0"),
-  gemini25: ollama("llama3.1:8b-instruct-fp16"),
-  gemini25pro: ollama("qwen3:14b-q4_K_M"),
-  claude_h: ollama("qwen3:14b-q8_0"),
-  gpt41: ollama("gemma3:12b"),
-  gpt5: ollama("gemma3:27b"),
-  claude_s: ollama("gpt-oss:latest"),
+  gpt5nano: ollama("llama3.1:8b-instruct-q8_0"), // 微妙
+  gemini25: ollama("llama3.1:8b-instruct-fp16"), // 微妙
+  gemini25pro: ollama("qwen3:14b-q4_K_M"), // 行けそう？
+  claude_h: ollama("qwen3:14b-q8_0"), // やや遅い
+  gpt41: ollama("gemma3:12b"), // 良好
+  gpt5: ollama("gemma3:27b"), // 遅い
+  claude_s: ollama("gpt-oss:latest"), // 微妙
   google: deepinfra("openai/gpt-oss-120b"),
 };
 
 export const homeFreeProviders = {
   gpt5nano: mistral("open-mistral-nemo"),
-  gemini25: ollama("qwen2.5:14b-instruct-q4_K_M"),
+  gemini25: ollama("qwen3:14b-q4_K_M"), // 行けそう？
   gemini25pro: mistral("mistral-small-latest"),
   claude_h: cerebras("gpt-oss-120b"),
   gpt41: cerebras("llama-3.3-70b"),
   gpt5: groq("openai/gpt-oss-120b"),
   claude_s: groq("llama-3.3-70b-versatile"),
-  google: deepinfra("openai/gpt-oss-120b"),
+  google: ollama("gemma3:12b"), // 良好
 };
 
 // Google Vertex AI用の認証設定
