@@ -3,6 +3,7 @@
 import { DrawnCard, Spread, Tarotist } from "@/../shared/lib/types";
 import { homeFreeProviders, providers } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
+import { spreadService } from "@/lib/server/services";
 import { authService } from "@/lib/server/services/auth";
 import { moderatePersonalQuestion } from "@/lib/server/services/moderation";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
@@ -104,20 +105,73 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const spreads = await spreadService.getAllSpreads();
+
     const system =
       `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
       `また、あなたは熟練したタロット占い師です。` +
-      `* 相談者から「${customQuestion}」という質問を受けています。\n` +
-      `* スプレッドは${spread.name}です。` +
-      `タロットカードの意味を踏まえて、優しく丁寧にアドバイスしてください。\n\n` +
-      `【制約条件】\n` +
-      `- タロット占いの範囲内でのみ回答してください\n` +
-      `- 医療、法律、投資の専門的アドバイスは行いません\n` +
-      `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
-      `- ですます調で話すこと\n` +
-      `- 200文字以上400文字以内で回答してください\n`;
+      (clientMessages.length <= 1
+        ? `まずは簡単なご挨拶と自己紹介、それからユーザーに占いたい内容を問いかけてください。`
+        : clientMessages.length <= 3
+        ? `ユーザーの質問に対してスプレッドを提案してください。スプレッドは以下から選んでください。` +
+          spreads
+            .map(
+              (s) => `- ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`
+            )
+            .join("\n") +
+          `また、提案後に、{スプレッド名}と正確に記述してください。`
+        : `ユーザーの質問に対して、選ばれたスプレッド「${spread.name}」で占いを行ってください。` +
+          `質問内容は「${customQuestion}」です。` +
+          (drawnCards.length === 0
+            ? `* まだカードは引かれていません。スプレッドに必要な${
+                spread.cells!.length
+              }枚のカードをシャッフルして引いてください。`
+            : `* シャッフルして引いたカードは以下の通りです。\n` +
+              drawnCards
+                .map(
+                  (placement) =>
+                    `- ${placement.position}(${placement.card!.name}${
+                      placement.isReversed ? "逆位置" : "正位置"
+                    }): ${
+                      placement.isReversed
+                        ? placement.card!.reversedKeywords.join(", ")
+                        : placement.card!.uprightKeywords.join(", ")
+                    }`
+                )
+                .join("\n")
+                .trim()) +
+          `\n\n` +
+          `【回答フォーマット】\n
+\n
+【カードの解釈】\n
+{何枚目か}: {スプレッドの位置の名前}: {カードの名前}(正位置 or 逆位置)\n
+- {スプレッドの位置の意味を簡潔に説明してください}\n
+- {カードの意味を簡潔に説明してください}\n
+{スプレッドの位置とカードの意味を踏まえて、カードの解釈を丁寧に記述してください}\n
+...（スプレッドのカード枚数分繰り返す）\n
+\n
+【総合的な占いの結果】\n
+**概要**\n
+{相談者の占いたいことについて全てのカードの解釈を踏まえて総合的な占いの結果を簡潔に説明してください}\n
+\n
+**詳細**\n
+{相談者の占いたいことについて全てのカードの解釈を踏まえて総合的な占いの結果を概要に沿って詳細に丁寧に説明してください}\n
+\n` +
+          `【制約条件】\n` +
+          `- タロットカードの意味に基づいて回答すること\n` +
+          `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
+          `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
+          `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
+          `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
+          `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
+          `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
+          `- 絵文字や顔文字を使わないこと\n` +
+          `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
+          `- です・ます調で話すこと\n` +
+          `- 1回の回答は200文字以上300文字以内とすること\n`);
+
     console.log(`[readings/personal/route] Received POST request`, {
       clientMessages,
       tarotist,
