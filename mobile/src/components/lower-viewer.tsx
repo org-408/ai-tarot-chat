@@ -26,6 +26,7 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
   const { isPersonal, setIsPersonal, lowerViewerMode, setLowerViewerMode } =
     useSalon();
   const [showHint, setShowHint] = useState(true);
+
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const autoHeight = useRef(AutoHeight());

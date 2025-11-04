@@ -160,25 +160,37 @@ export async function POST(req: NextRequest) {
           },
         });
       } catch (error) {
-        logWithContext("error", `シンプル占い試行${i + 1}回目失敗`, {
-          error,
-          clientId,
-        });
+        logWithContext(
+          "error",
+          `[readings/simple/route] シンプル占い試行${i + 1}回目失敗`,
+          {
+            error,
+            clientId,
+          }
+        );
+        console.error(
+          `[readings/simple/route] シンプル占い試行${i + 1}回目失敗: `,
+          error
+        );
         if (i === RETRY_COUNT - 1) {
           throw error;
         }
-        logWithContext("info", `シンプル占い再試行します ${i + 2}回目`, {
-          clientId,
-        });
+        logWithContext(
+          "info",
+          `[readings/simple/route] シンプル占い再試行します ${i + 2}回目`,
+          {
+            clientId,
+          }
+        );
       }
     }
   } catch (error) {
-    logWithContext("error", "シンプル占いエラー", {
+    logWithContext("error", "[readings/simple/route] シンプル占いエラー", {
       error,
       clientId,
     });
     return NextResponse.json(
-      { error, errorMessage: "Internal Server Error" },
+      { error, errorMessage: "[readings/simple/route] Internal Server Error" },
       { status: 500 }
     );
   }

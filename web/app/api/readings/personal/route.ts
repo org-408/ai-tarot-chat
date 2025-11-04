@@ -121,7 +121,13 @@ export async function POST(req: NextRequest) {
       `あなたのプロフィールは${tarotist.bio}です。` +
       `また、あなたは熟練したタロット占い師です。` +
       (clientMessages.length <= 1
-        ? `まずは簡単なご挨拶と自己紹介、それからユーザーに占いたい内容を問いかけてください。`
+        ? `まずは簡単なご挨拶とユーザーに占いたい内容を質問してください。` +
+          `\n\n` +
+          `【回答フォーマット】\n
+【ご挨拶】\n
+{簡潔な自己紹介と丁寧にご挨拶をしてください}\n
+\n
+本日はどのようなことを占いましょうか？\n`
         : clientMessages.length <= 3
         ? `ユーザーの質問に対してスプレッドを提案してください。スプレッドは以下から選んでください。` +
           spreads
@@ -129,7 +135,12 @@ export async function POST(req: NextRequest) {
               (s) => `- ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`
             )
             .join("\n") +
-          `また、提案後に、{スプレッド名}という形式で正確に記述してください。`
+          `また、提案後に、{スプレッド名}という形式で正確に記述してください。` +
+          `\n\n` +
+          `【回答フォーマット】\n
+【おすすめのスプレッド】\n
+{相談者の質問に対して適したスプレッドを提案し理由を説明してください}\n
+- {スプレッドno}: {スプレッド名}\n`
         : `ユーザーの質問に対して、選ばれたスプレッド「${spread.name}」で占いを行ってください。` +
           `質問内容は「${customQuestion}」です。` +
           (drawnCards.length === 0
@@ -227,25 +238,40 @@ export async function POST(req: NextRequest) {
           },
         });
       } catch (error) {
-        logWithContext("error", `シンプル占い試行${i + 1}回目失敗`, {
-          error,
-          clientId,
-        });
+        logWithContext(
+          "error",
+          `[readings/personal/route] パーソナル占い試行${i + 1}回目失敗`,
+          {
+            error,
+            clientId,
+          }
+        );
+        console.error(
+          `[readings/personal/route] パーソナル占い試行${i + 1}回目失敗: `,
+          error
+        );
         if (i === RETRY_COUNT - 1) {
           throw error;
         }
-        logWithContext("info", `シンプル占い再試行します ${i + 2}回目`, {
-          clientId,
-        });
+        logWithContext(
+          "info",
+          `[readings/personal/route] パーソナル占い再試行します ${i + 2}回目`,
+          {
+            clientId,
+          }
+        );
       }
     }
   } catch (error) {
-    logWithContext("error", "パーソナル占いエラー", {
+    logWithContext("error", "[readings/personal/route] パーソナル占いエラー", {
       error,
       clientId,
     });
     return NextResponse.json(
-      { error, errorMessage: "Internal Server Error" },
+      {
+        error,
+        errorMessage: "[readings/personal/route] Internal Server Error",
+      },
       { status: 500 }
     );
   }
