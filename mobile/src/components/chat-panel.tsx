@@ -16,7 +16,7 @@ import { RevealPromptPanel } from "./reveal-prompt-panel";
  */
 
 interface ChatPanelProps {
-  onKeyboardHeightChange: React.Dispatch<React.SetStateAction<number>>;
+  onKeyboardHeightChange?: React.Dispatch<React.SetStateAction<number>>;
   onBack: () => void;
 }
 
@@ -39,7 +39,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     isPersonal,
   } = useSalon();
 
-  const [inputDisableChange, setInputDisableChange] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(false);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -81,13 +81,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       console.log("Last message:", lastMessage);
       if (messages.length > 3) {
         console.log("step 2: input disabled", messages);
-        setInputDisableChange?.(true);
+        setInputDisabled?.(true);
       } else {
         console.log("not step 2: input enabled", messages);
-        setInputDisableChange?.(false);
+        setInputDisabled?.(false);
       }
     }
-  }, [messages, setInputDisableChange, status]);
+  }, [messages, setInputDisabled, status]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
   // useEffect(() => {
@@ -184,6 +184,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const handleFocus = () => {
     setIsFocused(true);
+    setInputValue(inputValue.trim());
 
     // キーボードの準備ができている場合は即座にスクロール
     // そうでない場合は少し待つ
@@ -345,7 +346,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      {isPersonal && (
+      {isPersonal && !inputDisabled && (
         <motion.div
           className="px-4 py-3 bg-transparent border-1 shadow"
           transition={{
@@ -369,15 +370,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400
               focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={inputDisableChange || status === "streaming"}
+              disabled={status === "streaming"}
             />
             <button
               onClick={handleSendMessage}
-              disabled={
-                !inputValue.trim() ||
-                inputDisableChange ||
-                status === "streaming"
-              }
+              disabled={!inputValue.trim() || status === "streaming"}
               className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
             >
               <ArrowUp size={18} strokeWidth={2.5} />
