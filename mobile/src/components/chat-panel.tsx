@@ -85,7 +85,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
-    console.log("Messages updated:", messages.length, "Status:", status);
+    // console.log("Messages updated:", messages.length, "Status:", status);
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       console.log("Last message:", lastMessage);
@@ -97,7 +97,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         setInputDisabled(false);
       }
       // パーソナル占い時の処理
-      if (isPersonal) {
+      if (isPersonal && status === "ready") {
         if (messages.length === 4) {
           console.log("step 2 reached in spread select mode");
           // スプレッドを messsages から取得してセット
@@ -105,7 +105,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .filter((part) => part.type === "text")
             .map((part) => (part as { text: string }).text)
             .join("");
-          const match = str.match(/^\{(.+)\}$/);
+          console.log("Extracted string:", str);
+          const match = str.match(/^\{\{?([^}]+)\}\}?$/);
           const spreadName = match ? match[1] : "";
           console.log("Extracted spread name:", spreadName);
           const spread = masterData.spreads.find((s) => s.name === spreadName);
@@ -116,14 +117,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         }
       }
     }
-  }, [
-    isPersonal,
-    masterData.spreads,
-    messages,
-    setInputDisabled,
-    setSelectedSpread,
-    status,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPersonal, masterData.spreads, messages, status]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
   // useEffect(() => {
