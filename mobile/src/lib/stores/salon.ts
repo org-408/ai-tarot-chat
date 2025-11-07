@@ -1,3 +1,4 @@
+import type { UIMessage } from "ai";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type {
@@ -18,7 +19,7 @@ import { useMasterStore } from "./master";
 interface SalonState {
   selectedTarotist: Tarotist;
   selectedCategory: ReadingCategory;
-  customeQuestion: string;
+  customQuestion: string;
   selectedSpread: Spread;
   drawnCards: DrawnCard[];
   isRevealingCompleted: boolean;
@@ -27,10 +28,11 @@ interface SalonState {
   upperViewerMode: UpperViewerModeType;
   lowerViewerMode: LowerViewerModeType;
   isPersonal: boolean;
+  messages: UIMessage[];
   init: () => void;
   setSelectedTarotist: (tarotist: Tarotist) => void;
   setSelectedCategory: (category: ReadingCategory) => void;
-  setCustomeQuestion: (question: string) => void;
+  setCustomQuestion: (question: string) => void;
   setSelectedSpread: (spread: Spread) => void;
   setDrawnCards: (cards: DrawnCard[]) => void;
   setIsRevealingCompleted: (completed: boolean) => void;
@@ -39,6 +41,7 @@ interface SalonState {
   setUpperViewerMode: (mode: UpperViewerModeType) => void;
   setLowerViewerMode: (mode: LowerViewerModeType) => void;
   setIsPersonal: (isPersonal: boolean) => void;
+  setMessages: (messages: UIMessage[]) => void;
 }
 
 // 初期値をマスターデータから取得する
@@ -57,7 +60,7 @@ export const useSalonStore = create<SalonState>()(
     (set) => ({
       selectedTarotist: initialTarotist,
       selectedCategory: initialCategory,
-      customeQuestion: "",
+      customQuestion: "",
       selectedSpread: initialSpread,
       drawnCards: [],
       isRevealingCompleted: false,
@@ -66,6 +69,7 @@ export const useSalonStore = create<SalonState>()(
       upperViewerMode: "profile",
       lowerViewerMode: "selector",
       isPersonal: false,
+      messages: [],
       init: () => {
         set({
           drawnCards: [],
@@ -78,7 +82,7 @@ export const useSalonStore = create<SalonState>()(
       },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
       setSelectedCategory: (category) => set({ selectedCategory: category }),
-      setCustomeQuestion: (question) => set({ customeQuestion: question }),
+      setCustomQuestion: (question) => set({ customQuestion: question }),
       setSelectedSpread: (spread) => set({ selectedSpread: spread }),
       setDrawnCards: (cards) => set({ drawnCards: cards }),
       setIsRevealingCompleted: (completed) =>
@@ -88,6 +92,7 @@ export const useSalonStore = create<SalonState>()(
       setUpperViewerMode: (mode) => set({ upperViewerMode: mode }),
       setLowerViewerMode: (mode) => set({ lowerViewerMode: mode }),
       setIsPersonal: (isPersonal) => set({ isPersonal }),
+      setMessages: (messages) => set({ messages }),
     }),
     {
       name: "salon-storage",

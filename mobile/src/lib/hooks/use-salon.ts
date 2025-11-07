@@ -8,6 +8,7 @@ export function useSalon() {
   const {
     selectedTarotist,
     selectedCategory,
+    customQuestion,
     selectedSpread,
     drawnCards,
     isRevealingCompleted,
@@ -16,9 +17,11 @@ export function useSalon() {
     upperViewerMode,
     lowerViewerMode,
     isPersonal,
+    messages,
     init,
     setSelectedTarotist,
     setSelectedCategory,
+    setCustomQuestion,
     setSelectedSpread,
     setDrawnCards,
     setIsRevealingCompleted,
@@ -27,6 +30,7 @@ export function useSalon() {
     setUpperViewerMode,
     setLowerViewerMode,
     setIsPersonal,
+    setMessages,
   } = useSalonStore();
 
   return {
@@ -35,6 +39,7 @@ export function useSalon() {
     // ============================================
     selectedTarotist,
     selectedCategory,
+    customQuestion,
     selectedSpread,
     drawnCards,
     isRevealingCompleted,
@@ -43,6 +48,7 @@ export function useSalon() {
     upperViewerMode,
     lowerViewerMode,
     isPersonal,
+    messages,
 
     // ============================================
     // アクション
@@ -50,6 +56,7 @@ export function useSalon() {
     init,
     setSelectedTarotist,
     setSelectedCategory,
+    setCustomQuestion,
     setSelectedSpread,
     setDrawnCards,
     setIsRevealingCompleted,
@@ -58,5 +65,6 @@ export function useSalon() {
     setUpperViewerMode,
     setLowerViewerMode,
     setIsPersonal,
+    setMessages,
   };
 }

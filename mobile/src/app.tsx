@@ -199,13 +199,8 @@ function App() {
   };
 
   // 🔥 占い開始
-  const handleStartReading = (
-    tarotist: Tarotist,
-    category: ReadingCategory,
-    spread: Spread
-  ) => {
-    console.log(`占い開始: category=${category}, spread=${spread}`);
-    setReadingData({ tarotist, category, spread });
+  const handleStartReading = () => {
+    console.log(`占い開始: `);
     setPageType("reading");
   };
 

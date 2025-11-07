@@ -139,8 +139,8 @@ export async function POST(req: NextRequest) {
           `\n\n` +
           `【回答フォーマット】\n
 【おすすめのスプレッド】\n
-{相談者の質問に対して適したスプレッドを提案し理由を説明してください}\n
-- {スプレッドno}: {スプレッド名}\n`
+{スプレッド名}
+{相談者の質問に対して適したスプレッドを提案し理由を説明してください}\n\n`
         : `ユーザーの質問に対して、選ばれたスプレッド「${spread.name}」で占いを行ってください。` +
           `質問内容は「${customQuestion}」です。` +
           (drawnCards.length === 0
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           onChunk: (chunk) => {
-            console.log(`[readings/simple/route] chunk: `, chunk);
+            console.log(`[readings/personal/route] chunk: `, chunk);
           },
         });
 

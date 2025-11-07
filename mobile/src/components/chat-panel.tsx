@@ -7,6 +7,7 @@ import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
+import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
@@ -17,11 +18,14 @@ import { RevealPromptPanel } from "./reveal-prompt-panel";
 
 interface ChatPanelProps {
   onKeyboardHeightChange?: React.Dispatch<React.SetStateAction<number>>;
+  handleStartReading?: () => void;
   onBack: () => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
   onKeyboardHeightChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  handleStartReading,
   onBack,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
@@ -37,7 +41,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     drawnCards,
     isRevealingCompleted,
     isPersonal,
+    setCustomQuestion,
+    setSelectedSpread,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setMessages,
   } = useSalon();
+
+  const { masterData } = useMaster();
 
   const [inputDisabled, setInputDisabled] = useState(false);
 
@@ -81,13 +91,39 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       console.log("Last message:", lastMessage);
       if (messages.length > 3) {
         console.log("step 2: input disabled", messages);
-        setInputDisabled?.(true);
+        setInputDisabled(true);
       } else {
         console.log("not step 2: input enabled", messages);
-        setInputDisabled?.(false);
+        setInputDisabled(false);
+      }
+      // パーソナル占い時の処理
+      if (isPersonal) {
+        if (messages.length === 4) {
+          console.log("step 2 reached in spread select mode");
+          // スプレッドを messsages から取得してセット
+          const str = messages[3].parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join("");
+          const match = str.match(/^\{(.+)\}$/);
+          const spreadName = match ? match[1] : "";
+          console.log("Extracted spread name:", spreadName);
+          const spread = masterData.spreads.find((s) => s.name === spreadName);
+          console.log("Found spread:", spread);
+          if (spread) {
+            setSelectedSpread(spread);
+          }
+        }
       }
     }
-  }, [messages, setInputDisabled, status]);
+  }, [
+    isPersonal,
+    masterData.spreads,
+    messages,
+    setInputDisabled,
+    setSelectedSpread,
+    status,
+  ]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
   // useEffect(() => {
@@ -159,6 +195,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, []);
 
   const handleSendMessage = () => {
+    if (messages.length < 3) {
+      console.log("step 2 not reached yet, setting custom question");
+      setCustomQuestion(inputValue.trim());
+    }
     console.log("Sending message:", inputValue);
     if (inputValue.trim()) {
       sendMessage({ text: inputValue.trim() });
@@ -324,6 +364,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
         <div ref={messagesEndRef} />
       </div>
+      {/* }
 
       {/* 即答方式のヒント及びボタン表示 */}
       {!isPersonal && (

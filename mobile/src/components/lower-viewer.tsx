@@ -118,6 +118,7 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
                 <ChatPanel
                   key={"personal"}
                   onKeyboardHeightChange={onKeyboardHeightChange}
+                  handleStartReading={handleStartReading}
                   onBack={onBack}
                 />
               )}

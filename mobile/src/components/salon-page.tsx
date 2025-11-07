@@ -4,9 +4,6 @@ import type {
   AppJWTPayload,
   MasterData,
   Plan,
-  ReadingCategory,
-  Spread,
-  Tarotist,
   UsageStats,
 } from "../../../shared/lib/types";
 import { useSalon } from "../lib/hooks/use-salon";
@@ -23,11 +20,7 @@ interface SalonPageProps {
   masterData: MasterData;
   usageStats: UsageStats;
   onChangePlan: (plan: UserPlan) => void;
-  onStartReading: (
-    tarotist: Tarotist,
-    category: ReadingCategory,
-    spread: Spread
-  ) => void;
+  onStartReading: () => void;
   isChangingPlan: boolean;
 }
 
@@ -72,7 +65,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
     console.log("[SalonPage] handleStartReading called");
     if (!selectedTarotist || !selectedSpread || !selectedCategory) return;
     // onStartReading 実施
-    onStartReading(selectedTarotist, selectedCategory, selectedSpread);
+    onStartReading();
   };
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
