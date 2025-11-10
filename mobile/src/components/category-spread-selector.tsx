@@ -25,6 +25,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     setSelectedCategory,
     selectedSpread,
     setSelectedSpread,
+    isPersonal,
   } = useSalon();
 
   // カテゴリーの取得とフィルタリング
@@ -161,9 +162,11 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       </motion.div>
 
       {/* カテゴリー選択アコーディオン */}
-      <div className="m-1">
-        <Accordion items={categoryItems} />
-      </div>
+      {!isPersonal && (
+        <div className="m-1">
+          <Accordion items={categoryItems} />
+        </div>
+      )}
 
       {/* スプレッド選択アコーディオン */}
       <div className="m-1">

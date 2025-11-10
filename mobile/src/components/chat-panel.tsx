@@ -9,6 +9,7 @@ import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
+import CategorySpreadSelector from "./category-spread-selector";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
 
@@ -51,7 +52,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const [inputDisabled, setInputDisabled] = useState(false);
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, stop } = useChat({
     transport: new DefaultChatTransport({
       api: !isPersonal
         ? `${domain}/api/readings/simple`
@@ -82,6 +83,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
+  const [showSelector, setShowSelector] = useState(false);
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -106,19 +108,31 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join("");
           console.log("Extracted string:", str);
-          const match = str.match(/^\{\{?([^}]+)\}\}?$/);
-          const spreadName = match ? match[1] : "";
-          console.log("Extracted spread name:", spreadName);
-          const spread = masterData.spreads.find((s) => s.name === spreadName);
+          const match = str.match(/^\{(\d+)\}:\s*\{(.+?)\}$/);
+          const spreadNo = match ? parseInt(match[1], 10) : undefined;
+          const spreadName = match ? match[2] : "";
+          console.log("Extracted spread no, name:", spreadNo, spreadName);
+          const spread = masterData.spreads.find(
+            (s) => s.no === spreadNo || s.name === spreadName
+          );
           console.log("Found spread:", spread);
           if (spread) {
             setSelectedSpread(spread);
           }
+          // もし spread が取得できなくても、そのまま進める
+          setShowSelector(true);
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersonal, masterData.spreads, messages, status]);
+
+  useEffect(() => {
+    // isPersonal が切り替わったらメッセージをストップ
+    if (!isPersonal) {
+      stop();
+    }
+  }, [isPersonal, stop]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
   // useEffect(() => {
@@ -359,7 +373,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
         <div ref={messagesEndRef} />
       </div>
-      {/* }
+
+      {/* スプレッド選択画面を表示 */}
+      {showSelector && handleStartReading && isPersonal && (
+        <div className="absolute inset-0 bg-white z-40">
+          <CategorySpreadSelector handleStartReading={handleStartReading} />
+        </div>
+      )}
 
       {/* 即答方式のヒント及びボタン表示 */}
       {!isPersonal && (
@@ -382,7 +402,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      {isPersonal && !inputDisabled && (
+      {isPersonal && !inputDisabled && !showSelector && (
         <motion.div
           className="px-4 py-3 bg-transparent border-1 shadow"
           transition={{
