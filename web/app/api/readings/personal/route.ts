@@ -135,7 +135,6 @@ export async function POST(req: NextRequest) {
               (s) => `- ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`
             )
             .join("\n") +
-          `また、提案後に、{スプレッド名}という形式で正確に記述してください。` +
           `\n\n` +
           `【回答フォーマット】\n
 【おすすめのスプレッド】\n

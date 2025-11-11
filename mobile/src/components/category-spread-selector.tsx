@@ -80,25 +80,31 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     return masterData.spreads
       .filter((spread: Spread) => {
         // spread.plan, spread.categoriesが存在しない場合はfalse(データ破損)
-        if (!spread.plan || !spread.categories) return false;
-        // スプレッド内のカテゴリー一覧にselectedCategoryが含まれているか
-        // (TODO: カテゴリー一覧は目安として全選択すべきか検討)
-        const spreadCatetories = spread.categories.map(
-          (stc: SpreadToCategory) => stc.category?.name
-        );
-        if (
-          currentPlan.no >= spread.plan!.no &&
-          spreadCatetories.includes(selectedCategory?.name || "")
-        ) {
+        if (!isPersonal) {
+          if (!spread.plan || !spread.categories) return false;
+          // スプレッド内のカテゴリー一覧にselectedCategoryが含まれているか
+          // (TODO: カテゴリー一覧は目安として全選択すべきか検討)
+          const spreadCatetories = spread.categories.map(
+            (stc: SpreadToCategory) => stc.category?.name
+          );
+          if (
+            currentPlan.no >= spread.plan!.no &&
+            spreadCatetories.includes(selectedCategory?.name || "")
+          ) {
+            return true;
+          }
+        } else {
+          // パーソナル占いモードの場合、スプレッドのプラン条件とカテゴリー条件は無視する
           return true;
         }
       })
       .map((spread: Spread) => ({ ...spread, bio: spread.guide }));
   }, [
     currentPlan,
+    isPersonal,
     masterData.categories,
     masterData.spreads,
-    selectedCategory,
+    selectedCategory?.name,
   ]);
 
   const spreadItems: AccordionItem[] = [
@@ -157,7 +163,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           className="text-gray-800 bg-white/70
             backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
         >
-          占うジャンルとスプレッドを選んでください
+          {!isPersonal
+            ? `占うジャンルとスプレッドを選んでください`
+            : `スプレッドを選んでください`}
         </span>
       </motion.div>
 

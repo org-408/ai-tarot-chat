@@ -25,7 +25,6 @@ interface ChatPanelProps {
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
   onKeyboardHeightChange,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   handleStartReading,
   onBack,
 }) => {
@@ -376,7 +375,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       {/* スプレッド選択画面を表示 */}
       {showSelector && handleStartReading && isPersonal && (
-        <div className="absolute inset-0 bg-white z-40">
+        <div className="mt-6">
           <CategorySpreadSelector handleStartReading={handleStartReading} />
         </div>
       )}
