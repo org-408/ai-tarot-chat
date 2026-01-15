@@ -108,7 +108,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
           {/* 下半分 */}
           <motion.div
-            className="fixed left-0 right-0 px-1 pb-25 h-[55vh] z-20"
+            className="fixed left-0 right-0 px-1 h-[55vh] z-20 overflow-y-auto"
             style={{
               top: "calc(45vh + 50px + env(safe-area-inset-top))",
               bottom: 0,
