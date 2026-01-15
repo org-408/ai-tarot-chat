@@ -117,7 +117,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {!currentPlan.hasPersonal && (
-              <>
+              <div className="pb-52">
                 {/* カテゴリー・スプレッド選択 */}
                 <CategorySpreadSelector
                   handleStartReading={handleStartReading}
@@ -128,7 +128,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
                   handleChangePlan={handleChangePlan}
                   isChangingPlan={isChangingPlan}
                 />
-              </>
+              </div>
             )}
             {currentPlan.hasPersonal && (
               <LowerViewer
