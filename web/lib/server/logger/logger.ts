@@ -62,7 +62,7 @@ class PrismaTransport extends Transport {
 
   async log(
     info: winston.LogEntry,
-    callback: (error?: Error | null, success?: boolean) => void
+    callback: (error?: Error | null, success?: boolean) => void,
   ) {
     try {
       const { level, message, source, clientId, path, timestamp, ...metadata } =
@@ -75,8 +75,8 @@ class PrismaTransport extends Transport {
           typeof timestamp === "string"
             ? new Date(timestamp)
             : timestamp instanceof Date
-            ? timestamp
-            : new Date();
+              ? timestamp
+              : new Date();
       } else {
         datedTimestamp = new Date();
       }
@@ -111,13 +111,13 @@ if (isEdgeRuntime) {
 } else {
   // Node.js環境用のWinstonロガー
   const isDev = process.env.NODE_ENV !== "production";
-  const logDir = `${process.cwd()}/logs`;
+  const logDir = "./logs";
 
   logger = winston.createLogger({
     level: isDev ? "debug" : "info",
     format: winston.format.combine(
       winston.format.timestamp(),
-      winston.format.json()
+      winston.format.json(),
     ),
     defaultMeta: { service: "ai-tarot-chat" },
     transports: [
@@ -133,8 +133,8 @@ if (isEdgeRuntime) {
                       Object.keys(meta).length && meta.service
                         ? JSON.stringify(meta)
                         : ""
-                    }`
-                )
+                    }`,
+                ),
               ),
             }),
           ]
@@ -170,7 +170,7 @@ export const logWithContext = (
   level: "info" | "error" | "warn" | "debug",
   message: string,
   context?: LogMetadata,
-  source: string = "web_server"
+  source: string = "web_server",
 ) => {
   if (isEdgeRuntime) {
     // Edge環境
