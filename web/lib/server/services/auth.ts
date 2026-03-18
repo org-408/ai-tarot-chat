@@ -601,7 +601,7 @@ export class AuthService {
   ): Promise<AppJWTPayload> {
     let token: string | undefined;
 
-    if (request instanceof NextRequest) {
+    if (typeof request !== "string") {
       const authHeader = request.headers.get("authorization");
       const xAppToken = request.headers.get("x-app-token");
 
@@ -610,6 +610,7 @@ export class AuthService {
         hasAuthHeader: !!authHeader,
         hasXAppToken: !!xAppToken,
         method: request.method,
+        isNextRequest: request instanceof NextRequest,
       });
 
       if (xAppToken) {
