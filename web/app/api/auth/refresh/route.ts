@@ -35,9 +35,10 @@ export async function POST(request: NextRequest) {
         errorMessage,
         status: 401,
       });
-      return NextResponse.json(`token invalid: ${errorMessage}`, {
-        status: 401,
-      });
+      return NextResponse.json(
+        { error: `token invalid: ${errorMessage}` },
+        { status: 401 }
+      );
     }
 
     logWithContext("error", "❌ セッション検証リクエストで予期せぬエラー", {

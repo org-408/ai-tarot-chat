@@ -10,6 +10,7 @@ import { useAuthStore } from "./auth";
 // ✅ 初期化ステップの定義（デバッグ用）
 type LifecycleStep =
   | "idle"
+  | "rcConfigure" // Step 0: RC.configure()（最優先・他の全ての前提）
   | "auth"
   | "subscription"
   | "client"
@@ -68,6 +69,7 @@ interface LifecycleState {
 }
 
 import type { PluginListenerHandle } from "@capacitor/core";
+import { subscriptionService } from "../services/subscription";
 import { getEntitlementIdentifier } from "../utils/plan-utils";
 import { useClientStore } from "./client";
 import { useMasterStore } from "./master";
@@ -144,6 +146,33 @@ export const useLifecycleStore = create<LifecycleState>()(
               isOffline: false,
               offlineMode: "none",
             });
+
+            // ========================================
+            // ✅ ステップ0: RC.configure()（最優先・後続すべての前提）
+            // シーケンス図通り: RC.configure() が完全に完了してから
+            // Preferences.get(userId) → JWT検証 → RC.logIn(userId) へ進む。
+            // isConfigured フラグにより subscriptionStore.init() 内での重複実行はスキップされる。
+            // ========================================
+            set({ currentStep: "rcConfigure" });
+            logWithContext(
+              "info",
+              "[Lifecycle] Step 0: RC.configure() - prerequisite for all"
+            );
+            try {
+              await subscriptionService.initialize();
+            } catch (rcConfigError) {
+              // 非致命的: subscriptionStore.init() 内でリトライされる
+              logWithContext(
+                "warn",
+                "[Lifecycle] RC.configure() failed in step 0 (non-critical)",
+                {
+                  error:
+                    rcConfigError instanceof Error
+                      ? rcConfigError.message
+                      : String(rcConfigError),
+                }
+              );
+            }
 
             // ========================================
             // ✅ ステップ1: 認証初期化
@@ -230,6 +259,20 @@ export const useLifecycleStore = create<LifecycleState>()(
 
             try {
               await useSubscriptionStore.getState().init();
+
+              // ✅ token あり → loggingInToRC: ログイン済みユーザーは RC.logIn(userId) で購入履歴を自動復元。
+              // onResume() の同等処理と対称にする。
+              // 同じ userId なら restorePurchases() 不要で RC が自動復元する。
+              // 再インストール後もこのパスを通り自動復元される。
+              const authStateForRC = useAuthStore.getState();
+              if (
+                authStateForRC.isAuthenticated &&
+                authStateForRC.payload?.user?.id
+              ) {
+                await useSubscriptionStore
+                  .getState()
+                  .login(authStateForRC.payload.user.id);
+              }
             } catch (error) {
               // サブスクリプションは非致命的
               get().errorProcessing("subscription", error as Error, new Date());
@@ -1040,17 +1083,17 @@ export const useLifecycleStore = create<LifecycleState>()(
       // ✅ デバッグ用ヘルパー
       getStepLabel: () => {
         const step = get().currentStep;
-        const labels = {
-          idle: "待機中",
-          auth: "認証初期化中 (1/4)",
-          subscription: "サブスク初期化中 (2/4)",
-          client: "クライアント初期化中 (3/4)",
-          master: "マスターデータ初期化中 (4/4)",
-          sync: "サブスクリプション状態同期中",
-          complete: "初期化完了",
-          login: "ログイン中",
-          logout: "ログアウト中",
-          changePlan: "プラン変更中",
+        const labels: Record<LifecycleStep, string> = {
+          idle: "起動中...",
+          rcConfigure: "サービスを準備中...", // Step 0: RC.configure()
+          auth: "認証情報を確認中... (1/4)", // Step 1: authStore.init()
+          subscription: "プランを確認中... (2/4)", // Step 2: subscriptionStore.init() + RC.logIn()
+          client: "利用状況を取得中... (3/4)", // Step 3: clientStore.init()
+          master: "データを読み込み中... (4/4)", // Step 4: masterStore.init()
+          complete: "準備完了",
+          login: "ログイン中...",
+          logout: "ログアウト中...",
+          changePlan: "プラン変更中...",
         };
         return labels[step];
       },

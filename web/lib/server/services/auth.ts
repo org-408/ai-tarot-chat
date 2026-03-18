@@ -519,15 +519,19 @@ export class AuthService {
     // エラー処理は route 側で行う
     logWithContext("info", "🔑 Detecting token expiration and refreshing...");
     const authHeader = request.headers.get("authorization");
+    const xAppToken = request.headers.get("x-app-token");
     let token: string | undefined;
-    if (authHeader) {
-      // 1.mobile 検証
+    if (xAppToken) {
+      // 1. X-App-Token ヘッダーを優先（Cloudflare による Authorization ストリップ回避）
+      token = xAppToken;
+    } else if (authHeader) {
+      // 2. mobile 検証 (Authorization Bearer)
       if (!authHeader?.startsWith("Bearer ")) {
         throw new Error("認証が必要です");
       }
       token = authHeader.substring(7);
     } else {
-      // 2.web 検証
+      // 3. web 検証 (Cookie)
       token = request.cookies.get("access_token")?.value;
       if (!token) {
         throw new Error("認証が必要です");
@@ -595,20 +599,46 @@ export class AuthService {
   private getPayloadFromRequest(
     request: NextRequest | string
   ): Promise<AppJWTPayload> {
-    const authHeader =
-      request instanceof NextRequest
-        ? request.headers.get("authorization")
-        : (request as string);
-    if (!authHeader?.startsWith("Bearer ")) {
+    let token: string | undefined;
+
+    if (request instanceof NextRequest) {
+      const authHeader = request.headers.get("authorization");
+      const xAppToken = request.headers.get("x-app-token");
+
+      // ✅ 診断ログ: どのヘッダーが届いているか確認
+      logWithContext("info", "🔐 getPayloadFromRequest headers:", {
+        hasAuthHeader: !!authHeader,
+        hasXAppToken: !!xAppToken,
+        method: request.method,
+      });
+
+      if (xAppToken) {
+        // ✅ 1. X-App-Token ヘッダーを最優先
+        //    Cloudflare が GET リクエストの Authorization ヘッダーをストリップする
+        //    場合があるため、カスタムヘッダーを優先的に使用する
+        token = xAppToken;
+      } else if (authHeader?.startsWith("Bearer ")) {
+        // ✅ 2. Authorization Bearer ヘッダー（POST など）
+        token = authHeader.substring(7);
+      } else {
+        // ✅ 3. Cookie フォールバック（Web クライアント用）
+        token = request.cookies.get("access_token")?.value;
+      }
+    } else {
+      // string として渡された場合は Bearer token として扱う
+      const authHeader = request as string;
+      if (!authHeader?.startsWith("Bearer ")) {
+        throw new Error("認証が必要です");
+      }
+      token = authHeader.substring(7);
+    }
+
+    if (!token) {
       throw new Error("認証が必要です");
     }
 
     try {
-      const payload = decodeJWT<AppJWTPayload>(
-        authHeader.substring(7),
-        JWT_SECRET,
-        true
-      );
+      const payload = decodeJWT<AppJWTPayload>(token, JWT_SECRET, true);
       return payload;
     } catch (error) {
       logWithContext("error", "❌ getPayloadFromRequest error:", { error });

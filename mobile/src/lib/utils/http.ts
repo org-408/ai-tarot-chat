@@ -40,9 +40,14 @@ export class Http {
             "warn",
             `[ApiClient] Authentication error ${response.status} on ${method} ${path}`
           );
-          await this._refresh();
+          // ✅ リフレッシュしたトークンを直接受け取り、リトライに渡す
+          //    Preferences の再読み込みを避けることで、タイミング問題を排除
+          const refreshedToken = await this._refresh();
 
-          const retryResponse: HttpResponse = await this._fetch(config);
+          const retryResponse: HttpResponse = await this._fetch(
+            config,
+            refreshedToken
+          );
           logWithContext("info", "[ApiClient] Retry Response status:", {
             status: retryResponse.status,
           });
@@ -50,6 +55,16 @@ export class Http {
             logWithContext("info", "[ApiClient] Response data after retry:");
             return retryResponse.data as T;
           }
+          // ✅ リトライも失敗した場合はリトライのステータスコードで HttpError をスロー
+          logWithContext(
+            "error",
+            `[ApiClient] Retry also failed: ${retryResponse.status}`
+          );
+          throw new HttpError(
+            retryResponse.status,
+            `API Error ${retryResponse.status} ${method} ${path} (after token refresh)`,
+            retryResponse
+          );
         }
         logWithContext("error", `[ApiClient] API Error ${response.status}`);
         throw new HttpError(
@@ -79,11 +94,14 @@ export class Http {
    * @returns 新しいアクセストークン
    */
   static async refresh(): Promise<string> {
-    const response = await this._refresh();
-    return response.data.token;
+    return await this._refresh();
   }
 
-  private static async _refresh(): Promise<HttpResponse> {
+  /**
+   * ✅ 内部: トークンリフレッシュ処理
+   * @returns 新しいアクセストークン文字列
+   */
+  private static async _refresh(): Promise<string> {
     logWithContext(
       "info",
       "[ApiClient] Attempting token refresh due to 401/403 response"
@@ -91,7 +109,7 @@ export class Http {
     const config = {
       method: "POST",
       path: "/api/auth/refresh",
-      requiresAuth: false,
+      requiresAuth: true, // ✅ 現在のトークンをBearerヘッダーで送信（サーバー側の検証に必要）
     } as RequestConfig;
     try {
       const res = await this._fetch(config);
@@ -109,35 +127,113 @@ export class Http {
       logWithContext("info", "[ApiClient] Token refresh successful");
       const { token } = res.data;
       await this.saveAccessToken(token);
-      return res;
+      // ✅ リフレッシュしたトークンを直接返す（Preferences再読み込み不要）
+      return token;
     } catch (error) {
-      logWithContext("error", "[ApiClient] Token refresh failed:", { error });
+      // ✅ HttpError はステータスコードを保持したままスロー
+      //    （401 を 500 に上書きしない = authStore が 401 を正しく処理できる）
+      if (error instanceof HttpError) {
+        logWithContext(
+          "error",
+          `[ApiClient] Token refresh failed with status: ${error.status}`,
+          { error }
+        );
+        throw error;
+      }
+      // ネットワーク障害など HttpError 以外は HttpError(500) にラップ
+      logWithContext("error", "[ApiClient] Token refresh network error:", {
+        error,
+      });
       throw new HttpError(500, "Token refresh failed", undefined);
     }
   }
 
-  private static async _fetch(config: RequestConfig): Promise<HttpResponse> {
+  /**
+   * ✅ 内部: HTTPリクエスト実行
+   * @param config リクエスト設定
+   * @param explicitToken 明示的なトークン（リトライ時に refresh 後のトークンを直接渡すために使用）
+   */
+  private static async _fetch(
+    config: RequestConfig,
+    explicitToken?: string | null
+  ): Promise<HttpResponse> {
     const { method, path, body, requiresAuth } = config;
 
     // url を BFF_URL と組み合わせて作成
     const url = `${BFF_URL}${path}`;
 
-    // トークン取得（requiresAuthがtrueの場合のみ）
-    const token = requiresAuth ? await this.getAccessToken() : null;
-    console.log("[ApiClient] Using token:", token ? "[HIDDEN]" : "null");
+    // ✅ 明示的なトークンがあればそれを使用（リトライ時）
+    //    なければ Preferences から取得（初回リクエスト時）
+    const token =
+      explicitToken !== undefined
+        ? explicitToken
+        : requiresAuth
+          ? await this.getAccessToken()
+          : null;
 
-    // ヘッダー構築
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    logWithContext("info", "[ApiClient] Request prepared:", {
+      method,
+      path,
+      hasToken: !!token,
+      tokenSource: explicitToken !== undefined ? "explicit" : "storage",
+    });
+
+    // ✅ ヘッダー構築
+    //    GETリクエストにはボディがないため Content-Type は不要
+    //    iOS の URLSession が Content-Type のないリクエストを正しく処理するために除外
+    const headers: Record<string, string> = {};
+    if (method !== "GET") {
+      headers["Content-Type"] = "application/json";
+    }
     if (token) {
+      // ✅ POST: Authorization ヘッダーを使用（問題なし）
+      // ✅ GET: Authorization + X-App-Token の両方を送信
+      //    Cloudflare が GET リクエストの Authorization ヘッダーをキャッシュ用途でストリップ
+      //    する場合があるため、カスタムヘッダー X-App-Token を併用する
       headers.Authorization = `Bearer ${token}`;
+      if (method === "GET") {
+        headers["X-App-Token"] = token;
+      }
     }
 
-    const response: HttpResponse =
-      method === "GET"
-        ? await CapacitorHttp.get({ url, headers })
-        : await CapacitorHttp.post({ url, headers, data: body });
+    // ✅ GET は window.fetch() を使用
+    //    iOS の CapacitorHttp.request({ method: "GET" }) はカスタムヘッダー（Authorization等）を
+    //    ドロップする既知の問題がある。WKWebView の fetch() は CORS + カスタムヘッダーを正しく送信する。
+    //    POST は引き続き CapacitorHttp.request() を使用（問題なし）。
+    if (method === "GET") {
+      const fetchResponse = await fetch(url, {
+        method: "GET",
+        headers,
+      });
+
+      const responseText = await fetchResponse.text();
+      let data: unknown;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = responseText || null;
+      }
+
+      const responseHeaders: Record<string, string> = {};
+      fetchResponse.headers.forEach((value, key) => {
+        responseHeaders[key] = value;
+      });
+
+      return {
+        data,
+        status: fetchResponse.status,
+        headers: responseHeaders,
+        url,
+      } as HttpResponse;
+    }
+
+    // POST: CapacitorHttp.request() を使用
+    const response: HttpResponse = await CapacitorHttp.request({
+      url,
+      method,
+      headers,
+      data: body,
+    });
 
     return response;
   }

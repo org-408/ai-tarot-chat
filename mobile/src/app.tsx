@@ -247,20 +247,18 @@ function App() {
       <TarotSplashScreen
         message={
           !isInitialized
-            ? getStepLabel()
+            ? getStepLabel() // lifecycle の currentStep に対応したラベルを表示
             : !authIsReady
-            ? "認証情報を確認中..."
+            ? "認証情報を確認中... (1/4)"
             : !clientIsReady
-            ? "クライアント情報を取得中..."
-            : isMasterLoading
-            ? "マスターデータを読み込み中..."
-            : !masterData
-            ? "マスターデータを読み込み中..."
+            ? "利用状況を取得中... (3/4)"
+            : isMasterLoading || !masterData
+            ? "データを読み込み中... (4/4)"
             : !usageStats
-            ? "利用状況を読み込み中..."
+            ? "利用状況を取得中... (3/4)"
             : !payload
-            ? "ユーザーデータを読み込み中..."
-            : "読み込み中..."
+            ? "認証情報を確認中... (1/4)"
+            : "準備完了"
         }
       />
     );

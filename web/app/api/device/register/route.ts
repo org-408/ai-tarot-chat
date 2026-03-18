@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService } from "@/lib/server/services/auth";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   logWithContext(
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         deviceId,
         status: 400,
       });
-      return new Response("deviceId required", { status: 400 });
+      return NextResponse.json({ error: "deviceId required" }, { status: 400 });
     }
 
     logWithContext("info", `🔄 デバイス登録処理開始`);
@@ -55,6 +55,6 @@ export async function POST(request: NextRequest) {
       errorMessage,
       status: 500,
     });
-    return new Response(errorMessage, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

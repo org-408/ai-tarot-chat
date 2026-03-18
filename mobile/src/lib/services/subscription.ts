@@ -25,10 +25,24 @@ export class SubscriptionService {
   // ✅ コールバックIDを保持
   private listenerCallbackId: PurchasesCallbackId | null = null;
 
+  // ✅ RC.configure() の冪等性フラグ
+  // lifecycle.ts から Step0 として先に initialize() を呼ぶため、
+  // subscriptionStore.init() 内での2回目の呼び出しをスキップする。
+  private isConfigured = false;
+
   /**
    * RevenueCatの初期化
    */
   async initialize(): Promise<void> {
+    // ✅ 冪等性チェック: 既に configure 済みならスキップ
+    if (this.isConfigured) {
+      logWithContext(
+        "info",
+        "[SubscriptionService] Already configured, skipping"
+      );
+      return;
+    }
+
     logWithContext("info", "[SubscriptionService] Initializing RevenueCat");
 
     const platform = Capacitor.getPlatform();
@@ -60,6 +74,9 @@ export class SubscriptionService {
       }
 
       await Purchases.configure({ apiKey });
+
+      // ✅ configure 完了フラグをセット
+      this.isConfigured = true;
 
       logWithContext("info", "[SubscriptionService] Initialized successfully", {
         platform,
