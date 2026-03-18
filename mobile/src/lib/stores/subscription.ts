@@ -300,17 +300,12 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           if (payload && payload.user) {
             try {
               // ✅ サインイン後、RevenueCatにもログイン
+              // RC.logIn(userId) は同じ userId なら restorePurchases() 不要で自動復元される。
+              // 再インストール後もこのパスを通り、同じ userId を渡すことで購入履歴が自動復元される。
               await get().login(payload.user.id);
               logWithContext(
                 "info",
-                "[Subscription] RevenueCat login after sign in completed"
-              );
-
-              // 念の為、syncPurchases も実行
-              await subscriptionService.syncPurchases();
-              logWithContext(
-                "info",
-                "[Subscription] syncPurchases after sign in completed"
+                "[Subscription] RevenueCat login after sign in completed (purchases auto-restored)"
               );
 
               // CustomerInfoを更新

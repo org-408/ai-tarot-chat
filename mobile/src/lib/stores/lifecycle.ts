@@ -536,16 +536,16 @@ export const useLifecycleStore = create<LifecycleState>()(
 
           try {
             // isInitialized の状態に関わらず強制同期
-            subscriptionStore.init();
+            await subscriptionStore.init();
             logWithContext(
               "info",
               "[Lifecycle] Step 2/4: login/logout RevenueCat as needed"
             );
             // ログイン状態なら RevenueCat と同期
             if (authStore.isAuthenticated && payload?.user && payload.user.id) {
-              subscriptionStore.login(payload.user.id);
+              await subscriptionStore.login(payload.user.id);
             } else {
-              subscriptionStore.logout();
+              await subscriptionStore.logout();
             }
 
             // RevenueCatとCustomerInfo を同期
@@ -803,6 +803,9 @@ export const useLifecycleStore = create<LifecycleState>()(
 
           // ========================================
           // 2. Subscription のログアウト
+          // ✅ RC.logOut() の副作用: 内部で匿名IDが新規生成される。
+          //    ただし次回 login() で RC.logIn(userId) を呼ぶと
+          //    同じ userId の履歴に上書きされ、エンタイトルメントは復元される。
           // ========================================
           logWithContext("info", "[Lifecycle] Subscription logout");
           const info = await useSubscriptionStore.getState().logout();

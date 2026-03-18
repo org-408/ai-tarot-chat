@@ -1,41 +1,41 @@
 PODS:
-  - Capacitor (7.4.3):
+  - Capacitor (8.2.0):
     - CapacitorCordova
-  - CapacitorApp (7.1.0):
+  - CapacitorApp (8.0.1):
     - Capacitor
-  - CapacitorBrowser (7.0.2):
+  - CapacitorBrowser (8.0.2):
     - Capacitor
-  - CapacitorCommunitySqlite (7.0.2):
+  - CapacitorCommunitySqlite (8.0.1):
     - Capacitor
     - SQLCipher
     - ZIPFoundation
-  - CapacitorCordova (7.4.3)
-  - CapacitorDevice (7.0.2):
+  - CapacitorCordova (8.2.0)
+  - CapacitorDevice (8.0.1):
     - Capacitor
-  - CapacitorDialog (7.0.2):
+  - CapacitorDialog (8.0.1):
     - Capacitor
-  - CapacitorFilesystem (7.1.4):
+  - CapacitorFilesystem (8.1.2):
     - Capacitor
-    - IONFilesystemLib (~> 1.0.1)
-  - CapacitorKeyboard (7.0.3):
+    - IONFilesystemLib (~> 1.1.1)
+  - CapacitorKeyboard (8.0.1):
     - Capacitor
-  - CapacitorPreferences (7.0.2):
+  - CapacitorPreferences (8.0.1):
     - Capacitor
-  - IONFilesystemLib (1.0.1)
-  - PurchasesHybridCommon (17.10.0):
-    - RevenueCat (= 5.43.0)
-  - PurchasesHybridCommonUI (17.10.0):
-    - PurchasesHybridCommon (= 17.10.0)
-    - RevenueCatUI (= 5.43.0)
-  - RevenueCat (5.43.0)
-  - RevenuecatPurchasesCapacitor (11.2.6):
+  - IONFilesystemLib (1.1.2)
+  - PurchasesHybridCommon (17.25.0):
+    - RevenueCat (= 5.51.1)
+  - PurchasesHybridCommonUI (17.25.0):
+    - PurchasesHybridCommon (= 17.25.0)
+    - RevenueCatUI (= 5.51.1)
+  - RevenueCat (5.51.1)
+  - RevenuecatPurchasesCapacitor (11.3.2):
     - Capacitor
-    - PurchasesHybridCommon (= 17.10.0)
-  - RevenuecatPurchasesCapacitorUi (11.2.6):
+    - PurchasesHybridCommon (= 17.25.0)
+  - RevenuecatPurchasesCapacitorUi (11.3.2):
     - Capacitor
-    - PurchasesHybridCommonUI (= 17.10.0)
-  - RevenueCatUI (5.43.0):
-    - RevenueCat (= 5.43.0)
+    - PurchasesHybridCommonUI (= 17.25.0)
+  - RevenueCatUI (5.51.1):
+    - RevenueCat (= 5.51.1)
   - SQLCipher (4.10.0):
     - SQLCipher/standard (= 4.10.0)
   - SQLCipher/common (4.10.0)
@@ -94,23 +94,23 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@revenuecat/purchases-capacitor-ui"
 
 SPEC CHECKSUMS:
-  Capacitor: 28d6c01026a9a3f7156529498ec1f389a2a28dbc
-  CapacitorApp: 26587c2ce485d88ddb39adb21cac64f8e481afe3
-  CapacitorBrowser: 22541e48442de44dc629c214388290d6eecc6ae9
-  CapacitorCommunitySqlite: a57c58e1c37f4bc250ef01e66b0055cb6ddd775e
-  CapacitorCordova: 435121e81a2df4d0034f0fb11fcefab5104cfdb5
-  CapacitorDevice: 81ae78d5d1942707caad79276badd458bf6ec603
-  CapacitorDialog: 5bf72a94b747fb339df6f64ef60812e5e4630ad2
-  CapacitorFilesystem: f9bd850c41e048180e5dc0cbb90f2033ede9d2cc
-  CapacitorKeyboard: 62f36104f26d53d8b3a2a43f2a69fe714f1777d5
-  CapacitorPreferences: 65107ed7437d96ee72583df5763985e3c0ff2bc2
-  IONFilesystemLib: 89258b8e3e85465da93127d25d7ce37f977e8a6f
-  PurchasesHybridCommon: b7b4eafb55fbaaac19b4c36d4082657a3f0d8490
-  PurchasesHybridCommonUI: fe9a666c1b768dcb630a7bd32bf490ebab08cce4
-  RevenueCat: a51003d4cb33820cc504cf177c627832b462a98e
-  RevenuecatPurchasesCapacitor: fc904c3f4da985cc3498f57f956cda169698a983
-  RevenuecatPurchasesCapacitorUi: 72aede27b13e4003359153a223f5dc5365b426fd
-  RevenueCatUI: 1dfe9f8a07654203419efa211c3ec368ae34e5e4
+  Capacitor: 49a454e1cdbd520bc106a220adca7913536a4933
+  CapacitorApp: 942306cd1acf7774a00e89a3986af3a67c8cad7a
+  CapacitorBrowser: 76847841b74c11ccac0a1afae18cf06e3bd59044
+  CapacitorCommunitySqlite: b6bcd768fdd12ef1572aff962c4f128945494ebb
+  CapacitorCordova: a9ac88d84a1f5280f33b349fe50fce1902683ac0
+  CapacitorDevice: ff033fa0c4ec19f5e059a073769a9b2347e69f57
+  CapacitorDialog: 854c5dac405081cae697c177ca43bcaa95ae67bf
+  CapacitorFilesystem: 2db285a1ac6e475cc27cae2e1bea999000f9e2be
+  CapacitorKeyboard: 867eb4b3c901d9bb5c3d0c93b546185d52484e19
+  CapacitorPreferences: cca2021f386efb75947c850334447d9ff22b14f1
+  IONFilesystemLib: 21a63377696b2d8fab5632ecfb7d2ac67bddb68a
+  PurchasesHybridCommon: 6a79a873ab52f777bfa36e9516f3fcd84d3b3428
+  PurchasesHybridCommonUI: 3c1f78addfb3f470713548b4eac8c59254d0efe6
+  RevenueCat: eab035bbab271faccfef5c36eaff2a1ffef14dc0
+  RevenuecatPurchasesCapacitor: fa376932f9967c7ab4b5eac477e824d90393b91a
+  RevenuecatPurchasesCapacitorUi: 969baeb81228e051e2b9e3e764f86f577e73a4b9
+  RevenueCatUI: c6acb3648fa58ccb4f0f178556ed0278b796234f
   SQLCipher: eb79c64049cb002b4e9fcb30edb7979bf4706dfc
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 

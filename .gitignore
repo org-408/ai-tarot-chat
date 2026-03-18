@@ -28,3 +28,7 @@ dist-ssr
 
 # key p8
 *.p8
+
+# Claude Code
+.claude/worktrees/
+.claude/settings.local.json
