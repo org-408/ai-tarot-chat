@@ -12,12 +12,12 @@ interface SettingsPageProps {
   onManageSubscriptions: () => void;
 }
 
+const BFF_URL =
+  import.meta.env.VITE_BFF_URL || "https://ai-tarot-chat.onrender.com";
 const PRIVACY_POLICY_URL =
-  import.meta.env.VITE_PRIVACY_POLICY_URL ||
-  "https://ai-tarot-chat.onrender.com/privacy";
+  import.meta.env.VITE_PRIVACY_POLICY_URL || `${BFF_URL}/privacy`;
 const TERMS_URL =
-  import.meta.env.VITE_TERMS_URL ||
-  "https://ai-tarot-chat.onrender.com/terms";
+  import.meta.env.VITE_TERMS_URL || `${BFF_URL}/terms`;
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.0.0";
 
 // ─── 共通UIパーツ ─────────────────────────────────────────────
