@@ -6,7 +6,12 @@ const config: CapacitorConfig = {
   webDir: "dist",
   plugins: {
     CapacitorHttp: {
-      enabled: true,
+      // ✅ false のまま維持:
+      //   enabled: true にすると window.fetch() がネイティブ HTTP に差し替えられ、
+      //   SSE ストリーミング（useChat）が React error #185 で中断される。
+      //   GET リクエストの認証は http.ts で window.fetch() + Auth ヘッダーを
+      //   明示的に送信する方式で対応済み。
+      enabled: false,
     },
     Keyboard: {
       resize: "none",
