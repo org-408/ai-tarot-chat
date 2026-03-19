@@ -1,6 +1,7 @@
+import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { ChevronRight, ExternalLink, LogIn, LogOut, Star } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import type { Plan } from "../../../shared/lib/types";
 
 interface SettingsPageProps {
@@ -18,7 +19,6 @@ const PRIVACY_POLICY_URL =
   import.meta.env.VITE_PRIVACY_POLICY_URL || `${BFF_URL}/privacy`;
 const TERMS_URL =
   import.meta.env.VITE_TERMS_URL || `${BFF_URL}/terms`;
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.0.0";
 
 // ─── 共通UIパーツ ─────────────────────────────────────────────
 
@@ -93,6 +93,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onLogout,
   onManageSubscriptions,
 }) => {
+  // ネイティブ（iOS/Android）では App.getInfo() でバイナリの実バージョンを取得
+  // Web/開発時は vite.config.ts で埋め込んだ package.json のバージョンにフォールバック
+  const [appVersion, setAppVersion] = useState<string>(__APP_VERSION__);
+
+  useEffect(() => {
+    App.getInfo()
+      .then((info) => setAppVersion(info.version))
+      .catch(() => {
+        // Web環境など getInfo() が使えない場合はビルド時定数のまま
+      });
+  }, []);
+
   const openUrl = async (url: string) => {
     await Browser.open({ url });
   };
@@ -192,9 +204,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         <Row
           icon={<span className="text-base">🔮</span>}
           label="AI タロット占い"
-          description={`バージョン ${APP_VERSION}`}
+          description={`バージョン ${appVersion}`}
           right={
-            <span className="text-xs text-gray-400">{APP_VERSION}</span>
+            <span className="text-xs text-gray-400">{appVersion}</span>
           }
         />
       </RowGroup>
