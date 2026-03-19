@@ -353,7 +353,7 @@ function App() {
       case "history":
         return (
           <div className="main-container">
-            <div className="page-title">📋 履歴</div>
+            <div className="page-title pt-3">📋 履歴</div>
             <div className="text-center text-gray-500 mt-20">
               <div className="text-6xl mb-4">🚧</div>
               <div className="text-lg font-bold mb-2">準備中</div>
@@ -364,7 +364,7 @@ function App() {
       case "settings":
         return (
           <div className="main-container">
-            <div className="page-title">⚙️ 設定</div>
+            <div className="page-title pt-3">⚙️ 設定</div>
             <div className="text-center text-gray-500 mt-20">
               <div className="text-6xl mb-4">🚧</div>
               <div className="text-lg font-bold mb-2">準備中</div>
