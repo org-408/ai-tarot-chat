@@ -6,7 +6,7 @@ import {
 } from "@/../shared/lib/types";
 import { homeFreeProviders, providers } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
-import { authService } from "@/lib/server/services";
+import { authService, clientService } from "@/lib/server/services";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -52,6 +52,28 @@ export async function POST(req: NextRequest) {
       category: ReadingCategory;
       drawnCards: DrawnCard[];
     } = await req.json();
+
+    // ✅ 最初のメッセージ（占い開始時）のみ残回数チェック
+    //    以降のターンは saveReading でカウントするためここでは初回のみ制限
+    if (clientMessages.length === 1) {
+      const isCeltic = spread.code.toLowerCase().includes("celtic");
+      const usage = await clientService.getUsageAndReset(clientId);
+      if (isCeltic && usage.remainingCeltics <= 0) {
+        logWithContext("warn", "ケルト十字占いの回数上限", { clientId });
+        return NextResponse.json(
+          { error: "本日のケルト十字占いの回数上限に達しました" },
+          { status: 429 }
+        );
+      }
+      if (!isCeltic && usage.remainingReadings <= 0) {
+        logWithContext("warn", "シンプル占いの回数上限", { clientId });
+        return NextResponse.json(
+          { error: "本日のシンプル占いの回数上限に達しました" },
+          { status: 429 }
+        );
+      }
+    }
+
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 

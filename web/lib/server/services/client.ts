@@ -13,6 +13,7 @@ import {
   readingRepository,
 } from "@/lib/server/repositories";
 import { isSameDayJST } from "@/lib/utils/date";
+import { Prisma } from "@prisma/client";
 
 export class ClientService {
   /**
@@ -50,17 +51,14 @@ export class ClientService {
         logWithContext("info", "Client last personal reading date", {
           lastPersonalReadingDate: client.lastPersonalReadingDate,
         });
-        const needsReset =
-          [
-            client.lastReadingDate,
-            client.lastCelticReadingDate,
-            client.lastPersonalReadingDate,
-          ].filter((date) => !isSameDayJST(date || undefined)).length > 0 &&
-          [
-            client.lastReadingDate,
-            client.lastCelticReadingDate,
-            client.lastPersonalReadingDate,
-          ].some((date) => date !== null);
+        // ✅ 修正: null は「未実施」として除外し、過去日付のものがあればリセット
+        //    旧ロジックは null を isSameDayJST(undefined) で評価し「当日でない」と
+        //    誤判定していたため、Celtic/Personal 未実施の状態でも即リセットが走っていた
+        const needsReset = [
+          client.lastReadingDate,
+          client.lastCelticReadingDate,
+          client.lastPersonalReadingDate,
+        ].some((date) => date !== null && !isSameDayJST(date));
 
         // 日付が変わっていればリセット
         if (needsReset) {
@@ -368,49 +366,83 @@ export class ClientService {
         logWithContext("info", "Saved new reading", {
           readingId: newReading.id,
         });
-        // 利用回数カウントアップ
-        const isCeltic = spread.code.toLowerCase().includes("celtic");
+
+        // 占いタイプ判定
         if (!customQuestion && !category) {
-          // どちらか一方は必要
           logWithContext(
             "error",
             "Either customQuestion or category must be provided",
-            {
-              clientId,
-              tarotistId: tarotist.id,
-              spreadId: spread.id,
-              spreadCode: spread.code,
-            }
+            { clientId, tarotistId: tarotist.id, spreadCode: spread.code }
           );
           throw new Error("Either customQuestion or category must be provided");
-        } else if (customQuestion && customQuestion.trim().length > 0) {
-          client.dailyPersonalCount += 1;
-          client.lastPersonalReadingDate = new Date();
-        } else if (isCeltic) {
-          client.dailyCelticsCount += 1;
-          client.lastCelticReadingDate = new Date();
-        } else {
-          client.dailyReadingsCount += 1;
-          client.lastReadingDate = new Date();
         }
-        logWithContext("info", "Incremented client usage counts", {
+        const isPersonalReading =
+          !!customQuestion && customQuestion.trim().length > 0;
+        const isCeltic =
+          !isPersonalReading && spread.code.toLowerCase().includes("celtic");
+
+        // ✅ Prisma の atomic increment で race condition を防ぐ
+        //    旧実装: client.count += 1 → updateClient(count) は Read-Modify-Write で非原子
+        //    新実装: { increment: 1 } は UPDATE SET count = count + 1 でアトミック
+        const incrementUpdate: Prisma.ClientUpdateInput = isPersonalReading
+          ? {
+              dailyPersonalCount: { increment: 1 },
+              lastPersonalReadingDate: new Date(),
+            }
+          : isCeltic
+          ? {
+              dailyCelticsCount: { increment: 1 },
+              lastCelticReadingDate: new Date(),
+            }
+          : {
+              dailyReadingsCount: { increment: 1 },
+              lastReadingDate: new Date(),
+            };
+
+        const updatedClient = await clientRepo.updateClient(
           clientId,
+          incrementUpdate
+        );
+        logWithContext("info", "Incremented client usage counts (atomic)", {
+          clientId,
+          isPersonalReading,
           isCeltic,
-          dailyReadingsCount: client.dailyReadingsCount,
-          dailyCelticsCount: client.dailyCelticsCount,
-          dailyPersonalCount: client.dailyPersonalCount,
-        });
-        await clientRepo.updateClient(clientId, {
-          dailyReadingsCount: client.dailyReadingsCount,
-          dailyCelticsCount: client.dailyCelticsCount,
-          dailyPersonalCount: client.dailyPersonalCount,
-          lastReadingDate: client.lastReadingDate,
-          lastCelticReadingDate: client.lastCelticReadingDate,
-          lastPersonalReadingDate: client.lastPersonalReadingDate,
+          dailyReadingsCount: updatedClient.dailyReadingsCount,
+          dailyCelticsCount: updatedClient.dailyCelticsCount,
+          dailyPersonalCount: updatedClient.dailyPersonalCount,
         });
 
-        // 最新の利用状況を取得して返す
-        const usage = await this.getUsageAndReset(clientId, "SAVE_READING");
+        // ✅ getUsageAndReset の再帰呼び出しを廃止
+        //    旧実装では saveReading トランザクション内で getUsageAndReset を呼ぶと
+        //    別トランザクションがコミット前の DB を読み（古いカウント）、
+        //    null 日付バグと組み合わさって即リセットが走ることがあった
+        //    新実装: updateClient の戻り値から直接 UsageStats を組み立てる
+        const plan = updatedClient.plan!;
+        const usage: UsageStats = {
+          plan,
+          isRegistered: updatedClient.isRegistered,
+          lastLoginAt: updatedClient.lastLoginAt,
+          hasDailyReset: false,
+          dailyReadingsCount: updatedClient.dailyReadingsCount,
+          dailyCelticsCount: updatedClient.dailyCelticsCount,
+          dailyPersonalCount: updatedClient.dailyPersonalCount,
+          remainingReadings: Math.max(
+            0,
+            plan.maxReadings - updatedClient.dailyReadingsCount
+          ),
+          remainingCeltics: Math.max(
+            0,
+            plan.maxCeltics - updatedClient.dailyCelticsCount
+          ),
+          remainingPersonal: Math.max(
+            0,
+            plan.maxPersonal - updatedClient.dailyPersonalCount
+          ),
+          lastReadingDate: updatedClient.lastReadingDate,
+          lastCelticReadingDate: updatedClient.lastCelticReadingDate,
+          lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
+        };
+
         logWithContext("info", "Created new reading", {
           usage,
           reading: newReading,

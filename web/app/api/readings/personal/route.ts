@@ -3,7 +3,7 @@
 import { DrawnCard, Spread, Tarotist } from "@/../shared/lib/types";
 import { homeFreeProviders, providers } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
-import { spreadService } from "@/lib/server/services";
+import { clientService, spreadService } from "@/lib/server/services";
 import { authService } from "@/lib/server/services/auth";
 import { moderatePersonalQuestion } from "@/lib/server/services/moderation";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
@@ -110,6 +110,20 @@ export async function POST(req: NextRequest) {
           clientId,
           warning: moderation.warning,
         });
+      }
+    }
+
+    // ✅ パーソナル占いの残回数チェック（実際の占いフェーズ開始時のみ）
+    //    length <= 1: 挨拶フェーズ、length <= 3: スプレッド提案フェーズ
+    //    length > 3: 実際の占いフェーズ → ここで初めて personal カウントを消費
+    if (clientMessages.length > 3) {
+      const usage = await clientService.getUsageAndReset(clientId);
+      if (usage.remainingPersonal <= 0) {
+        logWithContext("warn", "パーソナル占いの回数上限", { clientId });
+        return NextResponse.json(
+          { error: "本日のパーソナル占いの回数上限に達しました" },
+          { status: 429 }
+        );
       }
     }
 
