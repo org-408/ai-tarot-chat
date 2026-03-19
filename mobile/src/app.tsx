@@ -11,6 +11,7 @@ import Header from "./components/header";
 import PlansPage from "./components/plans-page";
 import ReadingPage from "./components/reading-page";
 import SalonPage from "./components/salon-page";
+import SettingsPage from "./components/settings-page";
 import SidebarMenu from "./components/sidebar-menu";
 import SwipeableDemo from "./components/swipeable-demo";
 import TarotistPage from "./components/tarotist-page";
@@ -363,44 +364,14 @@ function App() {
         );
       case "settings":
         return (
-          <div className="main-container">
-            <div className="page-title pt-3">⚙️ 設定</div>
-            <div className="text-center text-gray-500 mt-20">
-              <div className="text-6xl mb-4">🚧</div>
-              <div className="text-lg font-bold mb-2">準備中</div>
-              <div className="text-sm">設定機能を開発中です</div>
-
-              {/* RevenueCat Customer Center へのリンク */}
-              <div className="mt-8">
-                <button
-                  onClick={handleManageSubscriptions}
-                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                >
-                  CustomerCenter
-                </button>
-              </div>
-
-              {isAuthenticated ? (
-                <div className="mt-8">
-                  <button
-                    onClick={handleLogout}
-                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                  >
-                    サインアウト
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-8">
-                  <button
-                    onClick={handleLogin}
-                    className="px-6 py-2 bg-sky-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                  >
-                    サインイン
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <SettingsPage
+            isAuthenticated={isAuthenticated}
+            userEmail={payload.user?.email}
+            currentPlan={currentPlan!}
+            onLogin={handleLogin}
+            onLogout={handleLogout}
+            onManageSubscriptions={handleManageSubscriptions}
+          />
         );
       default:
         return (
