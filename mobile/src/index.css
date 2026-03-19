@@ -30,6 +30,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0; /* ✅ ボトムナビ削除のため bottom: 0 に変更 */
+  overflow-y: auto; /* ✅ f456679 で誤って削除されたスクロールを復元 */
   background: transparent;
   padding-bottom: env(safe-area-inset-bottom); /* ✅ セーフエリア対応 */
 }
