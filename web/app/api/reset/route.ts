@@ -18,7 +18,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // client, device, log, user,  テーブルをクリア
+    // Reading 関連を先に削除（onDelete: Cascade なしのため FK制約に従い逆順で削除）
+    await prisma.chatMessage.deleteMany({});
+    await prisma.drawnCard.deleteMany({});
+    await prisma.reading.deleteMany({});
+    // その後 client, device, log, user テーブルをクリア
     await prisma.planChangeHistory.deleteMany({});
     await prisma.client.deleteMany({});
     await prisma.device.deleteMany({});
