@@ -5,6 +5,7 @@ interface HeaderProps {
   currentPlan: UserPlan;
   currentPage: PageType;
   onMenuClick: () => void;
+  menuDisabled?: boolean;
   showProfile: boolean;
   setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -13,6 +14,7 @@ const Header: React.FC<HeaderProps> = ({
   currentPlan,
   currentPage,
   onMenuClick,
+  menuDisabled = false,
   showProfile,
   setShowProfile,
 }) => {
@@ -83,7 +85,8 @@ const Header: React.FC<HeaderProps> = ({
         {/* 🔥 ハンバーガーメニューボタン */}
         <button
           onClick={onMenuClick}
-          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg transition-colors"
+          disabled={menuDisabled}
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="メニューを開く"
         >
           <svg

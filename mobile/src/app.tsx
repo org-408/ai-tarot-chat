@@ -133,7 +133,8 @@ function App() {
     const handleTouchEnd = (e: TouchEvent) => {
       const endX = e.changedTouches[0].clientX;
       // 左端20px以内から始まり、50px以上右にスワイプしたら開く
-      if (startX < 20 && endX - startX > 50 && !sidebarOpen) {
+      // 占い進行中はサイドバーを開かない
+      if (startX < 20 && endX - startX > 50 && !sidebarOpen && !isReadingInProgress) {
         setSidebarOpen(true);
       }
     };
@@ -592,6 +593,7 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen(true)}
+        menuDisabled={isReadingInProgress}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />
