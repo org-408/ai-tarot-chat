@@ -41,6 +41,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     drawnCards,
     isRevealingCompleted,
     isPersonal,
+    customQuestion,
     setCustomQuestion,
     setSelectedSpread,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,6 +82,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasSaved = useRef(false);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
 
@@ -291,16 +293,28 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       messages,
       status
     );
-    if (isRevealingCompleted && messages.length > 0 && status === "ready") {
-      console.log("All messages revealed.");
+    // isPersonal の場合はカードめくり不要なので drawnCards.length > 0 (Phase2) で判定
+    // 通常占いは isRevealingCompleted が true になったタイミングで保存
+    const shouldSave =
+      (isRevealingCompleted || isPersonal) &&
+      drawnCards.length > 0 &&
+      messages.length > 0 &&
+      status === "ready";
+
+    if (shouldSave && !hasSaved.current) {
+      hasSaved.current = true;
+      console.log("Saving reading result.");
       setIsMessageComplete(true);
-      // 占い結果を保存する（即答方式の場合）
+      // 占い結果を保存する
+      // パーソナル占い: category=undefined, customQuestion=あり
+      // 通常占い: category=あり, customQuestion=undefined
       saveReading({
         tarotistId: tarotist.id,
         tarotist,
         spreadId: spread.id,
         spread,
-        category,
+        category: isPersonal ? undefined : category,
+        customQuestion: isPersonal ? customQuestion : undefined,
         cards: drawnCards,
         chatMessages: messages.map((msg) => ({
           tarotistId: tarotist.id,
@@ -316,7 +330,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
   }, [
     category,
+    customQuestion,
     drawnCards,
+    isPersonal,
     isRevealingCompleted,
     messages,
     saveReading,

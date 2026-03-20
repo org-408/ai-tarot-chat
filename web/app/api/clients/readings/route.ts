@@ -79,7 +79,9 @@ export async function GET(request: NextRequest) {
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
-    const { take, skip } = await request.json();
+    const { searchParams } = request.nextUrl;
+    const take = searchParams.get("take") ? Number(searchParams.get("take")) : undefined;
+    const skip = searchParams.get("skip") ? Number(searchParams.get("skip")) : undefined;
     if (!clientId) return new Response("unauthorized", { status: 401 });
     logWithContext("info", "Client ID, category, spread", {
       clientId,
