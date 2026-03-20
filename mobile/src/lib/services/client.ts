@@ -156,12 +156,9 @@ export class ClientService {
       skip,
     });
     try {
+      const query = skip ? `?take=${take}&skip=${skip}` : `?take=${take}`;
       const readings = await apiClient.get<Reading[]>(
-        "/api/clients/readings" + take && skip
-          ? `?take=${take}&skip=${skip}`
-          : !skip
-          ? `?take=${take}`
-          : ""
+        `/api/clients/readings${query}`
       );
       logWithContext("info", "[ClientService] Reading history fetched", {
         count: readings.length,

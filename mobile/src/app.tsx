@@ -67,6 +67,7 @@ function App() {
     isReady: clientIsReady,
     usage: usageStats,
     currentPlan,
+    refreshUsage,
   } = useClient();
 
   const { openManage } = useSubscription();
@@ -210,6 +211,8 @@ function App() {
     console.log("占いから戻る");
     setReadingData(null);
     setPageType("salon");
+    // 残回数を最新化（saveReading 失敗・未完了での戻りに備えて）
+    refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
   };
 
   // 🔥 起動シーケンスのデバッグログ

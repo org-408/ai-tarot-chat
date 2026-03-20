@@ -19,7 +19,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   handleStartReading: onHandleStartReading,
 }) => {
   const { masterData } = useMaster();
-  const { currentPlan } = useClient();
+  const { currentPlan, remainingReadings, remainingCeltics, remainingPersonal } =
+    useClient();
   const {
     selectedCategory,
     setSelectedCategory,
@@ -143,6 +144,14 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     }
   }, [availableSpreads, selectedSpread, setSelectedSpread]);
 
+  const isCeltic = selectedSpread?.code?.toLowerCase().includes("celtic") ?? false;
+  const remaining = isPersonal
+    ? remainingPersonal
+    : isCeltic
+    ? remainingCeltics
+    : remainingReadings;
+  const isLimitReached = remaining !== undefined && remaining <= 0;
+
   const handleStartReading = () => {
     onHandleStartReading();
     // ストアに保存(念のため、nullガード付き)
@@ -189,20 +198,20 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
                 font-bold text-lg shadow-2xl hover:from-purple-600
               hover:to-pink-600 active:scale-95 transition-all disabled:opacity-80 disabled:cursor-not-allowed"
           onClick={handleStartReading}
-          // disabled={
-          //   (currentPlan.no <= 2 && usageStats.remainingReadings <= 0) ||
-          //   !selectedSpread ||
-          //   !selectedCategory
-          // }
+          disabled={
+            isLimitReached ||
+            !selectedSpread ||
+            (!isPersonal && !selectedCategory)
+          }
         >
           {"✨ 占いを始める ✨"}
         </button>
 
-        {/* {currentPlan.no <= 2 && (
-              <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
-                今日はあと{usageStats.remainingReadings}回
-              </div>
-            )} */}
+        <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
+          {isLimitReached
+            ? "本日の占い回数上限に達しました"
+            : `今日はあと${remaining}回`}
+        </div>
       </div>
     </>
   );

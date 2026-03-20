@@ -109,17 +109,21 @@ export const useClientStore = create<ClientState>()(
           const currentPlan = usage.plan;
           const today = getTodayJST();
 
+          // ✅ usage を即座にセット（後続処理が失敗しても usage は確保）
+          set({ currentPlan, usage, lastFetchedDate: today });
+
           await clientService.saveLastFetchedDate(today);
 
-          await clientService.getReadingHistory(get().take, get().skip);
+          // 占い履歴取得は非致命的
+          try {
+            await clientService.getReadingHistory(get().take, get().skip);
+          } catch (readingsError) {
+            logWithContext("warn", "[ClientStore] Failed to fetch reading history (non-critical)", {
+              error: readingsError instanceof Error ? readingsError.message : String(readingsError),
+            });
+          }
 
-          set({
-            currentPlan,
-            usage,
-            lastFetchedDate: today,
-            isReady: true,
-            error: null,
-          });
+          set({ isReady: true, error: null });
 
           logWithContext("info", "[ClientStore] Initialized successfully", {
             planCode: currentPlan.code,
