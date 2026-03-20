@@ -114,7 +114,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           const spreadName = match ? match[2] : "";
           console.log("Extracted spread no, name:", spreadNo, spreadName);
           const spread = masterData.spreads.find(
-            (s) => s.no === spreadNo || s.name === spreadName
+            (s) => s.no === spreadNo || s.name === spreadName,
           );
           console.log("Found spread:", spread);
           if (spread) {
@@ -153,7 +153,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           (info) => {
             setKeyboardHeight(info.keyboardHeight);
             setIsKeyboardReady(true);
-          }
+          },
         );
 
         hideListener = await Keyboard.addListener("keyboardWillHide", () => {
@@ -166,7 +166,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         // Capacitor が利用できない環境(Web)ではフォールバックを使用
         console.log(
           "Capacitor Keyboard not available, using web fallback",
-          error
+          error,
         );
         setIsKeyboardReady(true); // Web環境でも準備完了とする
       }
@@ -291,7 +291,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       "isRevealingCompleted or messages or status changed:",
       isRevealingCompleted,
       messages,
-      status
+      status,
     );
     // isPersonal の場合はカードめくり不要なので drawnCards.length > 0 (Phase2) で判定
     // 通常占いは isRevealingCompleted が true になったタイミングで保存
@@ -344,7 +344,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   return (
     <div className="w-full h-full flex flex-col relative">
       {/* Messages Area */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-10">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-26">
         {messages.map((message, index) => {
           const textContent = message.parts
             .filter((part) => part.type === "text")
@@ -367,7 +367,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           );
         })}
 
-        {(status === "submitted" || status === "streaming" || isSavingReading) && (
+        {(status === "submitted" ||
+          status === "streaming" ||
+          isSavingReading) && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
@@ -386,15 +388,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         )}
 
+        {/* スプレッド選択画面を表示 */}
+        {showSelector && handleStartReading && isPersonal && (
+          <div className="mt-6">
+            <CategorySpreadSelector handleStartReading={handleStartReading} />
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
-
-      {/* スプレッド選択画面を表示 */}
-      {showSelector && handleStartReading && isPersonal && (
-        <div className="mt-6">
-          <CategorySpreadSelector handleStartReading={handleStartReading} />
-        </div>
-      )}
 
       {/* 即答方式のヒント及びボタン表示 */}
       {!isPersonal && (
@@ -417,9 +419,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      {isPersonal && !inputDisabled && !showSelector && (
+      {isPersonal && !inputDisabled && (
         <motion.div
-          className="px-4 py-3 bg-transparent border-1 shadow"
+          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
           transition={{
             type: "spring",
             stiffness: 300,

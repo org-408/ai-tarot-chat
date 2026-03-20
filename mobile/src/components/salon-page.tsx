@@ -9,8 +9,8 @@ import type {
 import { useSalon } from "../lib/hooks/use-salon";
 import type { UserPlan } from "../types";
 import CategorySpreadSelector from "./category-spread-selector";
+import { ChatPanel } from "./chat-panel";
 import CurrentPlanView from "./current-plan-view";
-import LowerViewer from "./lower-viewer";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 import UpgradeGuide from "./upgrade-guide";
 
@@ -38,6 +38,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
     selectedTarotist,
     selectedCategory,
     selectedSpread,
+    isPersonal,
+    setIsPersonal,
     init,
   } = useSalon();
 
@@ -63,7 +65,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const handleStartReading = () => {
     console.log("[SalonPage] handleStartReading called");
-    if (!selectedTarotist || !selectedSpread || !selectedCategory) return;
+    if (!selectedTarotist || !selectedSpread) return;
+    if (!isPersonal && !selectedCategory) return;
     // onStartReading 実施
     onStartReading();
   };
@@ -108,7 +111,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
           {/* 下半分 */}
           <motion.div
-            className="fixed left-0 right-0 px-1 h-[55vh] z-20 overflow-y-auto"
+            className="fixed left-0 right-0 px-1 z-20 flex flex-col"
             style={{
               top: "calc(45vh + 50px + env(safe-area-inset-top))",
               bottom: 0,
@@ -116,28 +119,48 @@ const SalonPage: React.FC<SalonPageProps> = ({
             animate={{ y: -keyboardHeight }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {!currentPlan.hasPersonal && (
-              <div className="pb-52">
-                {/* カテゴリー・スプレッド選択 */}
+            {/* タブ切り替え（PREMIUM のみ・上部固定） */}
+            {currentPlan.hasPersonal && (
+              <div className="flex-shrink-0 w-full flex justify-center gap-3 p-1">
+                {(["selector", "personal"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setIsPersonal(mode === "personal")}
+                    className={`w-24 h-4 text-xs rounded-full transition-all ${
+                      (mode === "personal") === isPersonal
+                        ? "bg-purple-400/70"
+                        : "bg-purple-200/40"
+                    }`}
+                  >
+                    {mode === "selector" ? "クイック占い" : "パーソナル占い"}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* クイック占い（共通・スクロール可能） */}
+            {!isPersonal && (
+              <div className="flex-1 overflow-y-auto pb-52">
                 <CategorySpreadSelector
                   handleStartReading={handleStartReading}
                 />
-
-                {/* プランアップグレード案内 */}
                 <UpgradeGuide
                   handleChangePlan={handleChangePlan}
                   isChangingPlan={isChangingPlan}
                 />
               </div>
             )}
-            {currentPlan.hasPersonal && (
-              <LowerViewer
-                onKeyboardHeightChange={setKeyboardHeight}
-                handleChangePlan={handleChangePlan}
-                handleStartReading={handleStartReading}
-                isChangingPlan={isChangingPlan}
-                onBack={() => {}}
-              />
+
+            {/* パーソナル占い（PREMIUM のみ・入力欄下部固定） */}
+            {currentPlan.hasPersonal && isPersonal && (
+              <div className="flex-1 min-h-0">
+                <ChatPanel
+                  key="personal"
+                  onKeyboardHeightChange={setKeyboardHeight}
+                  handleStartReading={handleStartReading}
+                  onBack={() => setIsPersonal(false)}
+                />
+              </div>
             )}
           </motion.div>
         </>
