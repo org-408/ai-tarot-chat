@@ -32,7 +32,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { saveReading } = useClient();
+  const { saveReading, isReadingInProgress } = useClient();
 
   const {
     selectedTarotist: tarotist,
@@ -401,8 +401,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
-      {/* Back Button - メッセージを全部受信したら表示 */}
-      {isMessageComplete && (
+      {/* Back Button - saveReading 完了後に表示（isReadingInProgress=false になるまで待つ） */}
+      {isMessageComplete && !isReadingInProgress && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}

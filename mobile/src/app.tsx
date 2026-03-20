@@ -221,17 +221,11 @@ function App() {
   };
 
   // 🔥 占いから戻る（戻るボタン）
-  // 占い進行中はブロック。完了後のみ遷移可能
+  // chat-panel の戻るボタンは isReadingInProgress=false になるまで表示されないため、ここではガード不要
   const handleBackFromReading = () => {
-    if (isReadingInProgress) {
-      console.log("戻るをブロック: 占い進行中");
-      return;
-    }
     console.log("占いから戻る");
     setReadingData(null);
-    if (!isSavingReading) {
-      refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
-    }
+    refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
     setPageType("salon");
   };
 
