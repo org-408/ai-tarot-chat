@@ -152,7 +152,14 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     : remainingReadings;
   const isLimitReached = remaining !== undefined && remaining <= 0;
 
+  const isDisabled =
+    isLimitReached ||
+    isReadingInProgress ||
+    !selectedSpread ||
+    (!isPersonal && !selectedCategory);
+
   const handleStartReading = () => {
+    if (isDisabled) return;
     onHandleStartReading();
     // ストアに保存(念のため、nullガード付き)
     setSelectedCategory(selectedCategory || availableCategories[0]);
@@ -196,14 +203,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           className="w-full py-4 bg-gradient-to-r
               from-purple-500 to-pink-500 text-white rounded-xl
                 font-bold text-lg shadow-2xl hover:from-purple-600
-              hover:to-pink-600 active:scale-95 transition-all disabled:opacity-80 disabled:cursor-not-allowed"
+              hover:to-pink-600 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
           onClick={handleStartReading}
-          disabled={
-            isLimitReached ||
-            isReadingInProgress ||
-            !selectedSpread ||
-            (!isPersonal && !selectedCategory)
-          }
+          disabled={isDisabled}
         >
           {"✨ 占いを始める ✨"}
         </button>
