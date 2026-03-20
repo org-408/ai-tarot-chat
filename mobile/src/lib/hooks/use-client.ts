@@ -11,6 +11,7 @@ export function useClient() {
   const {
     isReady,
     isSavingReading,
+    isReadingInProgress,
     usage,
     currentPlan,
     readings,
@@ -20,6 +21,8 @@ export function useClient() {
     init,
     refreshUsage,
     checkAndResetIfNeeded,
+    startReading,
+    cancelReading,
     saveReading,
     fetchReadings,
   } = useClientStore();
@@ -30,6 +33,7 @@ export function useClient() {
     // ============================================
     isReady,
     isSavingReading,
+    isReadingInProgress,
     currentPlan,
     usage,
     remainingReadings: usage?.remainingReadings ?? 0,
@@ -46,6 +50,8 @@ export function useClient() {
     init,
     refreshUsage,
     checkAndResetIfNeeded,
+    startReading,
+    cancelReading,
     saveReading,
     fetchReadings,
 

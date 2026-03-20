@@ -19,7 +19,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   handleStartReading: onHandleStartReading,
 }) => {
   const { masterData } = useMaster();
-  const { currentPlan, remainingReadings, remainingCeltics, remainingPersonal } =
+  const { currentPlan, remainingReadings, remainingCeltics, remainingPersonal, isReadingInProgress } =
     useClient();
   const {
     selectedCategory,
@@ -200,6 +200,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           onClick={handleStartReading}
           disabled={
             isLimitReached ||
+            isReadingInProgress ||
             !selectedSpread ||
             (!isPersonal && !selectedCategory)
           }
@@ -208,7 +209,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         </button>
 
         <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
-          {isLimitReached
+          {isReadingInProgress
+            ? "占い中..."
+            : isLimitReached
             ? "本日の占い回数上限に達しました"
             : `今日はあと${remaining}回`}
         </div>
