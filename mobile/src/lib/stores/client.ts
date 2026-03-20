@@ -159,15 +159,27 @@ export const useClientStore = create<ClientState>()(
           newPlanCode: newPlan.code,
         });
 
-        // currentPlan が GUEST で、新プランが FREE の場合は状態変更のみ実施
+        // currentPlan が GUEST で、新プランが FREE の場合はサーバーAPIを呼ばず
+        // ローカル状態を更新してから usage をサーバーから再取得する
         const { currentPlan } = get();
         const currentPlanCode = currentPlan ? currentPlan.code : "GUEST";
         if (currentPlanCode === "GUEST" && newPlan.price === 0) {
           logWithContext(
             "info",
-            "[ClientStore] GUEST to FREE plan change, updating state only"
+            "[ClientStore] GUEST to FREE plan change, refreshing usage"
           );
           set({ currentPlan: newPlan });
+          // FREE プランの残回数を反映するため usage をサーバーから再取得
+          try {
+            const usage = await clientService.getUsageAndReset();
+            const today = getTodayJST();
+            await clientService.saveLastFetchedDate(today);
+            set({ usage, lastFetchedDate: today });
+          } catch (e) {
+            logWithContext("warn", "[ClientStore] Failed to refresh usage after GUEST→FREE", {
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
           return;
         }
 
