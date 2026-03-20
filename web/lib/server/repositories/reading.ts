@@ -4,19 +4,35 @@ import { BaseRepository } from "./base";
 export class ReadingRepository extends BaseRepository {
   // ==================== Reading ====================
   async createReading(reading: ReadingInput): Promise<Reading> {
+    // クライアントの persisted ID は古い可能性があるため、
+    // 安定した識別子（code / no）でDBから最新の ID を再解決する
     const tarotist = await this.db.tarotist.findUnique({
-      where: { id: reading.tarotistId! },
+      where: { name: reading.tarotist!.name },
     });
     if (!tarotist) {
-      throw new Error("Invalid tarotistId");
+      throw new Error("Invalid tarotist name: " + reading.tarotist?.name);
     }
+
+    const spread = await this.db.spread.findUnique({
+      where: { code: reading.spread!.code },
+    });
+    if (!spread) {
+      throw new Error("Invalid spread code: " + reading.spread?.code);
+    }
+
+    const category = reading.category
+      ? await this.db.readingCategory.findUnique({
+          where: { no: reading.category.no },
+        })
+      : null;
+
     const created = await this.db.reading.create({
       data: {
         clientId: reading.clientId!,
         deviceId: reading.deviceId!,
-        tarotistId: reading.tarotistId!,
-        spreadId: reading.spreadId!,
-        categoryId: reading.category?.id ?? null,
+        tarotistId: tarotist.id,
+        spreadId: spread.id,
+        categoryId: category?.id ?? null,
         customQuestion: reading.customQuestion,
         cards: Array.isArray(reading.cards)
           ? {
@@ -36,7 +52,7 @@ export class ReadingRepository extends BaseRepository {
           create: reading.chatMessages.map((message) => ({
             clientId: reading.clientId,
             deviceId: reading.deviceId,
-            tarotistId: reading.tarotistId,
+            tarotistId: tarotist.id,
             chatType: message.chatType,
             role: message.role,
             message: message.message,
