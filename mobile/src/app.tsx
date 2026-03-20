@@ -175,9 +175,9 @@ function App() {
   };
 
   // 🔥 RevenueCat Customer Center へ移動
-  const handleManageSubscriptions = () => {
+  const handleManageSubscriptions = async () => {
     console.log("Customer Center へ移動");
-    openManage();
+    await openManage();
   };
 
   const getPlan = (code: string): Plan | null => {

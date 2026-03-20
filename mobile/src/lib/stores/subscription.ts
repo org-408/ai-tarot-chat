@@ -720,6 +720,16 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             error: error instanceof Error ? error.message : String(error),
           });
           throw error;
+        } finally {
+          // Customer Center クローズ後に購読状態を再同期
+          try {
+            await get().refreshCustomerInfo();
+            logWithContext("info", "[SubscriptionStore] CustomerInfo refreshed after manage screen closed");
+          } catch (refreshError) {
+            logWithContext("warn", "[SubscriptionStore] Failed to refresh after manage screen", {
+              error: refreshError instanceof Error ? refreshError.message : String(refreshError),
+            });
+          }
         }
       },
 
