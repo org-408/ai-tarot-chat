@@ -397,7 +397,38 @@ export const useLifecycleStore = create<LifecycleState>()(
             }
 
             // ========================================
-            // ✅ ステップ5. setup
+            // ✅ ステップ5: RC エンタイトルメント → プラン同期（最終確認）
+            // Step2(_checkRestoreStatus)でlistener()を呼んだ時点ではまだ
+            // masterData がロードされていない場合がある。
+            // Step4(masterStore.init())完了後にここで再同期する。
+            // ========================================
+            try {
+              const subInfo = useSubscriptionStore.getState().customerInfo;
+              if (
+                subInfo &&
+                Object.keys(subInfo.entitlements.active).length > 0
+              ) {
+                logWithContext(
+                  "info",
+                  "[Lifecycle] Step 5: Syncing plan from RC entitlements"
+                );
+                await useSubscriptionStore.getState().listener(subInfo);
+              }
+            } catch (syncError) {
+              logWithContext(
+                "warn",
+                "[Lifecycle] Plan sync from entitlements failed (non-critical)",
+                {
+                  error:
+                    syncError instanceof Error
+                      ? syncError.message
+                      : String(syncError),
+                }
+              );
+            }
+
+            // ========================================
+            // ✅ ステップ6. setup
             // ========================================
             get().setup();
 

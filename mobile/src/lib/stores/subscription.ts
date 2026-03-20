@@ -189,12 +189,21 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           const newPlan = plans.find((plan) =>
             activeEntitlements.includes(getEntitlementIdentifier(plan.code))
           );
-          // ありえないが念のため
+
           if (!newPlan) {
-            logWithContext(
-              "info",
-              "[SubscriptionStore] No active plan found in CustomerInfo"
-            );
+            // エンタイトルメント空 = 有料プラン未加入 or サブスク期限切れ
+            // 認証状態に応じて FREE / GUEST にダウングレード
+            const isAuthenticated = useAuthStore.getState().isAuthenticated;
+            const defaultPlanCode = isAuthenticated ? "FREE" : "GUEST";
+            const defaultPlan = plans.find((p) => p.code === defaultPlanCode);
+            if (defaultPlan) {
+              logWithContext(
+                "info",
+                "[SubscriptionStore] No active entitlement, downgrading to default plan",
+                { defaultPlanCode }
+              );
+              await useClientStore.getState().changePlan(defaultPlan);
+            }
             return;
           }
           // ClientStore のプランを更新
@@ -300,16 +309,40 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           if (payload && payload.user) {
             try {
               // ✅ サインイン後、RevenueCatにもログイン
-              // RC.logIn(userId) は同じ userId なら restorePurchases() 不要で自動復元される。
-              // 再インストール後もこのパスを通り、同じ userId を渡すことで購入履歴が自動復元される。
               await get().login(payload.user.id);
               logWithContext(
                 "info",
-                "[Subscription] RevenueCat login after sign in completed (purchases auto-restored)"
+                "[Subscription] RevenueCat login after sign in completed"
               );
 
-              // CustomerInfoを更新
-              const updatedInfo = await subscriptionService.getCustomerInfo();
+              // ✅ RC.logIn後、明示的にリストアして最新のCustomerInfoを取得
+              // 理由: RC.logIn(userId) で既存ユーザーへスイッチした場合、
+              // アノニマスIDに同期済みの購入情報が userId に反映されないことがある。
+              // restorePurchases() により App Store から再取得して確実に反映させる。
+              let updatedInfo: CustomerInfo;
+              try {
+                updatedInfo = await subscriptionService.restorePurchases();
+                logWithContext(
+                  "info",
+                  "[Subscription] Purchases restored after login",
+                  {
+                    entitlements: Object.keys(updatedInfo.entitlements.active),
+                  }
+                );
+              } catch (restoreError) {
+                logWithContext(
+                  "warn",
+                  "[Subscription] restorePurchases failed, falling back to getCustomerInfo",
+                  {
+                    error:
+                      restoreError instanceof Error
+                        ? restoreError.message
+                        : String(restoreError),
+                  }
+                );
+                updatedInfo = await subscriptionService.getCustomerInfo();
+              }
+
               set({ customerInfo: updatedInfo });
               logWithContext(
                 "info",
@@ -318,6 +351,8 @@ export const useSubscriptionStore = create<SubscriptionState>()(
                   entitlements: Object.keys(updatedInfo.entitlements.active),
                 }
               );
+              // エンタイトルメントに従ってプランを同期（listener が changePlan を担当）
+              await get().listener(updatedInfo);
             } catch (error) {
               logWithContext(
                 "error",
@@ -655,6 +690,10 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           logWithContext("info", "[SubscriptionStore] CustomerInfo refreshed", {
             entitlements: Object.keys(customerInfo.entitlements.active),
           });
+
+          // エンタイトルメントに従ってプランを同期
+          await get().listener(customerInfo);
+
           return customerInfo;
         } catch (error) {
           logWithContext(

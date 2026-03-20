@@ -165,22 +165,32 @@ export const useClientStore = create<ClientState>()(
           newPlanCode: newPlan.code,
         });
 
-        // currentPlan が GUEST で、新プランが FREE の場合はサーバーAPIを呼ばず
-        // ローカル状態を更新してから usage をサーバーから再取得する
-        const { currentPlan } = get();
-        const currentPlanCode = currentPlan ? currentPlan.code : "GUEST";
-        if (currentPlanCode === "GUEST" && newPlan.price === 0) {
+        // usage.plan.code（サーバーと最後に同期した値）で判定する
+        // ※ currentPlan は authStore.login() 内の setPlan() で先に書き換わる可能性があるため使わない
+        const usagePlanCode = get().usage?.plan?.code ?? "GUEST";
+
+        // 既に同プランなら usage だけ最新化してスキップ（重複呼び出し対策）
+        if (usagePlanCode === newPlan.code) {
+          logWithContext("info", "[ClientStore] Already on target plan, refreshing usage only", {
+            planCode: newPlan.code,
+          });
+          await get().refreshUsage();
+          return;
+        }
+
+        // usage.plan が GUEST で、新プランが FREE の場合はサーバーAPIを呼ばず usage だけ再取得
+        // ※ exchangeTicket が OAuth 完了時に既にサーバー側で GUEST→FREE 変更済み
+        if (usagePlanCode === "GUEST" && newPlan.price === 0) {
           logWithContext(
             "info",
             "[ClientStore] GUEST to FREE plan change, refreshing usage"
           );
-          set({ currentPlan: newPlan });
-          // FREE プランの残回数を反映するため usage をサーバーから再取得
+          // FREE プランの残回数を反映するため usage をサーバーから再取得し、currentPlan と同時更新
           try {
             const usage = await clientService.getUsageAndReset();
             const today = getTodayJST();
             await clientService.saveLastFetchedDate(today);
-            set({ usage, lastFetchedDate: today });
+            set({ currentPlan: newPlan, usage, lastFetchedDate: today });
           } catch (e) {
             logWithContext("warn", "[ClientStore] Failed to refresh usage after GUEST→FREE", {
               error: e instanceof Error ? e.message : String(e),

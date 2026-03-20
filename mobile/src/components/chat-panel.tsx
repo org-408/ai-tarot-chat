@@ -32,7 +32,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { saveReading, isReadingInProgress } = useClient();
+  const { saveReading, isReadingInProgress, isSavingReading } = useClient();
 
   const {
     selectedTarotist: tarotist,
@@ -367,7 +367,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           );
         })}
 
-        {(status === "submitted" || status === "streaming") && (
+        {(status === "submitted" || status === "streaming" || isSavingReading) && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
