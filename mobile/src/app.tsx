@@ -66,11 +66,11 @@ function App() {
   const {
     isReady: clientIsReady,
     isSavingReading,
+    isReadingInProgress,
     usage: usageStats,
     currentPlan,
     refreshUsage,
     startReading,
-    cancelReading,
   } = useClient();
 
   const { openManage } = useSubscription();
@@ -199,10 +199,15 @@ function App() {
 
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
+    // 占い進行中はナビゲーションをブロック
+    if (isReadingInProgress) {
+      console.log("ページ変更をブロック: 占い進行中");
+      return;
+    }
     console.log("ページ変更:", page);
-    // reading ページから離脱する場合は共通クリーンアップを実行
     if (pageType === "reading") {
-      cleanupReading();
+      setReadingData(null);
+      refreshUsage().catch((e) => console.warn("refreshUsage failed on leave reading", e));
     }
     setPageType(page);
   };
@@ -214,21 +219,18 @@ function App() {
     setPageType("reading");
   };
 
-  // 🔥 reading ページ離脱時の共通クリーンアップ
-  const cleanupReading = () => {
+  // 🔥 占いから戻る（戻るボタン）
+  // 占い進行中はブロック。完了後のみ遷移可能
+  const handleBackFromReading = () => {
+    if (isReadingInProgress) {
+      console.log("戻るをブロック: 占い進行中");
+      return;
+    }
+    console.log("占いから戻る");
     setReadingData(null);
     if (!isSavingReading) {
-      // saveReading 未進行なら isReadingInProgress をリセットし、usage を最新化
-      cancelReading();
-      refreshUsage().catch((e) => console.warn("refreshUsage failed on leave reading", e));
+      refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
     }
-    // isSavingReading=true の場合: saveReading 完了時に usage と isReadingInProgress が更新される
-  };
-
-  // 🔥 占いから戻る（戻るボタン）
-  const handleBackFromReading = () => {
-    console.log("占いから戻る");
-    cleanupReading();
     setPageType("salon");
   };
 
