@@ -10,6 +10,7 @@ import { useClientStore } from "../stores/client";
 export function useClient() {
   const {
     isReady,
+    isSavingReading,
     usage,
     currentPlan,
     readings,
@@ -28,6 +29,7 @@ export function useClient() {
     // 利用状況（Client Store から取得）
     // ============================================
     isReady,
+    isSavingReading,
     currentPlan,
     usage,
     remainingReadings: usage?.remainingReadings ?? 0,

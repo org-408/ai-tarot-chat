@@ -24,6 +24,7 @@ interface ClientState {
   // 利用状況の状態
   // ============================================
   isReady: boolean;
+  isSavingReading: boolean;
   usage: UsageStats | null;
   lastFetchedDate: string | null;
 
@@ -88,6 +89,7 @@ export const useClientStore = create<ClientState>()(
       // 初期状態
       // ============================================
       isReady: false,
+      isSavingReading: false,
       currentPlan: guestPlan!,
       usage: null,
       lastFetchedDate: null,
@@ -293,7 +295,7 @@ export const useClientStore = create<ClientState>()(
       // 占い結果の保存
       // ============================================
       saveReading: async (data: ReadingInput) => {
-        set({ error: null });
+        set({ error: null, isSavingReading: true });
 
         logWithContext("info", "[ClientStore] Saving reading", { data });
 
@@ -302,15 +304,16 @@ export const useClientStore = create<ClientState>()(
           const result = await clientService.saveReading(data);
           logWithContext("info", "[ClientStore] Reading saved", { result });
 
-          // 履歴に追加
+          // 履歴に追加・usage を最新化
           const { reading, usage } = result;
           const { readings } = get();
-          set({ usage, readings: [reading, ...readings] });
+          set({ usage, readings: [reading, ...readings], isSavingReading: false });
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to save reading", {
             error: error instanceof Error ? error.message : String(error),
           });
           set({
+            isSavingReading: false,
             error: error instanceof Error ? error : new Error(String(error)),
           });
         }

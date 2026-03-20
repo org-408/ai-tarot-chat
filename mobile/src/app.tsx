@@ -65,6 +65,7 @@ function App() {
   // 🔥 クライアント情報（changePlanで全て管理）
   const {
     isReady: clientIsReady,
+    isSavingReading,
     usage: usageStats,
     currentPlan,
     refreshUsage,
@@ -211,8 +212,11 @@ function App() {
     console.log("占いから戻る");
     setReadingData(null);
     setPageType("salon");
-    // 残回数を最新化（saveReading 失敗・未完了での戻りに備えて）
-    refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
+    // saveReading が進行中の場合は完了時に usage が更新されるため呼ばない
+    // 進行中でない場合（途中離脱など）は refreshUsage で最新化
+    if (!isSavingReading) {
+      refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
+    }
   };
 
   // 🔥 起動シーケンスのデバッグログ
