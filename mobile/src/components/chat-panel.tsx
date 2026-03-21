@@ -32,7 +32,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { saveReading, isReadingInProgress, isSavingReading } = useClient();
+  const { saveReading } = useClient();
+  const [isSavingReading, setIsSavingReading] = useState(false);
 
   const {
     selectedTarotist: tarotist,
@@ -303,11 +304,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     if (shouldSave && !hasSaved.current) {
       hasSaved.current = true;
-      console.log("Saving reading result.");
       setIsMessageComplete(true);
-      // 占い結果を保存する
-      // パーソナル占い: category=undefined, customQuestion=あり
-      // 通常占い: category=あり, customQuestion=undefined
+      setIsSavingReading(true);
       saveReading({
         tarotistId: tarotist.id,
         tarotist,
@@ -326,7 +324,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join(""),
         })),
-      });
+      }).finally(() => setIsSavingReading(false));
     }
   }, [
     category,
@@ -403,8 +401,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
-      {/* Back Button - saveReading 完了後に表示（isReadingInProgress=false になるまで待つ） */}
-      {isMessageComplete && !isReadingInProgress && (
+      {/* Back Button - saveReading 完了後に表示 */}
+      {isMessageComplete && !isSavingReading && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}

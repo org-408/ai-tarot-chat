@@ -10,8 +10,6 @@ import { useClientStore } from "../stores/client";
 export function useClient() {
   const {
     isReady,
-    isSavingReading,
-    isReadingInProgress,
     usage,
     currentPlan,
     readings,
@@ -21,8 +19,6 @@ export function useClient() {
     init,
     refreshUsage,
     checkAndResetIfNeeded,
-    startReading,
-    cancelReading,
     saveReading,
     fetchReadings,
   } = useClientStore();
@@ -32,8 +28,6 @@ export function useClient() {
     // 利用状況（Client Store から取得）
     // ============================================
     isReady,
-    isSavingReading,
-    isReadingInProgress,
     currentPlan,
     usage,
     remainingReadings: usage?.remainingReadings ?? 0,
@@ -50,11 +44,7 @@ export function useClient() {
     init,
     refreshUsage,
     checkAndResetIfNeeded,
-    startReading,
-    cancelReading,
     saveReading,
     fetchReadings,
-
-    // ⚠️ プラン変更は useLifecycle().changePlan() を使用
   };
 }

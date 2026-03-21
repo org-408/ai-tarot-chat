@@ -65,12 +65,9 @@ function App() {
   // 🔥 クライアント情報（changePlanで全て管理）
   const {
     isReady: clientIsReady,
-    isSavingReading,
-    isReadingInProgress,
     usage: usageStats,
     currentPlan,
     refreshUsage,
-    startReading,
   } = useClient();
 
   const { openManage } = useSubscription();
@@ -134,7 +131,7 @@ function App() {
       const endX = e.changedTouches[0].clientX;
       // 左端20px以内から始まり、50px以上右にスワイプしたら開く
       // 占い進行中はサイドバーを開かない
-      if (startX < 20 && endX - startX > 50 && !sidebarOpen && !isReadingInProgress) {
+      if (startX < 20 && endX - startX > 50 && !sidebarOpen && pageType !== "reading") {
         setSidebarOpen(true);
       }
     };
@@ -200,28 +197,22 @@ function App() {
 
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
-    // 占い進行中はナビゲーションをブロック
-    if (isReadingInProgress) {
+    // ReadingPage 中はナビゲーションをブロック
+    if (pageType === "reading") {
       console.log("ページ変更をブロック: 占い進行中");
       return;
     }
     console.log("ページ変更:", page);
-    if (pageType === "reading") {
-      setReadingData(null);
-      refreshUsage().catch((e) => console.warn("refreshUsage failed on leave reading", e));
-    }
     setPageType(page);
   };
 
   // 🔥 占い開始
   const handleStartReading = () => {
     console.log(`占い開始: `);
-    startReading(); // isReadingInProgress = true
     setPageType("reading");
   };
 
   // 🔥 占いから戻る（戻るボタン）
-  // chat-panel の戻るボタンは isReadingInProgress=false になるまで表示されないため、ここではガード不要
   const handleBackFromReading = () => {
     console.log("占いから戻る");
     setReadingData(null);
@@ -587,7 +578,7 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen(true)}
-        menuDisabled={isReadingInProgress}
+        menuDisabled={pageType === "reading"}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />

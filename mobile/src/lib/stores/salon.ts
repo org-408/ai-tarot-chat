@@ -78,6 +78,7 @@ export const useSalonStore = create<SalonState>()(
           upperViewerMode: "profile",
           lowerViewerMode: "selector",
           isPersonal: false,
+          messages: [],
         });
       },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),

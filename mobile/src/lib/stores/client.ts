@@ -24,8 +24,6 @@ interface ClientState {
   // 利用状況の状態
   // ============================================
   isReady: boolean;
-  isSavingReading: boolean;
-  isReadingInProgress: boolean;
   usage: UsageStats | null;
   lastFetchedDate: string | null;
 
@@ -54,8 +52,6 @@ interface ClientState {
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
-  startReading: () => void;
-  cancelReading: () => void;
   saveReading: (data: ReadingInput) => Promise<void>;
   fetchReadings: (params: PaginationParams) => Promise<void>;
   setParams: (params: PaginationParams) => { take: number; skip: number };
@@ -92,8 +88,6 @@ export const useClientStore = create<ClientState>()(
       // 初期状態
       // ============================================
       isReady: false,
-      isSavingReading: false,
-      isReadingInProgress: false,
       currentPlan: guestPlan!,
       usage: null,
       lastFetchedDate: null,
@@ -306,23 +300,10 @@ export const useClientStore = create<ClientState>()(
       },
 
       // ============================================
-      // 占い開始（ボタン押下時に呼ぶ）
-      // ============================================
-      startReading: () => {
-        logWithContext("info", "[ClientStore] Reading started");
-        set({ isReadingInProgress: true });
-      },
-
-      cancelReading: () => {
-        logWithContext("info", "[ClientStore] Reading cancelled");
-        set({ isReadingInProgress: false });
-      },
-
-      // ============================================
       // 占い結果の保存
       // ============================================
       saveReading: async (data: ReadingInput) => {
-        set({ error: null, isSavingReading: true });
+        set({ error: null });
 
         logWithContext("info", "[ClientStore] Saving reading", { data });
 
@@ -334,14 +315,12 @@ export const useClientStore = create<ClientState>()(
           // 履歴に追加・usage を最新化
           const { reading, usage } = result;
           const { readings } = get();
-          set({ usage, readings: [reading, ...readings], isSavingReading: false, isReadingInProgress: false });
+          set({ usage, readings: [reading, ...readings] });
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to save reading", {
             error: error instanceof Error ? error.message : String(error),
           });
           set({
-            isSavingReading: false,
-            isReadingInProgress: false,
             error: error instanceof Error ? error : new Error(String(error)),
           });
         }
@@ -417,7 +396,6 @@ export const useClientStore = create<ClientState>()(
         logWithContext("info", "[ClientStore] Resetting to initial state");
         set({
           isReady: false,
-          isReadingInProgress: false,
           currentPlan: guestPlan,
           usage: null,
           lastFetchedDate: null,
