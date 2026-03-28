@@ -8,6 +8,8 @@ import type {
 } from "../../shared/lib/types";
 import { DebugMenu } from "./components/debug-menu";
 import Header from "./components/header";
+import HistoryPage from "./components/history-page";
+import PersonalPage from "./components/personal-page";
 import PlansPage from "./components/plans-page";
 import ReadingPage from "./components/reading-page";
 import SalonPage from "./components/salon-page";
@@ -20,7 +22,9 @@ import { useAuth } from "./lib/hooks/use-auth";
 import { useClient } from "./lib/hooks/use-client";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
+import { useSalon } from "./lib/hooks/use-salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
+import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
@@ -29,6 +33,7 @@ function App() {
   const isDebugEnabled = import.meta.env.VITE_ENABLE_DEBUG_MENU === "true";
 
   const [pageType, setPageType] = useState<PageType>("salon");
+  const [readingReturnPage, setReadingReturnPage] = useState<PageType>("salon");
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
 
@@ -119,6 +124,26 @@ function App() {
     }
   }, [planChangeError]);
 
+  // 🔥 プラン変更時に選択中の占い師を自動ダウングレード
+  const { selectedTarotist, setSelectedTarotist } = useSalon();
+  useEffect(() => {
+    if (!currentPlan || !selectedTarotist?.plan) return;
+    if (!canUseTarotist(selectedTarotist.plan, currentPlan)) {
+      // 現在のプランで使える最高ランクの占い師に自動切り替え
+      const available = masterData.tarotists
+        .filter((t) => t.plan && canUseTarotist(t.plan, currentPlan))
+        .sort((a, b) => (b.plan?.no ?? 0) - (a.plan?.no ?? 0));
+      if (available.length > 0) {
+        console.log(
+          `[App] プラン変更により占い師を自動切り替え: ${selectedTarotist.name} → ${available[0].name}`
+        );
+        setSelectedTarotist(available[0]);
+      }
+    }
+    // currentPlan.code が変わったときだけ実行
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlan?.code]);
+
   // 🔥 左端から右スワイプでサイドバーを開く
   useEffect(() => {
     let startX = 0;
@@ -207,8 +232,9 @@ function App() {
   };
 
   // 🔥 占い開始
-  const handleStartReading = () => {
-    console.log(`占い開始: `);
+  const handleStartReading = (returnPage: PageType = "salon") => {
+    console.log(`占い開始: returnPage=${returnPage}`);
+    setReadingReturnPage(returnPage);
     setPageType("reading");
   };
 
@@ -217,7 +243,7 @@ function App() {
     console.log("占いから戻る");
     setReadingData(null);
     refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
-    setPageType("salon");
+    setPageType(readingReturnPage);
   };
 
   // 🔥 起動シーケンスのデバッグログ
@@ -303,7 +329,18 @@ function App() {
             masterData={masterData}
             usageStats={usageStats}
             onChangePlan={handleChangePlan}
-            onStartReading={handleStartReading}
+            onStartReading={() => handleStartReading("salon")}
+            isChangingPlan={isChangingPlan}
+          />
+        );
+      case "personal":
+        return (
+          <PersonalPage
+            payload={payload}
+            currentPlan={currentPlan!}
+            masterData={masterData}
+            onChangePlan={handleChangePlan}
+            onBack={() => setPageType("personal")}
             isChangingPlan={isChangingPlan}
           />
         );
@@ -360,16 +397,7 @@ function App() {
           />
         );
       case "history":
-        return (
-          <div className="main-container">
-            <div className="page-title pt-3">📋 履歴</div>
-            <div className="text-center text-gray-500 mt-20">
-              <div className="text-6xl mb-4">🚧</div>
-              <div className="text-lg font-bold mb-2">準備中</div>
-              <div className="text-sm">占い履歴機能を開発中です</div>
-            </div>
-          </div>
-        );
+        return <HistoryPage />;
       case "settings":
         return (
           <SettingsPage

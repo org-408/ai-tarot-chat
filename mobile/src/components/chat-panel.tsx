@@ -2,6 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import { DefaultChatTransport } from "ai";
+import type { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -21,12 +22,18 @@ interface ChatPanelProps {
   onKeyboardHeightChange?: React.Dispatch<React.SetStateAction<number>>;
   handleStartReading?: () => void;
   onBack: () => void;
+  /** Phase1 の会話履歴を Phase2 の初期メッセージとして渡す */
+  initialMessages?: UIMessage[];
+  /** messages が変わるたびに呼ばれるコールバック（Phase1 → Phase2 への引き継ぎ用） */
+  onMessagesChange?: (messages: UIMessage[]) => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
   onKeyboardHeightChange,
   handleStartReading,
   onBack,
+  initialMessages,
+  onMessagesChange,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
@@ -51,9 +58,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { masterData } = useMaster();
 
+  // Phase2: パーソナル占いの Phase1 会話履歴が渡されている場合
+  const isPhase2 = isPersonal && (initialMessages?.length ?? 0) > 0;
+
   const [inputDisabled, setInputDisabled] = useState(false);
 
   const { messages, sendMessage, status, stop } = useChat({
+    ...(initialMessages && { messages: initialMessages }),
     transport: new DefaultChatTransport({
       api: !isPersonal
         ? `${domain}/api/readings/simple`
@@ -76,6 +87,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       console.log("Chat finished:", message);
     },
   });
+
+  const hasSentInitialMessage = useRef(false);
 
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -254,12 +267,23 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     onKeyboardHeightChange?.(keyboardHeight);
   }, [keyboardHeight, onKeyboardHeightChange]);
 
+  // Phase1 メッセージを親に通知（Phase2 の初期メッセージとして使う）
   useEffect(() => {
-    if (isRevealingCompleted || isPersonal) {
-      const prompt = "よろしくお願いします。";
-      sendMessage({ text: prompt });
+    onMessagesChange?.(messages);
+  }, [messages, onMessagesChange]);
+
+  // 初回メッセージ送信（Phase1: あいさつ / Phase2: 占い開始）
+  useEffect(() => {
+    if (hasSentInitialMessage.current) return;
+    if (!isPhase2 && (isRevealingCompleted || isPersonal)) {
+      hasSentInitialMessage.current = true;
+      sendMessage({ text: "よろしくお願いします。" });
+    } else if (isPhase2 && drawnCards.length > 0) {
+      hasSentInitialMessage.current = true;
+      sendMessage({ text: "では、占いを始めてください。" });
     }
-  }, [isPersonal, isRevealingCompleted, sendMessage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
 
   // 戻るボタン関連
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -300,7 +324,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       (isRevealingCompleted || isPersonal) &&
       drawnCards.length > 0 &&
       messages.length > 0 &&
-      status === "ready";
+      status === "ready" &&
+      (!isPhase2 || messages.length > (initialMessages?.length ?? 0));
 
     if (shouldSave && !hasSaved.current) {
       hasSaved.current = true;

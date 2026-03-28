@@ -29,10 +29,17 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   const menuItems: MenuItem[] = [
     {
       id: "salon",
-      label: "占い",
+      label: "クイック占い",
       icon: "🔮",
       available: true,
       description: "タロット占いを始める",
+    },
+    {
+      id: "personal",
+      label: "パーソナル占い",
+      icon: "✨",
+      available: currentPlan === "PREMIUM",
+      description: "AIと対話しながら占う",
     },
     {
       id: "tarotist",
@@ -66,7 +73,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       id: "history",
       label: "履歴",
       icon: "📋",
-      available: false,
+      available: true,
       description: "過去の占い結果",
     },
     {
