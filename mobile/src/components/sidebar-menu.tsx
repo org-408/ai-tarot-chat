@@ -210,13 +210,15 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                   onClick={() => handleMenuClick(item)}
                   disabled={!item.available}
                   className={`w-full px-6 py-4 flex items-center gap-4 transition-colors relative ${
-                    currentPage === item.id
+                    !item.available
+                      ? "bg-gray-100 cursor-not-allowed"
+                      : currentPage === item.id
                       ? "bg-purple-50 border-l-4 border-purple-600"
                       : "hover:bg-gray-50"
-                  } ${!item.available ? "opacity-50 cursor-not-allowed" : ""}`}
+                  }`}
                 >
                   {/* 🔥 アクティブインジケーター */}
-                  {currentPage === item.id && (
+                  {currentPage === item.id && item.available && (
                     <motion.div
                       layoutId="activeIndicator"
                       className="absolute left-0 top-0 bottom-0 w-1 bg-purple-600"
@@ -228,11 +230,15 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     />
                   )}
 
-                  <span className="text-2xl">{item.icon}</span>
+                  <span className={`text-2xl ${!item.available ? "grayscale opacity-50" : ""}`}>
+                    {item.icon}
+                  </span>
                   <div className="flex-1 text-left">
                     <div
                       className={`font-semibold ${
-                        currentPage === item.id
+                        !item.available
+                          ? "text-gray-400"
+                          : currentPage === item.id
                           ? "text-purple-600"
                           : "text-gray-900"
                       }`}
@@ -240,7 +246,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                       {item.label}
                     </div>
                     {item.description && (
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div className={`text-xs mt-0.5 ${!item.available ? "text-gray-400" : "text-gray-500"}`}>
                         {item.description}
                       </div>
                     )}
