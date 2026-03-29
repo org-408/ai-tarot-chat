@@ -13,7 +13,8 @@ export type PageType =
   | "tarotistSwipe"
   | "swipeableDemo"
   | "history"
-  | "settings";
+  | "settings"
+  | "clara";
 export type SelectTargetMode = "tarotist" | "portrait" | "category" | "spread";
 
 export type SpreadViewModeType = "grid" | "carousel";

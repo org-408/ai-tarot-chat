@@ -8,6 +8,7 @@ import type {
 } from "../../shared/lib/types";
 import { DebugMenu } from "./components/debug-menu";
 import Header from "./components/header";
+import ClaraPage from "./components/clara-page";
 import HistoryPage from "./components/history-page";
 import PersonalPage from "./components/personal-page";
 import PlansPage from "./components/plans-page";
@@ -323,8 +324,13 @@ function App() {
   };
 
   // 🔥 占い開始（無料プランのみ広告表示 → 広告が閉じてから遷移）
+  // Clara（OFFLINE占い師）が選択されている場合は "いつでも占い" ページへ
   const handleStartReading = async (returnPage: PageType = "salon") => {
     console.log(`占い開始: returnPage=${returnPage}`);
+    if (selectedTarotist?.provider === "OFFLINE") {
+      setPageType("clara");
+      return;
+    }
     const isPaidPlan =
       currentPlan?.code === "STANDARD" || currentPlan?.code === "PREMIUM";
     if (!isPaidPlan) {
@@ -441,6 +447,7 @@ function App() {
             onChangePlan={handleChangePlan}
             onBack={() => setPersonalPageKey((k) => k + 1)}
             isChangingPlan={isChangingPlan}
+            onNavigateToClara={() => setPageType("clara")}
           />
         );
       case "reading":
@@ -472,6 +479,7 @@ function App() {
             masterData={masterData}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
+            onNavigateToClara={() => setPageType("clara")}
           />
         );
       case "tarotistSwipe":
@@ -493,6 +501,15 @@ function App() {
             currentPlan={currentPlan!}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
+          />
+        );
+      case "clara":
+        return (
+          <ClaraPage
+            masterData={masterData}
+            currentPlan={currentPlan!}
+            onChangePlan={handleChangePlan}
+            onBack={() => setPageType("salon")}
           />
         );
       case "history":
@@ -533,6 +550,7 @@ function App() {
         onPageChange={handlePageChange}
         currentPlan={currentPlan?.code || "GUEST"}
         userEmail={payload.user?.email}
+        isOffline={isOffline}
       />
 
       {/* 🔥 プラン変更中インジケーター */}
@@ -723,7 +741,7 @@ function App() {
       <Header
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
-        onMenuClick={() => setSidebarOpen(true)}
+        onMenuClick={() => setSidebarOpen((prev) => !prev)}
         menuDisabled={pageType === "reading"}
         showProfile={showProfile}
         setShowProfile={setShowProfile}

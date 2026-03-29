@@ -39,7 +39,6 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     if (!masterData.tarotists) return [];
 
     return masterData.tarotists.filter((tarotist: Tarotist) => {
-      // 全員見せるように変更
       return !!tarotist;
     });
   }, [masterData]);

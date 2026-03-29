@@ -1,0 +1,226 @@
+import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import type { DrawnCard, MasterData, Plan } from "../../../shared/lib/types";
+import { useSalon } from "../lib/hooks/use-salon";
+import { drawRandomCards } from "../lib/utils/salon";
+import type { UserPlan } from "../types";
+import CategorySpreadSelector from "./category-spread-selector";
+import { MessageContent } from "./message-content";
+import ShuffleDialog from "./shuffle-dialog";
+import UpperViewer from "./upper-viewer";
+
+// ─────────────────────────────────────────────
+// 定数
+// ─────────────────────────────────────────────
+
+const CLARA_DISCLAIMER =
+  "📖 Clara より：それぞれのカードの意味をお伝えしました！本当はカード同士の関係も読めると良いのですが、まだ勉強中で…💦 各カードのメッセージを組み合わせた総合的な解釈は、あなたの直感に委ねます。きっと答えはあなたの中にあります 🌟";
+
+const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
+  恋愛: "love",
+  仕事: "career",
+  健康: "health",
+  金運: "money",
+};
+
+// ─────────────────────────────────────────────
+// カード meanings からメッセージ文字列を生成
+// ─────────────────────────────────────────────
+
+function buildClaraMessages(
+  drawnCards: DrawnCard[],
+  categoryName: string
+): string[] {
+  const meaningKey = CATEGORY_TO_MEANING_KEY[categoryName] ?? "love";
+
+  const cardMessages = drawnCards.map((dc) => {
+    const card = dc.card!;
+    const meaning =
+      card.meanings?.find((m) => m.category === meaningKey) ??
+      card.meanings?.[0];
+    const orientation = dc.isReversed ? "逆位置" : "正位置";
+    const text = dc.isReversed ? meaning?.reversed : meaning?.upright;
+    const fallback = (
+      dc.isReversed ? card.reversedKeywords : card.uprightKeywords
+    )?.join("、");
+
+    return `**${dc.position}（${orientation}）: ${card.name}**\n\n${text ?? fallback ?? ""}`;
+  });
+
+  return [...cardMessages, CLARA_DISCLAIMER];
+}
+
+// ─────────────────────────────────────────────
+// ClaraPanel – ChatPanel の代わり（API呼び出しなし）
+// ─────────────────────────────────────────────
+
+interface ClaraPanelProps {
+  messages: string[];
+  onBack: () => void;
+}
+
+const ClaraPanel: React.FC<ClaraPanelProps> = ({ messages, onBack }) => {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className="w-full h-full flex flex-col relative">
+      {/* メッセージエリア */}
+      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-24">
+        {messages.map((text, i) => (
+          <div key={i}>
+            <MessageContent content={text} />
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* 戻るボタン */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.7, y: 40 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.3 }}
+        className="absolute bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
+        onClick={onBack}
+      >
+        <span>← 戻る</span>
+      </motion.button>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// ClaraPage
+// ─────────────────────────────────────────────
+
+interface ClaraPageProps {
+  masterData: MasterData;
+  currentPlan: Plan;
+  onChangePlan: (plan: UserPlan) => void;
+  onBack: () => void;
+}
+
+const ClaraPage: React.FC<ClaraPageProps> = ({
+  masterData,
+  currentPlan,
+  onChangePlan,
+}) => {
+  const {
+    selectedSpread,
+    selectedCategory,
+    drawnCards,
+    setDrawnCards,
+    setIsRevealingCompleted,
+  } = useSalon();
+
+  // Clara は masterData から直接取得（ストアの selectedTarotist は変更しない）
+  const clara = masterData.tarotists?.find((t) => t.provider === "OFFLINE");
+
+  const [phase, setPhase] = useState<"select" | "reading">("select");
+  const [claraMessages, setClaraMessages] = useState<string[]>([]);
+
+  // phase が "reading" になったらカードを引く（ReadingPage と同じパターン）
+  // → drawnCards.length === 0 の間 ShuffleDialog が表示される
+  useEffect(() => {
+    if (phase !== "reading") return;
+    if (!selectedSpread || !selectedCategory) return;
+
+    const drawn = drawRandomCards(masterData, selectedSpread);
+    setDrawnCards(drawn);
+    setIsRevealingCompleted(true); // 全カードを最初からめくれた状態に
+    setClaraMessages(buildClaraMessages(drawn, selectedCategory.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // 「占いを始める」ボタン → reading フェーズへ
+  const handleStartReading = () => {
+    setDrawnCards([]); // 念のためリセット（ShuffleDialog を確実に開く）
+    setPhase("reading");
+  };
+
+  // 戻る → select フェーズに戻す
+  const handleReset = () => {
+    setDrawnCards([]);
+    setIsRevealingCompleted(false);
+    setClaraMessages([]);
+    setPhase("select");
+  };
+
+  // ──────────────────────────────────────────
+  // フェーズ: 選択（SalonPage と同じレイアウト）
+  // ──────────────────────────────────────────
+  if (phase === "select") {
+    return (
+      <div className="main-container">
+        {/* 上半分: Clara 肖像（固定・ストア非依存） */}
+        <div
+          className="fixed left-0 right-0 h-[45vh] p-2"
+          style={{ top: "calc(50px + env(safe-area-inset-top))" }}
+        >
+          <div className="h-full rounded-3xl overflow-hidden shadow-xl">
+            <img
+              src={`/tarotists/${clara?.name ?? "Clara"}.png`}
+              alt={clara?.title ?? "Clara"}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: "center 20%" }}
+            />
+          </div>
+        </div>
+
+        {/* 下半分: カテゴリ・スプレッド選択（SalonPage と同じ） */}
+        <motion.div
+          className="fixed left-0 right-0 px-1 z-20 flex flex-col"
+          style={{
+            top: "calc(45vh + 50px + env(safe-area-inset-top))",
+            bottom: 0,
+          }}
+        >
+          <div className="flex-1 overflow-y-auto pb-52">
+            <CategorySpreadSelector
+              handleStartReading={handleStartReading}
+              claraMode={true}
+            />
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // フェーズ: 占い（ReadingPage と同じレイアウト）
+  // ──────────────────────────────────────────
+  return (
+    <div className="main-container">
+      {/* シャッフルダイアログ: drawnCards が引かれるまで表示（ReadingPage と同じ制御） */}
+      <ShuffleDialog
+        isOpen={drawnCards.length === 0}
+        onComplete={() => {}}
+      />
+
+      {/* 上半分: UpperViewer（ReadingPage と同じコンポーネント） */}
+      <div
+        className="fixed left-0 right-0 z-10"
+        style={{
+          top: "calc(50px + env(safe-area-inset-top))",
+          height: "45vh",
+        }}
+      >
+        {drawnCards.length > 0 && <UpperViewer />}
+      </div>
+
+      {/* 下半分: ClaraPanel（ChatPanel の代わり） */}
+      <div
+        className="fixed left-0 right-0 overflow-auto"
+        style={{
+          top: "calc(45vh + 50px + env(safe-area-inset-top))",
+          bottom: 0,
+        }}
+      >
+        {drawnCards.length > 0 && (
+          <ClaraPanel messages={claraMessages} onBack={handleReset} />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ClaraPage;

@@ -23,6 +23,7 @@ interface PersonalPageProps {
   onChangePlan: (plan: UserPlan) => void;
   onBack: () => void;
   isChangingPlan: boolean;
+  onNavigateToClara?: () => void;
 }
 
 const PersonalPage: React.FC<PersonalPageProps> = ({
@@ -30,6 +31,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   masterData,
   onChangePlan,
   onBack,
+  onNavigateToClara,
 }) => {
   const {
     selectedTargetMode,
@@ -87,6 +89,10 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // Phase1 → Phase2 へ（無料プランのみ広告表示 → 閉じてから遷移）
   const handleStartReading = async () => {
     if (!selectedTarotist || !selectedSpread) return;
+    if (selectedTarotist.provider === "OFFLINE") {
+      onNavigateToClara?.();
+      return;
+    }
     const isPaidPlan =
       currentPlan.code === "STANDARD" || currentPlan.code === "PREMIUM";
     if (!isPaidPlan) {

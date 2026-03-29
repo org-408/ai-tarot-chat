@@ -8,6 +8,7 @@ interface SidebarMenuProps {
   onPageChange: (page: PageType) => void;
   currentPlan: string;
   userEmail?: string;
+  isOffline?: boolean;
 }
 
 interface MenuItem {
@@ -26,22 +27,35 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   onPageChange,
   currentPlan,
   userEmail,
+  isOffline = false,
 }) => {
   const menuItems: MenuItem[] = [
     {
       id: "salon",
       label: "クイック占い",
       icon: "🔮",
-      available: true,
+      available: !isOffline,
       description: "タロット占いを始める",
+      requiredPlanLabel: isOffline ? "オフライン時は使用不可" : undefined,
     },
     {
       id: "personal",
       label: "パーソナル占い",
       icon: "✨",
-      available: currentPlan === "PREMIUM",
+      available: !isOffline && currentPlan === "PREMIUM",
       description: "AIと対話しながら占う",
-      requiredPlanLabel: "プレミアム限定",
+      requiredPlanLabel: isOffline
+        ? "オフライン時は使用不可"
+        : currentPlan !== "PREMIUM"
+          ? "プレミアム限定"
+          : undefined,
+    },
+    {
+      id: "clara",
+      label: "いつでも占い",
+      icon: "📖",
+      available: true,
+      description: "Clara とオフラインで占う",
     },
     {
       id: "tarotist",

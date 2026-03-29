@@ -8,15 +8,18 @@ import type {
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
+import { CLARA_CATEGORY_NAMES } from "../lib/utils/offline-reading";
 import Accordion, { type AccordionItem } from "./accordion";
 import ScrollableRadioSelector from "./scrollable-radio-selector";
 
 interface CategorySpreadSelectorProps {
   handleStartReading: () => void;
+  claraMode?: boolean; // いつでも占いモード：プラン制限なし・全カテゴリ・全スプレッド
 }
 
 const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   handleStartReading: onHandleStartReading,
+  claraMode = false,
 }) => {
   const { masterData } = useMaster();
   const { currentPlan, remainingReadings, remainingCeltics, remainingPersonal } =
@@ -36,6 +39,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     return (
       masterData.categories
         .filter((category: ReadingCategory) => {
+          // claraMode: meanings に対応する4カテゴリのみ（love/career/health/money）
+          if (claraMode) return (CLARA_CATEGORY_NAMES as readonly string[]).includes(category.name);
           // GUESTとFREEは、恋愛・健康・金運を除外
           if (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") {
             if (["恋愛", "仕事", "今日の運勢"].includes(category.name)) {
@@ -53,7 +58,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           bio: category.description,
         }))
     );
-  }, [masterData, currentPlan]);
+  }, [masterData, currentPlan, claraMode]);
 
   const categoryItems: AccordionItem[] = [
     {
@@ -75,19 +80,23 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   // スプレッドの取得とフィルタリング
   const availableSpreads = useMemo(() => {
-    if (!masterData.spreads || !currentPlan || !masterData.categories)
+    if (!masterData.spreads || !masterData.categories)
       return [];
 
     return masterData.spreads
       .filter((spread: Spread) => {
         // spread.plan, spread.categoriesが存在しない場合はfalse(データ破損)
         if (!isPersonal) {
-          if (!spread.plan || !spread.categories) return false;
+          if (!spread.categories) return false;
           // スプレッド内のカテゴリー一覧にselectedCategoryが含まれているか
-          // (TODO: カテゴリー一覧は目安として全選択すべきか検討)
           const spreadCatetories = spread.categories.map(
             (stc: SpreadToCategory) => stc.category?.name
           );
+          if (claraMode) {
+            // claraMode: カテゴリー一致のみ確認（プラン制限なし）
+            return spreadCatetories.includes(selectedCategory?.name || "");
+          }
+          if (!spread.plan || !currentPlan) return false;
           if (
             currentPlan.no >= spread.plan!.no &&
             spreadCatetories.includes(selectedCategory?.name || "")
@@ -103,6 +112,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   }, [
     currentPlan,
     isPersonal,
+    claraMode,
     masterData.categories,
     masterData.spreads,
     selectedCategory?.name,
@@ -150,7 +160,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     : isCeltic
     ? remainingCeltics
     : remainingReadings;
-  const isLimitReached = remaining !== undefined && remaining <= 0;
+  // claraModeは回数制限なし
+  const isLimitReached = !claraMode && remaining !== undefined && remaining <= 0;
 
   const isDisabled =
     isLimitReached ||
@@ -210,7 +221,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         </button>
 
         <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
-          {isLimitReached
+          {claraMode
+            ? "📖 Clara といつでも占えます"
+            : isLimitReached
             ? "本日の占い回数上限に達しました"
             : `今日はあと${remaining}回`}
         </div>

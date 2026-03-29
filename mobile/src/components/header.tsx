@@ -46,6 +46,8 @@ const Header: React.FC<HeaderProps> = ({
         return "📋 占い履歴";
       case "settings":
         return "⚙️ 設定";
+      case "clara":
+        return "📖 いつでも占い";
       default:
         return "🔮 タロット占い";
     }
@@ -77,6 +79,8 @@ const Header: React.FC<HeaderProps> = ({
         return "過去の占い結果を確認";
       case "settings":
         return "アプリの設定を管理";
+      case "clara":
+        return "Clara と一緒にオフライン占い";
       default:
         return "";
     }
