@@ -60,6 +60,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   // Phase2: パーソナル占いの Phase1 会話履歴が渡されている場合
   const isPhase2 = isPersonal && (initialMessages?.length ?? 0) > 0;
+  const initialLen = initialMessages?.length ?? 0;
+  const MAX_PHASE2_QUESTIONS = 3;
 
   const [inputDisabled, setInputDisabled] = useState(false);
 
@@ -106,12 +108,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       console.log("Last message:", lastMessage);
-      if (messages.length > 3) {
-        console.log("step 2: input disabled", messages);
-        setInputDisabled(true);
+      if (!isPhase2) {
+        // Phase1: スプレッド選択後（messages[3] でスプレッド確定）は入力停止
+        setInputDisabled(messages.length > 3);
       } else {
-        console.log("not step 2: input enabled", messages);
-        setInputDisabled(false);
+        // Phase2: autoメッセージ以降のユーザー発言数で判定
+        const phase2UserCount = messages.filter(
+          (m, i) => m.role === "user" && i > initialLen
+        ).length;
+        setInputDisabled(phase2UserCount >= MAX_PHASE2_QUESTIONS);
       }
       // パーソナル占い時の処理
       if (isPersonal && status === "ready") {
@@ -441,6 +446,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         </motion.button>
       )}
 
+      {/* Phase2: セッション終了メッセージ */}
+      {isPhase2 && inputDisabled && isMessageComplete && (
+        <div className="px-4 py-3 text-center text-xs text-gray-400">
+          本日のセッションはここまでとなります 🔮
+        </div>
+      )}
+
       {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
       {isPersonal && !inputDisabled && (
         <motion.div
@@ -452,6 +464,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             mass: 0.8,
           }}
         >
+          {/* Phase2: 残り問数バッジ */}
+          {isPhase2 && (() => {
+            const phase2UserCount = messages.filter(
+              (m, i) => m.role === "user" && i > initialLen
+            ).length;
+            const remaining = MAX_PHASE2_QUESTIONS - phase2UserCount;
+            return (
+              <div className="text-center text-xs text-purple-400 mb-1">
+                ✦ 残り{remaining}問
+              </div>
+            );
+          })()}
+
           <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
             <textarea
               ref={textareaRef}

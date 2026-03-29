@@ -129,11 +129,40 @@ export async function POST(req: NextRequest) {
 
     const spreads = await spreadService.getAllSpreads();
 
-    const system =
+    // Phase2 追加質問のインデックスを算出
+    // Phase1(4) + auto(1) + AI鑑定(1) = 6 → 7以降がユーザーの追加質問
+    // 7: 1問目, 9: 2問目, 11: 3問目
+    const phase2QuestionIndex =
+      clientMessages.length > 6
+        ? Math.floor((clientMessages.length - 5) / 2)
+        : 0;
+    const isLastQuestion = phase2QuestionIndex >= 3;
+
+    const drawnCardsText =
+      drawnCards.length > 0
+        ? drawnCards
+            .map(
+              (placement) =>
+                `- ${placement.position}(${placement.card!.name}${
+                  placement.isReversed ? "逆位置" : "正位置"
+                }): ${
+                  placement.isReversed
+                    ? placement.card!.reversedKeywords.join(", ")
+                    : placement.card!.uprightKeywords.join(", ")
+                }`
+            )
+            .join("\n")
+            .trim()
+        : "";
+
+    const tarotistBase =
       `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
-      `また、あなたは熟練したタロット占い師です。` +
+      `また、あなたは熟練したタロット占い師です。`;
+
+    const system =
+      tarotistBase +
       (clientMessages.length <= 1
         ? `まずは簡単なご挨拶とユーザーに占いたい内容を質問してください。` +
           `\n\n` +
@@ -163,26 +192,15 @@ export async function POST(req: NextRequest) {
 ※例えばスプレッド番号が7でスプレッド名が「ケルト十字」なら: {7}: {ケルト十字}
 ※スプレッド番号、スプレッド名のそれぞれに波括弧を忘れないでください
 `
-        : `ユーザーの質問に対して、選ばれたスプレッド「${spread.name}」で占いを行ってください。` +
+        : clientMessages.length <= 6
+        ? // Phase2 初回鑑定
+          `ユーザーの質問に対して、選ばれたスプレッド「${spread.name}」で占いを行ってください。` +
           `質問内容は「${customQuestion}」です。` +
           (drawnCards.length === 0
             ? `* まだカードは引かれていません。スプレッドに必要な${
                 spread.cells!.length
               }枚のカードをシャッフルして引いてください。`
-            : `* シャッフルして引いたカードは以下の通りです。\n` +
-              drawnCards
-                .map(
-                  (placement) =>
-                    `- ${placement.position}(${placement.card!.name}${
-                      placement.isReversed ? "逆位置" : "正位置"
-                    }): ${
-                      placement.isReversed
-                        ? placement.card!.reversedKeywords.join(", ")
-                        : placement.card!.uprightKeywords.join(", ")
-                    }`
-                )
-                .join("\n")
-                .trim()) +
+            : `* シャッフルして引いたカードは以下の通りです。\n` + drawnCardsText) +
           `\n\n` +
           `【回答フォーマット】\n
 \n
@@ -203,15 +221,26 @@ export async function POST(req: NextRequest) {
           `【制約条件】\n` +
           `- タロットカードの意味に基づいて回答すること\n` +
           `- 相談者の質問に対して、タロットカードの意味を踏まえた上で回答すること\n` +
-          `- 相談者が質問していない場合でも、タロットカードの意味を踏まえた上で回答すること\n` +
           `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
-          `- 相談者のプライバシーを尊重し、個人情報を尋ねたり共有したりしないこと\n` +
-          `- 医療、法律、財務などの専門的なアドバイスを提供しないこと\n` +
-          `- 相談者が不快に感じるような話題や言葉遣いを避けること\n` +
           `- 絵文字や顔文字を使わないこと\n` +
           `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
           `- です・ます調で話すこと\n` +
-          `- 1回の回答は200文字以上300文字以内とすること\n`);
+          `- 1回の回答は200文字以上300文字以内とすること\n`
+        : // Phase2 追加質問（1〜3問目）
+          `先ほどの鑑定に続き、相談者から追加の質問を受けています。` +
+          `引いたカードと鑑定内容を踏まえて、${tarotist.name}として丁寧にお答えください。\n\n` +
+          `【引いたカード】\n` + drawnCardsText + `\n\n` +
+          `【質問番号】${phase2QuestionIndex}問目 / 3問中\n` +
+          (isLastQuestion
+            ? `これが最後の質問です。回答の最後に、今日のセッションへの感謝と温かい締めくくりのメッセージを添えてください。\n`
+            : ``) +
+          `\n【制約条件】\n` +
+          `- 引いたカードと初回鑑定の内容を踏まえて具体的に答えること\n` +
+          `- ${tarotist.name}として自然で温かみのある口調で答えること\n` +
+          `- 占いの結果は必ずしも現実になるとは限らないことを念頭に置くこと\n` +
+          `- 絵文字や顔文字を使わないこと\n` +
+          `- です・ます調で話すこと\n` +
+          `- 1回の回答は150文字以上250文字以内とすること\n`);
 
     console.log(`[readings/personal/route] Received POST request`, {
       clientMessages,
