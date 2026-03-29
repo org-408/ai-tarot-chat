@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import type { ChatMessage, DrawnCard, Reading, TarotCard } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
+import { removeBannerAd, showBannerAd } from "../lib/utils/admob";
 import { getCardImagePath } from "../lib/utils/salon";
 
 // ──────────────────────────────────────────
@@ -411,6 +412,14 @@ const HistoryPage: React.FC = () => {
     }
   }, [grouped.length]);
 
+  // バナー広告：画面表示中に表示、離脱時に削除
+  useEffect(() => {
+    showBannerAd();
+    return () => {
+      removeBannerAd();
+    };
+  }, []);
+
   const toggleYear = (year: string) => {
     setOpenYears((prev) => {
       const next = new Set(prev);
@@ -420,7 +429,7 @@ const HistoryPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full overflow-y-auto overscroll-contain bg-gradient-to-b from-purple-50/50 to-white">
+    <div className="h-full overflow-y-auto overscroll-contain bg-gradient-to-b from-purple-50/50 to-white pb-[60px]">
       {/* ページヘッダー */}
       <div className="px-5 pt-5 pb-3">
         <h1 className="text-xl font-bold text-gray-800">占い履歴</h1>

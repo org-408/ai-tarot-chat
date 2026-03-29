@@ -16,6 +16,7 @@ interface MenuItem {
   icon: string;
   available: boolean;
   description?: string;
+  requiredPlanLabel?: string; // プラン制限の場合に表示するラベル
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({
@@ -40,6 +41,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       icon: "✨",
       available: currentPlan === "PREMIUM",
       description: "AIと対話しながら占う",
+      requiredPlanLabel: "プレミアム限定",
     },
     {
       id: "tarotist",
@@ -48,20 +50,20 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       available: true,
       description: "占い師を見る",
     },
-    {
-      id: "tarotistSwipe",
-      label: "占い師選択",
-      icon: "👱‍♀️",
-      available: true,
-      description: "スワイプで占い師を選ぶ",
-    },
-    {
-      id: "swipeableDemo",
-      label: "新サロンページ",
-      icon: "👱‍♀️",
-      available: true,
-      description: "サロン・占い統合デモ",
-    },
+    // {
+    //   id: "tarotistSwipe",
+    //   label: "占い師選択",
+    //   icon: "👱‍♀️",
+    //   available: true,
+    //   description: "スワイプで占い師を選ぶ",
+    // },
+    // {
+    //   id: "swipeableDemo",
+    //   label: "新サロンページ",
+    //   icon: "👱‍♀️",
+    //   available: true,
+    //   description: "サロン・占い統合デモ",
+    // },
     {
       id: "plans",
       label: "プラン",
@@ -231,9 +233,15 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                   </div>
 
                   {!item.available && (
-                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                      準備中
-                    </span>
+                    item.requiredPlanLabel ? (
+                      <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                        🔒 {item.requiredPlanLabel}
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
+                        準備中
+                      </span>
+                    )
                   )}
                 </motion.button>
               ))}

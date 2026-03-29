@@ -8,6 +8,7 @@ import type {
 } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useSalon } from "../lib/hooks/use-salon";
+import { showInterstitialAd } from "../lib/utils/admob";
 import { drawRandomCards } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 import { ChatPanel } from "./chat-panel";
@@ -37,6 +38,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     drawnCards,
     setDrawnCards,
     isRevealingCompleted,
+    setIsRevealingCompleted,
     setUpperViewerMode,
     setIsPersonal,
     init,
@@ -67,16 +69,29 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     }
   }, [phase, masterData, selectedSpread, setDrawnCards]);
 
-  // カードめくり完了時の処理
+  // カードめくり完了時の処理（めくれたカードが見える時間を確保してからプロフィールへ切替）
   useEffect(() => {
     if (isRevealingCompleted) {
-      setUpperViewerMode("profile");
+      const t = setTimeout(() => setUpperViewerMode("profile"), 1500);
+      return () => clearTimeout(t);
     }
   }, [isRevealingCompleted, setUpperViewerMode]);
 
-  // Phase1 → Phase2 へ（ページ遷移なし）
-  const handleStartReading = () => {
+  // パーソナル占いではカードが揃ったら自動で全枚めくる
+  useEffect(() => {
+    if (phase !== "reading" || drawnCards.length === 0) return;
+    const t = setTimeout(() => setIsRevealingCompleted(true), 500);
+    return () => clearTimeout(t);
+  }, [phase, drawnCards.length, setIsRevealingCompleted]);
+
+  // Phase1 → Phase2 へ（無料プランのみ広告表示 → 閉じてから遷移）
+  const handleStartReading = async () => {
     if (!selectedTarotist || !selectedSpread) return;
+    const isPaidPlan =
+      currentPlan.code === "STANDARD" || currentPlan.code === "PREMIUM";
+    if (!isPaidPlan) {
+      await showInterstitialAd();
+    }
     setPhase("reading");
   };
 

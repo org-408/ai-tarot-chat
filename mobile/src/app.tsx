@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type {
   Plan,
   ReadingCategory,
@@ -24,16 +24,78 @@ import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
 import { useSalon } from "./lib/hooks/use-salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
+import { initAdMob, showInterstitialAd } from "./lib/utils/admob";
 import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
+// ─────────────────────────────────────────────
+// プラン失効通知コンポーネント
+// ─────────────────────────────────────────────
+
+const PlanExpiredToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="fixed top-28 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-orange-500 text-white px-4 py-2.5 rounded-2xl shadow-lg text-sm font-medium whitespace-nowrap"
+    >
+      <span>⚠️</span>
+      <span>プランが変更されました。ご利用のプランをご確認ください。</span>
+    </motion.div>
+  );
+};
+
+const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-6"
+  >
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }}
+      className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm flex flex-col items-center gap-4"
+    >
+      <div className="text-4xl">⚠️</div>
+      <div className="text-center">
+        <p className="font-bold text-gray-800 text-lg mb-1">プランが変更されました</p>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          ご利用のプランが変更されたため、占いを終了します。
+          <br />
+          プランの詳細はプラン画面でご確認ください。
+        </p>
+      </div>
+      <button
+        onClick={onClose}
+        className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl active:opacity-80"
+      >
+        OK
+      </button>
+    </motion.div>
+  </motion.div>
+);
+
 function App() {
-  // ✅ デバッグメニュー有効化フラグ
-  const isDebugEnabled = import.meta.env.VITE_ENABLE_DEBUG_MENU === "true";
+  // ✅ デバッグモードフラグ（本番は false に設定）
+  const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
 
   const [pageType, setPageType] = useState<PageType>("salon");
   const [readingReturnPage, setReadingReturnPage] = useState<PageType>("salon");
+  // パーソナル占い再起動用キー（インクリメントで強制再マウント）
+  const [personalPageKey, setPersonalPageKey] = useState(0);
+  // プラン失効通知（"toast" | "dialog" | null）
+  const [planExpiredNotification, setPlanExpiredNotification] = useState<"toast" | "dialog" | null>(null);
+  // プラン変更検知用（前回プランコードを保持）
+  const prevPlanCodeRef = useRef<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
 
@@ -90,6 +152,9 @@ function App() {
       console.log("[App] init 完了");
     });
 
+    // AdMob 初期化（ネイティブのみ有効）
+    initAdMob();
+
     return () => {
       cleanup();
       console.log("[App] クリーンアップ完了");
@@ -141,6 +206,32 @@ function App() {
       }
     }
     // currentPlan.code が変わったときだけ実行
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlan?.code]);
+
+  // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
+  useEffect(() => {
+    if (!currentPlan) return;
+    const prev = prevPlanCodeRef.current;
+    prevPlanCodeRef.current = currentPlan.code;
+
+    // 初回マウント時はスキップ
+    if (prev === null) return;
+
+    // プランが上がった or 変わっていない場合はスキップ
+    const prevPlan = plans.find((p) => p.code === prev);
+    if (!prevPlan || currentPlan.no >= prevPlan.no) return;
+
+    // ダウングレード確定
+    console.log(`[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`);
+    if (pageType === "reading" || pageType === "personal") {
+      // 占い中 → ダイアログ（OKを押してからサロンへ）
+      setPlanExpiredNotification("dialog");
+    } else {
+      // それ以外 → 即サロンへ + トースト
+      setPageType("salon");
+      setPlanExpiredNotification("toast");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlan?.code]);
 
@@ -231,9 +322,14 @@ function App() {
     setPageType(page);
   };
 
-  // 🔥 占い開始
-  const handleStartReading = (returnPage: PageType = "salon") => {
+  // 🔥 占い開始（無料プランのみ広告表示 → 広告が閉じてから遷移）
+  const handleStartReading = async (returnPage: PageType = "salon") => {
     console.log(`占い開始: returnPage=${returnPage}`);
+    const isPaidPlan =
+      currentPlan?.code === "STANDARD" || currentPlan?.code === "PREMIUM";
+    if (!isPaidPlan) {
+      await showInterstitialAd();
+    }
     setReadingReturnPage(returnPage);
     setPageType("reading");
   };
@@ -281,19 +377,21 @@ function App() {
     return (
       <TarotSplashScreen
         message={
-          !isInitialized
-            ? getStepLabel() // lifecycle の currentStep に対応したラベルを表示
-            : !authIsReady
-            ? "認証情報を確認中... (1/4)"
-            : !clientIsReady
-            ? "利用状況を取得中... (3/4)"
-            : isMasterLoading || !masterData
-            ? "データを読み込み中... (4/4)"
-            : !usageStats
-            ? "利用状況を取得中... (3/4)"
-            : !payload
-            ? "認証情報を確認中... (1/4)"
-            : "準備完了"
+          isDebugEnabled
+            ? (!isInitialized
+                ? getStepLabel()
+                : !authIsReady
+                ? "認証情報を確認中... (1/4)"
+                : !clientIsReady
+                ? "利用状況を取得中... (3/4)"
+                : isMasterLoading || !masterData
+                ? "データを読み込み中... (4/4)"
+                : !usageStats
+                ? "利用状況を取得中... (3/4)"
+                : !payload
+                ? "認証情報を確認中... (1/4)"
+                : "準備完了")
+            : "読み込み中..."
         }
       />
     );
@@ -336,11 +434,12 @@ function App() {
       case "personal":
         return (
           <PersonalPage
+            key={personalPageKey}
             payload={payload}
             currentPlan={currentPlan!}
             masterData={masterData}
             onChangePlan={handleChangePlan}
-            onBack={() => setPageType("personal")}
+            onBack={() => setPersonalPageKey((k) => k + 1)}
             isChangingPlan={isChangingPlan}
           />
         );
@@ -572,8 +671,8 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* 🔥 リフレッシュ中インジケーター */}
-      {isRefreshing && (
+      {/* 🔥 リフレッシュ中インジケーター（デバッグモードのみ） */}
+      {isDebugEnabled && isRefreshing && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white p-2 rounded-full text-xs shadow-lg">
           🔄 {getStepLabel()}
         </div>
@@ -599,9 +698,28 @@ function App() {
       {/* 🔥 エラー通知 */}
       {error && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
-          ⚠️ {error.message}
+          ⚠️ {isDebugEnabled ? error.message : "エラーが発生しました。しばらく経ってからもう一度お試しください。"}
         </div>
       )}
+
+      {/* 🔥 プラン失効トースト（3秒で自動消去） */}
+      <AnimatePresence>
+        {planExpiredNotification === "toast" && (
+          <PlanExpiredToast onClose={() => setPlanExpiredNotification(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* 🔥 プラン失効ダイアログ（占い中に失効した場合） */}
+      <AnimatePresence>
+        {planExpiredNotification === "dialog" && (
+          <PlanExpiredDialog
+            onClose={() => {
+              setPlanExpiredNotification(null);
+              setPageType("salon");
+            }}
+          />
+        )}
+      </AnimatePresence>
       <Header
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}

@@ -17,7 +17,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
     duration: 2 + Math.random() * 2,
   }));
 
-  const isDebugEnabled = import.meta.env.VITE_ENABLE_DEBUG_MENU === "true";
+  const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
   const [devMenuOpen, setDevMenuOpen] = useState(false);
 
   const cardCss = "w-20 h-35";

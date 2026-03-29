@@ -36,6 +36,8 @@ const Header: React.FC<HeaderProps> = ({
           default:
             return "🔮 タロット占い";
         }
+      case "personal":
+        return "✨ パーソナル占い";
       case "plans":
         return "💎 プラン選択";
       case "tarotist":
@@ -58,12 +60,13 @@ const Header: React.FC<HeaderProps> = ({
           case "FREE":
             return "お気軽なタロット占い";
           case "STANDARD":
-            return "本格的なタロット占い";
           case "PREMIUM":
-            return "AIと対話しながら本格タロット占い";
+            return "本格的なタロット占い";
           default:
             return "";
         }
+      case "personal":
+        return "AIと対話しながら本格タロット占い";
       case "reading":
         return `占い師: ${selectedTarotist!.name}`;
       case "plans":
