@@ -95,11 +95,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   borderColor: colors.secondary,
                 }}
                 onClick={() => {
-                  if (tarotist.provider === "OFFLINE") {
-                    onNavigateToClara?.();
-                  } else {
-                    setSelectedTarotist(tarotist);
-                  }
+                  setSelectedTarotist(tarotist);
                 }}
               >
                 {/* プランバッジ */}
@@ -155,9 +151,10 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     </div>
 
                     {/* プロフィール */}
-                    <div className="text-sm text-gray-700 mb-2">
-                      {tarotist.bio}
-                    </div>
+                    <div
+                      className="text-sm text-gray-700 mb-2"
+                      dangerouslySetInnerHTML={{ __html: tarotist.bio ?? "" }}
+                    />
 
                     {/* おすすめ度 */}
                     {tarotist.provider !== "OFFLINE" && (
@@ -183,20 +180,6 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     )}
                   </div>
                 </div>
-
-                {/* Clara → いつでも占いボタン */}
-                {tarotist.provider === "OFFLINE" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNavigateToClara?.();
-                    }}
-                    className="w-full mt-3 py-2 px-4 text-white rounded-lg text-sm font-medium transition-all shadow-md"
-                    style={{ backgroundColor: tarotist.accentColor }}
-                  >
-                    📖 いつでも占いへ
-                  </button>
-                )}
 
                 {/* アップグレードボタン(カード下部) */}
                 {tarotist.provider !== "OFFLINE" && requiresUpgrade && (
