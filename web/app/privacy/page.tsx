@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   const lastUpdated = "2026年3月20日";
   const appName = "AI タロット占い";
   const developerName = "Atelier Flow Lab";
-  const contactEmail = "support@atelierflowlab.com";
+  const contactEmail = "ai.tarot.chat@gmail.com";
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
