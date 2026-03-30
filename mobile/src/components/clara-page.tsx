@@ -1,7 +1,13 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { DrawnCard, MasterData, Plan } from "../../../shared/lib/types";
+import type {
+  DrawnCard,
+  MasterData,
+  Plan,
+  ReadingCategory,
+  Spread,
+} from "../../../shared/lib/types";
 import { useSalon } from "../lib/hooks/use-salon";
 import { drawRandomCards } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
@@ -30,7 +36,7 @@ const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
 
 function buildClaraMessages(
   drawnCards: DrawnCard[],
-  categoryName: string
+  categoryName: string,
 ): string[] {
   const meaningKey = CATEGORY_TO_MEANING_KEY[categoryName] ?? "love";
 
@@ -58,15 +64,56 @@ function buildClaraMessages(
 interface ClaraPanelProps {
   messages: string[];
   onBack: () => void;
+  category?: ReadingCategory | null;
+  spread?: Spread | null;
 }
 
-const ClaraPanel: React.FC<ClaraPanelProps> = ({ messages, onBack }) => {
+const ClaraPanel: React.FC<ClaraPanelProps> = ({
+  messages,
+  onBack,
+  category,
+  spread,
+}) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="w-full h-full flex flex-col relative">
       {/* メッセージエリア */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-24">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-4 space-y-6 pb-24">
+        {/* カテゴリ・スプレッド情報 */}
+        {(category || spread) && (
+          <div className="space-y-2">
+            {/* 占い内容バッジ */}
+            {category && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 font-medium">
+                  占い内容
+                </span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                  {category.name}
+                </span>
+              </div>
+            )}
+            {/* スプレッド情報カード */}
+            {spread && (
+              <div className="rounded-xl border border-purple-100 bg-purple-50/60 px-3 py-2.5">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-xs text-purple-500 font-medium">
+                    🃏 スプレッド
+                  </span>
+                  <span className="text-xs font-bold text-purple-800">
+                    {spread.name}
+                  </span>
+                </div>
+                {spread.guide && (
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {spread.guide}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {messages.map((text, i) => (
           <div key={i}>
             <MessageContent content={text} />
@@ -215,10 +262,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   return (
     <div className="main-container">
       {/* シャッフルダイアログ: drawnCards が引かれるまで表示（ReadingPage と同じ制御） */}
-      <ShuffleDialog
-        isOpen={drawnCards.length === 0}
-        onComplete={() => {}}
-      />
+      <ShuffleDialog isOpen={drawnCards.length === 0} onComplete={() => {}} />
 
       {/* 上下統合ラッパー */}
       <div
@@ -256,7 +300,12 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
         {/* 下半分: ClaraPanel */}
         <div className="flex-1 min-h-0">
           {drawnCards.length > 0 && (
-            <ClaraPanel messages={claraMessages} onBack={handleReset} />
+            <ClaraPanel
+              messages={claraMessages}
+              onBack={handleReset}
+              category={selectedCategory}
+              spread={selectedSpread}
+            />
           )}
         </div>
       </div>
