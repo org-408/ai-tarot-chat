@@ -89,8 +89,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       id: "history",
       label: "履歴",
       icon: "📋",
-      available: true,
+      available: currentPlan !== "GUEST",
       description: "過去の占い結果",
+      requiredPlanLabel: currentPlan === "GUEST" ? "無料登録が必要" : undefined,
     },
     {
       id: "settings",
@@ -213,8 +214,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     !item.available
                       ? "bg-gray-100 cursor-not-allowed"
                       : currentPage === item.id
-                      ? "bg-purple-50 border-l-4 border-purple-600"
-                      : "hover:bg-gray-50"
+                        ? "bg-purple-50 border-l-4 border-purple-600"
+                        : "hover:bg-gray-50"
                   }`}
                 >
                   {/* 🔥 アクティブインジケーター */}
@@ -230,7 +231,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     />
                   )}
 
-                  <span className={`text-2xl ${!item.available ? "grayscale opacity-50" : ""}`}>
+                  <span
+                    className={`text-2xl ${!item.available ? "grayscale opacity-50" : ""}`}
+                  >
                     {item.icon}
                   </span>
                   <div className="flex-1 text-left">
@@ -239,21 +242,23 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                         !item.available
                           ? "text-gray-400"
                           : currentPage === item.id
-                          ? "text-purple-600"
-                          : "text-gray-900"
+                            ? "text-purple-600"
+                            : "text-gray-900"
                       }`}
                     >
                       {item.label}
                     </div>
                     {item.description && (
-                      <div className={`text-xs mt-0.5 ${!item.available ? "text-gray-400" : "text-gray-500"}`}>
+                      <div
+                        className={`text-xs mt-0.5 ${!item.available ? "text-gray-400" : "text-gray-500"}`}
+                      >
                         {item.description}
                       </div>
                     )}
                   </div>
 
-                  {!item.available && (
-                    item.requiredPlanLabel ? (
+                  {!item.available &&
+                    (item.requiredPlanLabel ? (
                       <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full font-medium flex items-center gap-1">
                         🔒 {item.requiredPlanLabel}
                       </span>
@@ -261,8 +266,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                       <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
                         準備中
                       </span>
-                    )
-                  )}
+                    ))}
                 </motion.button>
               ))}
             </div>
