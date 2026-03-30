@@ -117,7 +117,7 @@ export abstract class BaseRepository {
       async (tx) => {
         return await callback(tx);
       },
-      { timeout }
+      { timeout, maxWait: 30 * 1000 } // maxWait: デフォルト2秒→30秒に延長
     );
   }
 
@@ -157,7 +157,7 @@ export abstract class BaseRepository {
         // トランザクション内でコールバックを実行
         return await callback(txRepos);
       },
-      { timeout }
+      { timeout, maxWait: 30 * 1000 } // maxWait: デフォルト2秒→30秒に延長
     );
   }
 }
