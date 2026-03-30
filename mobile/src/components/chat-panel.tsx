@@ -118,8 +118,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         ).length;
         setInputDisabled(phase2UserCount >= MAX_PHASE2_QUESTIONS);
       }
-      // パーソナル占い時の処理
-      if (isPersonal && status === "ready") {
+      // パーソナル占い Phase1 のスプレッド選択（Phase2 では不要）
+      if (isPersonal && !isPhase2 && status === "ready") {
         if (messages.length === 4) {
           console.log("step 2 reached in spread select mode");
           // スプレッドを messsages から取得してセット

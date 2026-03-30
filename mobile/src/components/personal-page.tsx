@@ -47,7 +47,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   } = useSalon();
 
   const { remainingPersonal } = useClient();
-  const canStartPersonal = remainingPersonal > 0;
+  const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
+  const canStartPersonal = debugMode || remainingPersonal > 0;
 
   const [phase, setPhase] = useState<"chat" | "reading">("chat");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);

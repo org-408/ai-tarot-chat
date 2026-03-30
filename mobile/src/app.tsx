@@ -191,8 +191,10 @@ function App() {
   }, [planChangeError]);
 
   // 🔥 プラン変更時に選択中の占い師を自動ダウングレード
+  // ※ isChangingPlan 中は中間状態で誤発火するためスキップし、完了後（false）に判定する
   const { selectedTarotist, setSelectedTarotist } = useSalon();
   useEffect(() => {
+    if (isChangingPlan) return;
     if (!currentPlan || !selectedTarotist?.plan) return;
     if (!canUseTarotist(selectedTarotist.plan, currentPlan)) {
       // 現在のプランで使える最高ランクの占い師に自動切り替え
@@ -206,9 +208,8 @@ function App() {
         setSelectedTarotist(available[0]);
       }
     }
-    // currentPlan.code が変わったときだけ実行
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlan?.code]);
+  }, [currentPlan?.code, isChangingPlan]);
 
   // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
   useEffect(() => {

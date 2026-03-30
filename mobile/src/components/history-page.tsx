@@ -454,7 +454,7 @@ const TABS: { id: FilterTab; label: string }[] = [
 ];
 
 const HistoryPage: React.FC = () => {
-  const { readings, fetchReadings, error } = useClient();
+  const { readings, fetchReadings, error, currentPlan } = useClient();
   const { decks } = useMaster();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTarotistProfile, setSelectedTarotistProfile] = useState<Tarotist | null>(null);
@@ -505,13 +505,15 @@ const HistoryPage: React.FC = () => {
     }
   }, [grouped.length]);
 
-  // バナー広告：画面表示中に表示、離脱時に削除
+  // バナー広告：GUEST/FREE プランのみ表示
+  const showAds = !currentPlan || currentPlan.code === "GUEST" || currentPlan.code === "FREE";
   useEffect(() => {
+    if (!showAds) return;
     showBannerAd();
     return () => {
       removeBannerAd();
     };
-  }, []);
+  }, [showAds]);
 
   const toggleYear = (year: string) => {
     setOpenYears((prev) => {

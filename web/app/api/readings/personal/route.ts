@@ -116,7 +116,8 @@ export async function POST(req: NextRequest) {
     // ✅ パーソナル占いの残回数チェック（実際の占いフェーズ開始時のみ）
     //    length <= 1: 挨拶フェーズ、length <= 3: スプレッド提案フェーズ
     //    length > 3: 実際の占いフェーズ → ここで初めて personal カウントを消費
-    if (clientMessages.length > 3) {
+    //    debugMode=true の場合は制限をスキップ
+    if (!debugMode && clientMessages.length > 3) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (usage.remainingPersonal <= 0) {
         logWithContext("warn", "パーソナル占いの回数上限", { clientId });
