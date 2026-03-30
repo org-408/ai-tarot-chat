@@ -128,7 +128,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join("");
           console.log("Extracted string:", str);
-          const match = str.match(/^\{(\d+)\}:\s*\{(.+?)\}$/m);
+          const match = str.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
           const spreadNo = match ? parseInt(match[1], 10) : undefined;
           const spreadName = match ? match[2] : "";
           console.log("Extracted spread no, name:", spreadNo, spreadName);
