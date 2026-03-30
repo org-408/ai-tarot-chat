@@ -131,22 +131,25 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
           {drawnCards.length > 0 && <UpperViewer />}
         </div>
 
-        {/* 下半分：Phase2 チャット */}
-        <div
+        {/* 下半分：Phase2 チャット（キーボード対応） */}
+        <motion.div
           className="fixed left-0 right-0 overflow-auto"
           style={{
             top: "calc(45vh + 50px + env(safe-area-inset-top))",
             bottom: 0,
           }}
+          animate={{ y: -keyboardHeight }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {drawnCards.length > 0 && (
             <ChatPanel
               key={`personal-phase2-${chatResetKey}`}
               initialMessages={phase1Messages}
+              onKeyboardHeightChange={setKeyboardHeight}
               onBack={handleBackFromReading}
             />
           )}
-        </div>
+        </motion.div>
       </div>
     );
   }

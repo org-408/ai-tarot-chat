@@ -431,7 +431,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
-      {/* Back Button - saveReading 完了後に表示（Phase2 では全質問終了後のみ） */}
+      {/* Back Button - Phase1: 保存後すぐ / Phase2: 全質問終了後のみ */}
       {isMessageComplete && !isSavingReading && (!isPhase2 || inputDisabled) && (
         <motion.button
           key={"back-button"}
@@ -446,37 +446,30 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         </motion.button>
       )}
 
-      {/* Phase2: セッション終了メッセージ */}
+      {/* Phase2: セッション終了バナー */}
       {isPhase2 && inputDisabled && isMessageComplete && (
-        <div className="px-4 py-3 text-center text-xs text-gray-400">
-          本日のセッションはここまでとなります 🔮
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="px-4 py-5 bg-gray-50 border-t border-gray-200 text-center"
+        >
+          <div className="text-2xl mb-2">🔮</div>
+          <div className="text-sm font-medium text-gray-600 mb-1">
+            本日のセッションが終了しました
+          </div>
+          <div className="text-xs text-gray-400">
+            またいつでもご相談ください
+          </div>
+        </motion.div>
       )}
 
-      {/* Input Area - motion.divでキーボードの上に滑らかに移動 */}
-      {isPersonal && !inputDisabled && (
+      {/* Phase1 入力エリア */}
+      {isPersonal && !isPhase2 && !inputDisabled && (
         <motion.div
           className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-            mass: 0.8,
-          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
         >
-          {/* Phase2: 残り問数バッジ */}
-          {isPhase2 && (() => {
-            const phase2UserCount = messages.filter(
-              (m, i) => m.role === "user" && i > initialLen
-            ).length;
-            const remaining = MAX_PHASE2_QUESTIONS - phase2UserCount;
-            return (
-              <div className="text-center text-xs text-purple-400 mb-1">
-                ✦ 残り{remaining}問
-              </div>
-            );
-          })()}
-
           <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
             <textarea
               ref={textareaRef}
@@ -487,9 +480,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               onBlur={handleBlur}
               placeholder="メッセージを入力..."
               rows={2}
-              className="w-full resize-none bg-transparent rounded-2xl
-              px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400
-              focus:outline-none transition-all"
+              className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
               disabled={status === "streaming"}
             />
@@ -503,6 +494,66 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         </motion.div>
       )}
+
+      {/* Phase2: 鑑定完了後 → Q&Aステータスバナー + 入力エリア */}
+      {isPhase2 && isMessageComplete && !inputDisabled && (() => {
+        const phase2UserCount = messages.filter(
+          (m, i) => m.role === "user" && i > initialLen
+        ).length;
+        const remaining = MAX_PHASE2_QUESTIONS - phase2UserCount;
+        const isLastQ = remaining === 1;
+        return (
+          <>
+            {/* ステータスバナー: 残り問数を常時表示 */}
+            <div
+              className={`px-4 py-3 border-t text-center transition-colors ${
+                isLastQ
+                  ? "bg-amber-50 border-amber-100"
+                  : "bg-purple-50 border-purple-100"
+              }`}
+            >
+              <div
+                className={`text-sm font-medium ${
+                  isLastQ ? "text-amber-600" : "text-purple-600"
+                }`}
+              >
+                {isLastQ
+                  ? `💬 最後の質問ができます（残り 1 問）`
+                  : `💬 鑑定について質問できます（残り ${remaining} 問）`}
+              </div>
+            </div>
+
+            {/* 入力エリア */}
+            <motion.div
+              className="px-4 py-3 bg-transparent"
+              transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
+            >
+              <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
+                <textarea
+                  ref={textareaRef}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  placeholder="カードや鑑定について質問する..."
+                  rows={2}
+                  className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
+                  style={{ maxHeight: "120px" }}
+                  disabled={status === "streaming"}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || status === "streaming"}
+                  className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
+                >
+                  <ArrowUp size={18} strokeWidth={2.5} />
+                </button>
+              </div>
+            </motion.div>
+          </>
+        );
+      })()}
     </div>
   );
 };
