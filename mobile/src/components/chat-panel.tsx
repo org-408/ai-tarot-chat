@@ -350,6 +350,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     if (shouldSave && !hasSaved.current) {
       hasSaved.current = true;
+      // Phase2 以外（クイック占い・いつでも占い Phase1）はここで完了フラグを立てる
+      // Phase2 は初回鑑定完了時に上の isPhase2 ブロックで既に立てている
+      if (!isPhase2) setIsMessageComplete(true);
       setIsSavingReading(true);
       saveReading({
         tarotistId: tarotist.id,
