@@ -22,7 +22,7 @@ const ollama = createOllama({
 export const homeProviders = {
   gpt5nano: ollama("llama3.1:8b-instruct-q8_0"), // 微妙
   gemini25: ollama("llama3.1:8b-instruct-fp16"), // 微妙
-  gemini25pro: ollama("qwen3:14b-q4_K_M"), // 行けそう？
+  gemini25pro: ollama("qwen3:14b-q4_K_M"), // 行けそう？ -> NG
   claude_h: ollama("qwen3:14b-q8_0"), // やや遅い
   gpt41: ollama("gemma3:12b"), // 良好
   gpt5: ollama("gemma3:27b"), // 遅い
@@ -31,14 +31,14 @@ export const homeProviders = {
 };
 
 export const homeFreeProviders = {
-  gpt5nano: mistral("open-mistral-nemo"),
-  gemini25: ollama("qwen3:14b-q4_K_M"), // 行けそう？
-  gemini25pro: mistral("mistral-small-latest"),
-  claude_h: cerebras("gpt-oss-120b"),
-  gpt41: cerebras("llama-3.3-70b"),
-  gpt5: groq("llama-3.3-70b-versatile"),
-  claude_s: groq("openai/gpt-oss-120b"),
-  google: ollama("gemma3:12b"), // 良好
+  gpt5nano: google("gemini-2.5-flash-lite"),
+  gemini25: cerebras("llama-3.3-70b"),
+  gemini25pro: groq("llama-3.3-70b-versatile"),
+  claude_h: google("gemini-2.5-flash"),
+  gpt41: cerebras("gpt-oss-120b"),
+  gpt5: groq("gpt-oss-120b"),
+  claude_s: google("gemini-2.5-pro"),
+  google: ollama("gemma3:12b"),
 };
 
 // Google Vertex AI用の認証設定
