@@ -431,8 +431,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
-      {/* Back Button - saveReading 完了後に表示 */}
-      {isMessageComplete && !isSavingReading && (
+      {/* Back Button - saveReading 完了後に表示（Phase2 では全質問終了後のみ） */}
+      {isMessageComplete && !isSavingReading && (!isPhase2 || inputDisabled) && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}
