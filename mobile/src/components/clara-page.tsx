@@ -234,7 +234,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
           animate={{ height: isTopCollapsed ? 0 : "45vh" }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {drawnCards.length > 0 && <UpperViewer />}
+          {drawnCards.length > 0 && <UpperViewer claraMode={true} />}
         </motion.div>
 
         {/* アコーディオントグル */}

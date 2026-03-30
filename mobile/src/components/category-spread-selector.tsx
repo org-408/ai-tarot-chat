@@ -142,8 +142,11 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   useEffect(() => {
     console.log("[SalonPage] availableCategories changed", availableCategories);
-    if (availableCategories.length > 0 && !selectedCategory) {
-      setSelectedCategory(selectedCategory || availableCategories[0]);
+    const isSelectedInList = availableCategories.some(
+      (c) => c.id === selectedCategory?.id
+    );
+    if (availableCategories.length > 0 && !isSelectedInList) {
+      setSelectedCategory(availableCategories[0]);
     }
   }, [availableCategories, selectedCategory, setSelectedCategory]);
 
@@ -160,13 +163,14 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     : isCeltic
     ? remainingCeltics
     : remainingReadings;
-  // claraModeは回数制限なし
-  const isLimitReached = !claraMode && remaining !== undefined && remaining <= 0;
+  const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
+  // claraModeおよびdebugModeは回数制限なし
+  const isLimitReached = !claraMode && !(isPersonal && debugMode) && remaining !== undefined && remaining <= 0;
 
   const isDisabled =
     isLimitReached ||
     !selectedSpread ||
-    (!isPersonal && !selectedCategory);
+    ((!isPersonal || claraMode) && !selectedCategory);
 
   const handleStartReading = () => {
     if (isDisabled) return;
@@ -196,7 +200,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       </motion.div>
 
       {/* カテゴリー選択アコーディオン */}
-      {!isPersonal && (
+      {(!isPersonal || claraMode) && (
         <div className="m-1">
           <Accordion items={categoryItems} />
         </div>

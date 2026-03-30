@@ -1,19 +1,21 @@
 import type {
-  Client,
-  Reading,
-  ReadingInput,
-  SaveReadingResponse,
-  UsageStats,
+    Client,
+    Reading,
+    ReadingInput,
+    SaveReadingResponse,
+    UsageStats,
 } from "@/../shared/lib/types";
 import { logWithContext } from "@/lib/server/logger/logger";
 import {
-  BaseRepository,
-  clientRepository,
-  planRepository,
-  readingRepository,
+    BaseRepository,
+    clientRepository,
+    planRepository,
+    readingRepository,
 } from "@/lib/server/repositories";
 import { isSameDayJST } from "@/lib/utils/date";
 import { Prisma } from "@prisma/client";
+
+const debugMode = process.env.AI_DEBUG_MODE === "true";
 
 export class ClientService {
   /**
@@ -384,20 +386,24 @@ export class ClientService {
         // ✅ Prisma の atomic increment で race condition を防ぐ
         //    旧実装: client.count += 1 → updateClient(count) は Read-Modify-Write で非原子
         //    新実装: { increment: 1 } は UPDATE SET count = count + 1 でアトミック
-        const incrementUpdate: Prisma.ClientUpdateInput = isPersonalReading
-          ? {
-              dailyPersonalCount: { increment: 1 },
-              lastPersonalReadingDate: new Date(),
-            }
-          : isCeltic
-          ? {
-              dailyCelticsCount: { increment: 1 },
-              lastCelticReadingDate: new Date(),
-            }
-          : {
-              dailyReadingsCount: { increment: 1 },
-              lastReadingDate: new Date(),
-            };
+        //    debugMode=true の場合はパーソナル占いのカウントをインクリメントしない
+        const incrementUpdate: Prisma.ClientUpdateInput =
+          isPersonalReading && debugMode
+            ? { lastPersonalReadingDate: new Date() }
+            : isPersonalReading
+            ? {
+                dailyPersonalCount: { increment: 1 },
+                lastPersonalReadingDate: new Date(),
+              }
+            : isCeltic
+            ? {
+                dailyCelticsCount: { increment: 1 },
+                lastCelticReadingDate: new Date(),
+              }
+            : {
+                dailyReadingsCount: { increment: 1 },
+                lastReadingDate: new Date(),
+              };
 
         const updatedClient = await clientRepo.updateClient(
           clientId,

@@ -1,8 +1,8 @@
 import { useChat } from "@ai-sdk/react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
-import { DefaultChatTransport } from "ai";
 import type { UIMessage } from "ai";
+import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -101,6 +101,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const hasSaved = useRef(false);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -320,6 +321,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     status,
   ]);
 
+  // 「占いを終わる」ボタン押下時に入力を無効化
+  useEffect(() => {
+    if (isEndingSession) {
+      setInputDisabled(true);
+    }
+  }, [isEndingSession]);
+
   useEffect(() => {
     // ─────────────────────────────────────────────────────────────
     // DB 保存:
@@ -348,16 +356,40 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         category: isPersonal ? undefined : category,
         customQuestion: isPersonal ? customQuestion : undefined,
         cards: drawnCards,
-        chatMessages: messages.map((msg) => ({
-          tarotistId: tarotist.id,
-          tarotist,
-          chatType: msg.role === "user" ? "USER_QUESTION" : "FINAL_READING",
-          role: msg.role === "user" ? "USER" : "TAROTIST",
-          message: msg.parts
-            .filter((part) => part.type === "text")
-            .map((part) => (part as { text: string }).text)
-            .join(""),
-        })),
+        chatMessages: (() => {
+          // Phase2 の場合は Phase1 メッセージを除外し、Phase2 のメッセージのみ保存する
+          const targetMessages = isPhase2
+            ? messages.slice(initialLen)
+            : messages;
+
+          // Phase2 の最初のタロティストメッセージのインデックス（実際の鑑定文）
+          const firstPhase2TarotistIdx = isPhase2
+            ? targetMessages.findIndex((m) => m.role === "assistant")
+            : -1;
+
+          return targetMessages.map((msg, i) => {
+            let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
+            if (msg.role === "user") {
+              chatType = "USER_QUESTION";
+            } else if (isPhase2 && i !== firstPhase2TarotistIdx) {
+              // Phase2 の Q&A 回答（鑑定文以外）
+              chatType = "TAROTIST_ANSWER";
+            } else {
+              // 実際の鑑定文
+              chatType = "FINAL_READING";
+            }
+            return {
+              tarotistId: tarotist.id,
+              tarotist,
+              chatType,
+              role: msg.role === "user" ? "USER" : "TAROTIST",
+              message: msg.parts
+                .filter((part) => part.type === "text")
+                .map((part) => (part as { text: string }).text)
+                .join(""),
+            };
+          });
+        })(),
       }).finally(() => setIsSavingReading(false));
     }
   }, [
@@ -507,26 +539,35 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         const phase2UserCount = messages.filter(
           (m, i) => m.role === "user" && i > initialLen
         ).length;
-        const remaining = MAX_PHASE2_QUESTIONS - phase2UserCount;
+        const remaining = 3 - phase2UserCount;
         const isLastQ = remaining === 1;
         return (
           <>
-            {/* ステータスバナー: 残り問数を常時表示 */}
+            {/* ステータスバナー: 残り問数を常時表示 + 終了ボタン */}
             <div
-              className={`px-4 py-3 border-t text-center transition-colors ${
+              className={`px-4 py-3 border-t transition-colors ${
                 isLastQ
                   ? "bg-amber-50 border-amber-100"
                   : "bg-purple-50 border-purple-100"
               }`}
             >
-              <div
-                className={`text-sm font-medium ${
-                  isLastQ ? "text-amber-600" : "text-purple-600"
-                }`}
-              >
-                {isLastQ
-                  ? `💬 最後の質問ができます（残り 1 問）`
-                  : `💬 鑑定について質問できます（残り ${remaining} 問）`}
+              <div className="flex items-center justify-between">
+                <div
+                  className={`text-sm font-medium ${
+                    isLastQ ? "text-amber-600" : "text-purple-600"
+                  }`}
+                >
+                  {isLastQ
+                    ? `💬 最後の質問ができます（残り 1 問）`
+                    : `💬 鑑定について質問できます（残り ${remaining} 問）`}
+                </div>
+                <button
+                  onClick={() => setIsEndingSession(true)}
+                  disabled={status === "submitted" || status === "streaming"}
+                  className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
+                >
+                  占いを終わる
+                </button>
               </div>
             </div>
 

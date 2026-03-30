@@ -179,6 +179,33 @@ const ReadingDetail: React.FC<{
   const cards: DrawnCard[] = reading.cards ?? [];
   const messages: ChatMessage[] = reading.chatMessages ?? [];
   const lastMessage = [...messages].reverse().find((m) => m.role === "TAROTIST");
+  // パーソナル占いの場合: 「では、占いを始めてください」への最初の返答が実際の鑑定文
+  // 旧データ（Phase1含む全メッセージ保存）・新データ（Phase2のみ保存）共通で動作する
+  const mainReadingMessage = isPersonal
+    ? (() => {
+        // 「では、占いを始めてください」ユーザーメッセージの直後のタロティストメッセージを取得
+        const startIdx = messages.findIndex(
+          (m) => m.role === "USER" && m.message.includes("では、占いを始めてください")
+        );
+        if (startIdx !== -1) {
+          const firstTarotist = messages.slice(startIdx + 1).find((m) => m.role === "TAROTIST");
+          if (firstTarotist) return firstTarotist;
+        }
+        // フォールバック: FINAL_READING の最初のタロティストメッセージ
+        const finalReadingMsg = messages.find(
+          (m) => m.role === "TAROTIST" && m.chatType === "FINAL_READING"
+        );
+        if (finalReadingMsg) return finalReadingMsg;
+        // 最終フォールバック: 最長のタロティストメッセージ
+        return messages
+          .filter((m) => m.role === "TAROTIST")
+          .reduce<ChatMessage | undefined>(
+            (longest, m) =>
+              !longest || m.message.length > longest.message.length ? m : longest,
+            undefined
+          );
+      })()
+    : lastMessage;
   const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
 
   return createPortal(
@@ -322,14 +349,14 @@ const ReadingDetail: React.FC<{
             )}
 
             {/* 占い結果 */}
-            {lastMessage && (
+            {mainReadingMessage && (
               <div>
                 <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider mb-2">
                   占い結果
                 </p>
                 <div className="bg-white rounded-xl p-3 border border-purple-100 shadow-sm">
                   <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {lastMessage.message}
+                    {mainReadingMessage.message}
                   </p>
                 </div>
               </div>

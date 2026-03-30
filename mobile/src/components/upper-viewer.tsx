@@ -12,8 +12,12 @@ import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 
 const CARD_ASPECT = 300 / 527;
 
+interface UpperViewerProps {
+  claraMode?: boolean;
+}
+
 // メインコンポーネント
-const UpperViewer: React.FC = () => {
+const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false }) => {
   const { masterData } = useMaster();
   const {
     selectedSpread: spread,
@@ -165,10 +169,21 @@ const UpperViewer: React.FC = () => {
             {/* 🔥 このスライド内でスクロール */}
             <div className="w-full h-full overflow-y-auto px-1 pb-4 backdrop-blur-md rounded-2xl sm:p-4 border border-white/10 shadow-xs">
               {selectedIndex === 0 && (
-                <TarotistCarouselPortrait
-                  masterData={masterData}
-                  readonly={true}
-                />
+                claraMode ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img
+                      src="/tarotists/Clara.png"
+                      alt="Clara"
+                      className="w-full h-full object-cover rounded-2xl"
+                      style={{ objectPosition: "center 20%" }}
+                    />
+                  </div>
+                ) : (
+                  <TarotistCarouselPortrait
+                    masterData={masterData}
+                    readonly={true}
+                  />
+                )
               )}
             </div>
           </div>
