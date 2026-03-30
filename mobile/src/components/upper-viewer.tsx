@@ -162,7 +162,7 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false }) => {
   return (
     <div className="w-full h-full bg-white flex flex-col">
       {/* Embla Carousel */}
-      <div className="embla relative flex-1" ref={emblaRef}>
+      <div className="embla relative flex-1 min-h-0 overflow-hidden" ref={emblaRef}>
         <div className="embla__container flex h-full">
           {/* スライド1: プロフィール */}
           <div className="embla__slide flex-[0_0_100%] min-w-0 h-full">
