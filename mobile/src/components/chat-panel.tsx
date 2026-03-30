@@ -290,69 +290,55 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
 
-  // 戻るボタン関連
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showBackButton, setShowBackButton] = useState(false);
-
-  // スクロールが一番下か判定;
   useEffect(() => {
-    const container = messagesEndRef.current?.parentElement;
-    if (!container) return;
+    if (isMessageComplete) return; // 既にフラグ立て済みなら何もしない
 
-    const handleScroll = () => {
-      if (!isRevealingCompleted) return;
-      const isBottom =
-        container.scrollHeight - container.scrollTop - container.clientHeight <
-        10;
-      setShowBackButton(isBottom);
-    };
-
-    container.addEventListener("scroll", handleScroll);
-
-    handleScroll();
-
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-    };
-  }, [isRevealingCompleted]);
-
-  useEffect(() => {
     // ─────────────────────────────────────────────────────────────
-    // UI フラグ: Phase2 の初回鑑定完了後に isMessageComplete を立てる
-    //   → Q&A バナー・入力エリアの表示トリガー（DB 保存とは独立）
+    // isMessageComplete を立てる条件:
+    //   Phase2  → 初回鑑定完了（ready）または通信エラー
+    //   非Phase2 → 鑑定完了（ready）または通信エラー
+    // エラー時でもフラグを立てることで、戻るボタンが必ず表示される
     // ─────────────────────────────────────────────────────────────
-    if (
-      isPhase2 &&
-      !isMessageComplete &&
-      messages.length > (initialMessages?.length ?? 0) &&
-      status === "ready"
-    ) {
+    const isComplete =
+      (isPhase2
+        ? messages.length > (initialMessages?.length ?? 0)
+        : (isRevealingCompleted || isPersonal) &&
+          drawnCards.length > 0 &&
+          messages.length > 0) && (status === "ready" || status === "error");
+
+    if (isComplete) {
       setIsMessageComplete(true);
     }
+  }, [
+    drawnCards.length,
+    initialMessages,
+    isPersonal,
+    isPhase2,
+    isRevealingCompleted,
+    isMessageComplete,
+    messages,
+    status,
+  ]);
 
+  useEffect(() => {
     // ─────────────────────────────────────────────────────────────
     // DB 保存:
-    //   Phase2  → Q&A セッション完了時（inputDisabled=true）に
-    //             初回鑑定 + Q&A 全会話をまとめて保存
-    //   非Phase2 → 鑑定生成完了後すぐ保存（従来通り）
+    //   Phase2  → Q&A セッション完了時（inputDisabled=true）に保存
+    //   非Phase2 → 鑑定完了後すぐ保存
+    //   エラー時は保存しない
     // ─────────────────────────────────────────────────────────────
+    if (status !== "ready") return;
+
     const shouldSave = isPhase2
-      ? // Phase2: Q&A 完了後に全会話を保存
-        inputDisabled &&
+      ? inputDisabled &&
         drawnCards.length > 0 &&
-        messages.length > (initialMessages?.length ?? 0) &&
-        status === "ready"
-      : // 通常占い・Phase1
-        (isRevealingCompleted || isPersonal) &&
+        messages.length > (initialMessages?.length ?? 0)
+      : (isRevealingCompleted || isPersonal) &&
         drawnCards.length > 0 &&
-        messages.length > 0 &&
-        status === "ready";
+        messages.length > 0;
 
     if (shouldSave && !hasSaved.current) {
       hasSaved.current = true;
-      // Phase2 以外（クイック占い・いつでも占い Phase1）はここで完了フラグを立てる
-      // Phase2 は初回鑑定完了時に上の isPhase2 ブロックで既に立てている
-      if (!isPhase2) setIsMessageComplete(true);
       setIsSavingReading(true);
       saveReading({
         tarotistId: tarotist.id,
@@ -380,7 +366,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     drawnCards,
     initialMessages,
     inputDisabled,
-    isMessageComplete,
     isPersonal,
     isPhase2,
     isRevealingCompleted,
