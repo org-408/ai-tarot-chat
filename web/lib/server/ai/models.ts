@@ -32,7 +32,7 @@ export const homeProviders = {
 
 export const homeFreeProviders = {
   gpt5nano: mistral("mistral-small-latest"),
-  gemini25: deepinfra("openai/gpt-oss-120b"),
+  gemini25: mistral("mistral-small-latest"),
   gemini25pro: google("gemini-2.5-flash-lite"),
   claude_h: groq("llama-3.3-70b-versatile"),
   gpt41: google("gemini-2.5-flash"),
