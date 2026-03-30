@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DrawnCard, MasterData, Plan } from "../../../shared/lib/types";
 import { useSalon } from "../lib/hooks/use-salon";
@@ -117,6 +118,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
 
   const [phase, setPhase] = useState<"select" | "reading">("select");
   const [claraMessages, setClaraMessages] = useState<string[]>([]);
+  const [isTopCollapsed, setIsTopCollapsed] = useState(false);
 
   // phase が "reading" になったらカードを引く（ReadingPage と同じパターン）
   // → drawnCards.length === 0 の間 ShuffleDialog が表示される
@@ -151,36 +153,58 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   if (phase === "select") {
     return (
       <div className="main-container">
-        {/* 上半分: Clara 肖像（固定・ストア非依存） */}
+        {/* 上下統合ラッパー */}
         <div
-          className="fixed left-0 right-0 h-[45vh] p-2"
-          style={{ top: "calc(50px + env(safe-area-inset-top))" }}
-        >
-          <div className="h-full rounded-3xl overflow-hidden shadow-xl">
-            <img
-              src={`/tarotists/${clara?.name ?? "Clara"}.png`}
-              alt={clara?.title ?? "Clara"}
-              className="w-full h-full object-cover"
-              style={{ objectPosition: "center 20%" }}
-            />
-          </div>
-        </div>
-
-        {/* 下半分: カテゴリ・スプレッド選択（SalonPage と同じ） */}
-        <motion.div
-          className="fixed left-0 right-0 px-1 z-20 flex flex-col"
+          className="fixed left-0 right-0 flex flex-col"
           style={{
-            top: "calc(45vh + 50px + env(safe-area-inset-top))",
+            top: "calc(50px + env(safe-area-inset-top))",
             bottom: 0,
           }}
         >
-          <div className="flex-1 overflow-y-auto pb-52">
-            <CategorySpreadSelector
-              handleStartReading={handleStartReading}
-              claraMode={true}
-            />
+          {/* 上半分: Clara 肖像（アコーディオン） */}
+          <motion.div
+            className="overflow-hidden flex-shrink-0"
+            animate={{ height: isTopCollapsed ? 0 : "45vh" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <div className="h-full p-2">
+              <div className="h-full rounded-3xl overflow-hidden shadow-xl">
+                <img
+                  src={`/tarotists/${clara?.name ?? "Clara"}.png`}
+                  alt={clara?.title ?? "Clara"}
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: "center 20%" }}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* アコーディオントグル */}
+          <button
+            type="button"
+            onClick={() => setIsTopCollapsed((v) => !v)}
+            className="flex-shrink-0 w-full h-7 flex items-center justify-center z-30"
+          >
+            <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
+              <motion.div
+                animate={{ rotate: isTopCollapsed ? 0 : 180 }}
+                transition={{ duration: 0.25 }}
+              >
+                <ChevronDown size={14} className="text-gray-500" />
+              </motion.div>
+            </div>
+          </button>
+
+          {/* 下半分: カテゴリ・スプレッド選択 */}
+          <div className="flex-1 min-h-0 px-1 flex flex-col">
+            <div className="flex-1 overflow-y-auto pb-52">
+              <CategorySpreadSelector
+                handleStartReading={handleStartReading}
+                claraMode={true}
+              />
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -196,28 +220,45 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
         onComplete={() => {}}
       />
 
-      {/* 上半分: UpperViewer（ReadingPage と同じコンポーネント） */}
+      {/* 上下統合ラッパー */}
       <div
-        className="fixed left-0 right-0 z-10"
+        className="fixed left-0 right-0 flex flex-col"
         style={{
           top: "calc(50px + env(safe-area-inset-top))",
-          height: "45vh",
-        }}
-      >
-        {drawnCards.length > 0 && <UpperViewer />}
-      </div>
-
-      {/* 下半分: ClaraPanel（ChatPanel の代わり） */}
-      <div
-        className="fixed left-0 right-0 overflow-auto"
-        style={{
-          top: "calc(45vh + 50px + env(safe-area-inset-top))",
           bottom: 0,
         }}
       >
-        {drawnCards.length > 0 && (
-          <ClaraPanel messages={claraMessages} onBack={handleReset} />
-        )}
+        {/* 上半分: UpperViewer（アコーディオン） */}
+        <motion.div
+          className="overflow-hidden flex-shrink-0"
+          animate={{ height: isTopCollapsed ? 0 : "45vh" }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          {drawnCards.length > 0 && <UpperViewer />}
+        </motion.div>
+
+        {/* アコーディオントグル */}
+        <button
+          type="button"
+          onClick={() => setIsTopCollapsed((v) => !v)}
+          className="flex-shrink-0 w-full h-7 flex items-center justify-center z-30"
+        >
+          <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
+            <motion.div
+              animate={{ rotate: isTopCollapsed ? 0 : 180 }}
+              transition={{ duration: 0.25 }}
+            >
+              <ChevronDown size={14} className="text-gray-500" />
+            </motion.div>
+          </div>
+        </button>
+
+        {/* 下半分: ClaraPanel */}
+        <div className="flex-1 min-h-0">
+          {drawnCards.length > 0 && (
+            <ClaraPanel messages={claraMessages} onBack={handleReset} />
+          )}
+        </div>
       </div>
     </div>
   );

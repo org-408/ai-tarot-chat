@@ -1,5 +1,7 @@
 "use client";
-import { useEffect } from "react";
+import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
 import type {
   AppJWTPayload,
   MasterData,
@@ -60,6 +62,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
     }
   }, [isRevealingCompleted, setUpperViewerMode]);
 
+  const [isTopCollapsed, setIsTopCollapsed] = useState(false);
+
   const handleBack = () => {
     // 戻るボタン押下時にviewModeをgridに戻す
     setUpperViewerMode("grid");
@@ -77,29 +81,43 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
         }}
       />
 
-      {/* 上半分 */}
+      {/* 上下統合ラッパー */}
       <div
-        className="fixed left-0 right-0 z-10"
+        className="fixed left-0 right-0 flex flex-col"
         style={{
           top: "calc(50px + env(safe-area-inset-top))",
-          height: "45vh",
-          margin: "0 auto",
-        }}
-      >
-        {/* カード表示エリア */}
-        {drawnCards.length > 0 && <UpperViewer />}
-      </div>
-
-      {/* 下半分 */}
-      <div
-        className="fixed left-0 right-0 overflow-auto"
-        style={{
-          top: "calc(45vh + 50px + env(safe-area-inset-top))",
           bottom: 0,
         }}
       >
-        {/* チャットパネル */}
-        {drawnCards.length > 0 && <ChatPanel onBack={handleBack} />}
+        {/* 上半分（アコーディオン） */}
+        <motion.div
+          className="overflow-hidden flex-shrink-0"
+          animate={{ height: isTopCollapsed ? 0 : "45vh" }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          {drawnCards.length > 0 && <UpperViewer />}
+        </motion.div>
+
+        {/* アコーディオントグル */}
+        <button
+          type="button"
+          onClick={() => setIsTopCollapsed((v) => !v)}
+          className="flex-shrink-0 w-full h-7 flex items-center justify-center z-30"
+        >
+          <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
+            <motion.div
+              animate={{ rotate: isTopCollapsed ? 0 : 180 }}
+              transition={{ duration: 0.25 }}
+            >
+              <ChevronDown size={14} className="text-gray-500" />
+            </motion.div>
+          </div>
+        </button>
+
+        {/* 下半分 */}
+        <div className="flex-1 min-h-0">
+          {drawnCards.length > 0 && <ChatPanel onBack={handleBack} />}
+        </div>
       </div>
     </div>
   );

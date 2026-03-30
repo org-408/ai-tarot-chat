@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type {
   AppJWTPayload,
@@ -67,6 +68,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   };
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isTopCollapsed, setIsTopCollapsed] = useState(false);
 
   return (
     <div className="main-container">
@@ -90,41 +92,60 @@ const SalonPage: React.FC<SalonPageProps> = ({
         />
       ) : (
         <>
-          {/* 上半分 */}
+          {/* 上下統合ラッパー */}
           <div
-            className="fixed left-0 right-0 h-[45vh]"
+            className="fixed left-0 right-0 flex flex-col"
             style={{
               top: "calc(50px + env(safe-area-inset-top))",
-            }}
-          >
-            {/* 占い師肖像画モード */}
-            <TarotistCarouselPortrait
-              masterData={masterData}
-              currentPlan={currentPlan}
-            />
-          </div>
-
-          {/* 下半分 */}
-          <motion.div
-            className="fixed left-0 right-0 px-1 z-20 flex flex-col"
-            style={{
-              top: "calc(45vh + 50px + env(safe-area-inset-top))",
               bottom: 0,
             }}
-            animate={{ y: -keyboardHeight }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {/* クイック占い（スクロール可能） */}
-            <div className="flex-1 overflow-y-auto pb-52">
-              <CategorySpreadSelector
-                handleStartReading={handleStartReading}
+            {/* 上半分（アコーディオン） */}
+            <motion.div
+              className="overflow-hidden flex-shrink-0"
+              animate={{ height: isTopCollapsed ? 0 : "45vh" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <TarotistCarouselPortrait
+                masterData={masterData}
+                currentPlan={currentPlan}
               />
-              <UpgradeGuide
-                handleChangePlan={handleChangePlan}
-                isChangingPlan={isChangingPlan}
-              />
-            </div>
-          </motion.div>
+            </motion.div>
+
+            {/* アコーディオントグル */}
+            <button
+              type="button"
+              onClick={() => setIsTopCollapsed((v) => !v)}
+              className="flex-shrink-0 w-full h-7 flex items-center justify-center z-30"
+            >
+              <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
+                <motion.div
+                  animate={{ rotate: isTopCollapsed ? 0 : 180 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <ChevronDown size={14} className="text-gray-500" />
+                </motion.div>
+              </div>
+            </button>
+
+            {/* 下半分 */}
+            <motion.div
+              className="flex-1 min-h-0 px-1 flex flex-col"
+              animate={{ y: -keyboardHeight }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {/* クイック占い（スクロール可能） */}
+              <div className="flex-1 overflow-y-auto pb-52">
+                <CategorySpreadSelector
+                  handleStartReading={handleStartReading}
+                />
+                <UpgradeGuide
+                  handleChangePlan={handleChangePlan}
+                  isChangingPlan={isChangingPlan}
+                />
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </div>

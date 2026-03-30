@@ -1,5 +1,6 @@
 import type { UIMessage } from "ai";
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import type {
   AppJWTPayload,
@@ -110,6 +111,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   };
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isTopCollapsed, setIsTopCollapsed] = useState(false);
 
   // ===== Reading Phase =====
   if (phase === "reading") {
@@ -120,36 +122,57 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
           onComplete={() => {}}
         />
 
-        {/* 上半分：カード */}
+        {/* 上下統合ラッパー */}
         <div
-          className="fixed left-0 right-0 z-10"
+          className="fixed left-0 right-0 flex flex-col"
           style={{
             top: "calc(50px + env(safe-area-inset-top))",
-            height: "45vh",
-          }}
-        >
-          {drawnCards.length > 0 && <UpperViewer />}
-        </div>
-
-        {/* 下半分：Phase2 チャット（キーボード対応） */}
-        <motion.div
-          className="fixed left-0 right-0 overflow-auto"
-          style={{
-            top: "calc(45vh + 50px + env(safe-area-inset-top))",
             bottom: 0,
           }}
-          animate={{ y: -keyboardHeight }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {drawnCards.length > 0 && (
-            <ChatPanel
-              key={`personal-phase2-${chatResetKey}`}
-              initialMessages={phase1Messages}
-              onKeyboardHeightChange={setKeyboardHeight}
-              onBack={handleBackFromReading}
-            />
-          )}
-        </motion.div>
+          {/* 上半分：カード（アコーディオン） */}
+          <motion.div
+            className="overflow-hidden flex-shrink-0"
+            animate={{ height: isTopCollapsed ? 0 : "45vh" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {drawnCards.length > 0 && <UpperViewer />}
+          </motion.div>
+
+          {/* アコーディオントグル */}
+          <button
+            type="button"
+            onClick={() => setIsTopCollapsed((v) => !v)}
+            className="flex-shrink-0 w-full h-7 flex items-center justify-center z-30"
+          >
+            <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
+              <motion.div
+                animate={{ rotate: isTopCollapsed ? 0 : 180 }}
+                transition={{ duration: 0.25 }}
+              >
+                <ChevronDown size={14} className="text-gray-500" />
+              </motion.div>
+            </div>
+          </button>
+
+          {/* 下半分：Phase2 チャット（キーボード対応） */}
+          <motion.div
+            className="flex-1 min-h-0 flex flex-col"
+            animate={{ y: -keyboardHeight }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {drawnCards.length > 0 && (
+              <div className="flex-1 min-h-0">
+                <ChatPanel
+                  key={`personal-phase2-${chatResetKey}`}
+                  initialMessages={phase1Messages}
+                  onKeyboardHeightChange={setKeyboardHeight}
+                  onBack={handleBackFromReading}
+                />
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -166,53 +189,73 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
         />
       ) : (
         <>
-          {/* 上半分：占い師肖像画 */}
+          {/* 上下統合ラッパー */}
           <div
-            className="fixed left-0 right-0 h-[45vh]"
+            className="fixed left-0 right-0 flex flex-col"
             style={{
               top: "calc(50px + env(safe-area-inset-top))",
-            }}
-          >
-            <TarotistCarouselPortrait
-              masterData={masterData}
-              currentPlan={currentPlan}
-            />
-          </div>
-
-          {/* 下半分 */}
-          <motion.div
-            className="fixed left-0 right-0 px-1 z-20 flex flex-col"
-            style={{
-              top: "calc(45vh + 50px + env(safe-area-inset-top))",
               bottom: 0,
             }}
-            animate={{ y: -keyboardHeight }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {/* 残回数ゼロ → チャットをマウントせず案内を表示 */}
-            {!canStartPersonal && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
-                <p className="text-gray-600 text-sm">
-                  本日のパーソナル占いは終了しました。
-                  <br />
-                  明日またお越しください。
-                </p>
-              </div>
-            )}
+            {/* 上半分：占い師肖像画（アコーディオン） */}
+            <motion.div
+              className="overflow-hidden flex-shrink-0"
+              animate={{ height: isTopCollapsed ? 0 : "45vh" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <TarotistCarouselPortrait
+                masterData={masterData}
+                currentPlan={currentPlan}
+              />
+            </motion.div>
 
-            {/* 残回数あり → Phase1 チャット（isPersonal=true 確定後にマウント） */}
-            {canStartPersonal && chatResetKey !== null && (
-              <div className="flex-1 min-h-0">
-                <ChatPanel
-                  key={`personal-phase1-${chatResetKey}`}
-                  onKeyboardHeightChange={setKeyboardHeight}
-                  handleStartReading={handleStartReading}
-                  onMessagesChange={setPhase1Messages}
-                  onBack={() => {}}
-                />
+            {/* アコーディオントグル */}
+            <button
+              type="button"
+              onClick={() => setIsTopCollapsed((v) => !v)}
+              className="flex-shrink-0 w-full h-7 flex items-center justify-center z-30"
+            >
+              <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
+                <motion.div
+                  animate={{ rotate: isTopCollapsed ? 0 : 180 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <ChevronDown size={14} className="text-gray-500" />
+                </motion.div>
               </div>
-            )}
-          </motion.div>
+            </button>
+
+            {/* 下半分 */}
+            <motion.div
+              className="flex-1 min-h-0 px-1 z-20 flex flex-col"
+              animate={{ y: -keyboardHeight }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {/* 残回数ゼロ → チャットをマウントせず案内を表示 */}
+              {!canStartPersonal && (
+                <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
+                  <p className="text-gray-600 text-sm">
+                    本日のパーソナル占いは終了しました。
+                    <br />
+                    明日またお越しください。
+                  </p>
+                </div>
+              )}
+
+              {/* 残回数あり → Phase1 チャット（isPersonal=true 確定後にマウント） */}
+              {canStartPersonal && chatResetKey !== null && (
+                <div className="flex-1 min-h-0">
+                  <ChatPanel
+                    key={`personal-phase1-${chatResetKey}`}
+                    onKeyboardHeightChange={setKeyboardHeight}
+                    handleStartReading={handleStartReading}
+                    onMessagesChange={setPhase1Messages}
+                    onBack={() => {}}
+                  />
+                </div>
+              )}
+            </motion.div>
+          </div>
         </>
       )}
     </div>
