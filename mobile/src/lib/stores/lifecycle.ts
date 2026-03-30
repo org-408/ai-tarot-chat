@@ -4,8 +4,10 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { Plan } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
+import { canUseTarotist } from "../utils/salon";
 import { HttpError, isNetworkError } from "../utils/api-client";
 import { useAuthStore } from "./auth";
+import { useSalonStore } from "./salon";
 
 // ✅ 初期化ステップの定義（デバッグ用）
 type LifecycleStep =
@@ -428,7 +430,41 @@ export const useLifecycleStore = create<LifecycleState>()(
             }
 
             // ========================================
-            // ✅ ステップ6. setup
+            // ✅ ステップ6: 選択中占い師をプランに照合して補正
+            // プランが確定（Step3 + Step5）した後に実行することで
+            // persist の非同期復元タイミングに依存せず安全に補正できる。
+            // ========================================
+            try {
+              const { selectedTarotist, setSelectedTarotist } = useSalonStore.getState();
+              const { currentPlan } = useClientStore.getState();
+              const { masterData } = useMasterStore.getState();
+
+              if (selectedTarotist?.plan && currentPlan && !canUseTarotist(selectedTarotist.plan, currentPlan)) {
+                const available = masterData.tarotists
+                  .filter((t) => t.plan && canUseTarotist(t.plan, currentPlan))
+                  .sort((a, b) => (b.plan?.no ?? 0) - (a.plan?.no ?? 0));
+                if (available.length > 0) {
+                  logWithContext("info", "[Lifecycle] Step 6: 選択中占い師をプランに合わせて補正", {
+                    from: selectedTarotist.name,
+                    to: available[0].name,
+                    currentPlan: currentPlan.code,
+                  });
+                  setSelectedTarotist(available[0]);
+                }
+              } else {
+                logWithContext("info", "[Lifecycle] Step 6: 選択中占い師はプランと整合", {
+                  tarotist: selectedTarotist?.name,
+                  currentPlan: currentPlan?.code,
+                });
+              }
+            } catch (tarotistError) {
+              logWithContext("warn", "[Lifecycle] Step 6: 占い師補正に失敗（非致命的）", {
+                error: tarotistError instanceof Error ? tarotistError.message : String(tarotistError),
+              });
+            }
+
+            // ========================================
+            // ✅ ステップ7. setup
             // ========================================
             get().setup();
 

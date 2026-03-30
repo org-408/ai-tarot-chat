@@ -190,10 +190,13 @@ function App() {
     }
   }, [planChangeError]);
 
-  // 🔥 プラン変更時に選択中の占い師を自動ダウングレード
-  // ※ isChangingPlan 中は中間状態で誤発火するためスキップし、完了後（false）に判定する
+  // 🔥 【実行時】プラン変更時に選択中の占い師を自動ダウングレード
+  // ※ 起動時の補正は lifecycle.init() Step6 で実施済みのため、ここは実行中の変更のみ担当
+  // ※ isInitialized が false の間はスキップ（起動時は Step6 が担当）
+  // ※ isChangingPlan 中は中間状態で誤発火するためスキップ
   const { selectedTarotist, setSelectedTarotist } = useSalon();
   useEffect(() => {
+    if (!isInitialized) return; // 起動時はスキップ（lifecycle.init() Step6 が担当）
     if (isChangingPlan) return;
     if (!currentPlan || !selectedTarotist?.plan) return;
     if (!canUseTarotist(selectedTarotist.plan, currentPlan)) {
@@ -209,7 +212,7 @@ function App() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlan?.code, isChangingPlan]);
+  }, [currentPlan?.code, isChangingPlan, isInitialized]);
 
   // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
   useEffect(() => {
