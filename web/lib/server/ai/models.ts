@@ -36,8 +36,8 @@ export const homeFreeProviders = {
   gemini25pro: google("gemini-2.5-flash-lite"),
   claude_h: groq("llama-3.3-70b-versatile"),
   gpt41: google("gemini-2.5-flash"),
-  gpt5: groq("gpt-oss-120b"),
-  claude_s: google("gemini-2.5-pro"),
+  gpt5: groq("openai/gpt-oss-120b"),
+  claude_s: groq("openai/gpt-oss-120b"),
   google: ollama("gemma3:12b"),
 };
 
