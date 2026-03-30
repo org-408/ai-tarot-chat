@@ -31,11 +31,11 @@ export const homeProviders = {
 };
 
 export const homeFreeProviders = {
-  gpt5nano: google("gemini-2.5-flash-lite"),
-  gemini25: cerebras("llama-3.3-70b"),
-  gemini25pro: groq("llama-3.3-70b-versatile"),
-  claude_h: google("gemini-2.5-flash"),
-  gpt41: cerebras("gpt-oss-120b"),
+  gpt5nano: mistral("mistral-small-latest"),
+  gemini25: deepinfra("openai/gpt-oss-120b"),
+  gemini25pro: google("gemini-2.5-flash-lite"),
+  claude_h: groq("llama-3.3-70b-versatile"),
+  gpt41: google("gemini-2.5-flash"),
   gpt5: groq("gpt-oss-120b"),
   claude_s: google("gemini-2.5-pro"),
   google: ollama("gemma3:12b"),
