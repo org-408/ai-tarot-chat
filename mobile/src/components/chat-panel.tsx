@@ -317,24 +317,39 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isRevealingCompleted]);
 
   useEffect(() => {
-    console.log(
-      "isRevealingCompleted or messages or status changed:",
-      isRevealingCompleted,
-      messages,
-      status,
-    );
-    // isPersonal の場合はカードめくり不要なので drawnCards.length > 0 (Phase2) で判定
-    // 通常占いは isRevealingCompleted が true になったタイミングで保存
-    const shouldSave =
-      (isRevealingCompleted || isPersonal) &&
-      drawnCards.length > 0 &&
-      messages.length > 0 &&
-      status === "ready" &&
-      (!isPhase2 || messages.length > (initialMessages?.length ?? 0));
+    // ─────────────────────────────────────────────────────────────
+    // UI フラグ: Phase2 の初回鑑定完了後に isMessageComplete を立てる
+    //   → Q&A バナー・入力エリアの表示トリガー（DB 保存とは独立）
+    // ─────────────────────────────────────────────────────────────
+    if (
+      isPhase2 &&
+      !isMessageComplete &&
+      messages.length > (initialMessages?.length ?? 0) &&
+      status === "ready"
+    ) {
+      setIsMessageComplete(true);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // DB 保存:
+    //   Phase2  → Q&A セッション完了時（inputDisabled=true）に
+    //             初回鑑定 + Q&A 全会話をまとめて保存
+    //   非Phase2 → 鑑定生成完了後すぐ保存（従来通り）
+    // ─────────────────────────────────────────────────────────────
+    const shouldSave = isPhase2
+      ? // Phase2: Q&A 完了後に全会話を保存
+        inputDisabled &&
+        drawnCards.length > 0 &&
+        messages.length > (initialMessages?.length ?? 0) &&
+        status === "ready"
+      : // 通常占い・Phase1
+        (isRevealingCompleted || isPersonal) &&
+        drawnCards.length > 0 &&
+        messages.length > 0 &&
+        status === "ready";
 
     if (shouldSave && !hasSaved.current) {
       hasSaved.current = true;
-      setIsMessageComplete(true);
       setIsSavingReading(true);
       saveReading({
         tarotistId: tarotist.id,
@@ -360,7 +375,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     category,
     customQuestion,
     drawnCards,
+    initialMessages,
+    inputDisabled,
+    isMessageComplete,
     isPersonal,
+    isPhase2,
     isRevealingCompleted,
     messages,
     saveReading,
