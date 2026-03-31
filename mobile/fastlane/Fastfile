@@ -85,6 +85,8 @@ platform :ios do
       scheme: SCHEME,
       configuration: "Release",
       export_method: "app-store",
+      disable_xcpretty: true,
+      verbose: true,
       output_directory: "#{MOBILE_DIR}/build",
       output_name: "AiTarotChat.ipa"
     )
@@ -120,6 +122,8 @@ platform :ios do
       scheme: SCHEME,
       configuration: "Release",
       export_method: "app-store",
+      disable_xcpretty: true,
+      verbose: true,
       output_directory: "#{MOBILE_DIR}/build",
       output_name: "AiTarotChat.ipa"
     )
