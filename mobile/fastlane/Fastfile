@@ -1,0 +1,150 @@
+default_platform(:ios)
+
+SCHEME    = "App"
+
+# Fastlane は内部で Dir.chdir("fastlane/") するため、
+# mobile/ への絶対パスをここで確定させる
+MOBILE_DIR = File.expand_path("..", File.dirname(__FILE__))
+WORKSPACE  = "#{MOBILE_DIR}/ios/App/App.xcworkspace"
+XCODEPROJ  = "#{MOBILE_DIR}/ios/App/App.xcodeproj"
+
+# CocoaPods / match が UTF-8 を要求するため明示的に設定
+ENV["LANG"]   = "en_US.UTF-8"
+ENV["LC_ALL"] = "en_US.UTF-8"
+
+def asc_api_key
+  key_id    = ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"].to_s
+  issuer_id = ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"].to_s
+  return nil if key_id.empty? || issuer_id.empty?
+
+  # CI: base64 エンコードされた key content を使用
+  if !ENV["APP_STORE_CONNECT_API_KEY_CONTENT"].to_s.empty?
+    return app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_content: Base64.decode64(ENV["APP_STORE_CONNECT_API_KEY_CONTENT"]),
+      duration: 1200,
+      in_house: false
+    )
+  end
+
+  # ローカル: .p8 ファイルパスを使用
+  if !ENV["APP_STORE_CONNECT_API_KEY_KEY_PATH"].to_s.empty?
+    return app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_KEY_PATH"],
+      duration: 1200,
+      in_house: false
+    )
+  end
+
+  nil
+end
+
+platform :ios do
+
+  # ─────────────────────────────────────────
+  # 共通: 証明書・Provisioning Profile を sync
+  # ─────────────────────────────────────────
+  desc "証明書・Provisioning Profile を match で同期"
+  lane :sync_certs do |options|
+    type = options[:type] || "appstore"
+    api_key = asc_api_key
+    match_options = {
+      type: type,
+      readonly: is_ci,
+      force_for_new_devices: !is_ci
+    }
+    match_options[:api_key] = api_key if api_key
+
+    match(**match_options)
+  end
+
+  # ─────────────────────────────────────────
+  # staging: TestFlight にアップロード
+  # ─────────────────────────────────────────
+  desc "ステージングビルド → TestFlight"
+  lane :staging do
+    api_key = asc_api_key
+
+    # 1. Web assets ビルド + Capacitor sync（cd で mobile/ に移動）
+    sh("cd '#{MOBILE_DIR}' && npm run build && npx cap sync ios")
+
+    # 2. ビルド番号をインクリメント
+    increment_build_number(xcodeproj: XCODEPROJ)
+
+    # 3. 証明書同期
+    sync_certs(type: "appstore")
+
+    # 4. ビルド
+    build_app(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "#{MOBILE_DIR}/build",
+      output_name: "AiTarotChat.ipa"
+    )
+
+    # 5. TestFlight アップロード
+    upload_options = {
+      skip_waiting_for_build_processing: true
+    }
+    upload_options[:api_key] = api_key if api_key
+
+    upload_to_testflight(**upload_options)
+  end
+
+  # ─────────────────────────────────────────
+  # production: App Store 審査提出
+  # ─────────────────────────────────────────
+  desc "本番ビルド → App Store 審査提出"
+  lane :production do
+    api_key = asc_api_key
+
+    # 1. Web assets ビルド + Capacitor sync
+    sh("cd '#{MOBILE_DIR}' && npm run build && npx cap sync ios")
+
+    # 2. ビルド番号をインクリメント
+    increment_build_number(xcodeproj: XCODEPROJ)
+
+    # 3. 証明書同期
+    sync_certs(type: "appstore")
+
+    # 4. ビルド
+    build_app(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "#{MOBILE_DIR}/build",
+      output_name: "AiTarotChat.ipa"
+    )
+
+    # 5. App Store 審査提出
+    upload_options = {
+      submit_for_review: false,
+      force: true
+    }
+    upload_options[:api_key] = api_key if api_key
+
+    upload_to_app_store(**upload_options)
+  end
+
+  # ─────────────────────────────────────────
+  # certs: 証明書の初回セットアップ / 更新
+  # ─────────────────────────────────────────
+  desc "証明書を match リポジトリに登録・更新"
+  lane :certs do
+    api_key = asc_api_key
+    match_options = {
+      type: "appstore",
+      force: true
+    }
+    match_options[:api_key] = api_key if api_key
+
+    match(**match_options)
+  end
+
+end

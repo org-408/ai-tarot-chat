@@ -1,0 +1,4 @@
+app_identifier("com.atelierflowlab.aitarotchat")
+apple_id(ENV["APPLE_ID"] || "")
+team_id("M3H8JH3V6A")
+itc_team_id(ENV["ITC_TEAM_ID"] || "")
