@@ -68,6 +68,7 @@ platform :ios do
   # ─────────────────────────────────────────
   desc "ステージングビルド → TestFlight"
   lane :staging do
+    setup_ci if is_ci
     api_key = asc_api_key
 
     # 1. Web assets ビルド（staging モード） + Capacitor sync
@@ -106,6 +107,7 @@ platform :ios do
   # ─────────────────────────────────────────
   desc "本番ビルド → App Store 審査提出"
   lane :production do
+    setup_ci if is_ci
     api_key = asc_api_key
 
     # 1. Web assets ビルド + Capacitor sync
@@ -145,6 +147,7 @@ platform :ios do
   # ─────────────────────────────────────────
   desc "証明書を match リポジトリに登録・更新"
   lane :certs do
+    setup_ci if is_ci
     api_key = asc_api_key
     git_basic_authorization = ENV["MATCH_GIT_BASIC_AUTHORIZATION"].to_s
     match_options = {
