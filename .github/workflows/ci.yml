@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging]
+
+jobs:
+  # ─────────────────────────────────────────
+  # Web (Next.js)
+  # ─────────────────────────────────────────
+  web:
+    name: Web (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      # Prisma generate と tsc に必要な最低限のダミー値
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      AUTH_SECRET: ci-dummy-secret-for-build-only
+      LOCAL_TIMEZONE: Asia/Tokyo
+      DISABLE_CONSOLE_LOG: "true"
+      ENABLE_FILE_LOG: "false"
+      ENABLE_DB_LOG: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Prisma クライアント生成（tsc・build に必要）
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # Next.js は tsc 実行前に next-env.d.ts が必要
+      - name: Generate next-env.d.ts
+        run: echo '/// <reference types="next" />\n/// <reference types="next/image-types/global" />' > next-env.d.ts
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      # prisma/migrations が存在する場合のみ、schema との差分チェック
+      # （migration ファイルを作り忘れた場合に CI を落とす）
+      - name: Prisma migration diff check
+        run: |
+          if [ -d "prisma/migrations" ]; then
+            npx prisma migrate diff \
+              --from-migrations ./prisma/migrations \
+              --to-schema-datamodel ./prisma/schema.prisma \
+              --exit-code
+            echo "✅ schema.prisma と migrations の差分なし"
+          else
+            echo "ℹ️  migrations ディレクトリ未作成のためスキップ"
+          fi
+
+  # ─────────────────────────────────────────
+  # Mobile (Capacitor / Vite)
+  # ─────────────────────────────────────────
+  mobile:
+    name: Mobile (Capacitor/Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc -b
+
+      - name: Build
+        run: npm run build
