@@ -32,6 +32,22 @@ jobs:
         working-directory: mobile
         run: npm ci
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: mobile/ios/App/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('mobile/ios/App/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-data-${{ hashFiles('mobile/ios/App/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-derived-data-
+
       - name: Run Fastlane ios staging
         working-directory: mobile
         env:
