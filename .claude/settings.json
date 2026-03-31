@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd web && npm run lint)",
+      "Bash(cd web && npm run db:generate)",
+      "Bash(cd mobile && npm run build)"
+    ]
+  }
+}
