@@ -2,7 +2,7 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
-// Shared types must not depend on a specific app's node_modules.
+// Shared types must stay portable across the web and mobile builds.
 export type ChatType =
   | "CARD_INTERPRETATION"
   | "USER_RESPONSE"
