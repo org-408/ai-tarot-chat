@@ -1,0 +1,15 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  deploy:
+    name: Trigger Render Staging Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy hook
+        run: |
+          curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_STAGING }}"
+          echo "✅ Staging deploy triggered"

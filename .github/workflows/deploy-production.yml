@@ -1,0 +1,15 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Trigger Render Production Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy hook
+        run: |
+          curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}"
+          echo "✅ Production deploy triggered"
