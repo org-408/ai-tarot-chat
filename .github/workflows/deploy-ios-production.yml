@@ -10,7 +10,7 @@ on:
 jobs:
   deploy:
     name: Build & Submit to App Store
-    runs-on: macos-latest
+    runs-on: macos-15
     timeout-minutes: 40
 
     steps:
@@ -29,6 +29,11 @@ jobs:
           bundler-cache: true
           working-directory: mobile
 
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
+
       - name: Install Node dependencies
         working-directory: mobile
         run: npm ci
@@ -40,14 +45,6 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('mobile/ios/App/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
-
-      - name: Cache Xcode DerivedData
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-derived-data-${{ hashFiles('mobile/ios/App/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-derived-data-
 
       - name: Run Fastlane ios production
         working-directory: mobile
