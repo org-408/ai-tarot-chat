@@ -49,7 +49,7 @@ const vertex = createVertex({
     credentials: {
       client_email: process.env.GOOGLE_CLIENT_EMAIL!,
       // 重要: \n を実際の改行に変換
-      private_key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+      private_key: (process.env.GOOGLE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n"),
     },
   },
 });
