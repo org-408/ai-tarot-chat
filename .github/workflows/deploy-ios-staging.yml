@@ -10,7 +10,7 @@ on:
 jobs:
   deploy:
     name: Build & Upload to TestFlight
-    runs-on: macos-15
+    runs-on: macos-latest
     timeout-minutes: 40
 
     steps:
@@ -28,11 +28,6 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
           working-directory: mobile
-
-      - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '16.2'
 
       - name: Install Node dependencies
         working-directory: mobile
