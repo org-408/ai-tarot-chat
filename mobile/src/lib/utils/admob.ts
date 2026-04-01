@@ -31,6 +31,9 @@ const AD_IDS = {
   ),
 };
 
+let isInitialized = false;
+let initPromise: Promise<void> | null = null;
+
 // -------------------------------------------------------
 // 初期化
 // -------------------------------------------------------
@@ -40,16 +43,25 @@ const AD_IDS = {
  * DEV 環境では自動的にテスト広告が使われる。
  */
 export async function initAdMob(): Promise<void> {
-  if (!isNative) return;
-  try {
-    const options: AdMobInitializationOptions = {
-      initializeForTesting: import.meta.env.DEV,
-    };
-    await AdMob.initialize(options);
-    console.log("[AdMob] initialized");
-  } catch (e) {
-    console.error("[AdMob] initialize error:", e);
-  }
+  if (!isNative || isInitialized) return;
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      const options: AdMobInitializationOptions = {
+        initializeForTesting: import.meta.env.DEV,
+      };
+      await AdMob.initialize(options);
+      isInitialized = true;
+      console.log("[AdMob] initialized");
+    } catch (e) {
+      console.error("[AdMob] initialize error:", e);
+    } finally {
+      initPromise = null;
+    }
+  })();
+
+  return initPromise;
 }
 
 // -------------------------------------------------------
@@ -63,6 +75,7 @@ export async function initAdMob(): Promise<void> {
  */
 export async function showInterstitialAd(): Promise<void> {
   if (!isNative || !AD_IDS.interstitial) return;
+  await initAdMob();
 
   return new Promise<void>((resolve) => {
     const handles: PluginListenerHandle[] = [];
@@ -111,6 +124,7 @@ export async function showInterstitialAd(): Promise<void> {
  */
 export async function showBannerAd(): Promise<void> {
   if (!isNative || !AD_IDS.banner) return;
+  await initAdMob();
   try {
     const options: BannerAdOptions = {
       adId: AD_IDS.banner,

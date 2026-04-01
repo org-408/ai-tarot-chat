@@ -153,9 +153,6 @@ function App() {
       console.log("[App] init 完了");
     });
 
-    // AdMob 初期化（ネイティブのみ有効）
-    initAdMob();
-
     return () => {
       cleanup();
       console.log("[App] クリーンアップ完了");
