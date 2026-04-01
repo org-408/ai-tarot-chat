@@ -6,9 +6,9 @@ import type {
   Spread,
   Tarotist,
 } from "../../shared/lib/types";
+import ClaraPage from "./components/clara-page";
 import { DebugMenu } from "./components/debug-menu";
 import Header from "./components/header";
-import ClaraPage from "./components/clara-page";
 import HistoryPage from "./components/history-page";
 import PersonalPage from "./components/personal-page";
 import PlansPage from "./components/plans-page";
@@ -25,7 +25,7 @@ import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
 import { useSalon } from "./lib/hooks/use-salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
-import { initAdMob, showInterstitialAd } from "./lib/utils/admob";
+import { showInterstitialAd } from "./lib/utils/admob";
 import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
@@ -68,7 +68,9 @@ const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => (
     >
       <div className="text-4xl">⚠️</div>
       <div className="text-center">
-        <p className="font-bold text-gray-800 text-lg mb-1">プランが変更されました</p>
+        <p className="font-bold text-gray-800 text-lg mb-1">
+          プランが変更されました
+        </p>
         <p className="text-sm text-gray-500 leading-relaxed">
           ご利用のプランが変更されたため、占いを終了します。
           <br />
@@ -94,7 +96,9 @@ function App() {
   // パーソナル占い再起動用キー（インクリメントで強制再マウント）
   const [personalPageKey, setPersonalPageKey] = useState(0);
   // プラン失効通知（"toast" | "dialog" | null）
-  const [planExpiredNotification, setPlanExpiredNotification] = useState<"toast" | "dialog" | null>(null);
+  const [planExpiredNotification, setPlanExpiredNotification] = useState<
+    "toast" | "dialog" | null
+  >(null);
   // プラン変更検知用（前回プランコードを保持）
   const prevPlanCodeRef = useRef<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
@@ -203,7 +207,7 @@ function App() {
         .sort((a, b) => (b.plan?.no ?? 0) - (a.plan?.no ?? 0));
       if (available.length > 0) {
         console.log(
-          `[App] プラン変更により占い師を自動切り替え: ${selectedTarotist.name} → ${available[0].name}`
+          `[App] プラン変更により占い師を自動切り替え: ${selectedTarotist.name} → ${available[0].name}`,
         );
         setSelectedTarotist(available[0]);
       }
@@ -225,7 +229,9 @@ function App() {
     if (!prevPlan || currentPlan.no >= prevPlan.no) return;
 
     // ダウングレード確定
-    console.log(`[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`);
+    console.log(
+      `[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`,
+    );
     if (pageType === "reading" || pageType === "personal") {
       // 占い中 → ダイアログ（OKを押してからサロンへ）
       setPlanExpiredNotification("dialog");
@@ -249,7 +255,12 @@ function App() {
       const endX = e.changedTouches[0].clientX;
       // 左端20px以内から始まり、50px以上右にスワイプしたら開く
       // 占い進行中はサイドバーを開かない
-      if (startX < 20 && endX - startX > 50 && !sidebarOpen && pageType !== "reading") {
+      if (
+        startX < 20 &&
+        endX - startX > 50 &&
+        !sidebarOpen &&
+        pageType !== "reading"
+      ) {
         setSidebarOpen(true);
       }
     };
@@ -385,19 +396,19 @@ function App() {
       <TarotSplashScreen
         message={
           isDebugEnabled
-            ? (!isInitialized
-                ? getStepLabel()
-                : !authIsReady
+            ? !isInitialized
+              ? getStepLabel()
+              : !authIsReady
                 ? "認証情報を確認中... (1/4)"
                 : !clientIsReady
-                ? "利用状況を取得中... (3/4)"
-                : isMasterLoading || !masterData
-                ? "データを読み込み中... (4/4)"
-                : !usageStats
-                ? "利用状況を取得中... (3/4)"
-                : !payload
-                ? "認証情報を確認中... (1/4)"
-                : "準備完了")
+                  ? "利用状況を取得中... (3/4)"
+                  : isMasterLoading || !masterData
+                    ? "データを読み込み中... (4/4)"
+                    : !usageStats
+                      ? "利用状況を取得中... (3/4)"
+                      : !payload
+                        ? "認証情報を確認中... (1/4)"
+                        : "準備完了"
             : "読み込み中..."
         }
       />
@@ -717,7 +728,10 @@ function App() {
       {/* 🔥 エラー通知 */}
       {error && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
-          ⚠️ {isDebugEnabled ? error.message : "エラーが発生しました。しばらく経ってからもう一度お試しください。"}
+          ⚠️{" "}
+          {isDebugEnabled
+            ? error.message
+            : "エラーが発生しました。しばらく経ってからもう一度お試しください。"}
         </div>
       )}
 
