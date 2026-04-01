@@ -24,6 +24,10 @@ jobs:
       DISABLE_CONSOLE_LOG: "true"
       ENABLE_FILE_LOG: "false"
       ENABLE_DB_LOG: "false"
+      GOOGLE_VERTEX_PROJECT: dummy-project
+      GOOGLE_VERTEX_LOCATION: us-central1
+      GOOGLE_CLIENT_EMAIL: dummy@dummy.iam.gserviceaccount.com
+      GOOGLE_PRIVATE_KEY: "dummy"
 
     steps:
       - uses: actions/checkout@v4

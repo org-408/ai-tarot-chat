@@ -67,7 +67,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
     onStartReading();
   };
 
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [keyboardHeight] = useState(0);
   const [isTopCollapsed, setIsTopCollapsed] = useState(false);
 
   return (

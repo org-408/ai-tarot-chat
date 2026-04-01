@@ -64,7 +64,7 @@ export async function initAdMob(): Promise<void> {
 export async function showInterstitialAd(): Promise<void> {
   if (!isNative || !AD_IDS.interstitial) return;
 
-  return new Promise<void>(async (resolve) => {
+  return new Promise<void>((resolve) => {
     const handles: PluginListenerHandle[] = [];
     const cleanup = () => handles.forEach((h) => h.remove());
     const done = () => {
@@ -72,30 +72,32 @@ export async function showInterstitialAd(): Promise<void> {
       resolve();
     };
 
-    handles.push(
-      // 広告が閉じられたら処理続行
-      await AdMob.addListener(InterstitialAdPluginEvents.Dismissed, done),
-      // ロード失敗 → スキップして続行
-      await AdMob.addListener(InterstitialAdPluginEvents.FailedToLoad, done),
-      // 表示失敗 → スキップして続行
-      await AdMob.addListener(InterstitialAdPluginEvents.FailedToShow, done),
-      // ロード完了 → 表示
-      await AdMob.addListener(InterstitialAdPluginEvents.Loaded, async () => {
-        try {
-          await AdMob.showInterstitial();
-        } catch {
-          done();
-        }
-      }),
-    );
+    void (async () => {
+      handles.push(
+        // 広告が閉じられたら処理続行
+        await AdMob.addListener(InterstitialAdPluginEvents.Dismissed, done),
+        // ロード失敗 → スキップして続行
+        await AdMob.addListener(InterstitialAdPluginEvents.FailedToLoad, done),
+        // 表示失敗 → スキップして続行
+        await AdMob.addListener(InterstitialAdPluginEvents.FailedToShow, done),
+        // ロード完了 → 表示
+        await AdMob.addListener(InterstitialAdPluginEvents.Loaded, async () => {
+          try {
+            await AdMob.showInterstitial();
+          } catch {
+            done();
+          }
+        }),
+      );
 
-    // ロード開始
-    try {
-      const options: AdOptions = { adId: AD_IDS.interstitial };
-      await AdMob.prepareInterstitial(options);
-    } catch {
-      done();
-    }
+      // ロード開始
+      try {
+        const options: AdOptions = { adId: AD_IDS.interstitial };
+        await AdMob.prepareInterstitial(options);
+      } catch {
+        done();
+      }
+    })();
   });
 }
 

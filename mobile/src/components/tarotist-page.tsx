@@ -29,7 +29,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   masterData,
   onChangePlan,
   isChangingPlan,
-  onNavigateToClara,
+  onNavigateToClara: _onNavigateToClara,
 }) => {
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
