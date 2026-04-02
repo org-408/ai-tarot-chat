@@ -563,3 +563,18 @@ model UsedTicket {
   @@index([expiresAt])
   @@map("used_tickets")
 }
+
+// ==========================================
+// リリース通知登録
+// ==========================================
+model EmailSubscription {
+  id         String    @id @default(cuid())
+  email      String    @unique @db.VarChar(254)
+  platform   String?   @db.VarChar(20) // "ios" | "android" | "both"
+  notifiedAt DateTime?                 // 送信済み日時（null = 未送信）
+  createdAt  DateTime  @default(now())
+
+  @@index([notifiedAt])
+  @@index([createdAt])
+  @@map("email_subscriptions")
+}
