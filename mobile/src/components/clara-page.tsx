@@ -149,8 +149,8 @@ interface ClaraPageProps {
 
 const ClaraPage: React.FC<ClaraPageProps> = ({
   masterData,
-  currentPlan,
-  onChangePlan,
+  currentPlan: _currentPlan,
+  onChangePlan: _onChangePlan,
 }) => {
   const {
     selectedSpread,

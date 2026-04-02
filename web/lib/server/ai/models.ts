@@ -49,7 +49,7 @@ const vertex = createVertex({
     credentials: {
       client_email: process.env.GOOGLE_CLIENT_EMAIL!,
       // 重要: \n を実際の改行に変換
-      private_key: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+      private_key: (process.env.GOOGLE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n"),
     },
   },
 });
@@ -62,7 +62,7 @@ export const providers = {
   claude_h: anthropic("claude-haiku-4-5"),
   gpt41: openai("gpt-4.1"),
   gpt5: openai("gpt-5"),
-  claude_s: anthropic("claude-sonnet-4-5"),
+  claude_s: anthropic("claude-sonnet-4-6"),
   google: google("gemini-2.5-pro"),
 };
 

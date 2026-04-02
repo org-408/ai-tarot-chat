@@ -28,7 +28,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<string>3</string>
 	<key>GADApplicationIdentifier</key>
 	<!-- ⚠️ 本番リリース前に AdMob コンソールの実際の App ID に差し替えること -->
 	<string>ca-app-pub-4816184261186506~1163974329</string>

@@ -858,7 +858,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       partialize: (state) => {
         // isLoggedIn と isInitialized は起動時に必ず再同期するため永続化しない。
         // isLoggedIn を永続化すると再起動後に login() のガードで RC.logIn() がスキップされるバグの原因になる。
-        const { isLoggedIn, isInitialized, ...rest } = state;
+        const { isLoggedIn: _isLoggedIn, isInitialized: _isInitialized, ...rest } = state;
         return rest;
       },
       storage: createJSONStorage(() => ({

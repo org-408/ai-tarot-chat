@@ -277,7 +277,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 タロット占いアプリ
                 <br />
                 <span className="text-purple-600 font-semibold">
-                  Tarot Reader
+                  AI Tarot Chat
                 </span>
               </div>
             </div>
