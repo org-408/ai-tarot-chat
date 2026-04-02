@@ -195,7 +195,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
             </div>
 
             <h1 className="text-5xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-4">
-              Ai Tarot Chat
+              AI Tarot Chat
             </h1>
 
             <p className="text-white/80 text-xl font-medium">

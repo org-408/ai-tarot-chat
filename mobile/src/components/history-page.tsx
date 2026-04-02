@@ -545,7 +545,11 @@ const HistoryPage: React.FC = () => {
   const toggleYear = (year: string) => {
     setOpenYears((prev) => {
       const next = new Set(prev);
-      next.has(year) ? next.delete(year) : next.add(year);
+      if (next.has(year)) {
+        next.delete(year);
+      } else {
+        next.add(year);
+      }
       return next;
     });
   };

@@ -100,6 +100,14 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
 
         {devMenuOpen && (
           <div className="absolute top-8 right-0 w-64 bg-white bg-opacity-95 backdrop-blur-sm p-2 rounded shadow-lg border max-h-[80vh] overflow-y-auto">
+            {/* 環境情報セクション */}
+            <div className="text-xs mb-2 pb-2 border-b">
+              <div className="font-bold text-gray-700 mb-1">🌐 環境</div>
+              <div className="text-gray-600 break-all">
+                {import.meta.env.VITE_BFF_URL || "http://localhost:3000"}
+              </div>
+            </div>
+
             {/* ✅ デバッグ情報セクション */}
             <div className="text-xs mb-2 pb-2 border-b">
               <div className="font-bold text-gray-700 mb-1">

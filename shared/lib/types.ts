@@ -2,7 +2,15 @@
 // Auth.js 5.0 関連型定義
 // ==========================================
 
-import { ChatRole, ChatType } from "../../web/node_modules/@prisma/client";
+// Shared types must stay portable across the web and mobile builds.
+export type ChatType =
+  | "CARD_INTERPRETATION"
+  | "USER_RESPONSE"
+  | "FINAL_READING"
+  | "USER_QUESTION"
+  | "TAROTIST_ANSWER";
+
+export type ChatRole = "USER" | "TAROTIST";
 
 export type Account = {
   id: string;

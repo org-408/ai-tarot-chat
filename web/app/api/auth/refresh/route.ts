@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
     if (
       errorMessage.includes("Invalid") ||
       errorMessage.includes("not found") ||
-      errorMessage.includes("expired")
+      errorMessage.includes("expired") ||
+      errorMessage.includes("認証が必要")
     ) {
       logWithContext("warn", "❌ セッション検証リクエストが無効", {
         errorMessage,

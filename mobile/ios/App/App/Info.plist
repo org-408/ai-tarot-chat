@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Ai Tarot Chat</string>
+	<string>AI Tarot Chat</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -28,7 +28,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<string>3</string>
 	<key>GADApplicationIdentifier</key>
 	<!-- ⚠️ 本番リリース前に AdMob コンソールの実際の App ID に差し替えること -->
 	<string>ca-app-pub-4816184261186506~1163974329</string>

@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/spreads", label: "🎴 スプレッド管理" },
   { href: "/admin/tarotists", label: "🔮 タロティスト管理" },
   { href: "/admin/clients", label: "👥 クライアント管理" },
+  { href: "/admin/notifications", label: "📨 リリース通知" },
 ];
 
 export function Sidebar() {

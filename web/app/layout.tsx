@@ -1,15 +1,21 @@
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { PageViewTracker } from "@/components/analytics/page-view-tracker";
 import "@/components/providers";
 import { Providers } from "@/components/providers";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import "./globals.css";
 
-export const metadata = { title: "Tarot Admin" };
+export const metadata = { title: "AI タロット占い" };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-sky-50 text-slate-900 antialiased max-w-[1400px]">
+      <body className="min-h-screen bg-white text-slate-900 antialiased">
+        <GoogleAnalytics />
         <Providers>{children}</Providers>
+        <Suspense fallback={null}>
+          <PageViewTracker />
+        </Suspense>
       </body>
     </html>
   );
