@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { tarotistService } from "@/lib/server/services";
+import type { Tarotist } from "@/../shared/lib/types";
 
 export const metadata: Metadata = {
   title: "AI タロット占い — AIが読み解くあなたの未来",
@@ -31,73 +34,6 @@ const features = [
     title: "マルチプラットフォーム対応",
     description:
       "iOS・Androidアプリ、Webブラウザ、いつでもどこでも占いを楽しめます。データは同期されます。",
-  },
-];
-
-const tarotists = [
-  {
-    icon: "🌸",
-    name: "Lily",
-    title: "駆け出し占い師",
-    trait: "元気・簡潔・フレンドリー",
-    color: "#FFDAB9",
-    plan: "ゲスト",
-  },
-  {
-    icon: "🌙",
-    name: "Luna",
-    title: "神秘の占い師",
-    trait: "神秘的・直感・スピリチュアル",
-    color: "#B8CFE5",
-    plan: "フリー",
-  },
-  {
-    icon: "⭐",
-    name: "Stella",
-    title: "輝く占い師",
-    trait: "聡明・洞察力・思考型",
-    color: "#F5E6CC",
-    plan: "スタンダード",
-  },
-  {
-    icon: "🔮",
-    name: "Celine",
-    title: "賢者の占い師",
-    trait: "知的・共感的・包容力",
-    color: "#E0D0FF",
-    plan: "スタンダード",
-  },
-  {
-    icon: "✨",
-    name: "Gloria",
-    title: "現代の占い師",
-    trait: "親しみやすい・ユーモア・現代的",
-    color: "#FFD6D6",
-    plan: "プレミアム",
-  },
-  {
-    icon: "💎",
-    name: "Sophia",
-    title: "万能の占い師",
-    trait: "万能・PhD級知性・洗練",
-    color: "#E0E0E0",
-    plan: "プレミアム",
-  },
-  {
-    icon: "👸",
-    name: "Ariadne",
-    title: "至高の占い師",
-    trait: "温かい・共感・導き手・詩的",
-    color: "#B3E0FF",
-    plan: "プレミアム",
-  },
-  {
-    icon: "📚",
-    name: "Clara",
-    title: "見習い占い師",
-    trait: "可愛らしい・勉強熱心",
-    color: "#FCE7F3",
-    plan: "オフライン",
   },
 ];
 
@@ -151,7 +87,60 @@ const planHighlights = [
   },
 ];
 
-export default function LandingPage() {
+function tarotistImagePath(name: string): string {
+  return `/tarotists/${name}.png`;
+}
+
+function TarotistCard({ t }: { t: Tarotist }) {
+  const planName = (t as Tarotist & { plan?: { name: string } }).plan?.name ?? "";
+  const imagePath = tarotistImagePath(t.name);
+
+  return (
+    <div
+      className="group relative rounded-2xl overflow-hidden border border-white/60 bg-white shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
+      style={{
+        background: `linear-gradient(135deg, ${t.primaryColor}44, white)`,
+      }}
+    >
+      {/* プランバッジ */}
+      <span className="absolute top-3 right-3 z-10 text-xs text-slate-500 bg-white/90 rounded-full px-2 py-0.5 border border-slate-100">
+        {planName}
+      </span>
+
+      {/* 占い師の画像 */}
+      <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-transparent to-black/10">
+        <Image
+          src={imagePath}
+          alt={`${t.name} — ${t.title}`}
+          fill
+          className="object-cover object-top"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        />
+        {/* グラデーションオーバーレイ */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+        {/* 名前・肩書き（画像下部に重ねて表示） */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="text-lg">{t.icon}</span>
+            <h3 className="font-bold text-base leading-tight">{t.name}</h3>
+          </div>
+          <p className="text-xs text-white/80">{t.title}</p>
+        </div>
+      </div>
+
+      {/* 特徴テキスト */}
+      <div className="p-3">
+        <p className="text-xs text-slate-600 leading-relaxed">{t.trait}</p>
+      </div>
+    </div>
+  );
+}
+
+export default async function LandingPage() {
+  // DBから占い師一覧を取得。接続できない場合は空配列にフォールバック
+  const tarotists = await tarotistService.getAllTarotists().catch(() => [] as Tarotist[]);
+
   return (
     <>
       {/* ===== Hero Section ===== */}
@@ -212,7 +201,7 @@ export default function LandingPage() {
           </div>
 
           {/* タロットカードの装飾 */}
-          <div className="mt-16 flex justify-center gap-4 sm:gap-6 perspective-1000">
+          <div className="mt-16 flex justify-center gap-4 sm:gap-6">
             {["🌙", "⭐", "🔮", "✨", "👸"].map((icon, i) => (
               <div
                 key={i}
@@ -264,7 +253,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              8人のAI占い師
+              {tarotists.length > 0 ? `${tarotists.length}人` : "個性豊かな"}のAI占い師
             </h2>
             <p className="text-slate-600 text-lg max-w-xl mx-auto">
               それぞれ異なる個性と得意分野を持つAI占い師たち。
@@ -273,32 +262,27 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {tarotists.map((t) => (
-              <div
-                key={t.name}
-                className="group relative rounded-2xl p-5 border border-white/60 bg-white shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
-                style={{ background: `linear-gradient(135deg, ${t.color}44, white)` }}
-              >
-                {/* プランバッジ */}
-                <span className="absolute top-3 right-3 text-xs text-slate-500 bg-white/80 rounded-full px-2 py-0.5 border border-slate-100">
-                  {t.plan}
-                </span>
-
-                {/* アイコン */}
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-3 shadow-sm"
-                  style={{ backgroundColor: t.color }}
-                >
-                  {t.icon}
-                </div>
-
-                <h3 className="font-bold text-slate-900 text-base">{t.name}</h3>
-                <p className="text-xs text-slate-500 mb-2">{t.title}</p>
-                <p className="text-xs text-slate-600 leading-relaxed">{t.trait}</p>
-              </div>
-            ))}
-          </div>
+          {tarotists.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {tarotists.map((t) => (
+                <TarotistCard key={t.id} t={t} />
+              ))}
+            </div>
+          ) : (
+            // DBから取得できなかった場合のフォールバック表示
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {["🌸 Lily", "🌙 Luna", "⭐ Stella", "🔮 Celine", "✨ Gloria", "💎 Sophia", "👸 Ariadne", "📚 Clara"].map(
+                (label) => (
+                  <div
+                    key={label}
+                    className="rounded-2xl bg-purple-50 border border-purple-100 p-6 flex items-center justify-center"
+                  >
+                    <span className="text-lg font-medium text-slate-700">{label}</span>
+                  </div>
+                )
+              )}
+            </div>
+          )}
         </div>
       </section>
 
