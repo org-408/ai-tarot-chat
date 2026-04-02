@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/admin", label: "📊 ダッシュボード" },
   { href: "/admin/spreads", label: "🎴 スプレッド管理" },
+  { href: "/admin/notifications", label: "📨 リリース通知" },
   { href: "/admin/decks", label: "🖼️ デッキ管理（今後）" },
   { href: "/admin/analytics", label: "📈 分析（今後）" },
 ];
