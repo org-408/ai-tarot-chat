@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 
 export const metadata: Metadata = {
   title: "料金プラン",
@@ -231,12 +231,16 @@ export default function PricingPage() {
                 </div>
 
                 {/* CTA */}
-                <Link
+                <TrackedLink
                   href="/download"
+                  pageName="pricing"
+                  placement="plan_card"
+                  ctaName="select_plan"
+                  planCode={plan.code}
                   className={`w-full rounded-full py-3 text-center text-sm font-semibold transition-all ${plan.ctaStyle}`}
                 >
                   {plan.cta}
-                </Link>
+                </TrackedLink>
               </div>
             ))}
           </div>
@@ -333,13 +337,16 @@ export default function PricingPage() {
           <p className="text-purple-200 mb-8">
             クレジットカード不要。登録なしでもすぐに始められます。
           </p>
-          <Link
+          <TrackedLink
             href="/download"
+            pageName="pricing"
+            placement="final_cta"
+            ctaName="download_app"
             className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
           >
             <span>📱</span>
             アプリをダウンロード
-          </Link>
+          </TrackedLink>
         </div>
       </section>
     </>

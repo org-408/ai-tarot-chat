@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import Image from "next/image";
 import Link from "next/link";
 import { tarotistService } from "@/lib/server/services";
@@ -178,13 +179,16 @@ export default async function LandingPage() {
 
             {/* CTAボタン */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
+              <TrackedLink
                 href="/download"
+                pageName="landing"
+                placement="hero"
+                ctaName="download_app"
                 className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
               >
                 <span>📱</span>
                 アプリをダウンロード
-              </Link>
+              </TrackedLink>
               <Link
                 href="/#features"
                 className="inline-flex items-center gap-2 rounded-full border border-purple-400/50 text-white px-8 py-3.5 text-base font-semibold hover:bg-purple-500/20 transition-all"
@@ -394,27 +398,39 @@ export default async function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
+            <TrackedLink
               href="/download"
+              pageName="landing"
+              placement="final_cta"
+              ctaName="app_store"
               className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-7 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 min-w-[200px] justify-center"
             >
               <span className="text-2xl"></span>
               <span>App Store</span>
-            </Link>
-            <Link
+            </TrackedLink>
+            <TrackedLink
               href="/download"
+              pageName="landing"
+              placement="final_cta"
+              ctaName="google_play"
               className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-7 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 min-w-[200px] justify-center"
             >
               <span className="text-2xl">🤖</span>
               <span>Google Play</span>
-            </Link>
+            </TrackedLink>
           </div>
 
           <p className="mt-6 text-sm text-purple-300">
             または{" "}
-            <Link href="/auth/signin" className="underline hover:text-white transition-colors">
+            <TrackedLink
+              href="/auth/signin?from=landing"
+              pageName="landing"
+              placement="final_cta"
+              ctaName="web_signin"
+              className="underline hover:text-white transition-colors"
+            >
               Web版でブラウザから利用する
-            </Link>
+            </TrackedLink>
           </p>
         </div>
       </section>

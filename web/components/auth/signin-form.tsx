@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getUtmParams, trackEvent } from "@/lib/client/analytics/ga";
 import { logWithContext } from "@/lib/client/logger/logger";
 import { Loader2, Monitor, Shield, Smartphone } from "lucide-react";
 import { signIn } from "next-auth/react";
@@ -200,6 +201,15 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
         provider,
         isMobileApp,
         callbackUrl,
+      });
+
+      const searchParams = new URLSearchParams(window.location.search);
+      trackEvent("auth_start", {
+        provider,
+        entry_point: searchParams.get("from") ?? "signin",
+        is_mobile_app: Boolean(isMobileApp),
+        callback_url: callbackUrl,
+        ...getUtmParams(searchParams),
       });
 
       const result = await signIn(provider, {

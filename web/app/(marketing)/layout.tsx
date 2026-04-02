@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -51,13 +52,16 @@ export default function MarketingLayout({
             </nav>
 
             {/* CTA */}
-            <Link
+            <TrackedLink
               href="/download"
+              pageName="marketing_layout"
+              placement="header"
+              ctaName="start_now"
               className="inline-flex items-center gap-2 rounded-full bg-purple-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-800 transition-colors"
             >
               <span>今すぐ始める</span>
               <span>→</span>
-            </Link>
+            </TrackedLink>
           </div>
         </div>
       </header>

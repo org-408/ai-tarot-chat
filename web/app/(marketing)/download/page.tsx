@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 
 export const metadata: Metadata = {
   title: "ダウンロード",
@@ -131,12 +131,15 @@ export default function DownloadPage() {
                     {p.store ? `${p.store} からダウンロード` : "ブラウザで開く"}
                   </button>
                 ) : (
-                  <Link
-                    href={p.href!}
+                  <TrackedLink
+                    href={`${p.href!}?from=download`}
+                    pageName="download"
+                    placement="platform_card"
+                    ctaName="open_web"
                     className={`w-full rounded-xl py-3.5 text-base font-semibold text-center transition-all ${p.buttonStyle}`}
                   >
                     ブラウザで今すぐ開く →
-                  </Link>
+                  </TrackedLink>
                 )}
               </div>
             ))}
@@ -213,19 +216,25 @@ export default function DownloadPage() {
             インストール不要。ブラウザで今すぐ体験できます。
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/auth/signin"
+            <TrackedLink
+              href="/auth/signin?from=download"
+              pageName="download"
+              placement="final_cta"
+              ctaName="start_web"
               className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
             >
               <span>🌐</span>
               Webで今すぐ始める
-            </Link>
-            <Link
+            </TrackedLink>
+            <TrackedLink
               href="/pricing"
+              pageName="download"
+              placement="final_cta"
+              ctaName="view_pricing"
               className="inline-flex items-center gap-2 rounded-full border border-purple-400/50 text-white px-8 py-3.5 text-base font-semibold hover:bg-purple-500/20 transition-all"
             >
               料金プランを確認する
-            </Link>
+            </TrackedLink>
           </div>
         </div>
       </section>
