@@ -2,6 +2,7 @@ package com.aitarotchat.app;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -9,24 +10,23 @@ import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    private Insets currentInsets = Insets.NONE;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Android の inset を CSS 変数として Web 側へ渡す。
+        // Android 実機でのみ発生する edge-to-edge 差分を
+        // ネイティブ側で吸収して、Web 側や iOS には影響を出さない。
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         View container = findViewById(R.id.main_container);
         if (container != null) {
             ViewCompat.setOnApplyWindowInsetsListener(container, (view, windowInsets) -> {
-                currentInsets = windowInsets.getInsets(
+                Insets insets = windowInsets.getInsets(
                     WindowInsetsCompat.Type.systemBars() |
                     WindowInsetsCompat.Type.displayCutout()
                 );
 
-                pushInsetsToWebView(currentInsets);
+                applyInsetsToWebView(insets);
 
                 return windowInsets;
             });
@@ -35,28 +35,35 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        pushInsetsToWebView(currentInsets);
-    }
-
-    private void pushInsetsToWebView(Insets insets) {
+    private void applyInsetsToWebView(Insets insets) {
         if (bridge == null || bridge.getWebView() == null) {
             return;
         }
 
-        String script = String.format(
-            "document.documentElement.style.setProperty('--android-safe-top', '%dpx');" +
-            "document.documentElement.style.setProperty('--android-safe-right', '%dpx');" +
-            "document.documentElement.style.setProperty('--android-safe-bottom', '%dpx');" +
-            "document.documentElement.style.setProperty('--android-safe-left', '%dpx');",
-            insets.top,
-            insets.right,
-            insets.bottom,
-            insets.left
-        );
+        View webView = bridge.getWebView();
+        ViewGroup.LayoutParams layoutParams = webView.getLayoutParams();
 
-        bridge.getWebView().post(() -> bridge.getWebView().evaluateJavascript(script, null));
+        if (!(layoutParams instanceof ViewGroup.MarginLayoutParams)) {
+            return;
+        }
+
+        ViewGroup.MarginLayoutParams marginLayoutParams =
+            (ViewGroup.MarginLayoutParams) layoutParams;
+
+        if (
+            marginLayoutParams.leftMargin == insets.left &&
+            marginLayoutParams.topMargin == insets.top &&
+            marginLayoutParams.rightMargin == insets.right &&
+            marginLayoutParams.bottomMargin == insets.bottom
+        ) {
+            return;
+        }
+
+        marginLayoutParams.leftMargin = insets.left;
+        marginLayoutParams.topMargin = insets.top;
+        marginLayoutParams.rightMargin = insets.right;
+        marginLayoutParams.bottomMargin = insets.bottom;
+
+        webView.setLayoutParams(marginLayoutParams);
     }
 }
