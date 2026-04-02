@@ -8,11 +8,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const session = await auth();
 
   if (!session) {
-    redirect("/auth/signin?callbackUrl=/admin");
+    redirect("/admin/auth/signin");
   }
 
   if (session.user.role !== "ADMIN") {
-    redirect("/");
+    redirect("/admin/auth/signin");
   }
 
   return (
