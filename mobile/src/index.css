@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --safe-area-top: var(--android-safe-top, env(safe-area-inset-top, 0px));
+  --safe-area-bottom: var(--android-safe-bottom, env(safe-area-inset-bottom, 0px));
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -26,20 +28,20 @@ body {
 /* メインコンテンツエリア */
 .main-content-area {
   position: fixed;
-  top: calc(50px + env(safe-area-inset-top));
+  top: calc(50px + var(--safe-area-top));
   left: 0;
   right: 0;
   bottom: 0; /* ✅ ボトムナビ削除のため bottom: 0 に変更 */
   overflow-y: auto; /* ✅ f456679 で誤って削除されたスクロールを復元 */
   background: transparent;
-  padding-bottom: env(safe-area-inset-bottom); /* ✅ セーフエリア対応 */
+  padding-bottom: var(--safe-area-bottom); /* ✅ セーフエリア対応 */
 }
 
 /* 固定ヘッダースタイル */
 .app-header {
   position: fixed;
   top: 0;
-  padding-top: env(safe-area-inset-top); /* Safe Area */
+  padding-top: var(--safe-area-top); /* Safe Area */
   left: 0;
   right: 0;
   z-index: 50;
@@ -256,7 +258,7 @@ body {
 /* レスポンシブ対応 */
 @media (max-width: 480px) {
   .main-container {
-    margin: 0;
+    margin: 0 auto;
     padding: 5px;
     border-radius: 0;
   }
