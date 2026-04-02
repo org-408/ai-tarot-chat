@@ -72,7 +72,9 @@ export default async function SignInPage({
 
       <div className="relative w-full max-w-md">
         <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30">
-          <SignInViewTracker />
+          <Suspense fallback={null}>
+            <SignInViewTracker />
+          </Suspense>
           <div className="text-center mb-8">
             <div className="text-7xl mb-6 filter drop-shadow-lg">🔮</div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-3">
