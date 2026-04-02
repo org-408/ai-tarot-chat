@@ -51,7 +51,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   );
   try {
     const data = await request.json();
-    const spread = await spreadService.updateSpreadById(id, data);
+    const spread = await spreadService.updateSpreadById(id, data, data.cells);
     logWithContext("info", `✅ スプレッド(${id})更新完了`, { spread });
     return NextResponse.json(spread);
   } catch (error) {

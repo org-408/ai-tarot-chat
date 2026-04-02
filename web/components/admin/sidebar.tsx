@@ -5,10 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/admin", label: "📊 ダッシュボード" },
+  { href: "/admin", label: "📊 ダッシュボード", exact: true },
   { href: "/admin/spreads", label: "🎴 スプレッド管理" },
-  { href: "/admin/decks", label: "🖼️ デッキ管理（今後）" },
-  { href: "/admin/analytics", label: "📈 分析（今後）" },
+  { href: "/admin/tarotists", label: "🔮 タロティスト管理" },
+  { href: "/admin/clients", label: "👥 クライアント管理" },
 ];
 
 export function Sidebar() {
@@ -20,7 +20,9 @@ export function Sidebar() {
           <div className="text-xs text-zinc-500 mb-2">メニュー</div>
           <nav className="grid gap-1">
             {NAV.map((item) => {
-              const active = pathname.startsWith(item.href);
+              const active = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}

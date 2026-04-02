@@ -1,25 +1,36 @@
+import { signOut } from "@/auth";
 import { Badge } from "@/components/ui/badge";
 
-export function Header() {
+interface HeaderUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
+
+export function Header({ user }: { user?: HeaderUser }) {
   return (
     <header className="bg-sky-600 text-white">
       <div className="mx-auto max-w-screen-2xl px-6 py-3 flex items-center justify-between">
         <div className="font-semibold">🔮 AIタロット占い 管理システム</div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sky-800 bg-sky-100">
-            admin@tarot-ai.com
+            {user?.email ?? "---"}
           </Badge>
-          <a href="#" className="text-sm underline underline-offset-4">
-            ログアウト
-          </a>
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/auth/signin" });
+            }}
+          >
+            <button
+              type="submit"
+              className="text-sm underline underline-offset-4 cursor-pointer"
+            >
+              ログアウト
+            </button>
+          </form>
         </div>
       </div>
-      {/* <Separator className="bg-sky-700" />
-      <div className="mx-auto max-w-screen-2xl px-6 py-2 text-sm text-sky-50/90">
-        <span className="opacity-80">📊 ダッシュボード</span> /{" "}
-        <span className="opacity-80">🎴 スプレッド管理</span> /{" "}
-        <strong>✏️ 編集</strong>
-      </div> */}
     </header>
   );
 }

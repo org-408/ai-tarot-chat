@@ -1,6 +1,6 @@
 "use client";
 
-import type { Spread, SpreadCell } from "@/../shared/lib/types";
+import type { Spread, SpreadCell, SpreadInput } from "@/../shared/lib/types";
 import { SpreadGrid } from "@/components/spreads/spread-grid";
 import { SpreadLegend } from "@/components/spreads/spread-legend";
 import { SpreadSettings } from "@/components/spreads/spread-settings";
@@ -14,10 +14,10 @@ import { MdAdd, MdContentCopy, MdSave } from "react-icons/md";
 const GRID_SIZE = [10, 10];
 
 export default function SpreadsPage() {
-  const { spreads, createSpread } = useSpreads();
+  const { spreads, createSpread, updateSpread } = useSpreads();
 
-  // const [rows, setRows] = useState<Spread[]>(initialSpreads);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [localCells, setLocalCells] = useState<SpreadCell[]>([]);
 
   // 編集対象（選択時のみ下のエディタを表示）
   const selected: Spread | null =
@@ -31,45 +31,65 @@ export default function SpreadsPage() {
   const [lastOrder, setLastOrder] = useState<number>(0);
 
   function findGridCells() {
-    if (!selected || !gridSelected) return [];
-    return (selected.cells || []).filter(
+    if (!gridSelected) return [];
+    return localCells.filter(
       (c) => c.x === gridSelected.x && c.y === gridSelected.y
     );
   }
 
   function handleSelectRow(id: string) {
-    setSelectedId(id === selectedId ? null : id);
+    const nextId = id === selectedId ? null : id;
+    setSelectedId(nextId);
     const s = spreads.find((r) => r.id === id);
     setGridSelected(null);
-    // 表示順の最大値を計算（新規セル追加時のデフォルト値に使う）
     const cells = s?.cells || [];
+    setLocalCells(nextId ? cells : []);
     const _lastOrder = cells.reduce(
       (max: number, cell: SpreadCell) =>
         Math.max(max, cell.order != null ? cell.order : -Infinity),
       -Infinity
     );
     setLastOrder(
-      _lastOrder == null || lastOrder === -Infinity ? 0 : _lastOrder
+      _lastOrder == null || _lastOrder === -Infinity ? 0 : _lastOrder
     );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleChange(updated: Spread) {
-    // TODO:
+  function handleChange(_updated: Spread) {
+    // スプレッドメタデータの変更（SpreadToolbar から呼ばれる予定）
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function upsertCell(next: SpreadCell[]) {
-    // TODO:
+    if (!gridSelected) return;
+    const { x, y } = gridSelected;
+    setLocalCells((prev) => {
+      const filtered = prev.filter((c) => !(c.x === x && c.y === y));
+      return [...filtered, ...next];
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function removeCell(x: number, y: number) {
-    // TODO:
+    setLocalCells((prev) => prev.filter((c) => !(c.x === x && c.y === y)));
+    setGridSelected(null);
   }
 
-  function saveCurrent() {
-    // TODO:
+  async function saveCurrent() {
+    if (!selected) return;
+    const input: SpreadInput = {
+      no: selected.no,
+      code: selected.code,
+      name: selected.name,
+      category: selected.category,
+      levelId: selected.levelId,
+      planId: selected.planId,
+      guide: selected.guide ?? "",
+      cells: localCells.map(({ id: _id, spread: _spread, spreadId: _sid, ...cell }) => cell),
+      categoryIds: selected.categories?.map((c) => c.categoryId) || [],
+    };
+    const updated = await updateSpread(selected.id, input);
+    if (updated) {
+      setLocalCells(updated.cells || []);
+    }
   }
 
   function newBlank() {
@@ -90,8 +110,22 @@ export default function SpreadsPage() {
     });
   }
 
-  function duplicateCurrent() {
-    // 既存スプレッドを複製し、セレクト状態にする
+  async function duplicateCurrent() {
+    if (!selected) return;
+    const newSpread = await createSpread({
+      no: spreads.length + 1,
+      code: `${selected.code}-copy-${today()}`,
+      name: `${selected.name} (コピー)`,
+      category: selected.category,
+      levelId: selected.levelId,
+      planId: selected.planId,
+      guide: selected.guide ?? "",
+      cells: localCells.map(({ id: _id, spread: _spread, spreadId: _sid, ...cell }) => cell),
+      categoryIds: selected.categories?.map((c) => c.categoryId) || [],
+    });
+    if (newSpread) {
+      handleSelectRow(newSpread.id);
+    }
   }
 
   return (
@@ -113,7 +147,7 @@ export default function SpreadsPage() {
               <MdContentCopy className="inline mr-1" />
               複製
             </Button>
-            <Button onClick={saveCurrent}>
+            <Button onClick={saveCurrent} disabled={!selected}>
               <MdSave className="inline mr-1" />
               保存
             </Button>
@@ -136,12 +170,11 @@ export default function SpreadsPage() {
               <CardTitle>🧩 スプレッド編集（{selected.name}）</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {/* <SpreadToolbar spread={selected} onChange={handleChange} /> */}
               <SpreadLegend />
               <SpreadGrid
                 cols={GRID_SIZE[0]}
                 rows={GRID_SIZE[1]}
-                cells={selected?.cells || []}
+                cells={localCells}
                 selected={gridSelected}
                 onSelect={setGridSelected}
               />
