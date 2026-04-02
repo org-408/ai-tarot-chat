@@ -23,12 +23,13 @@ const platforms = [
     icon: "🤖",
     name: "Android",
     store: "Google Play",
-    description: "Android 8.0以降対応。スマートフォン・タブレットでご利用いただけます。",
-    badge: "近日公開",
-    badgeStyle: "bg-slate-100 text-slate-500",
+    description: "Android 8.0以降対応。スマートフォン・タブレットでご利用いただけます。リリース準備中です。",
+    badge: "準備中",
+    badgeStyle: "bg-amber-100 text-amber-700",
     buttonStyle:
-      "bg-green-600 text-white hover:bg-green-700 cursor-not-allowed opacity-70",
+      "bg-amber-500 text-white hover:bg-amber-600 cursor-not-allowed opacity-80",
     disabled: true,
+    note: "Webブラウザ版をお使いください",
   },
   {
     icon: "🌐",
@@ -122,13 +123,20 @@ export default function DownloadPage() {
                   {p.description}
                 </p>
 
+                {/* note（Androidのみ） */}
+                {"note" in p && p.note && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3 text-center">
+                    💡 {p.note}
+                  </p>
+                )}
+
                 {/* ボタン */}
                 {p.disabled ? (
                   <button
                     disabled
                     className={`w-full rounded-xl py-3.5 text-base font-semibold transition-all ${p.buttonStyle}`}
                   >
-                    {p.store ? `${p.store} からダウンロード` : "ブラウザで開く"}
+                    {p.store === "Google Play" ? "Google Play — 準備中" : p.store ? `${p.store} からダウンロード` : "ブラウザで開く"}
                   </button>
                 ) : (
                   <TrackedLink
