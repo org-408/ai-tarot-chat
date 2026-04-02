@@ -61,6 +61,7 @@ export default function SpreadsPage() {
 
   function upsertCell(next: SpreadCell[]) {
     if (!gridSelected) return;
+    if (next.length === 0) return; // 空なら何もしない（削除は removeCell で行う）
     const { x, y } = gridSelected;
     setLocalCells((prev) => {
       const filtered = prev.filter((c) => !(c.x === x && c.y === y));
