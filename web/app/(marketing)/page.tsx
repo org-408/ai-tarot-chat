@@ -4,6 +4,7 @@ import Link from "next/link";
 import { tarotistService } from "@/lib/server/services";
 import type { Tarotist } from "@/../shared/lib/types";
 import { TarotistsSection } from "@/components/marketing/tarotists-section";
+import { NotifyForm } from "@/components/marketing/notify-form";
 
 export const metadata: Metadata = {
   title: "AI タロット占い — AIが読み解くあなたの未来",
@@ -317,52 +318,45 @@ export default async function LandingPage() {
 
       {/* ===== Download CTA Section ===== */}
       <section className="py-20 sm:py-28 bg-gradient-to-br from-purple-950 via-indigo-900 to-purple-800 text-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-5xl mb-6">🔮</div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             今すぐ占いを始めよう
           </h2>
-          <p className="text-purple-200 text-lg max-w-xl mx-auto mb-10">
+          <p className="text-purple-200 text-lg max-w-xl mx-auto mb-8">
             登録不要で、今すぐ無料でお試しいただけます。
-            <br />
-            iOS・Android・Webブラウザに対応しています。
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <TrackedLink
-              href="/download"
-              pageName="landing"
-              placement="final_cta"
-              ctaName="app_store"
-              className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-7 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 min-w-[200px] justify-center"
-            >
-              <span className="text-2xl"></span>
-              <span>App Store</span>
-            </TrackedLink>
-            <TrackedLink
-              href="/download"
-              pageName="landing"
-              placement="final_cta"
-              ctaName="google_play"
-              className="inline-flex items-center gap-3 rounded-2xl bg-white/20 border border-white/30 text-white px-7 py-4 text-base font-semibold transition-all hover:bg-white/30 min-w-[200px] justify-center"
-            >
-              <span className="text-2xl">🤖</span>
-              <span>Google Play <span className="text-xs opacity-70">（準備中）</span></span>
-            </TrackedLink>
-          </div>
-
-          <p className="mt-6 text-sm text-purple-300">
-            または{" "}
+          {/* Primary CTA: Web */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
             <TrackedLink
               href="/auth/signin?from=landing"
               pageName="landing"
               placement="final_cta"
-              ctaName="web_signin"
-              className="underline hover:text-white transition-colors"
+              ctaName="start_web"
+              className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-8 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
             >
-              Web版でブラウザから利用する
+              <span className="text-xl">🌐</span>
+              <span>Webで今すぐ無料で始める</span>
             </TrackedLink>
-          </p>
+            <TrackedLink
+              href="/pricing"
+              pageName="landing"
+              placement="final_cta"
+              ctaName="view_pricing"
+              className="inline-flex items-center gap-3 rounded-2xl border border-purple-400/50 text-white px-8 py-4 text-base font-semibold hover:bg-purple-500/20 transition-all"
+            >
+              料金プランを見る
+            </TrackedLink>
+          </div>
+
+          {/* Mobile app notify */}
+          <div className="mt-4">
+            <p className="text-purple-300 text-sm mb-4">
+              📱 モバイルアプリは現在準備中です
+            </p>
+            <NotifyForm />
+          </div>
         </div>
       </section>
     </>

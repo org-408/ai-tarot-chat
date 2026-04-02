@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TrackedLink } from "@/components/analytics/tracked-link";
+import { NotifyForm } from "@/components/marketing/notify-form";
 
 export const metadata: Metadata = {
   title: "ダウンロード",
@@ -156,6 +157,11 @@ export default function DownloadPage() {
           <p className="text-center text-sm text-slate-400 mt-6">
             ※ iOS・Androidアプリは現在準備中です。リリース時にお知らせします。
           </p>
+
+          {/* Mobile release notification form */}
+          <div className="mt-10 rounded-2xl bg-gradient-to-br from-purple-950 via-indigo-900 to-purple-800 p-8">
+            <NotifyForm />
+          </div>
         </div>
       </section>
 
