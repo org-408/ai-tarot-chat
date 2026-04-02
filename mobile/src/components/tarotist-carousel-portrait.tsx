@@ -232,7 +232,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   // 選択モード - 全画面カルーセル
   return (
     <div
-      className="relative w-full flex flex-col overflow-hidden"
+      className="relative w-full max-w-[420px] mx-auto flex flex-col overflow-hidden"
       style={{ height: "100%" }}
     >
       {/* スワイプヒント */}
@@ -301,6 +301,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                           src={`/tarotists/${tarotist.name}.png`}
                           alt={tarotist.title}
                           className="w-full h-full object-cover object-top"
+                          style={{ objectPosition: "center top" }}
                           animate={{
                             opacity: isAvailable ? 1 : 0.3,
                             filter: isAvailable
