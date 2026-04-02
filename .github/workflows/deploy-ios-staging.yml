@@ -1,11 +1,7 @@
 name: Deploy iOS to TestFlight (Staging)
 
 on:
-  push:
-    branches: [staging]
-    paths:
-      - 'mobile/**'
-      - 'shared/**'
+  workflow_dispatch:
 
 jobs:
   deploy:

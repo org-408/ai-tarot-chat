@@ -1,11 +1,7 @@
 name: Deploy iOS to App Store (Production)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'mobile/**'
-      - 'shared/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
