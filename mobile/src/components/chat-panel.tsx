@@ -1,12 +1,16 @@
 import { useChat } from "@ai-sdk/react";
+import { App as CapacitorApp } from "@capacitor/app";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
-import type { ReadingErrorCode } from "../../../shared/lib/types";
+import React, { useEffect, useEffectEvent, useRef, useState } from "react";
+import type {
+  ReadingErrorCode,
+  SaveReadingInput,
+} from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
 import {
@@ -163,10 +167,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hasSaved = useRef(false);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+  const saveStartedRef = useRef(false);
+  const lastPersistedSignatureRef = useRef<string | null>(null);
+  const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
 
   const isInputFixableError =
     chatError !== null &&
@@ -375,6 +381,103 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
   }, [status]);
 
+  const shouldPersistReading = () => {
+    if (status !== "ready") return false;
+
+    return isPhase2
+      ? drawnCards.length > 0 && messages.length > initialLen
+      : (isRevealingCompleted || isPersonal) &&
+          drawnCards.length > 0 &&
+          messages.length > 0;
+  };
+
+  const getTargetMessages = () =>
+    isPhase2 ? messages.slice(initialLen) : messages;
+
+  const buildPersistSignature = (readingIdOverride = savedReadingId) =>
+    `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
+      .map((msg) => {
+        const text = msg.parts
+          .filter((part) => part.type === "text")
+          .map((part) => (part as { text: string }).text)
+          .join("");
+        return `${msg.role}:${text}`;
+      })
+      .join("\u0001")}`;
+
+  const buildReadingPayload = (): SaveReadingInput => {
+    const targetMessages = getTargetMessages();
+    const firstPhase2TarotistIdx = isPhase2
+      ? targetMessages.findIndex((m) => m.role === "assistant")
+      : -1;
+
+    return {
+      readingId: savedReadingId ?? undefined,
+      incrementUsage: savedReadingId === null,
+      tarotistId: tarotist.id,
+      tarotist,
+      spreadId: spread.id,
+      spread,
+      category: isPersonal ? undefined : category,
+      customQuestion: isPersonal ? customQuestion : undefined,
+      cards: drawnCards,
+      chatMessages: targetMessages.map((msg, i) => {
+        let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
+        if (msg.role === "user") {
+          chatType = "USER_QUESTION";
+        } else if (isPhase2 && i !== firstPhase2TarotistIdx) {
+          chatType = "TAROTIST_ANSWER";
+        } else {
+          chatType = "FINAL_READING";
+        }
+
+        return {
+          tarotistId: tarotist.id,
+          tarotist,
+          chatType,
+          role: msg.role === "user" ? "USER" : "TAROTIST",
+          message: msg.parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join(""),
+        };
+      }),
+    };
+  };
+
+  const persistReading = useEffectEvent((withSavingIndicator: boolean) => {
+    if (saveStartedRef.current || !shouldPersistReading()) {
+      return;
+    }
+
+    const nextSignature = buildPersistSignature();
+    if (lastPersistedSignatureRef.current === nextSignature) {
+      return;
+    }
+
+    saveStartedRef.current = true;
+
+    if (withSavingIndicator) {
+      setIsSavingReading(true);
+    }
+
+    void saveReading(buildReadingPayload())
+      .then((result) => {
+        setSavedReadingId(result.reading.id);
+        lastPersistedSignatureRef.current = buildPersistSignature(
+          result.reading.id,
+        );
+      })
+      .catch((error) => {
+        console.warn("Failed to persist reading", error);
+      })
+      .finally(() => {
+        saveStartedRef.current = false;
+        if (withSavingIndicator) {
+          setIsSavingReading(false);
+        }
+      });
+  });
   useEffect(() => {
     if (isMessageComplete) return; // 既にフラグ立て済みなら何もしない
 
@@ -421,63 +524,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     //   非Phase2 → 鑑定完了後すぐ保存
     //   エラー時は保存しない
     // ─────────────────────────────────────────────────────────────
-    if (status !== "ready") return;
-
-    const shouldSave = isPhase2
-      ? inputDisabled &&
-        drawnCards.length > 0 &&
-        messages.length > initialLen
-      : (isRevealingCompleted || isPersonal) &&
-        drawnCards.length > 0 &&
-        messages.length > 0;
-
-    if (shouldSave && !hasSaved.current) {
-      hasSaved.current = true;
-      setIsSavingReading(true);
-      saveReading({
-        tarotistId: tarotist.id,
-        tarotist,
-        spreadId: spread.id,
-        spread,
-        category: isPersonal ? undefined : category,
-        customQuestion: isPersonal ? customQuestion : undefined,
-        cards: drawnCards,
-        chatMessages: (() => {
-          // Phase2 の場合は Phase1 メッセージを除外し、Phase2 のメッセージのみ保存する
-          const targetMessages = isPhase2
-            ? messages.slice(initialLen)
-            : messages;
-
-          // Phase2 の最初のタロティストメッセージのインデックス（実際の鑑定文）
-          const firstPhase2TarotistIdx = isPhase2
-            ? targetMessages.findIndex((m) => m.role === "assistant")
-            : -1;
-
-          return targetMessages.map((msg, i) => {
-            let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
-            if (msg.role === "user") {
-              chatType = "USER_QUESTION";
-            } else if (isPhase2 && i !== firstPhase2TarotistIdx) {
-              // Phase2 の Q&A 回答（鑑定文以外）
-              chatType = "TAROTIST_ANSWER";
-            } else {
-              // 実際の鑑定文
-              chatType = "FINAL_READING";
-            }
-            return {
-              tarotistId: tarotist.id,
-              tarotist,
-              chatType,
-              role: msg.role === "user" ? "USER" : "TAROTIST",
-              message: msg.parts
-                .filter((part) => part.type === "text")
-                .map((part) => (part as { text: string }).text)
-                .join(""),
-            };
-          });
-        })(),
-      }).finally(() => setIsSavingReading(false));
-    }
+    persistReading(true);
   }, [
     category,
     customQuestion,
@@ -488,6 +535,48 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     isPhase2,
     isRevealingCompleted,
     messages,
+    persistReading,
+    saveReading,
+    spread,
+    status,
+    tarotist,
+  ]);
+
+  useEffect(() => {
+    let appStateListener: PluginListenerHandle | undefined;
+
+    const setupAppStateListener = async () => {
+      try {
+        appStateListener = await CapacitorApp.addListener(
+          "appStateChange",
+          (state) => {
+            if (!state.isActive) {
+              persistReading(false);
+            }
+          },
+        );
+      } catch (error) {
+        console.warn("Failed to attach appStateChange listener", error);
+      }
+    };
+
+    setupAppStateListener();
+
+    return () => {
+      persistReading(false);
+      void appStateListener?.remove();
+    };
+  }, [
+    category,
+    customQuestion,
+    drawnCards,
+    initialLen,
+    inputDisabled,
+    isPersonal,
+    isPhase2,
+    isRevealingCompleted,
+    messages,
+    persistReading,
     saveReading,
     spread,
     status,

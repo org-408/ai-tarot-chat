@@ -1,11 +1,12 @@
-import type { DrawnCard, Reading, ReadingInput } from "@/../shared/lib/types";
+import type {
+  DrawnCard,
+  Reading,
+  ReadingInput,
+} from "@/../shared/lib/types";
 import { BaseRepository } from "./base";
 
 export class ReadingRepository extends BaseRepository {
-  // ==================== Reading ====================
-  async createReading(reading: ReadingInput): Promise<Reading> {
-    // クライアントの persisted ID は古い可能性があるため、
-    // 安定した識別子（code / no）でDBから最新の ID を再解決する
+  private async resolveReadingRelations(reading: ReadingInput) {
     const tarotist = await this.db.tarotist.findUnique({
       where: { name: reading.tarotist!.name },
     });
@@ -25,6 +26,14 @@ export class ReadingRepository extends BaseRepository {
           where: { no: reading.category.no },
         })
       : null;
+
+    return { tarotist, spread, category };
+  }
+
+  // ==================== Reading ====================
+  async createReading(reading: ReadingInput): Promise<Reading> {
+    const { tarotist, spread, category } =
+      await this.resolveReadingRelations(reading);
 
     const created = await this.db.reading.create({
       data: {
@@ -70,6 +79,57 @@ export class ReadingRepository extends BaseRepository {
     });
 
     return created as unknown as Reading; // 型アサーションを追加s
+  }
+
+  async updateReading(id: string, reading: ReadingInput): Promise<Reading> {
+    const { tarotist, spread, category } =
+      await this.resolveReadingRelations(reading);
+
+    const updated = await this.db.reading.update({
+      where: { id },
+      data: {
+        tarotistId: tarotist.id,
+        spreadId: spread.id,
+        categoryId: category?.id ?? null,
+        customQuestion: reading.customQuestion,
+        cards: {
+          deleteMany: {},
+          create: Array.isArray(reading.cards)
+            ? reading.cards.map((card) => ({
+                cardId: card.cardId,
+                x: card.x,
+                y: card.y,
+                order: card.order,
+                position: card.position,
+                description: card.description,
+                isReversed: card.isReversed,
+              }))
+            : [],
+        },
+        chatMessages: {
+          deleteMany: {},
+          create: reading.chatMessages.map((message) => ({
+            clientId: reading.clientId,
+            deviceId: reading.deviceId,
+            tarotistId: tarotist.id,
+            chatType: message.chatType,
+            role: message.role,
+            message: message.message,
+          })),
+        },
+      },
+      include: {
+        client: true,
+        device: true,
+        tarotist: true,
+        spread: true,
+        category: true,
+        cards: true,
+        chatMessages: true,
+      },
+    });
+
+    return updated as unknown as Reading;
   }
 
   async getReadingById(id: string): Promise<Reading | null> {
