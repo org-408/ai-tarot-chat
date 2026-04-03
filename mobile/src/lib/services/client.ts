@@ -41,7 +41,6 @@ export class ClientService {
       logWithContext("info", "[ClientService] Usage stats fetched", {
         planCode: data.plan.code,
         remainingReadings: data.remainingReadings,
-        remainingCeltics: data.remainingCeltics,
         remainingPersonal: data.remainingPersonal,
       });
 

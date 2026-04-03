@@ -22,8 +22,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   claraMode = false,
 }) => {
   const { masterData } = useMaster();
-  const { currentPlan, remainingReadings, remainingCeltics, remainingPersonal } =
-    useClient();
+  const { currentPlan, remainingReadings, remainingPersonal } = useClient();
   const {
     selectedCategory,
     setSelectedCategory,
@@ -157,11 +156,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     }
   }, [availableSpreads, selectedSpread, setSelectedSpread]);
 
-  const isCeltic = selectedSpread?.code?.toLowerCase().includes("celtic") ?? false;
   const remaining = isPersonal
     ? remainingPersonal
-    : isCeltic
-    ? remainingCeltics
     : remainingReadings;
   const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
   // claraModeおよびdebugModeは回数制限なし

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "db:deploy": "npx prisma migrate deploy",
     "db:migrate": "npx prisma migrate dev",
     "db:reset": "npx prisma migrate reset --force",
     "db:reset+": "npx prisma migrate reset --force && npx prisma migrate dev",

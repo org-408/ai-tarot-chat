@@ -32,7 +32,6 @@ const PlansPage: React.FC<PlansPageProps> = ({
       features: plan.features,
       isActive: plan.isActive,
       maxReadings: plan.maxReadings,
-      maxCeltics: plan.maxCeltics,
       maxPersonal: plan.maxPersonal,
       hasPersonal: plan.hasPersonal,
       hasHistory: plan.hasHistory,

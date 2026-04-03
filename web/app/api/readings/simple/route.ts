@@ -71,22 +71,12 @@ export async function POST(req: NextRequest) {
     // ✅ 最初のメッセージ（占い開始時）のみ残回数チェック
     //    以降のターンは saveReading でカウントするためここでは初回のみ制限
     if (clientMessages.length === 1) {
-      const isCeltic = spread.code.toLowerCase().includes("celtic");
       const usage = await clientService.getUsageAndReset(clientId);
-      if (isCeltic && usage.remainingCeltics <= 0) {
-        logWithContext("warn", "ケルト十字占いの回数上限", { clientId });
+      if (usage.remainingReadings <= 0) {
+        logWithContext("warn", "クイック占い回数上限", { clientId });
         return createReadingErrorResponse({
           code: "LIMIT_REACHED",
-          message: "本日のケルト十字占いの回数上限に達しました。",
-          status: 429,
-          phase: "simple",
-        });
-      }
-      if (!isCeltic && usage.remainingReadings <= 0) {
-        logWithContext("warn", "シンプル占いの回数上限", { clientId });
-        return createReadingErrorResponse({
-          code: "LIMIT_REACHED",
-          message: "本日のシンプル占いの回数上限に達しました。",
+          message: "本日のクイック占い回数上限に達しました。",
           status: 429,
           phase: "simple",
         });
@@ -95,7 +85,6 @@ export async function POST(req: NextRequest) {
 
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
-    const isCeltic = spread.code.toLowerCase().includes("celtic");
 
     // systemプロンプトを作成
     const system =
@@ -214,13 +203,11 @@ export async function POST(req: NextRequest) {
               await clientService.consumeReadingQuota({
                 clientId,
                 isPersonalReading: false,
-                isCeltic,
               });
             } catch (error) {
               logWithContext("error", "クイック占い回数消費に失敗", {
                 error,
                 clientId,
-                isCeltic,
               });
             }
           },

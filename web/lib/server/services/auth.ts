@@ -380,9 +380,6 @@ export class AuthService {
     const sumReadingsCount =
       (deviceClient.dailyReadingsCount || 0) +
       (userClient.dailyReadingsCount || 0);
-    const sumCelticsCount =
-      (deviceClient.dailyCelticsCount || 0) +
-      (userClient.dailyCelticsCount || 0);
     const sumPersonalCount =
       (deviceClient.dailyPersonalCount || 0) +
       (userClient.dailyPersonalCount || 0);
@@ -391,13 +388,6 @@ export class AuthService {
     const lastReadingDate = [
       deviceClient.lastReadingDate,
       userClient.lastReadingDate,
-    ]
-      .filter(Boolean)
-      .sort((a, b) => b!.getTime() - a!.getTime())[0];
-
-    const lastCelticReadingDate = [
-      deviceClient.lastCelticReadingDate,
-      userClient.lastCelticReadingDate,
     ]
       .filter(Boolean)
       .sort((a, b) => b!.getTime() - a!.getTime())[0];
@@ -454,10 +444,8 @@ export class AuthService {
       provider,
       plan: { connect: { id: higherPlan.id } },
       dailyReadingsCount: Math.min(sumReadingsCount, higherPlan.maxReadings),
-      dailyCelticsCount: Math.min(sumCelticsCount, higherPlan.maxCeltics),
       dailyPersonalCount: Math.min(sumPersonalCount, higherPlan.maxPersonal),
       lastReadingDate,
-      lastCelticReadingDate,
       lastPersonalReadingDate,
       devices: { connect: uniqueDevices.map((d) => ({ id: d.id })) },
       isRegistered: true,
