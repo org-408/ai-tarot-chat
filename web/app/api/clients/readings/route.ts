@@ -1,4 +1,4 @@
-import type { ReadingInput } from "@/../shared/lib/types";
+import type { SaveReadingInput } from "@/../shared/lib/types";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { clientService } from "@/lib/server/services";
 import { authService } from "@/lib/server/services/auth";
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (!clientId || !deviceId)
       return new Response("unauthorized", { status: 401 });
 
-    const readingData = (await request.json()) as ReadingInput;
+    const readingData = (await request.json()) as SaveReadingInput;
     logWithContext("info", "Client ID, readingData", {
       clientId,
       deviceId,

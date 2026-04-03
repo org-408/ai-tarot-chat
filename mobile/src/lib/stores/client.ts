@@ -3,7 +3,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type {
   Plan,
   Reading,
-  ReadingInput,
+  SaveReadingInput,
+  SaveReadingResponse,
   UsageStats,
 } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
@@ -53,7 +54,7 @@ interface ClientState {
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
-  saveReading: (data: ReadingInput) => Promise<void>;
+  saveReading: (data: SaveReadingInput) => Promise<SaveReadingResponse>;
   fetchReadings: (params: PaginationParams) => Promise<void>;
   setParams: (params: PaginationParams) => { take: number; skip: number };
   setTake: (take: number) => void;
@@ -316,7 +317,7 @@ export const useClientStore = create<ClientState>()(
       // ============================================
       // 占い結果の保存
       // ============================================
-      saveReading: async (data: ReadingInput) => {
+      saveReading: async (data: SaveReadingInput) => {
         set({ error: null });
 
         logWithContext("info", "[ClientStore] Saving reading", { data });
@@ -329,7 +330,11 @@ export const useClientStore = create<ClientState>()(
           // 履歴に追加・usage を最新化
           const { reading, usage } = result;
           const { readings } = get();
-          set({ usage, readings: [reading, ...readings] });
+          const nextReadings = readings.some((item) => item.id === reading.id)
+            ? readings.map((item) => (item.id === reading.id ? reading : item))
+            : [reading, ...readings];
+          set({ usage, readings: nextReadings });
+          return result;
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to save reading", {
             error: error instanceof Error ? error.message : String(error),

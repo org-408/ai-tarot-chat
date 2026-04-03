@@ -7,7 +7,10 @@ import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
-import type { ReadingErrorCode, ReadingInput } from "../../../shared/lib/types";
+import type {
+  ReadingErrorCode,
+  SaveReadingInput,
+} from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
 import {
@@ -164,11 +167,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [, setIsKeyboardReady] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hasSaved = useRef(false);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const saveStartedRef = useRef(false);
+  const lastPersistedSignatureRef = useRef<string | null>(null);
+  const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
 
   const isInputFixableError =
     chatError !== null &&
@@ -381,29 +385,43 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     if (status !== "ready") return false;
 
     return isPhase2
-      ? inputDisabled &&
-          drawnCards.length > 0 &&
-          messages.length > initialLen
+      ? drawnCards.length > 0 && messages.length > initialLen
       : (isRevealingCompleted || isPersonal) &&
           drawnCards.length > 0 &&
           messages.length > 0;
   };
 
-  const buildReadingPayload = (): ReadingInput => ({
-    tarotistId: tarotist.id,
-    tarotist,
-    spreadId: spread.id,
-    spread,
-    category: isPersonal ? undefined : category,
-    customQuestion: isPersonal ? customQuestion : undefined,
-    cards: drawnCards,
-    chatMessages: (() => {
-      const targetMessages = isPhase2 ? messages.slice(initialLen) : messages;
-      const firstPhase2TarotistIdx = isPhase2
-        ? targetMessages.findIndex((m) => m.role === "assistant")
-        : -1;
+  const getTargetMessages = () =>
+    isPhase2 ? messages.slice(initialLen) : messages;
 
-      return targetMessages.map((msg, i) => {
+  const buildPersistSignature = (readingIdOverride = savedReadingId) =>
+    `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
+      .map((msg) => {
+        const text = msg.parts
+          .filter((part) => part.type === "text")
+          .map((part) => (part as { text: string }).text)
+          .join("");
+        return `${msg.role}:${text}`;
+      })
+      .join("\u0001")}`;
+
+  const buildReadingPayload = (): SaveReadingInput => {
+    const targetMessages = getTargetMessages();
+    const firstPhase2TarotistIdx = isPhase2
+      ? targetMessages.findIndex((m) => m.role === "assistant")
+      : -1;
+
+    return {
+      readingId: savedReadingId ?? undefined,
+      incrementUsage: savedReadingId === null,
+      tarotistId: tarotist.id,
+      tarotist,
+      spreadId: spread.id,
+      spread,
+      category: isPersonal ? undefined : category,
+      customQuestion: isPersonal ? customQuestion : undefined,
+      cards: drawnCards,
+      chatMessages: targetMessages.map((msg, i) => {
         let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
         if (msg.role === "user") {
           chatType = "USER_QUESTION";
@@ -423,12 +441,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join(""),
         };
-      });
-    })(),
-  });
+      }),
+    };
+  };
 
   const persistReading = useEffectEvent((withSavingIndicator: boolean) => {
-    if (hasSaved.current || saveStartedRef.current || !shouldPersistReading()) {
+    if (saveStartedRef.current || !shouldPersistReading()) {
+      return;
+    }
+
+    const nextSignature = buildPersistSignature();
+    if (lastPersistedSignatureRef.current === nextSignature) {
       return;
     }
 
@@ -439,8 +462,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
 
     void saveReading(buildReadingPayload())
-      .then(() => {
-        hasSaved.current = true;
+      .then((result) => {
+        setSavedReadingId(result.reading.id);
+        lastPersistedSignatureRef.current = buildPersistSignature(
+          result.reading.id,
+        );
       })
       .catch((error) => {
         console.warn("Failed to persist reading", error);
@@ -452,7 +478,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         }
       });
   });
-
   useEffect(() => {
     if (isMessageComplete) return; // 既にフラグ立て済みなら何もしない
 

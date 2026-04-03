@@ -539,6 +539,11 @@ export type ReadingInput = Omit<
   "id" | "createdAt" | "updatedAt" | "chatMessages"
 > & { chatMessages: ChatMessageInput[] };
 
+export type SaveReadingInput = ReadingInput & {
+  readingId?: string;
+  incrementUsage?: boolean;
+};
+
 export type DrawnCardInput = Omit<
   DrawnCard,
   "id" | "createdAt" | "reading" | "cardId"

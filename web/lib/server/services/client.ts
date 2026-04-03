@@ -1,7 +1,7 @@
 import type {
     Client,
     Reading,
-    ReadingInput,
+    SaveReadingInput,
     SaveReadingResponse,
     UsageStats,
 } from "@/../shared/lib/types";
@@ -297,7 +297,7 @@ export class ClientService {
    * @param spreadId
    * @returns
    */
-  async saveReading(params: ReadingInput): Promise<SaveReadingResponse> {
+  async saveReading(params: SaveReadingInput): Promise<SaveReadingResponse> {
     logWithContext("info", "Marking reading as done", {
       params,
     });
@@ -306,6 +306,8 @@ export class ClientService {
       { client: clientRepository, reading: readingRepository },
       async ({ client: clientRepo, reading: ReadingRepo }) => {
         const {
+          readingId,
+          incrementUsage = true,
           clientId,
           deviceId: payloadDeviceId,
           tarotist,
@@ -315,6 +317,37 @@ export class ClientService {
           cards,
           chatMessages,
         } = params;
+
+        const buildUsage = (targetClient: Client): UsageStats => {
+          if (!targetClient.plan) {
+            throw new Error("Plan not found");
+          }
+
+          return {
+            plan: targetClient.plan,
+            isRegistered: targetClient.isRegistered,
+            lastLoginAt: targetClient.lastLoginAt,
+            hasDailyReset: false,
+            dailyReadingsCount: targetClient.dailyReadingsCount,
+            dailyCelticsCount: targetClient.dailyCelticsCount,
+            dailyPersonalCount: targetClient.dailyPersonalCount,
+            remainingReadings: Math.max(
+              0,
+              targetClient.plan.maxReadings - targetClient.dailyReadingsCount
+            ),
+            remainingCeltics: Math.max(
+              0,
+              targetClient.plan.maxCeltics - targetClient.dailyCelticsCount
+            ),
+            remainingPersonal: Math.max(
+              0,
+              targetClient.plan.maxPersonal - targetClient.dailyPersonalCount
+            ),
+            lastReadingDate: targetClient.lastReadingDate,
+            lastCelticReadingDate: targetClient.lastCelticReadingDate,
+            lastPersonalReadingDate: targetClient.lastPersonalReadingDate,
+          };
+        };
         if (
           !clientId ||
           !payloadDeviceId ||
@@ -407,6 +440,35 @@ export class ClientService {
           });
         }
 
+        let savedReading: Reading;
+
+        if (readingId) {
+          const existingReading = await ReadingRepo.getReadingById(readingId);
+          if (!existingReading || existingReading.clientId !== clientId) {
+            logWithContext("error", "Reading not found for update", {
+              clientId,
+              readingId,
+            });
+            throw new Error("Reading not found");
+          }
+
+          savedReading = await ReadingRepo.updateReading(readingId, params);
+          logWithContext("info", "Updated existing reading", {
+            clientId,
+            readingId: savedReading.id,
+          });
+
+          const refreshedClient = await clientRepo.getClientById(clientId);
+          if (!refreshedClient) {
+            throw new Error("Client not found after reading update");
+          }
+
+          return {
+            usage: buildUsage(refreshedClient),
+            reading: savedReading,
+          };
+        }
+
         const quotaConfig = isPersonalReading
           ? {
               counterField: "dailyPersonalCount" as const,
@@ -432,7 +494,9 @@ export class ClientService {
             };
 
         let quotaConsumed = true;
-        if (isPersonalReading && debugMode) {
+        if (!incrementUsage) {
+          quotaConsumed = true;
+        } else if (isPersonalReading && debugMode) {
           await clientRepo.updateClient(clientId, {
             [quotaConfig.lastDateField]: new Date(),
           });
@@ -455,9 +519,9 @@ export class ClientService {
         }
 
         // quota を先に消費し、成功したセッションのみ保存する
-        const newReading = await ReadingRepo.createReading(params);
+        savedReading = await ReadingRepo.createReading(params);
         logWithContext("info", "Saved new reading", {
-          readingId: newReading.id,
+          readingId: savedReading.id,
         });
 
         const updatedClient = await clientRepo.getClientById(clientId);
@@ -473,39 +537,15 @@ export class ClientService {
           dailyPersonalCount: updatedClient.dailyPersonalCount,
         });
 
-        const updatedPlan = updatedClient.plan!;
-        const usage: UsageStats = {
-          plan: updatedPlan,
-          isRegistered: updatedClient.isRegistered,
-          lastLoginAt: updatedClient.lastLoginAt,
-          hasDailyReset: false,
-          dailyReadingsCount: updatedClient.dailyReadingsCount,
-          dailyCelticsCount: updatedClient.dailyCelticsCount,
-          dailyPersonalCount: updatedClient.dailyPersonalCount,
-          remainingReadings: Math.max(
-            0,
-            updatedPlan.maxReadings - updatedClient.dailyReadingsCount
-          ),
-          remainingCeltics: Math.max(
-            0,
-            updatedPlan.maxCeltics - updatedClient.dailyCelticsCount
-          ),
-          remainingPersonal: Math.max(
-            0,
-            updatedPlan.maxPersonal - updatedClient.dailyPersonalCount
-          ),
-          lastReadingDate: updatedClient.lastReadingDate,
-          lastCelticReadingDate: updatedClient.lastCelticReadingDate,
-          lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
-        };
+        const usage = buildUsage(updatedClient);
 
         logWithContext("info", "Created new reading", {
           usage,
-          reading: newReading,
+          reading: savedReading,
         });
         return {
           usage,
-          reading: newReading,
+          reading: savedReading,
         };
       }
     );
