@@ -103,6 +103,9 @@ function App() {
   const prevPlanCodeRef = useRef<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
+  // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
+  // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
+  const [isNavigationLocked, setIsNavigationLocked] = useState(false);
 
   const [readingData, setReadingData] = useState<{
     tarotist: Tarotist;
@@ -232,8 +235,8 @@ function App() {
     console.log(
       `[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`,
     );
-    if (pageType === "reading" || pageType === "personal") {
-      // 占い中 → ダイアログ（OKを押してからサロンへ）
+    if (pageType === "reading" || isNavigationLocked) {
+      // AI 課金中 → ダイアログ（OKを押してからサロンへ）
       setPlanExpiredNotification("dialog");
     } else {
       // それ以外 → 即サロンへ + トースト
@@ -326,9 +329,9 @@ function App() {
 
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
-    // 占い進行中はナビゲーションをブロック
-    if (pageType === "reading" || pageType === "personal") {
-      console.log("ページ変更をブロック: 占い進行中");
+    // AI 課金中はナビゲーションをブロック
+    if (pageType === "reading" || isNavigationLocked) {
+      console.log("ページ変更をブロック: AI 実行中");
       setSidebarOpen(false);
       return;
     }
@@ -459,6 +462,8 @@ function App() {
             masterData={masterData}
             onChangePlan={handleChangePlan}
             onBack={() => setPersonalPageKey((k) => k + 1)}
+            onLock={() => setIsNavigationLocked(true)}
+            onUnlock={() => setIsNavigationLocked(false)}
             isChangingPlan={isChangingPlan}
             onNavigateToClara={() => setPageType("clara")}
           />
@@ -758,7 +763,7 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
-        menuDisabled={pageType === "reading" || pageType === "personal"}
+        menuDisabled={pageType === "reading" || isNavigationLocked}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />

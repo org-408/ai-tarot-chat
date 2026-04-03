@@ -23,6 +23,10 @@ interface PersonalPageProps {
   masterData: MasterData;
   onChangePlan: (plan: UserPlan) => void;
   onBack: () => void;
+  /** Phase2 開始時（AI API 課金開始）にナビゲーションをロックする */
+  onLock: () => void;
+  /** Phase2 完了時（AI API 課金終了）にナビゲーションロックを解除する */
+  onUnlock: () => void;
   isChangingPlan: boolean;
   onNavigateToClara?: () => void;
 }
@@ -32,6 +36,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   masterData,
   onChangePlan,
   onBack,
+  onLock,
+  onUnlock,
   onNavigateToClara,
 }) => {
   const {
@@ -70,6 +76,14 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     };
   }, [canStartPersonal, init, setIsPersonal]);
 
+  // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
+  useEffect(() => {
+    return () => {
+      onUnlock();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Reading phase 開始時にカードを引く
   useEffect(() => {
     if (phase === "reading" && masterData && selectedSpread) {
@@ -94,6 +108,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   }, [phase, drawnCards.length, setIsRevealingCompleted]);
 
   // Phase1 → Phase2 へ（無料プランのみ広告表示 → 閉じてから遷移）
+  // Phase2 開始 = AI API 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
     if (!selectedTarotist || !selectedSpread) return;
     if (selectedTarotist.provider === "OFFLINE") {
@@ -105,12 +120,13 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
+    onLock(); // AI 課金開始 → ナビゲーションロック
     setPhase("reading");
   };
 
-  // Phase2 完了後の戻る → PersonalPage を離れる
-  // （利用制限到達後に再チャットを始めてしまうことを防ぐ）
+  // Phase2 完了後の戻る → ナビゲーションロック解除 → PersonalPage を離れる
   const handleBackFromReading = () => {
+    onUnlock(); // AI 課金終了 → ナビゲーションロック解除
     setUpperViewerMode("grid");
     init();
     onBack();
