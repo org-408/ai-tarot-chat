@@ -124,9 +124,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setPhase("reading");
   };
 
-  // Phase2 完了後の戻る → ナビゲーションロック解除 → PersonalPage を離れる
+  // Phase2 完了後の戻る → PersonalPage を離れる
+  // ロック解除は ChatPanel の onUnlock が担当（AI 完了タイミングで呼ばれる）
   const handleBackFromReading = () => {
-    onUnlock(); // AI 課金終了 → ナビゲーションロック解除
     setUpperViewerMode("grid");
     init();
     onBack();
@@ -190,6 +190,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
                   initialMessages={phase1Messages}
                   onKeyboardHeightChange={setKeyboardHeight}
                   onBack={handleBackFromReading}
+                  onUnlock={onUnlock}
                 />
               </div>
             )}

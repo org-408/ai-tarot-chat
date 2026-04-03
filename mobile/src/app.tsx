@@ -235,7 +235,7 @@ function App() {
     console.log(
       `[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`,
     );
-    if (pageType === "reading" || isNavigationLocked) {
+    if (isNavigationLocked) {
       // AI 課金中 → ダイアログ（OKを押してからサロンへ）
       setPlanExpiredNotification("dialog");
     } else {
@@ -257,12 +257,12 @@ function App() {
     const handleTouchEnd = (e: TouchEvent) => {
       const endX = e.changedTouches[0].clientX;
       // 左端20px以内から始まり、50px以上右にスワイプしたら開く
-      // 占い進行中はサイドバーを開かない
+      // AI 課金中はサイドバーを開かない
       if (
         startX < 20 &&
         endX - startX > 50 &&
         !sidebarOpen &&
-        pageType !== "reading"
+        !isNavigationLocked
       ) {
         setSidebarOpen(true);
       }
@@ -330,7 +330,7 @@ function App() {
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
     // AI 課金中はナビゲーションをブロック
-    if (pageType === "reading" || isNavigationLocked) {
+    if (isNavigationLocked) {
       console.log("ページ変更をブロック: AI 実行中");
       setSidebarOpen(false);
       return;
@@ -341,6 +341,7 @@ function App() {
 
   // 🔥 占い開始（無料プランのみ広告表示 → 広告が閉じてから遷移）
   // Clara（OFFLINE占い師）が選択されている場合は "いつでも占い" ページへ
+  // 占い開始 = AI 課金開始 → ナビゲーションをロック
   const handleStartReading = async (returnPage: PageType = "salon") => {
     console.log(`占い開始: returnPage=${returnPage}`);
     if (selectedTarotist?.provider === "OFFLINE") {
@@ -352,6 +353,7 @@ function App() {
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
+    setIsNavigationLocked(true); // AI 課金開始 → ナビゲーションロック
     setReadingReturnPage(returnPage);
     setPageType("reading");
   };
@@ -477,6 +479,7 @@ function App() {
             showProfile={showProfile}
             setShowProfile={setShowProfile}
             onBack={handleBackFromReading}
+            onUnlock={() => setIsNavigationLocked(false)}
           />
         );
       case "plans":
@@ -763,7 +766,7 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
-        menuDisabled={pageType === "reading" || isNavigationLocked}
+        menuDisabled={isNavigationLocked}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />

@@ -28,10 +28,12 @@ interface ReadingPageProps {
   showProfile: boolean;
   setShowProfile: (show: boolean) => void;
   onBack: () => void;
+  /** AI 課金終了（戻るボタン表示可能）時にナビゲーションロックを解除する */
+  onUnlock: () => void;
 }
 
 // 77枚のカードデータ（MasterDataにない場合のフォールバック）
-const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
+const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock }) => {
   const {
     selectedSpread,
     drawnCards,
@@ -116,7 +118,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
 
         {/* 下半分 */}
         <div className="flex-1 min-h-0">
-          {drawnCards.length > 0 && <ChatPanel onBack={handleBack} />}
+          {drawnCards.length > 0 && <ChatPanel onBack={handleBack} onUnlock={onUnlock} />}
         </div>
       </div>
     </div>
