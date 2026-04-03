@@ -127,7 +127,7 @@ export default function MarketingLayout({
           </div>
 
           <div className="mt-8 pt-8 border-t border-slate-800 text-center text-xs">
-            <p>© {new Date().getFullYear()} AI タロット占い. All rights reserved.</p>
+            <p>© 2026 Atelier Flow Lab. All rights reserved.</p>
             <p className="mt-1 text-slate-500">
               ※占いはエンターテインメントを目的としており、結果を保証するものではありません。
             </p>

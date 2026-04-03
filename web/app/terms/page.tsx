@@ -243,7 +243,7 @@ export default function TermsPage() {
 
           {/* フッター */}
           <div className="pt-4 text-center text-xs text-gray-400">
-            © {new Date().getFullYear()} {developerName}. All rights reserved.
+            © 2026 {developerName}. All rights reserved.
           </div>
         </div>
       </div>
