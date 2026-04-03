@@ -77,7 +77,7 @@ const planHighlights = [
     color: "bg-blue-50 border-blue-200",
     headingColor: "text-blue-700",
     badge: "人気",
-    features: ["1日3回", "7枚以内全スプレッド", "ケルト十字（1日1回）", "広告なし"],
+    features: ["1日3回", "22種のスプレッド", "ケルト十字を含む", "広告なし"],
   },
   {
     name: "プレミアム",

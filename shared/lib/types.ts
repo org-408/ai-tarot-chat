@@ -122,8 +122,6 @@ export type Client = {
   // 利用状況
   dailyReadingsCount: number;
   lastReadingDate?: Date | null;
-  dailyCelticsCount: number;
-  lastCelticReadingDate?: Date | null;
   dailyPersonalCount: number;
   lastPersonalReadingDate?: Date | null;
 
@@ -152,10 +150,8 @@ export type DailyResetHistory = {
   resetType: string; // "PLAN_CHANGE", "USAGE_CHECK" など
 
   beforeReadingsCount: number;
-  beforeCelticsCount: number;
   beforePersonalCount: number;
   afterReadingsCount: number;
-  afterCelticsCount: number;
   afterPersonalCount: number;
 
   createdAt: Date;
@@ -307,7 +303,6 @@ export type Plan = {
   isActive: boolean;
   features: string[];
   maxReadings: number;
-  maxCeltics: number;
   maxPersonal: number;
   hasPersonal: boolean;
   hasHistory: boolean;
@@ -634,15 +629,12 @@ export type UsageStats = {
   hasDailyReset: boolean;
   // 各占いの利用回数
   dailyReadingsCount: number;
-  dailyCelticsCount: number;
   dailyPersonalCount: number;
   // 各占いの残利用回数
   remainingReadings: number;
-  remainingCeltics: number;
   remainingPersonal: number;
   // 最終占い日
   lastReadingDate?: Date | null;
-  lastCelticReadingDate?: Date | null;
   lastPersonalReadingDate?: Date | null;
 };
 

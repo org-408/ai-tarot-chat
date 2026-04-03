@@ -104,7 +104,6 @@ export class ClientRepository extends BaseRepository {
       where: { id: clientId },
       data: {
         dailyReadingsCount: 0,
-        dailyCelticsCount: 0,
         dailyPersonalCount: 0,
       },
     });
@@ -112,14 +111,8 @@ export class ClientRepository extends BaseRepository {
 
   async incrementUsageIfWithinLimit(params: {
     clientId: string;
-    counterField:
-      | "dailyReadingsCount"
-      | "dailyCelticsCount"
-      | "dailyPersonalCount";
-    lastDateField:
-      | "lastReadingDate"
-      | "lastCelticReadingDate"
-      | "lastPersonalReadingDate";
+    counterField: "dailyReadingsCount" | "dailyPersonalCount";
+    lastDateField: "lastReadingDate" | "lastPersonalReadingDate";
     limit: number;
   }): Promise<boolean> {
     const { clientId, counterField, lastDateField, limit } = params;

@@ -47,20 +47,14 @@ export class ClientService {
         logWithContext("info", "Client last reading date", {
           lastReadingDate: client.lastReadingDate,
         });
-        logWithContext("info", "Client last celtic reading date", {
-          lastCelticReadingDate: client.lastCelticReadingDate,
-        });
         logWithContext("info", "Client last personal reading date", {
           lastPersonalReadingDate: client.lastPersonalReadingDate,
         });
         // ✅ 修正: null は「未実施」として除外し、過去日付のものがあればリセット
         //    旧ロジックは null を isSameDayJST(undefined) で評価し「当日でない」と
-        //    誤判定していたため、Celtic/Personal 未実施の状態でも即リセットが走っていた
-        const needsReset = [
-          client.lastReadingDate,
-          client.lastCelticReadingDate,
-          client.lastPersonalReadingDate,
-        ].some((date) => date !== null && !isSameDayJST(date));
+        //    誤判定していたため、未実施の状態でも即リセットが走っていた
+        const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
+          .some((date) => date !== null && !isSameDayJST(date));
 
         // 日付が変わっていればリセット
         if (needsReset) {
@@ -69,13 +63,9 @@ export class ClientService {
           });
           // beforeリセット用に保存
           const beforeReadingsCount = client.dailyReadingsCount;
-          const beforeCelticsCount = client.dailyCelticsCount;
           const beforePersonalCount = client.dailyPersonalCount;
           logWithContext("info", "Before counts - Readings", {
             beforeReadingsCount,
-          });
-          logWithContext("info", "Before counts - Celtics", {
-            beforeCelticsCount,
           });
           logWithContext("info", "Before counts - Personal", {
             beforePersonalCount,
@@ -89,9 +79,7 @@ export class ClientService {
             date: new Date(),
             resetType,
             beforeReadingsCount,
-            beforeCelticsCount,
             beforePersonalCount,
-            afterCelticsCount: 0,
             afterPersonalCount: 0,
             afterReadingsCount: 0,
           });
@@ -103,9 +91,6 @@ export class ClientService {
         logWithContext("info", "Daily readings count", {
           dailyReadingsCount: client.dailyReadingsCount,
         });
-        logWithContext("info", "Daily celtics count", {
-          dailyCelticsCount: client.dailyCelticsCount,
-        });
         logWithContext("info", "Daily personal count", {
           dailyPersonalCount: client.dailyPersonalCount,
         });
@@ -116,22 +101,16 @@ export class ClientService {
           lastLoginAt: client.lastLoginAt,
           hasDailyReset: needsReset,
           dailyReadingsCount: client.dailyReadingsCount,
-          dailyCelticsCount: client.dailyCelticsCount,
           dailyPersonalCount: client.dailyPersonalCount,
           remainingReadings: Math.max(
             0,
             plan.maxReadings - client.dailyReadingsCount
-          ),
-          remainingCeltics: Math.max(
-            0,
-            plan.maxCeltics - client.dailyCelticsCount
           ),
           remainingPersonal: Math.max(
             0,
             plan.maxPersonal - client.dailyPersonalCount
           ),
           lastReadingDate: client.lastReadingDate,
-          lastCelticReadingDate: client.lastCelticReadingDate,
           lastPersonalReadingDate: client.lastPersonalReadingDate,
         };
       }
@@ -211,17 +190,12 @@ export class ClientService {
 
         // 利用残数のチェック(アップグレード時はリセット)
         let dailyReadingsCount = 0;
-        let dailyCelticsCount = 0;
         let dailyPersonalCount = 0;
         if (autoReason === "DOWNGRADE") {
           // ダウングレード時は新プランの上限に収まるように調整
           dailyReadingsCount = Math.min(
             client.dailyReadingsCount,
             newPlan.maxReadings
-          );
-          dailyCelticsCount = Math.min(
-            client.dailyCelticsCount,
-            newPlan.maxCeltics
           );
           dailyPersonalCount = Math.min(
             client.dailyPersonalCount,
@@ -250,7 +224,6 @@ export class ClientService {
           return await clientRepo.updateClient(clientId, {
             plan: { connect: { code: newPlanCode } },
             dailyReadingsCount,
-            dailyCelticsCount,
             dailyPersonalCount,
           });
         } catch (error) {
@@ -292,9 +265,8 @@ export class ClientService {
   async consumeReadingQuota(params: {
     clientId: string;
     isPersonalReading: boolean;
-    isCeltic: boolean;
   }): Promise<UsageStats> {
-    const { clientId, isPersonalReading, isCeltic } = params;
+    const { clientId, isPersonalReading } = params;
 
     return BaseRepository.transaction(
       { client: clientRepository },
@@ -302,15 +274,11 @@ export class ClientService {
         let client = await clientRepo.getClientById(clientId);
         if (!client) throw new Error("Client not found");
 
-        const needsReset = [
-          client.lastReadingDate,
-          client.lastCelticReadingDate,
-          client.lastPersonalReadingDate,
-        ].some((date) => date !== null && !isSameDayJST(date));
+        const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
+          .some((date) => date !== null && !isSameDayJST(date));
 
         if (needsReset) {
           const beforeReadingsCount = client.dailyReadingsCount;
-          const beforeCelticsCount = client.dailyCelticsCount;
           const beforePersonalCount = client.dailyPersonalCount;
 
           client = await clientRepo.resetDailyCounts(client.id);
@@ -319,9 +287,7 @@ export class ClientService {
             date: new Date(),
             resetType: "CONSUME_READING_QUOTA",
             beforeReadingsCount,
-            beforeCelticsCount,
             beforePersonalCount,
-            afterCelticsCount: 0,
             afterPersonalCount: 0,
             afterReadingsCount: 0,
           });
@@ -340,19 +306,11 @@ export class ClientService {
               message: "本日のパーソナル占いの回数上限に達しました。",
               phase: "personal-reading" as const,
             }
-          : isCeltic
-            ? {
-                counterField: "dailyCelticsCount" as const,
-                lastDateField: "lastCelticReadingDate" as const,
-                limit: plan.maxCeltics,
-                message: "本日のケルト十字占いの回数上限に達しました。",
-                phase: "simple" as const,
-              }
             : {
                 counterField: "dailyReadingsCount" as const,
                 lastDateField: "lastReadingDate" as const,
                 limit: plan.maxReadings,
-                message: "本日のシンプル占いの回数上限に達しました。",
+                message: "本日のクイック占い回数上限に達しました。",
                 phase: "simple" as const,
               };
 
@@ -380,9 +338,7 @@ export class ClientService {
         logWithContext("info", "Consumed reading quota", {
           clientId,
           isPersonalReading,
-          isCeltic,
           dailyReadingsCount: updatedClient.dailyReadingsCount,
-          dailyCelticsCount: updatedClient.dailyCelticsCount,
           dailyPersonalCount: updatedClient.dailyPersonalCount,
         });
 
@@ -392,22 +348,16 @@ export class ClientService {
           lastLoginAt: updatedClient.lastLoginAt,
           hasDailyReset: needsReset,
           dailyReadingsCount: updatedClient.dailyReadingsCount,
-          dailyCelticsCount: updatedClient.dailyCelticsCount,
           dailyPersonalCount: updatedClient.dailyPersonalCount,
           remainingReadings: Math.max(
             0,
             updatedClient.plan!.maxReadings - updatedClient.dailyReadingsCount
-          ),
-          remainingCeltics: Math.max(
-            0,
-            updatedClient.plan!.maxCeltics - updatedClient.dailyCelticsCount
           ),
           remainingPersonal: Math.max(
             0,
             updatedClient.plan!.maxPersonal - updatedClient.dailyPersonalCount
           ),
           lastReadingDate: updatedClient.lastReadingDate,
-          lastCelticReadingDate: updatedClient.lastCelticReadingDate,
           lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
         };
       }
@@ -453,22 +403,16 @@ export class ClientService {
             lastLoginAt: targetClient.lastLoginAt,
             hasDailyReset: false,
             dailyReadingsCount: targetClient.dailyReadingsCount,
-            dailyCelticsCount: targetClient.dailyCelticsCount,
             dailyPersonalCount: targetClient.dailyPersonalCount,
             remainingReadings: Math.max(
               0,
               targetClient.plan.maxReadings - targetClient.dailyReadingsCount
-            ),
-            remainingCeltics: Math.max(
-              0,
-              targetClient.plan.maxCeltics - targetClient.dailyCelticsCount
             ),
             remainingPersonal: Math.max(
               0,
               targetClient.plan.maxPersonal - targetClient.dailyPersonalCount
             ),
             lastReadingDate: targetClient.lastReadingDate,
-            lastCelticReadingDate: targetClient.lastCelticReadingDate,
             lastPersonalReadingDate: targetClient.lastPersonalReadingDate,
           };
         };
@@ -532,14 +476,8 @@ export class ClientService {
         }
         const isPersonalReading =
           !!customQuestion && customQuestion.trim().length > 0;
-        const isCeltic =
-          !isPersonalReading && spread.code.toLowerCase().includes("celtic");
-
-        const needsReset = [
-          client.lastReadingDate,
-          client.lastCelticReadingDate,
-          client.lastPersonalReadingDate,
-        ].some((date) => date !== null && !isSameDayJST(date));
+        const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
+          .some((date) => date !== null && !isSameDayJST(date));
 
         const plan = client.plan;
         if (!plan) {
@@ -548,7 +486,6 @@ export class ClientService {
 
         if (needsReset) {
           const beforeReadingsCount = client.dailyReadingsCount;
-          const beforeCelticsCount = client.dailyCelticsCount;
           const beforePersonalCount = client.dailyPersonalCount;
 
           await clientRepo.resetDailyCounts(client.id);
@@ -557,9 +494,7 @@ export class ClientService {
             date: new Date(),
             resetType: "SAVE_READING",
             beforeReadingsCount,
-            beforeCelticsCount,
             beforePersonalCount,
-            afterCelticsCount: 0,
             afterPersonalCount: 0,
             afterReadingsCount: 0,
           });
@@ -602,19 +537,11 @@ export class ClientService {
               message: "本日のパーソナル占いの回数上限に達しました。",
               phase: "personal-reading" as const,
             }
-          : isCeltic
-          ? {
-              counterField: "dailyCelticsCount" as const,
-              lastDateField: "lastCelticReadingDate" as const,
-              limit: plan.maxCeltics,
-              message: "本日のケルト十字占いの回数上限に達しました。",
-              phase: "simple" as const,
-            }
           : {
               counterField: "dailyReadingsCount" as const,
               lastDateField: "lastReadingDate" as const,
               limit: plan.maxReadings,
-              message: "本日のシンプル占いの回数上限に達しました。",
+              message: "本日の占い回数上限に達しました。",
               phase: "simple" as const,
             };
 

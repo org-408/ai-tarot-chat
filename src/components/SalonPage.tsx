@@ -175,15 +175,13 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
       {isStandard && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {usageStats.remainingCeltics}回 / ケルト十字:{" "}
-          {usageStats.remainingCeltics}回
+          通常: {usageStats.remainingReadings}回
         </div>
       )}
 
       {isPremium && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {usageStats.remainingReadings}回 / ケルト十字:{" "}
-          {usageStats.remainingCeltics}回 / パーソナル:{" "}
+          通常(ケルト十字を含む): {usageStats.remainingReadings}回 / パーソナル:{" "}
           {usageStats.remainingPersonal}回
         </div>
       )}
