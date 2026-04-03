@@ -326,9 +326,10 @@ function App() {
 
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
-    // ReadingPage 中はナビゲーションをブロック
-    if (pageType === "reading") {
+    // 占い進行中はナビゲーションをブロック
+    if (pageType === "reading" || pageType === "personal") {
       console.log("ページ変更をブロック: 占い進行中");
+      setSidebarOpen(false);
       return;
     }
     console.log("ページ変更:", page);
@@ -757,7 +758,7 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
-        menuDisabled={pageType === "reading"}
+        menuDisabled={pageType === "reading" || pageType === "personal"}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />
