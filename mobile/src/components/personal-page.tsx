@@ -65,6 +65,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     init();
     setIsPersonal(true);
     setChatResetKey((current) => (current === null ? 0 : current + 1));
+    return () => {
+      setIsPersonal(false);
+    };
   }, [canStartPersonal, init, setIsPersonal]);
 
   // Reading phase 開始時にカードを引く
