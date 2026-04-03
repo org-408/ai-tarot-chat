@@ -77,6 +77,8 @@ export async function POST(req: NextRequest) {
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
     phase = clientMessages.length <= 3 ? "personal-intake" : "personal-reading";
+    const isInitialPersonalReading =
+      clientMessages.length > 3 && clientMessages.length <= 6;
 
     // 入力バリデーション clientMessages.length === 3 のとき質問文チェック
     if (clientMessages.length === 3) {
@@ -143,7 +145,7 @@ export async function POST(req: NextRequest) {
     //    length <= 1: 挨拶フェーズ、length <= 3: スプレッド提案フェーズ
     //    length > 3: 実際の占いフェーズ → ここで初めて personal カウントを消費
     //    debugMode=true の場合は制限をスキップ
-    if (!debugMode && clientMessages.length > 3) {
+    if (!debugMode && isInitialPersonalReading) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (usage.remainingPersonal <= 0) {
         logWithContext("warn", "パーソナル占いの回数上限", { clientId });
@@ -356,6 +358,29 @@ export async function POST(req: NextRequest) {
             "Cache-Control": "no-cache, no-transform",
             Connection: "keep-alive",
             "X-Accel-Buffering": "no",
+          },
+          onFinish: async ({ isAborted, responseMessage }) => {
+            const hasVisibleText = responseMessage.parts.some(
+              (part) =>
+                part.type === "text" && part.text.trim().length > 0
+            );
+
+            if (debugMode || !isInitialPersonalReading || isAborted || !hasVisibleText) {
+              return;
+            }
+
+            try {
+              await clientService.consumeReadingQuota({
+                clientId,
+                isPersonalReading: true,
+                isCeltic: false,
+              });
+            } catch (error) {
+              logWithContext("error", "パーソナル占い回数消費に失敗", {
+                error,
+                clientId,
+              });
+            }
           },
         });
       } catch (error) {
