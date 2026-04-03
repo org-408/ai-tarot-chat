@@ -60,6 +60,12 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
+      - name: Prepare shadow schema
+        run: |
+          npx prisma db execute --url "$DATABASE_URL" --stdin <<'SQL'
+          CREATE SCHEMA IF NOT EXISTS shadow;
+          SQL
+
       # Next.js は tsc 実行前に next-env.d.ts が必要
       - name: Generate next-env.d.ts
         run: echo '/// <reference types="next" />\n/// <reference types="next/image-types/global" />' > next-env.d.ts
