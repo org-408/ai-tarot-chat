@@ -110,7 +110,6 @@ export class ClientService {
           dailyPersonalCount: client.dailyPersonalCount,
         });
 
-        // UsageStats組み立て
         return {
           plan,
           isRegistered: client.isRegistered,
@@ -290,6 +289,131 @@ export class ClientService {
     return await readingRepository.getReadingsByClientId(clientId, take, skip);
   }
 
+  async consumeReadingQuota(params: {
+    clientId: string;
+    isPersonalReading: boolean;
+    isCeltic: boolean;
+  }): Promise<UsageStats> {
+    const { clientId, isPersonalReading, isCeltic } = params;
+
+    return BaseRepository.transaction(
+      { client: clientRepository },
+      async ({ client: clientRepo }) => {
+        let client = await clientRepo.getClientById(clientId);
+        if (!client) throw new Error("Client not found");
+
+        const needsReset = [
+          client.lastReadingDate,
+          client.lastCelticReadingDate,
+          client.lastPersonalReadingDate,
+        ].some((date) => date !== null && !isSameDayJST(date));
+
+        if (needsReset) {
+          const beforeReadingsCount = client.dailyReadingsCount;
+          const beforeCelticsCount = client.dailyCelticsCount;
+          const beforePersonalCount = client.dailyPersonalCount;
+
+          client = await clientRepo.resetDailyCounts(client.id);
+          await clientRepo.createDailyResetHistory({
+            client: { connect: { id: client.id } },
+            date: new Date(),
+            resetType: "CONSUME_READING_QUOTA",
+            beforeReadingsCount,
+            beforeCelticsCount,
+            beforePersonalCount,
+            afterCelticsCount: 0,
+            afterPersonalCount: 0,
+            afterReadingsCount: 0,
+          });
+        }
+
+        const plan = client.plan;
+        if (!plan) {
+          throw new Error("Plan not found");
+        }
+
+        const quotaConfig = isPersonalReading
+          ? {
+              counterField: "dailyPersonalCount" as const,
+              lastDateField: "lastPersonalReadingDate" as const,
+              limit: plan.maxPersonal,
+              message: "本日のパーソナル占いの回数上限に達しました。",
+              phase: "personal-reading" as const,
+            }
+          : isCeltic
+            ? {
+                counterField: "dailyCelticsCount" as const,
+                lastDateField: "lastCelticReadingDate" as const,
+                limit: plan.maxCeltics,
+                message: "本日のケルト十字占いの回数上限に達しました。",
+                phase: "simple" as const,
+              }
+            : {
+                counterField: "dailyReadingsCount" as const,
+                lastDateField: "lastReadingDate" as const,
+                limit: plan.maxReadings,
+                message: "本日のシンプル占いの回数上限に達しました。",
+                phase: "simple" as const,
+              };
+
+        const quotaConsumed = await clientRepo.incrementUsageIfWithinLimit({
+          clientId,
+          counterField: quotaConfig.counterField,
+          lastDateField: quotaConfig.lastDateField,
+          limit: quotaConfig.limit,
+        });
+
+        if (!quotaConsumed) {
+          throw new ReadingRouteError({
+            code: "LIMIT_REACHED",
+            message: quotaConfig.message,
+            status: 429,
+            phase: quotaConfig.phase,
+          });
+        }
+
+        const updatedClient = await clientRepo.getClientById(clientId);
+        if (!updatedClient) {
+          throw new Error("Client not found after usage update");
+        }
+
+        logWithContext("info", "Consumed reading quota", {
+          clientId,
+          isPersonalReading,
+          isCeltic,
+          dailyReadingsCount: updatedClient.dailyReadingsCount,
+          dailyCelticsCount: updatedClient.dailyCelticsCount,
+          dailyPersonalCount: updatedClient.dailyPersonalCount,
+        });
+
+        return {
+          plan: updatedClient.plan!,
+          isRegistered: updatedClient.isRegistered,
+          lastLoginAt: updatedClient.lastLoginAt,
+          hasDailyReset: needsReset,
+          dailyReadingsCount: updatedClient.dailyReadingsCount,
+          dailyCelticsCount: updatedClient.dailyCelticsCount,
+          dailyPersonalCount: updatedClient.dailyPersonalCount,
+          remainingReadings: Math.max(
+            0,
+            updatedClient.plan!.maxReadings - updatedClient.dailyReadingsCount
+          ),
+          remainingCeltics: Math.max(
+            0,
+            updatedClient.plan!.maxCeltics - updatedClient.dailyCelticsCount
+          ),
+          remainingPersonal: Math.max(
+            0,
+            updatedClient.plan!.maxPersonal - updatedClient.dailyPersonalCount
+          ),
+          lastReadingDate: updatedClient.lastReadingDate,
+          lastCelticReadingDate: updatedClient.lastCelticReadingDate,
+          lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
+        };
+      }
+    );
+  }
+
   /**
    *
    * @param clientId
@@ -348,6 +472,7 @@ export class ClientService {
             lastPersonalReadingDate: targetClient.lastPersonalReadingDate,
           };
         };
+
         if (
           !clientId ||
           !payloadDeviceId ||
@@ -518,26 +643,17 @@ export class ClientService {
           });
         }
 
-        // quota を先に消費し、成功したセッションのみ保存する
         savedReading = await ReadingRepo.createReading(params);
         logWithContext("info", "Saved new reading", {
           readingId: savedReading.id,
         });
 
-        const updatedClient = await clientRepo.getClientById(clientId);
-        if (!updatedClient?.plan) {
-          throw new Error("Client not found after usage update");
+        const refreshedClient = await clientRepo.getClientById(clientId);
+        if (!refreshedClient) {
+          throw new Error("Client not found after saving reading");
         }
-        logWithContext("info", "Incremented client usage counts (atomic)", {
-          clientId,
-          isPersonalReading,
-          isCeltic,
-          dailyReadingsCount: updatedClient.dailyReadingsCount,
-          dailyCelticsCount: updatedClient.dailyCelticsCount,
-          dailyPersonalCount: updatedClient.dailyPersonalCount,
-        });
 
-        const usage = buildUsage(updatedClient);
+        const usage = buildUsage(refreshedClient);
 
         logWithContext("info", "Created new reading", {
           usage,

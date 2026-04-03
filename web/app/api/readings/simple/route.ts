@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
 
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
+    const isCeltic = spread.code.toLowerCase().includes("celtic");
 
     // systemプロンプトを作成
     const system =
@@ -198,6 +199,30 @@ export async function POST(req: NextRequest) {
             "Cache-Control": "no-cache, no-transform",
             Connection: "keep-alive",
             "X-Accel-Buffering": "no",
+          },
+          onFinish: async ({ isAborted, responseMessage }) => {
+            const hasVisibleText = responseMessage.parts.some(
+              (part) =>
+                part.type === "text" && part.text.trim().length > 0
+            );
+
+            if (isAborted || !hasVisibleText) {
+              return;
+            }
+
+            try {
+              await clientService.consumeReadingQuota({
+                clientId,
+                isPersonalReading: false,
+                isCeltic,
+              });
+            } catch (error) {
+              logWithContext("error", "クイック占い回数消費に失敗", {
+                error,
+                clientId,
+                isCeltic,
+              });
+            }
           },
         });
       } catch (error) {
