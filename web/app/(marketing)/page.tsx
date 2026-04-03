@@ -33,9 +33,9 @@ const features = [
   },
   {
     icon: "📱",
-    title: "マルチプラットフォーム対応",
+    title: "iOS・Android アプリ対応",
     description:
-      "iOS・Androidアプリ、Webブラウザ、いつでもどこでも占いを楽しめます。データは同期されます。",
+      "iPhone・iPad・Androidスマートフォン・タブレットでご利用いただけます（近日公開）。",
   },
 ];
 
@@ -152,7 +152,7 @@ export default async function LandingPage() {
 
             {/* 無料バッジ */}
             <p className="mt-6 text-sm text-purple-300">
-              ゲストプランは無料・登録不要でご利用いただけます
+              近日公開予定 — リリース通知を受け取る
             </p>
           </div>
 
@@ -321,42 +321,14 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-5xl mb-6">🔮</div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            今すぐ占いを始めよう
+            もうすぐリリース
           </h2>
-          <p className="text-purple-200 text-lg max-w-xl mx-auto mb-8">
-            登録不要で、今すぐ無料でお試しいただけます。
+          <p className="text-purple-200 text-lg max-w-xl mx-auto mb-10">
+            iOS・Androidアプリを準備中です。
+            <br />
+            リリース時にお知らせを受け取りませんか？
           </p>
-
-          {/* Primary CTA: Web */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
-            <TrackedLink
-              href="/auth/signin?from=landing"
-              pageName="landing"
-              placement="final_cta"
-              ctaName="start_web"
-              className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-8 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
-            >
-              <span className="text-xl">🌐</span>
-              <span>Webで今すぐ無料で始める</span>
-            </TrackedLink>
-            <TrackedLink
-              href="/pricing"
-              pageName="landing"
-              placement="final_cta"
-              ctaName="view_pricing"
-              className="inline-flex items-center gap-3 rounded-2xl border border-purple-400/50 text-white px-8 py-4 text-base font-semibold hover:bg-purple-500/20 transition-all"
-            >
-              料金プランを見る
-            </TrackedLink>
-          </div>
-
-          {/* Mobile app notify */}
-          <div className="mt-4">
-            <p className="text-purple-300 text-sm mb-4">
-              📱 モバイルアプリは現在準備中です
-            </p>
-            <NotifyForm />
-          </div>
+          <NotifyForm />
         </div>
       </section>
     </>
