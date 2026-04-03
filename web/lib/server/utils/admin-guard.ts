@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 
 export async function requireAdminSession() {
   const session = await auth();
@@ -16,4 +17,13 @@ export async function requireAdminSession() {
     };
   }
   return { response: null, session };
+}
+
+export async function assertAdminSession() {
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/admin/auth/signin");
+  }
+
+  return session;
 }

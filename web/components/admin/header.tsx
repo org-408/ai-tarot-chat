@@ -23,7 +23,7 @@ export function Header({ user }: { user?: HeaderUser }) {
           <form
             action={async () => {
               "use server";
-              await signOut({ redirectTo: "/auth/signin" });
+              await signOut({ redirectTo: "/admin/auth/signin" });
             }}
           >
             <button

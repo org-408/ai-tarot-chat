@@ -1,5 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { spreadService } from "@/lib/server/services/spread";
+import { requireAdminSession } from "@/lib/server/utils/admin-guard";
 import { NextRequest, NextResponse } from "next/server";
 
 // スプレッド一覧取得
@@ -25,6 +26,9 @@ export async function GET() {
 
 // スプレッド作成
 export async function POST(request: NextRequest) {
+  const { response } = await requireAdminSession();
+  if (response) return response;
+
   logWithContext("info", "📍 /api/spreads - スプレッド作成リクエスト受信", {
     path: "/api/spreads",
   });

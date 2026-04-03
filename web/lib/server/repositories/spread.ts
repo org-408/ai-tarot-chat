@@ -43,17 +43,9 @@ export class SpreadRepository extends BaseRepository {
 
   // ==================== Spread ====================
   async createSpread(
-    spread: Omit<
-      Spread,
-      | "id"
-      | "createdAt"
-      | "updatedAt"
-      | "cells"
-      | "categories"
-      | "reading"
-      | "favoriteSpreads"
-    >,
-    cells?: Array<Omit<SpreadCell, "id" | "spread" | "spreadId">>
+    spread: SpreadInput,
+    cells?: Array<Omit<SpreadCell, "id" | "spread" | "spreadId">>,
+    categoryIds: string[] = []
   ): Promise<Spread> {
     const created = await this.db.spread.create({
       data: {
@@ -76,6 +68,13 @@ export class SpreadRepository extends BaseRepository {
                 cell.description ||
                 `このカードの位置は${cell.position}を示しています`,
               isHorizontal: cell.isHorizontal || false,
+            })),
+          },
+        }),
+        ...(categoryIds.length > 0 && {
+          categories: {
+            create: categoryIds.map((categoryId) => ({
+              category: { connect: { id: categoryId } },
             })),
           },
         }),
@@ -160,11 +159,14 @@ export class SpreadRepository extends BaseRepository {
   async updateSpread(
     id: string,
     spread: SpreadInput,
-    cells?: Array<Omit<SpreadCell, "id" | "spread" | "spreadId">>
+    cells?: Array<Omit<SpreadCell, "id" | "spread" | "spreadId">>,
+    categoryIds: string[] = []
   ): Promise<Spread> {
     return await this.db.spread.update({
       where: { id },
       data: {
+        no: spread.no,
+        code: spread.code,
         name: spread.name,
         category: spread.category,
         levelId: spread.levelId,
@@ -186,6 +188,16 @@ export class SpreadRepository extends BaseRepository {
             })),
           },
         }),
+        categories: {
+          deleteMany: {},
+          ...(categoryIds.length > 0
+            ? {
+                create: categoryIds.map((categoryId) => ({
+                  category: { connect: { id: categoryId } },
+                })),
+              }
+            : {}),
+        },
       },
       include: {
         cells: true,

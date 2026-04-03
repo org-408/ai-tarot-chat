@@ -27,10 +27,13 @@ export class SpreadService {
    * cellsも一緒に作成可能
    */
   async createSpread(
-    spreadData: SpreadInput,
-    cells?: Array<Omit<SpreadCell, "id" | "spread" | "spreadId">>
+    spreadData: SpreadInput
   ) {
-    return await spreadRepository.createSpread(spreadData, cells);
+    return await spreadRepository.createSpread(
+      spreadData,
+      spreadData.cells,
+      spreadData.categoryIds
+    );
   }
 
   /**
@@ -54,10 +57,14 @@ export class SpreadService {
    */
   async updateSpreadById(
     id: string,
-    spreadData: SpreadInput,
-    cells?: Array<Omit<SpreadCell, "id" | "spread" | "spreadId">>
+    spreadData: SpreadInput
   ) {
-    return await spreadRepository.updateSpread(id, spreadData, cells);
+    return await spreadRepository.updateSpread(
+      id,
+      spreadData,
+      spreadData.cells,
+      spreadData.categoryIds
+    );
   }
 
   /**
