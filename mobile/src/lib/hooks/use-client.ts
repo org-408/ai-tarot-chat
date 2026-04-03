@@ -17,6 +17,7 @@ export function useClient() {
     skip,
     error,
     init,
+    debugSetPlan,
     refreshUsage,
     checkAndResetIfNeeded,
     saveReading,
@@ -42,6 +43,7 @@ export function useClient() {
     // アクション
     // ============================================
     init,
+    debugSetPlan,
     refreshUsage,
     checkAndResetIfNeeded,
     saveReading,
