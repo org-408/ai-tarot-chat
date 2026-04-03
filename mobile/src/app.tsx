@@ -1,11 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
-import type {
-  Plan,
-  ReadingCategory,
-  Spread,
-  Tarotist,
-} from "../../shared/lib/types";
+import type { Plan } from "../../shared/lib/types";
 import ClaraPage from "./components/clara-page";
 import { DebugMenu } from "./components/debug-menu";
 import Header from "./components/header";
@@ -92,7 +87,6 @@ function App() {
   const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
 
   const [pageType, setPageType] = useState<PageType>("salon");
-  const [readingReturnPage, setReadingReturnPage] = useState<PageType>("salon");
   // パーソナル占い再起動用キー（インクリメントで強制再マウント）
   const [personalPageKey, setPersonalPageKey] = useState(0);
   // プラン失効通知（"toast" | "dialog" | null）
@@ -103,12 +97,9 @@ function App() {
   const prevPlanCodeRef = useRef<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
-
-  const [readingData, setReadingData] = useState<{
-    tarotist: Tarotist;
-    spread: Spread;
-    category: ReadingCategory;
-  } | null>(null);
+  // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
+  // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
+  const [isNavigationLocked, setIsNavigationLocked] = useState(false);
 
   // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
@@ -232,8 +223,8 @@ function App() {
     console.log(
       `[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`,
     );
-    if (pageType === "reading" || pageType === "personal") {
-      // 占い中 → ダイアログ（OKを押してからサロンへ）
+    if (isNavigationLocked) {
+      // AI 課金中 → ダイアログ（OKを押してからサロンへ）
       setPlanExpiredNotification("dialog");
     } else {
       // それ以外 → 即サロンへ + トースト
@@ -254,12 +245,12 @@ function App() {
     const handleTouchEnd = (e: TouchEvent) => {
       const endX = e.changedTouches[0].clientX;
       // 左端20px以内から始まり、50px以上右にスワイプしたら開く
-      // 占い進行中はサイドバーを開かない
+      // AI 課金中はサイドバーを開かない
       if (
         startX < 20 &&
         endX - startX > 50 &&
         !sidebarOpen &&
-        pageType !== "reading"
+        !isNavigationLocked
       ) {
         setSidebarOpen(true);
       }
@@ -279,8 +270,6 @@ function App() {
       console.log("ログイン開始");
       await appLogin();
       console.log("ログイン成功");
-
-      setReadingData(null);
     } catch (err) {
       console.error("ログインエラー:", err);
     }
@@ -294,7 +283,6 @@ function App() {
       console.log("ログアウト成功");
 
       setPageType("salon");
-      setReadingData(null);
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -326,9 +314,9 @@ function App() {
 
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
-    // 占い進行中はナビゲーションをブロック
-    if (pageType === "reading" || pageType === "personal") {
-      console.log("ページ変更をブロック: 占い進行中");
+    // AI 課金中はナビゲーションをブロック
+    if (isNavigationLocked) {
+      console.log("ページ変更をブロック: AI 実行中");
       setSidebarOpen(false);
       return;
     }
@@ -338,8 +326,8 @@ function App() {
 
   // 🔥 占い開始（無料プランのみ広告表示 → 広告が閉じてから遷移）
   // Clara（OFFLINE占い師）が選択されている場合は "いつでも占い" ページへ
-  const handleStartReading = async (returnPage: PageType = "salon") => {
-    console.log(`占い開始: returnPage=${returnPage}`);
+  // 占い開始 = AI 課金開始 → ナビゲーションをロック
+  const handleStartReading = async () => {
     if (selectedTarotist?.provider === "OFFLINE") {
       setPageType("clara");
       return;
@@ -349,16 +337,8 @@ function App() {
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
-    setReadingReturnPage(returnPage);
+    setIsNavigationLocked(true); // AI 課金開始 → ナビゲーションロック
     setPageType("reading");
-  };
-
-  // 🔥 占いから戻る（戻るボタン）
-  const handleBackFromReading = () => {
-    console.log("占いから戻る");
-    setReadingData(null);
-    refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
-    setPageType(readingReturnPage);
   };
 
   // 🔥 起動シーケンスのデバッグログ
@@ -446,7 +426,7 @@ function App() {
             masterData={masterData}
             usageStats={usageStats}
             onChangePlan={handleChangePlan}
-            onStartReading={() => handleStartReading("salon")}
+            onStartReading={handleStartReading}
             isChangingPlan={isChangingPlan}
           />
         );
@@ -459,6 +439,8 @@ function App() {
             masterData={masterData}
             onChangePlan={handleChangePlan}
             onBack={() => setPersonalPageKey((k) => k + 1)}
+            onStartReading={() => setIsNavigationLocked(true)}
+            onCompleteReading={() => setIsNavigationLocked(false)}
             isChangingPlan={isChangingPlan}
             onNavigateToClara={() => setPageType("clara")}
           />
@@ -466,12 +448,12 @@ function App() {
       case "reading":
         return (
           <ReadingPage
-            payload={payload}
             masterData={masterData}
-            readingData={readingData!}
-            showProfile={showProfile}
-            setShowProfile={setShowProfile}
-            onBack={handleBackFromReading}
+            onBack={() => {
+              refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
+              setPageType("salon");
+            }}
+            onUnlock={() => setIsNavigationLocked(false)}
           />
         );
       case "plans":
@@ -758,7 +740,7 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
-        menuDisabled={pageType === "reading" || pageType === "personal"}
+        menuDisabled={isNavigationLocked}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />

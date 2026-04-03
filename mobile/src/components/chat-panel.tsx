@@ -32,6 +32,8 @@ interface ChatPanelProps {
   onKeyboardHeightChange?: React.Dispatch<React.SetStateAction<number>>;
   handleStartReading?: () => void;
   onBack: () => void;
+  /** AI 課金が終了した（戻るボタンが表示できる状態になった）タイミングで呼ぶ */
+  onUnlock?: () => void;
   /** Phase1 の会話履歴を Phase2 の初期メッセージとして渡す */
   initialMessages?: UIMessage[];
   /** messages が変わるたびに呼ばれるコールバック（Phase1 → Phase2 への引き継ぎ用） */
@@ -42,6 +44,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onKeyboardHeightChange,
   handleStartReading,
   onBack,
+  onUnlock,
   initialMessages,
   onMessagesChange,
 }) => {
@@ -516,6 +519,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       setInputDisabled(true);
     }
   }, [isEndingSession]);
+
+  // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
+  // shouldShowBackButton が true になった瞬間に一度だけ呼ぶ
+  const hasUnlockedRef = React.useRef(false);
+  useEffect(() => {
+    if (shouldShowBackButton && !hasUnlockedRef.current) {
+      hasUnlockedRef.current = true;
+      onUnlock?.();
+    }
+  }, [shouldShowBackButton, onUnlock]);
 
   useEffect(() => {
     // ─────────────────────────────────────────────────────────────
