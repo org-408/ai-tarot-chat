@@ -151,6 +151,40 @@ export class ClientRepository extends BaseRepository {
     });
   }
 
+  /**
+   * デバイスのupsert
+   * check-then-create の非アトミックパターンを避けるため、
+   * DBの一意制約(deviceId)を利用してアトミックに作成/更新する。
+   */
+  async upsertDevice(params: {
+    deviceId: string;
+    platform?: string | null;
+    appVersion?: string | null;
+    osVersion?: string | null;
+    pushToken?: string | null;
+  }): Promise<Device> {
+    return await this.db.device.upsert({
+      where: { deviceId: params.deviceId },
+      create: {
+        deviceId: params.deviceId,
+        platform: params.platform,
+        appVersion: params.appVersion,
+        osVersion: params.osVersion,
+        pushToken: params.pushToken,
+        lastSeenAt: new Date(),
+        client: { create: { plan: { connect: { code: "GUEST" } } } },
+      },
+      update: {
+        platform: params.platform,
+        appVersion: params.appVersion,
+        osVersion: params.osVersion,
+        pushToken: params.pushToken,
+        lastSeenAt: new Date(),
+      },
+      include: { client: { include: { plan: true, user: true } } },
+    }) as Device;
+  }
+
   async deleteDevice(id: string): Promise<void> {
     await this.db.device.delete({
       where: { id },
