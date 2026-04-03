@@ -1,11 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
-import type {
-  Plan,
-  ReadingCategory,
-  Spread,
-  Tarotist,
-} from "../../shared/lib/types";
+import type { Plan } from "../../shared/lib/types";
 import ClaraPage from "./components/clara-page";
 import { DebugMenu } from "./components/debug-menu";
 import Header from "./components/header";
@@ -92,7 +87,6 @@ function App() {
   const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
 
   const [pageType, setPageType] = useState<PageType>("salon");
-  const [readingReturnPage, setReadingReturnPage] = useState<PageType>("salon");
   // パーソナル占い再起動用キー（インクリメントで強制再マウント）
   const [personalPageKey, setPersonalPageKey] = useState(0);
   // プラン失効通知（"toast" | "dialog" | null）
@@ -106,12 +100,6 @@ function App() {
   // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
   // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
-
-  const [readingData, setReadingData] = useState<{
-    tarotist: Tarotist;
-    spread: Spread;
-    category: ReadingCategory;
-  } | null>(null);
 
   // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
@@ -282,8 +270,6 @@ function App() {
       console.log("ログイン開始");
       await appLogin();
       console.log("ログイン成功");
-
-      setReadingData(null);
     } catch (err) {
       console.error("ログインエラー:", err);
     }
@@ -297,7 +283,6 @@ function App() {
       console.log("ログアウト成功");
 
       setPageType("salon");
-      setReadingData(null);
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -342,8 +327,7 @@ function App() {
   // 🔥 占い開始（無料プランのみ広告表示 → 広告が閉じてから遷移）
   // Clara（OFFLINE占い師）が選択されている場合は "いつでも占い" ページへ
   // 占い開始 = AI 課金開始 → ナビゲーションをロック
-  const handleStartReading = async (returnPage: PageType = "salon") => {
-    console.log(`占い開始: returnPage=${returnPage}`);
+  const handleStartReading = async () => {
     if (selectedTarotist?.provider === "OFFLINE") {
       setPageType("clara");
       return;
@@ -354,7 +338,6 @@ function App() {
       await showInterstitialAd();
     }
     setIsNavigationLocked(true); // AI 課金開始 → ナビゲーションロック
-    setReadingReturnPage(returnPage);
     setPageType("reading");
   };
 
@@ -443,7 +426,7 @@ function App() {
             masterData={masterData}
             usageStats={usageStats}
             onChangePlan={handleChangePlan}
-            onStartReading={() => handleStartReading("salon")}
+            onStartReading={handleStartReading}
             isChangingPlan={isChangingPlan}
           />
         );
@@ -465,15 +448,10 @@ function App() {
       case "reading":
         return (
           <ReadingPage
-            payload={payload}
             masterData={masterData}
-            readingData={readingData!}
-            showProfile={showProfile}
-            setShowProfile={setShowProfile}
             onBack={() => {
-              setReadingData(null);
               refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
-              setPageType(readingReturnPage);
+              setPageType("salon");
             }}
             onUnlock={() => setIsNavigationLocked(false)}
           />
