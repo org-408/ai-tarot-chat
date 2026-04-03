@@ -72,6 +72,9 @@ export const useSalonStore = create<SalonState>()(
       messages: [],
       init: () => {
         set({
+          selectedCategory: initialCategory,
+          customQuestion: "",
+          selectedSpread: initialSpread,
           drawnCards: [],
           isRevealingCompleted: false,
           spreadViewerMode: "grid",
