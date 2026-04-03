@@ -33,7 +33,7 @@ jobs:
     env:
       # Prisma generate と tsc に必要な最低限のダミー値
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
-      SHADOW_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=shadow
+      SHADOW_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/shadow?schema=public
       AUTH_SECRET: ci-dummy-secret-for-build-only
       LOCAL_TIMEZONE: Asia/Tokyo
       DISABLE_CONSOLE_LOG: "true"
@@ -60,11 +60,10 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
-      - name: Prepare shadow schema
+      - name: Create shadow database
         run: |
-          npx prisma db execute --url "$DATABASE_URL" --stdin <<'SQL'
-          CREATE SCHEMA IF NOT EXISTS shadow;
-          SQL
+          psql "postgresql://ci:ci@127.0.0.1:5432/postgres" -tc "SELECT 1 FROM pg_database WHERE datname = 'shadow'" | grep -q 1 || \
+            psql "postgresql://ci:ci@127.0.0.1:5432/postgres" -c "CREATE DATABASE shadow;"
 
       # Next.js は tsc 実行前に next-env.d.ts が必要
       - name: Generate next-env.d.ts
