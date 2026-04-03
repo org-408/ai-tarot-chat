@@ -2,6 +2,11 @@ import type { ReadingInput } from "@/../shared/lib/types";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { clientService } from "@/lib/server/services";
 import { authService } from "@/lib/server/services/auth";
+import {
+  createReadingErrorResponse,
+  createReadingUnexpectedErrorResponse,
+  ReadingRouteError,
+} from "@/lib/server/utils/reading-error";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -41,6 +46,20 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof ReadingRouteError) {
+      logWithContext("warn", "占い結果保存エラー: 制御されたエラー", {
+        error,
+        clientId,
+      });
+      return createReadingErrorResponse({
+        code: error.code,
+        message: error.message,
+        status: error.status,
+        phase: error.phase,
+        retryable: error.retryable,
+        details: error.details,
+      });
+    }
     if (
       error instanceof Error &&
       error.message === "Bad Request: missing parameters"
@@ -58,10 +77,12 @@ export async function POST(request: NextRequest) {
       error,
       clientId,
     });
-    return NextResponse.json(
-      { error, errorMessage: "占い結果の保存に失敗しました" },
-      { status: 500 }
-    );
+    return createReadingUnexpectedErrorResponse(error, {
+      code: "INTERNAL_ERROR",
+      message: "占い結果の保存に失敗しました",
+      status: 500,
+      phase: "simple",
+    });
   }
 }
 

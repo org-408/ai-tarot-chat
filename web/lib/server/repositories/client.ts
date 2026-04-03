@@ -110,6 +110,37 @@ export class ClientRepository extends BaseRepository {
     });
   }
 
+  async incrementUsageIfWithinLimit(params: {
+    clientId: string;
+    counterField:
+      | "dailyReadingsCount"
+      | "dailyCelticsCount"
+      | "dailyPersonalCount";
+    lastDateField:
+      | "lastReadingDate"
+      | "lastCelticReadingDate"
+      | "lastPersonalReadingDate";
+    limit: number;
+  }): Promise<boolean> {
+    const { clientId, counterField, lastDateField, limit } = params;
+    const result = await this.db.client.updateMany({
+      where: {
+        id: clientId,
+        [counterField]: {
+          lt: limit,
+        },
+      },
+      data: {
+        [counterField]: {
+          increment: 1,
+        },
+        [lastDateField]: new Date(),
+      },
+    });
+
+    return result.count === 1;
+  }
+
   // ==================== Device ====================
   async createDevice(data: Prisma.DeviceCreateInput): Promise<Device> {
     return await this.db.device.create({

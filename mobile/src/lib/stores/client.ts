@@ -337,6 +337,7 @@ export const useClientStore = create<ClientState>()(
           set({
             error: error instanceof Error ? error : new Error(String(error)),
           });
+          throw error;
         }
       },
 

@@ -12,8 +12,8 @@ import {
     planRepository,
     readingRepository,
 } from "@/lib/server/repositories";
+import { ReadingRouteError } from "@/lib/server/utils/reading-error";
 import { isSameDayJST } from "@/lib/utils/date";
-import { Prisma } from "@prisma/client";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
@@ -363,12 +363,6 @@ export class ClientService {
         // deviceId をセットし直す(payload の deviceId とテーブルの deviceId は別物)
         params.deviceId = deviceId;
 
-        // 占い履歴保存
-        const newReading = await ReadingRepo.createReading(params);
-        logWithContext("info", "Saved new reading", {
-          readingId: newReading.id,
-        });
-
         // 占いタイプ判定
         if (!customQuestion && !category) {
           logWithContext(
@@ -383,32 +377,93 @@ export class ClientService {
         const isCeltic =
           !isPersonalReading && spread.code.toLowerCase().includes("celtic");
 
-        // ✅ Prisma の atomic increment で race condition を防ぐ
-        //    旧実装: client.count += 1 → updateClient(count) は Read-Modify-Write で非原子
-        //    新実装: { increment: 1 } は UPDATE SET count = count + 1 でアトミック
-        //    debugMode=true の場合はパーソナル占いのカウントをインクリメントしない
-        const incrementUpdate: Prisma.ClientUpdateInput =
-          isPersonalReading && debugMode
-            ? { lastPersonalReadingDate: new Date() }
-            : isPersonalReading
-            ? {
-                dailyPersonalCount: { increment: 1 },
-                lastPersonalReadingDate: new Date(),
-              }
-            : isCeltic
-            ? {
-                dailyCelticsCount: { increment: 1 },
-                lastCelticReadingDate: new Date(),
-              }
-            : {
-                dailyReadingsCount: { increment: 1 },
-                lastReadingDate: new Date(),
-              };
+        const needsReset = [
+          client.lastReadingDate,
+          client.lastCelticReadingDate,
+          client.lastPersonalReadingDate,
+        ].some((date) => date !== null && !isSameDayJST(date));
 
-        const updatedClient = await clientRepo.updateClient(
-          clientId,
-          incrementUpdate
-        );
+        const plan = client.plan;
+        if (!plan) {
+          throw new Error("Plan not found");
+        }
+
+        if (needsReset) {
+          const beforeReadingsCount = client.dailyReadingsCount;
+          const beforeCelticsCount = client.dailyCelticsCount;
+          const beforePersonalCount = client.dailyPersonalCount;
+
+          await clientRepo.resetDailyCounts(client.id);
+          await clientRepo.createDailyResetHistory({
+            client: { connect: { id: client.id } },
+            date: new Date(),
+            resetType: "SAVE_READING",
+            beforeReadingsCount,
+            beforeCelticsCount,
+            beforePersonalCount,
+            afterCelticsCount: 0,
+            afterPersonalCount: 0,
+            afterReadingsCount: 0,
+          });
+        }
+
+        const quotaConfig = isPersonalReading
+          ? {
+              counterField: "dailyPersonalCount" as const,
+              lastDateField: "lastPersonalReadingDate" as const,
+              limit: plan.maxPersonal,
+              message: "本日のパーソナル占いの回数上限に達しました。",
+              phase: "personal-reading" as const,
+            }
+          : isCeltic
+          ? {
+              counterField: "dailyCelticsCount" as const,
+              lastDateField: "lastCelticReadingDate" as const,
+              limit: plan.maxCeltics,
+              message: "本日のケルト十字占いの回数上限に達しました。",
+              phase: "simple" as const,
+            }
+          : {
+              counterField: "dailyReadingsCount" as const,
+              lastDateField: "lastReadingDate" as const,
+              limit: plan.maxReadings,
+              message: "本日のシンプル占いの回数上限に達しました。",
+              phase: "simple" as const,
+            };
+
+        let quotaConsumed = true;
+        if (isPersonalReading && debugMode) {
+          await clientRepo.updateClient(clientId, {
+            [quotaConfig.lastDateField]: new Date(),
+          });
+        } else {
+          quotaConsumed = await clientRepo.incrementUsageIfWithinLimit({
+            clientId,
+            counterField: quotaConfig.counterField,
+            lastDateField: quotaConfig.lastDateField,
+            limit: quotaConfig.limit,
+          });
+        }
+
+        if (!quotaConsumed) {
+          throw new ReadingRouteError({
+            code: "LIMIT_REACHED",
+            message: quotaConfig.message,
+            status: 429,
+            phase: quotaConfig.phase,
+          });
+        }
+
+        // quota を先に消費し、成功したセッションのみ保存する
+        const newReading = await ReadingRepo.createReading(params);
+        logWithContext("info", "Saved new reading", {
+          readingId: newReading.id,
+        });
+
+        const updatedClient = await clientRepo.getClientById(clientId);
+        if (!updatedClient?.plan) {
+          throw new Error("Client not found after usage update");
+        }
         logWithContext("info", "Incremented client usage counts (atomic)", {
           clientId,
           isPersonalReading,
@@ -418,14 +473,9 @@ export class ClientService {
           dailyPersonalCount: updatedClient.dailyPersonalCount,
         });
 
-        // ✅ getUsageAndReset の再帰呼び出しを廃止
-        //    旧実装では saveReading トランザクション内で getUsageAndReset を呼ぶと
-        //    別トランザクションがコミット前の DB を読み（古いカウント）、
-        //    null 日付バグと組み合わさって即リセットが走ることがあった
-        //    新実装: updateClient の戻り値から直接 UsageStats を組み立てる
-        const plan = updatedClient.plan!;
+        const updatedPlan = updatedClient.plan!;
         const usage: UsageStats = {
-          plan,
+          plan: updatedPlan,
           isRegistered: updatedClient.isRegistered,
           lastLoginAt: updatedClient.lastLoginAt,
           hasDailyReset: false,
@@ -434,15 +484,15 @@ export class ClientService {
           dailyPersonalCount: updatedClient.dailyPersonalCount,
           remainingReadings: Math.max(
             0,
-            plan.maxReadings - updatedClient.dailyReadingsCount
+            updatedPlan.maxReadings - updatedClient.dailyReadingsCount
           ),
           remainingCeltics: Math.max(
             0,
-            plan.maxCeltics - updatedClient.dailyCelticsCount
+            updatedPlan.maxCeltics - updatedClient.dailyCelticsCount
           ),
           remainingPersonal: Math.max(
             0,
-            plan.maxPersonal - updatedClient.dailyPersonalCount
+            updatedPlan.maxPersonal - updatedClient.dailyPersonalCount
           ),
           lastReadingDate: updatedClient.lastReadingDate,
           lastCelticReadingDate: updatedClient.lastCelticReadingDate,
