@@ -24,9 +24,9 @@ interface PersonalPageProps {
   onChangePlan: (plan: UserPlan) => void;
   onBack: () => void;
   /** Phase2 開始時（AI API 課金開始）にナビゲーションをロックする */
-  onLock: () => void;
+  onStartReading: () => void;
   /** Phase2 完了時（AI API 課金終了）にナビゲーションロックを解除する */
-  onUnlock: () => void;
+  onCompleteReading: () => void;
   isChangingPlan: boolean;
   onNavigateToClara?: () => void;
 }
@@ -36,8 +36,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   masterData,
   onChangePlan,
   onBack,
-  onLock,
-  onUnlock,
+  onStartReading,
+  onCompleteReading,
   onNavigateToClara,
 }) => {
   const {
@@ -79,7 +79,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
   useEffect(() => {
     return () => {
-      onUnlock();
+      onCompleteReading();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -120,7 +120,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
-    onLock(); // AI 課金開始 → ナビゲーションロック
+    onStartReading(); // AI 課金開始 → ナビゲーションロック
     setPhase("reading");
   };
 
@@ -190,7 +190,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
                   initialMessages={phase1Messages}
                   onKeyboardHeightChange={setKeyboardHeight}
                   onBack={handleBackFromReading}
-                  onUnlock={onUnlock}
+                  onUnlock={onCompleteReading}
                 />
               </div>
             )}

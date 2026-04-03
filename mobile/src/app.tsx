@@ -358,14 +358,6 @@ function App() {
     setPageType("reading");
   };
 
-  // 🔥 占いから戻る（戻るボタン）
-  const handleBackFromReading = () => {
-    console.log("占いから戻る");
-    setReadingData(null);
-    refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
-    setPageType(readingReturnPage);
-  };
-
   // 🔥 起動シーケンスのデバッグログ
   useEffect(() => {
     console.log("[App] Startup Status:", {
@@ -464,8 +456,8 @@ function App() {
             masterData={masterData}
             onChangePlan={handleChangePlan}
             onBack={() => setPersonalPageKey((k) => k + 1)}
-            onLock={() => setIsNavigationLocked(true)}
-            onUnlock={() => setIsNavigationLocked(false)}
+            onStartReading={() => setIsNavigationLocked(true)}
+            onCompleteReading={() => setIsNavigationLocked(false)}
             isChangingPlan={isChangingPlan}
             onNavigateToClara={() => setPageType("clara")}
           />
@@ -478,7 +470,11 @@ function App() {
             readingData={readingData!}
             showProfile={showProfile}
             setShowProfile={setShowProfile}
-            onBack={handleBackFromReading}
+            onBack={() => {
+              setReadingData(null);
+              refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
+              setPageType(readingReturnPage);
+            }}
             onUnlock={() => setIsNavigationLocked(false)}
           />
         );
