@@ -1,8 +1,6 @@
 package com.aitarotchat.app;
 
 import android.os.Bundle;
-import android.view.View;
-import android.view.ViewGroup;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -14,56 +12,32 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Android 実機でのみ発生する edge-to-edge 差分を
-        // ネイティブ側で吸収して、Web 側や iOS には影響を出さない。
+        // Android 15+ (targetSdk 35+) で edge-to-edge が強制されるため、
+        // システムバーの実際の inset 値を JS 経由で CSS カスタムプロパティに注入する。
+        // Capacitor が super.onCreate() 内で独自レイアウトをセットするため
+        // main_container は使用せず、decor view でインセットを取得する。
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        View container = findViewById(R.id.main_container);
-        if (container != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(container, (view, windowInsets) -> {
-                Insets insets = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                    WindowInsetsCompat.Type.displayCutout()
+        ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() |
+                WindowInsetsCompat.Type.displayCutout()
+            );
+
+            if (bridge != null && bridge.getWebView() != null) {
+                float density = getResources().getDisplayMetrics().density;
+                String js = String.format(java.util.Locale.US,
+                    "document.documentElement.style.setProperty('--safe-top','%.2fpx');" +
+                    "document.documentElement.style.setProperty('--safe-bottom','%.2fpx');",
+                    insets.top / density,
+                    insets.bottom / density
                 );
+                bridge.getWebView().post(() ->
+                    bridge.getWebView().evaluateJavascript(js, null)
+                );
+            }
 
-                applyInsetsToWebView(insets);
-
-                return windowInsets;
-            });
-
-            ViewCompat.requestApplyInsets(container);
-        }
-    }
-
-    private void applyInsetsToWebView(Insets insets) {
-        if (bridge == null || bridge.getWebView() == null) {
-            return;
-        }
-
-        View webView = bridge.getWebView();
-        ViewGroup.LayoutParams layoutParams = webView.getLayoutParams();
-
-        if (!(layoutParams instanceof ViewGroup.MarginLayoutParams)) {
-            return;
-        }
-
-        ViewGroup.MarginLayoutParams marginLayoutParams =
-            (ViewGroup.MarginLayoutParams) layoutParams;
-
-        if (
-            marginLayoutParams.leftMargin == insets.left &&
-            marginLayoutParams.topMargin == insets.top &&
-            marginLayoutParams.rightMargin == insets.right &&
-            marginLayoutParams.bottomMargin == insets.bottom
-        ) {
-            return;
-        }
-
-        marginLayoutParams.leftMargin = insets.left;
-        marginLayoutParams.topMargin = insets.top;
-        marginLayoutParams.rightMargin = insets.right;
-        marginLayoutParams.bottomMargin = insets.bottom;
-
-        webView.setLayoutParams(marginLayoutParams);
+            return windowInsets;
+        });
     }
 }

@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 :root {
+  /* セーフエリア CSS カスタムプロパティ
+     iOS: env() がネイティブで動くためそのまま反映される
+     Android: MainActivity.java の JS 注入で実測値に上書きされる */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -26,20 +32,20 @@ body {
 /* メインコンテンツエリア */
 .main-content-area {
   position: fixed;
-  top: calc(50px + env(safe-area-inset-top));
+  top: calc(50px + var(--safe-top));
   left: 0;
   right: 0;
   bottom: 0; /* ✅ ボトムナビ削除のため bottom: 0 に変更 */
   overflow-y: auto; /* ✅ f456679 で誤って削除されたスクロールを復元 */
   background: transparent;
-  padding-bottom: env(safe-area-inset-bottom); /* ✅ セーフエリア対応 */
+  padding-bottom: var(--safe-bottom); /* ✅ セーフエリア対応 */
 }
 
 /* 固定ヘッダースタイル */
 .app-header {
   position: fixed;
   top: 0;
-  padding-top: env(safe-area-inset-top); /* Safe Area */
+  padding-top: var(--safe-top); /* Safe Area */
   left: 0;
   right: 0;
   z-index: 50;
@@ -269,9 +275,7 @@ body {
 /* ✅ 固定占いボタンのスタイル（ボトムナビ削除により位置調整） */
 .fixed-action-button {
   position: fixed;
-  bottom: env(
-    safe-area-inset-bottom
-  ); /* ✅ ナビゲーション削除により直接bottom */
+  bottom: var(--safe-bottom); /* ✅ ナビゲーション削除により直接bottom */
   left: 0;
   right: 0;
   background: transparent;
