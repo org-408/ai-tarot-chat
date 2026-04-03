@@ -56,12 +56,12 @@ const vertex = createVertex({
 
 // プロバイダマッピング
 export const providers = {
-  gpt5nano: openai("gpt-5-nano"),
+  gpt5nano: openai("gpt-5.4-nano"),
   gemini25: vertex("gemini-2.5-flash"),
   gemini25pro: vertex("gemini-2.5-pro"),
   claude_h: anthropic("claude-haiku-4-5"),
-  gpt41: openai("gpt-4.1"),
-  gpt5: openai("gpt-5"),
+  gpt41: openai("gpt-5.4-mini"),
+  gpt5: openai("gpt-5.4"),
   claude_s: anthropic("claude-sonnet-4-6"),
   google: google("gemini-2.5-pro"),
 };
