@@ -55,6 +55,29 @@ export type VerificationToken = {
   expires: Date;
 };
 
+export type ReadingErrorCode =
+  | "UNAUTHORIZED"
+  | "LIMIT_REACHED"
+  | "QUESTION_TOO_SHORT"
+  | "QUESTION_TOO_LONG"
+  | "MODERATION_BLOCKED"
+  | "PROVIDER_TEMPORARY_FAILURE"
+  | "NETWORK_OR_STREAM_FAILURE"
+  | "INTERNAL_ERROR";
+
+export type ReadingErrorPhase =
+  | "simple"
+  | "personal-intake"
+  | "personal-reading";
+
+export type ReadingErrorResponse = {
+  code: ReadingErrorCode;
+  message: string;
+  retryable: boolean;
+  phase: ReadingErrorPhase;
+  details?: Record<string, unknown>;
+};
+
 // ==========================================
 // ユーザー関連型定義
 // ==========================================

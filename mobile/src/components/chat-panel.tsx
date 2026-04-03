@@ -6,8 +6,14 @@ import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import type { ReadingErrorCode } from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
+import {
+  createReadingChatErrorFromResponse,
+  isReadingChatError,
+  ReadingChatError,
+} from "../lib/utils/reading-chat-error";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import CategorySpreadSelector from "./category-spread-selector";
@@ -39,7 +45,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { saveReading } = useClient();
+  const { saveReading, refreshUsage } = useClient();
   const [isSavingReading, setIsSavingReading] = useState(false);
 
   const {
@@ -52,8 +58,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     customQuestion,
     setCustomQuestion,
     setSelectedSpread,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setMessages,
   } = useSalon();
 
   const { masterData } = useMaster();
@@ -62,10 +66,34 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const isPhase2 = isPersonal && (initialMessages?.length ?? 0) > 0;
   const initialLen = initialMessages?.length ?? 0;
   const MAX_PHASE2_QUESTIONS = 3;
+  const inputErrorCodes: ReadingErrorCode[] = [
+    "QUESTION_TOO_SHORT",
+    "QUESTION_TOO_LONG",
+    "MODERATION_BLOCKED",
+  ];
 
   const [inputDisabled, setInputDisabled] = useState(false);
+  const [chatError, setChatError] = useState<ReadingChatError | null>(null);
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const transportFetch: typeof fetch = async (input, init) => {
+    const response = await fetch(input, init);
+
+    if (!response.ok) {
+      throw await createReadingChatErrorFromResponse(response);
+    }
+
+    return response;
+  };
+
+  const {
+    messages,
+    sendMessage,
+    status,
+    stop,
+    regenerate,
+    clearError,
+    setMessages,
+  } = useChat({
     ...(initialMessages && { messages: initialMessages }),
     transport: new DefaultChatTransport({
       api: !isPersonal
@@ -81,12 +109,49 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         category,
         drawnCards,
       },
+      fetch: transportFetch,
     }),
     onError: (err) => {
       console.error("Chat error:", err);
+      const resolvedError = isReadingChatError(err)
+        ? err
+        : new ReadingChatError({
+            message:
+              err.message || "通信に失敗しました。時間をおいて再度お試しください。",
+            status: 0,
+            code: "UNKNOWN",
+            retryable: true,
+          });
+
+      if (
+        !isPhase2 &&
+        inputErrorCodes.includes(resolvedError.code as ReadingErrorCode)
+      ) {
+        const lastMessage = messages[messages.length - 1];
+        const failedInput =
+          lastMessage?.role === "user"
+            ? lastMessage.parts
+                .filter((part) => part.type === "text")
+                .map((part) => (part as { text: string }).text)
+                .join("")
+            : "";
+
+        if (failedInput) {
+          setInputValue(failedInput);
+          setCustomQuestion(failedInput);
+          setMessages((currentMessages) => currentMessages.slice(0, -1));
+        }
+      }
+
+      if (resolvedError.code === "LIMIT_REACHED") {
+        void refreshUsage();
+      }
+
+      setChatError(resolvedError);
     },
     onFinish: (message) => {
       console.log("Chat finished:", message);
+      setChatError(null);
     },
   });
 
@@ -102,6 +167,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+
+  const isInputFixableError =
+    chatError !== null &&
+    inputErrorCodes.includes(chatError.code as ReadingErrorCode);
+  const hasBlockingError = chatError !== null && !isInputFixableError;
+  const canRetry = !!chatError?.retryable && !isInputFixableError;
+  const shouldShowBackButton =
+    !!chatError ||
+    (isMessageComplete && !isSavingReading && (!isPhase2 || inputDisabled));
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -225,6 +299,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, []);
 
   const handleSendMessage = () => {
+    if (chatError) {
+      clearError();
+      setChatError(null);
+    }
     if (messages.length < 3) {
       console.log("step 2 not reached yet, setting custom question");
       setCustomQuestion(inputValue.trim());
@@ -292,6 +370,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
 
   useEffect(() => {
+    if (status === "submitted" || status === "streaming") {
+      setChatError(null);
+    }
+  }, [status]);
+
+  useEffect(() => {
     if (isMessageComplete) return; // 既にフラグ立て済みなら何もしない
 
     // ─────────────────────────────────────────────────────────────
@@ -301,6 +385,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     // エラー時でもフラグを立てることで、戻るボタンが必ず表示される
     // ─────────────────────────────────────────────────────────────
     const isComplete =
+      chatError !== null ||
       (isPhase2
         ? messages.length > (initialMessages?.length ?? 0)
         : (isRevealingCompleted || isPersonal) &&
@@ -311,6 +396,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       setIsMessageComplete(true);
     }
   }, [
+    chatError,
     drawnCards.length,
     initialMessages,
     isPersonal,
@@ -340,7 +426,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     const shouldSave = isPhase2
       ? inputDisabled &&
         drawnCards.length > 0 &&
-        messages.length > (initialMessages?.length ?? 0)
+        messages.length > initialLen
       : (isRevealingCompleted || isPersonal) &&
         drawnCards.length > 0 &&
         messages.length > 0;
@@ -396,7 +482,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     category,
     customQuestion,
     drawnCards,
-    initialMessages,
+    initialLen,
     inputDisabled,
     isPersonal,
     isPhase2,
@@ -462,6 +548,41 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         )}
 
+        {chatError && (
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-900">
+            <div className="font-semibold mb-1">
+              {isInputFixableError
+                ? "入力内容を確認してください"
+                : "占いを続けられませんでした"}
+            </div>
+            <p className="whitespace-pre-wrap leading-6">{chatError.message}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {canRetry && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearError();
+                    setChatError(null);
+                    void regenerate();
+                  }}
+                  className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white"
+                >
+                  もう一度試す
+                </button>
+              )}
+              {!isInputFixableError && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold text-rose-700"
+                >
+                  戻る
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -471,7 +592,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Back Button - Phase1: 保存後すぐ / Phase2: 全質問終了後のみ */}
-      {isMessageComplete && !isSavingReading && (!isPhase2 || inputDisabled) && (
+      {shouldShowBackButton && !isSavingReading && !chatError && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}
@@ -486,7 +607,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase2: セッション終了バナー */}
-      {isPhase2 && inputDisabled && isMessageComplete && (
+      {isPhase2 && inputDisabled && isMessageComplete && !chatError && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -521,11 +642,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               rows={2}
               className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={status === "streaming"}
+              disabled={status === "streaming" || hasBlockingError}
             />
             <button
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || status === "streaming"}
+              disabled={
+                !inputValue.trim() || status === "streaming" || hasBlockingError
+              }
               className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
             >
               <ArrowUp size={18} strokeWidth={2.5} />
@@ -563,7 +686,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 </div>
                 <button
                   onClick={() => setIsEndingSession(true)}
-                  disabled={status === "submitted" || status === "streaming"}
+                  disabled={
+                    status === "submitted" ||
+                    status === "streaming" ||
+                    hasBlockingError
+                  }
                   className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
                 >
                   占いを終わる
@@ -588,11 +715,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   rows={2}
                   className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                   style={{ maxHeight: "120px" }}
-                  disabled={status === "streaming"}
+                  disabled={status === "streaming" || hasBlockingError}
                 />
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || status === "streaming"}
+                  disabled={
+                    !inputValue.trim() ||
+                    status === "streaming" ||
+                    hasBlockingError
+                  }
                   className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
                 >
                   <ArrowUp size={18} strokeWidth={2.5} />

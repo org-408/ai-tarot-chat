@@ -7,8 +7,13 @@ import {
 import { homeFreeProviders, providers } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService, clientService } from "@/lib/server/services";
+import {
+  createReadingErrorResponse,
+  createReadingUnexpectedErrorResponse,
+  ReadingRouteError,
+} from "@/lib/server/utils/reading-error";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
@@ -28,14 +33,24 @@ export async function POST(req: NextRequest) {
     const payload = await authService.verifyApiRequest(req);
     if ("error" in payload || !payload) {
       logWithContext("warn", "認証失敗", { path: "/api/readings/simple" });
-      return new Response("unauthorized", { status: 401 });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message: "セッションの確認に失敗しました。いったん戻って再度お試しください。",
+        status: 401,
+        phase: "simple",
+      });
     }
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
     if (!clientId) {
       logWithContext("warn", "clientId不正", { payload });
-      return new Response("unauthorized", { status: 401 });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message: "セッション情報が見つかりません。いったん戻って再度お試しください。",
+        status: 401,
+        phase: "simple",
+      });
     }
     logWithContext("info", "Client ID確認", { clientId });
 
@@ -60,17 +75,21 @@ export async function POST(req: NextRequest) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (isCeltic && usage.remainingCeltics <= 0) {
         logWithContext("warn", "ケルト十字占いの回数上限", { clientId });
-        return NextResponse.json(
-          { error: "本日のケルト十字占いの回数上限に達しました" },
-          { status: 429 }
-        );
+        return createReadingErrorResponse({
+          code: "LIMIT_REACHED",
+          message: "本日のケルト十字占いの回数上限に達しました。",
+          status: 429,
+          phase: "simple",
+        });
       }
       if (!isCeltic && usage.remainingReadings <= 0) {
         logWithContext("warn", "シンプル占いの回数上限", { clientId });
-        return NextResponse.json(
-          { error: "本日のシンプル占いの回数上限に達しました" },
-          { status: 429 }
-        );
+        return createReadingErrorResponse({
+          code: "LIMIT_REACHED",
+          message: "本日のシンプル占いの回数上限に達しました。",
+          status: 429,
+          phase: "simple",
+        });
       }
     }
 
@@ -195,7 +214,14 @@ export async function POST(req: NextRequest) {
           error
         );
         if (i === RETRY_COUNT - 1) {
-          throw error;
+          throw new ReadingRouteError({
+            code: "PROVIDER_TEMPORARY_FAILURE",
+            message:
+              "ただいま占いが混み合っています。少し時間をおいてもう一度お試しください。",
+            status: 503,
+            phase: "simple",
+            retryable: true,
+          });
         }
         logWithContext(
           "info",
@@ -211,9 +237,12 @@ export async function POST(req: NextRequest) {
       error,
       clientId,
     });
-    return NextResponse.json(
-      { error, errorMessage: "[readings/simple/route] Internal Server Error" },
-      { status: 500 }
-    );
+    return createReadingUnexpectedErrorResponse(error, {
+      code: "INTERNAL_ERROR",
+      message:
+        "占いの開始に失敗しました。時間をおいてもう一度お試しください。",
+      status: 500,
+      phase: "simple",
+    });
   }
 }
