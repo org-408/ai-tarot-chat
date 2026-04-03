@@ -13,12 +13,27 @@ jobs:
   web:
     name: Web (Next.js)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ci -d ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     defaults:
       run:
         working-directory: web
     env:
       # Prisma generate と tsc に必要な最低限のダミー値
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
+      SHADOW_DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=shadow
       AUTH_SECRET: ci-dummy-secret-for-build-only
       LOCAL_TIMEZONE: Asia/Tokyo
       DISABLE_CONSOLE_LOG: "true"
@@ -66,6 +81,7 @@ jobs:
             npx prisma migrate diff \
               --from-migrations ./prisma/migrations \
               --to-schema-datamodel ./prisma/schema.prisma \
+              --shadow-database-url "$SHADOW_DATABASE_URL" \
               --exit-code
             echo "✅ schema.prisma と migrations の差分なし"
           else
