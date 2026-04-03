@@ -60,9 +60,14 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // 初回マウント: 残回数がある場合のみ init → isPersonal=true → ChatPanel マウント許可
   useEffect(() => {
     if (!canStartPersonal) return;
+    setPhase("chat");
+    setPhase1Messages([]);
     init();
     setIsPersonal(true);
-    setChatResetKey(0);
+    setChatResetKey((current) => (current === null ? 0 : current + 1));
+    return () => {
+      setIsPersonal(false);
+    };
   }, [canStartPersonal, init, setIsPersonal]);
 
   // Reading phase 開始時にカードを引く
@@ -107,6 +112,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // （利用制限到達後に再チャットを始めてしまうことを防ぐ）
   const handleBackFromReading = () => {
     setUpperViewerMode("grid");
+    init();
     onBack();
   };
 
