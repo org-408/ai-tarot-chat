@@ -310,7 +310,7 @@ export class ClientService {
                 counterField: "dailyReadingsCount" as const,
                 lastDateField: "lastReadingDate" as const,
                 limit: plan.maxReadings,
-                message: "本日の占い回数上限に達しました。",
+                message: "本日のクイック占い回数上限に達しました。",
                 phase: "simple" as const,
               };
 
