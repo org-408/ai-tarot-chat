@@ -15,38 +15,9 @@ import {
 import { ReadingRouteError } from "@/lib/server/utils/reading-error";
 import { isSameDayJST } from "@/lib/utils/date";
 
+const debugMode = process.env.AI_DEBUG_MODE === "true";
+
 export class ClientService {
-  private buildUsage(targetClient: Client, hasDailyReset = false): UsageStats {
-    if (!targetClient.plan) {
-      throw new Error("Plan not found");
-    }
-
-    return {
-      plan: targetClient.plan,
-      isRegistered: targetClient.isRegistered,
-      lastLoginAt: targetClient.lastLoginAt,
-      hasDailyReset,
-      dailyReadingsCount: targetClient.dailyReadingsCount,
-      dailyCelticsCount: targetClient.dailyCelticsCount,
-      dailyPersonalCount: targetClient.dailyPersonalCount,
-      remainingReadings: Math.max(
-        0,
-        targetClient.plan.maxReadings - targetClient.dailyReadingsCount
-      ),
-      remainingCeltics: Math.max(
-        0,
-        targetClient.plan.maxCeltics - targetClient.dailyCelticsCount
-      ),
-      remainingPersonal: Math.max(
-        0,
-        targetClient.plan.maxPersonal - targetClient.dailyPersonalCount
-      ),
-      lastReadingDate: targetClient.lastReadingDate,
-      lastCelticReadingDate: targetClient.lastCelticReadingDate,
-      lastPersonalReadingDate: targetClient.lastPersonalReadingDate,
-    };
-  }
-
   /**
    * 今日の残り回数取得
    */
@@ -139,7 +110,30 @@ export class ClientService {
           dailyPersonalCount: client.dailyPersonalCount,
         });
 
-        return this.buildUsage(client, needsReset);
+        return {
+          plan,
+          isRegistered: client.isRegistered,
+          lastLoginAt: client.lastLoginAt,
+          hasDailyReset: needsReset,
+          dailyReadingsCount: client.dailyReadingsCount,
+          dailyCelticsCount: client.dailyCelticsCount,
+          dailyPersonalCount: client.dailyPersonalCount,
+          remainingReadings: Math.max(
+            0,
+            plan.maxReadings - client.dailyReadingsCount
+          ),
+          remainingCeltics: Math.max(
+            0,
+            plan.maxCeltics - client.dailyCelticsCount
+          ),
+          remainingPersonal: Math.max(
+            0,
+            plan.maxPersonal - client.dailyPersonalCount
+          ),
+          lastReadingDate: client.lastReadingDate,
+          lastCelticReadingDate: client.lastCelticReadingDate,
+          lastPersonalReadingDate: client.lastPersonalReadingDate,
+        };
       }
     );
   }
@@ -392,7 +386,30 @@ export class ClientService {
           dailyPersonalCount: updatedClient.dailyPersonalCount,
         });
 
-        return this.buildUsage(updatedClient, needsReset);
+        return {
+          plan: updatedClient.plan!,
+          isRegistered: updatedClient.isRegistered,
+          lastLoginAt: updatedClient.lastLoginAt,
+          hasDailyReset: needsReset,
+          dailyReadingsCount: updatedClient.dailyReadingsCount,
+          dailyCelticsCount: updatedClient.dailyCelticsCount,
+          dailyPersonalCount: updatedClient.dailyPersonalCount,
+          remainingReadings: Math.max(
+            0,
+            updatedClient.plan!.maxReadings - updatedClient.dailyReadingsCount
+          ),
+          remainingCeltics: Math.max(
+            0,
+            updatedClient.plan!.maxCeltics - updatedClient.dailyCelticsCount
+          ),
+          remainingPersonal: Math.max(
+            0,
+            updatedClient.plan!.maxPersonal - updatedClient.dailyPersonalCount
+          ),
+          lastReadingDate: updatedClient.lastReadingDate,
+          lastCelticReadingDate: updatedClient.lastCelticReadingDate,
+          lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
+        };
       }
     );
   }
@@ -414,6 +431,7 @@ export class ClientService {
       async ({ client: clientRepo, reading: ReadingRepo }) => {
         const {
           readingId,
+          incrementUsage = true,
           clientId,
           deviceId: payloadDeviceId,
           tarotist,
@@ -423,6 +441,37 @@ export class ClientService {
           cards,
           chatMessages,
         } = params;
+
+        const buildUsage = (targetClient: Client): UsageStats => {
+          if (!targetClient.plan) {
+            throw new Error("Plan not found");
+          }
+
+          return {
+            plan: targetClient.plan,
+            isRegistered: targetClient.isRegistered,
+            lastLoginAt: targetClient.lastLoginAt,
+            hasDailyReset: false,
+            dailyReadingsCount: targetClient.dailyReadingsCount,
+            dailyCelticsCount: targetClient.dailyCelticsCount,
+            dailyPersonalCount: targetClient.dailyPersonalCount,
+            remainingReadings: Math.max(
+              0,
+              targetClient.plan.maxReadings - targetClient.dailyReadingsCount
+            ),
+            remainingCeltics: Math.max(
+              0,
+              targetClient.plan.maxCeltics - targetClient.dailyCelticsCount
+            ),
+            remainingPersonal: Math.max(
+              0,
+              targetClient.plan.maxPersonal - targetClient.dailyPersonalCount
+            ),
+            lastReadingDate: targetClient.lastReadingDate,
+            lastCelticReadingDate: targetClient.lastCelticReadingDate,
+            lastPersonalReadingDate: targetClient.lastPersonalReadingDate,
+          };
+        };
 
         if (
           !clientId ||
@@ -481,6 +530,10 @@ export class ClientService {
           );
           throw new Error("Either customQuestion or category must be provided");
         }
+        const isPersonalReading =
+          !!customQuestion && customQuestion.trim().length > 0;
+        const isCeltic =
+          !isPersonalReading && spread.code.toLowerCase().includes("celtic");
 
         const needsReset = [
           client.lastReadingDate,
@@ -536,10 +589,60 @@ export class ClientService {
           }
 
           return {
-            usage: this.buildUsage(refreshedClient),
+            usage: buildUsage(refreshedClient),
             reading: savedReading,
           };
         }
+
+        const quotaConfig = isPersonalReading
+          ? {
+              counterField: "dailyPersonalCount" as const,
+              lastDateField: "lastPersonalReadingDate" as const,
+              limit: plan.maxPersonal,
+              message: "本日のパーソナル占いの回数上限に達しました。",
+              phase: "personal-reading" as const,
+            }
+          : isCeltic
+          ? {
+              counterField: "dailyCelticsCount" as const,
+              lastDateField: "lastCelticReadingDate" as const,
+              limit: plan.maxCeltics,
+              message: "本日のケルト十字占いの回数上限に達しました。",
+              phase: "simple" as const,
+            }
+          : {
+              counterField: "dailyReadingsCount" as const,
+              lastDateField: "lastReadingDate" as const,
+              limit: plan.maxReadings,
+              message: "本日のシンプル占いの回数上限に達しました。",
+              phase: "simple" as const,
+            };
+
+        let quotaConsumed = true;
+        if (!incrementUsage) {
+          quotaConsumed = true;
+        } else if (isPersonalReading && debugMode) {
+          await clientRepo.updateClient(clientId, {
+            [quotaConfig.lastDateField]: new Date(),
+          });
+        } else {
+          quotaConsumed = await clientRepo.incrementUsageIfWithinLimit({
+            clientId,
+            counterField: quotaConfig.counterField,
+            lastDateField: quotaConfig.lastDateField,
+            limit: quotaConfig.limit,
+          });
+        }
+
+        if (!quotaConsumed) {
+          throw new ReadingRouteError({
+            code: "LIMIT_REACHED",
+            message: quotaConfig.message,
+            status: 429,
+            phase: quotaConfig.phase,
+          });
+        }
+
         savedReading = await ReadingRepo.createReading(params);
         logWithContext("info", "Saved new reading", {
           readingId: savedReading.id,
@@ -550,7 +653,7 @@ export class ClientService {
           throw new Error("Client not found after saving reading");
         }
 
-        const usage = this.buildUsage(refreshedClient);
+        const usage = buildUsage(refreshedClient);
 
         logWithContext("info", "Created new reading", {
           usage,

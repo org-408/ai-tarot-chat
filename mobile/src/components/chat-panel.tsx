@@ -413,7 +413,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     return {
       readingId: savedReadingId ?? undefined,
-      incrementUsage: savedReadingId === null,
+      incrementUsage: isPersonal ? savedReadingId === null : false,
       tarotistId: tarotist.id,
       tarotist,
       spreadId: spread.id,
