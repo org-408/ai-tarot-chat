@@ -49,6 +49,7 @@ interface ClientState {
   // ============================================
   init: () => Promise<void>;
   setPlan: (plan: Plan) => void; // for lifecycle store
+  debugSetPlan: (plan: Plan) => void;
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
@@ -147,6 +148,19 @@ export const useClientStore = create<ClientState>()(
           planCode: plan.code,
         });
         set({ currentPlan: plan });
+      },
+
+      debugSetPlan: (plan: Plan) => {
+        logWithContext("info", "[ClientStore] Debug plan override", {
+          planCode: plan.code,
+        });
+
+        const usage = get().usage;
+        set({
+          currentPlan: plan,
+          usage: usage ? { ...usage, plan } : usage,
+          error: null,
+        });
       },
 
       // ============================================

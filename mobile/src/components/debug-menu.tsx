@@ -34,7 +34,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
   const { isReady: authIsReady, isAuthenticated } = auth;
 
   const client = useClient();
-  const { isReady: clientIsReady, currentPlan } = client;
+  const { isReady: clientIsReady, currentPlan, debugSetPlan } = client;
 
   const master = useMaster();
   const { masterData, plans } = master;
@@ -79,8 +79,17 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
     console.log(`プラン変更リクエスト: ${currentPlan?.code} → ${newPlan}`);
 
     try {
+      const targetPlan = getPlan(newPlan);
+      if (!targetPlan) return;
+
+      if (import.meta.env.VITE_DEBUG_MODE === "true") {
+        debugSetPlan(targetPlan);
+        console.log("デバッグ用プラン変更成功");
+        return;
+      }
+
       // changePlanが全てを処理（サインインが必要な場合も内部で処理）
-      await changePlan(getPlan(newPlan)!);
+      await changePlan(targetPlan);
       console.log("プラン変更成功");
     } catch (err) {
       console.error("プラン変更エラー:", err);
