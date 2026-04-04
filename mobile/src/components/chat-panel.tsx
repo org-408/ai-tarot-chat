@@ -394,8 +394,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           messages.length > 0;
   };
 
-  const getTargetMessages = () =>
-    isPhase2 ? messages.slice(initialLen) : messages;
+  const getTargetMessages = () => messages;
 
   const buildPersistSignature = (readingIdOverride = savedReadingId) =>
     `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
@@ -410,8 +409,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const buildReadingPayload = (): SaveReadingInput => {
     const targetMessages = getTargetMessages();
+    // Phase2 では initialLen 以降の最初の assistant メッセージが初回鑑定（FINAL_READING）
     const firstPhase2TarotistIdx = isPhase2
-      ? targetMessages.findIndex((m) => m.role === "assistant")
+      ? targetMessages.findIndex((m, i) => m.role === "assistant" && i >= initialLen)
       : -1;
 
     return {
@@ -428,7 +428,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
         if (msg.role === "user") {
           chatType = "USER_QUESTION";
-        } else if (isPhase2 && i !== firstPhase2TarotistIdx) {
+        } else if (isPhase2 && i === firstPhase2TarotistIdx) {
+          chatType = "FINAL_READING";
+        } else if (isPhase2) {
           chatType = "TAROTIST_ANSWER";
         } else {
           chatType = "FINAL_READING";
