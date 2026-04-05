@@ -232,11 +232,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isPersonal, masterData.spreads, messages, status]);
 
   useEffect(() => {
-    // isPersonal が切り替わったらメッセージをストップ
-    if (!isPersonal) {
+    // isPersonal が切り替わったらストリーミング中のみストップ
+    // status が ready/error の場合はストリーミング完了済みのため stop() を呼ばない
+    // （呼ぶと saveReading 後の canStartPersonal 変化で Phase2 メッセージが途切れる）
+    if (!isPersonal && (status === "streaming" || status === "submitted")) {
       stop();
     }
-  }, [isPersonal, stop]);
+  }, [isPersonal, status, stop]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
   // useEffect(() => {
