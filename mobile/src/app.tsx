@@ -1,19 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import type { Plan } from "../../shared/lib/types";
-import ClaraPage from "./components/clara-page";
-import { DebugMenu } from "./components/debug-menu";
 import Header from "./components/header";
-import HistoryPage from "./components/history-page";
-import PersonalPage from "./components/personal-page";
-import PlansPage from "./components/plans-page";
-import ReadingPage from "./components/reading-page";
-import SalonPage from "./components/salon-page";
-import SettingsPage from "./components/settings-page";
 import SidebarMenu from "./components/sidebar-menu";
-import SwipeableDemo from "./components/swipeable-demo";
-import TarotistPage from "./components/tarotist-page";
-import TarotistSwipePage from "./components/tarotist-swipe-page";
 import { useAuth } from "./lib/hooks/use-auth";
 import { useClient } from "./lib/hooks/use-client";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
@@ -24,6 +13,22 @@ import { showInterstitialAd } from "./lib/utils/admob";
 import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
+
+const SalonPage = lazy(() => import("./components/salon-page"));
+const PersonalPage = lazy(() => import("./components/personal-page"));
+const ReadingPage = lazy(() => import("./components/reading-page"));
+const PlansPage = lazy(() => import("./components/plans-page"));
+const TarotistPage = lazy(() => import("./components/tarotist-page"));
+const TarotistSwipePage = lazy(() => import("./components/tarotist-swipe-page"));
+const SwipeableDemo = lazy(() => import("./components/swipeable-demo"));
+const ClaraPage = lazy(() => import("./components/clara-page"));
+const HistoryPage = lazy(() => import("./components/history-page"));
+const SettingsPage = lazy(() => import("./components/settings-page"));
+const DebugMenu = lazy(() =>
+  import("./components/debug-menu").then((module) => ({
+    default: module.DebugMenu,
+  })),
+);
 
 // ─────────────────────────────────────────────
 // プラン失効通知コンポーネント
@@ -81,6 +86,8 @@ const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => (
     </motion.div>
   </motion.div>
 );
+
+const PageFallback: React.FC = () => <TarotSplashScreen message="読み込み中..." />;
 
 function App() {
   // ✅ デバッグモードフラグ（本番は false に設定）
@@ -748,11 +755,13 @@ function App() {
       />
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
-        <DebugMenu
-          devMenuOpen={devMenuOpen}
-          setDevMenuOpen={setDevMenuOpen}
-          setPageType={setPageType}
-        />
+        <Suspense fallback={null}>
+          <DebugMenu
+            devMenuOpen={devMenuOpen}
+            setDevMenuOpen={setDevMenuOpen}
+            setPageType={setPageType}
+          />
+        </Suspense>
       )}
 
       {/* ユーザー情報表示 */}
@@ -761,7 +770,9 @@ function App() {
           {payload.user.email}
         </div>
       )}
-      <div className="main-content-area">{renderPage()}</div>
+      <div className="main-content-area">
+        <Suspense fallback={<PageFallback />}>{renderPage()}</Suspense>
+      </div>
     </div>
   );
 }
