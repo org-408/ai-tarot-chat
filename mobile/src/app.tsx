@@ -137,7 +137,12 @@ function App() {
 
   // 🔥 マスターデータ取得
   // ✅ 修正: 条件なしで呼び出し（lifecycle.tsがinit()を管理）
-  const { masterData, plans, isLoading: isMasterLoading } = useMaster();
+  const {
+    isReady: masterIsReady,
+    masterData,
+    plans,
+    isLoading: isMasterLoading,
+  } = useMaster();
 
   // 🔥 初期化処理
   useEffect(() => {
@@ -368,8 +373,7 @@ function App() {
     !isInitialized ||
     !authIsReady ||
     !clientIsReady ||
-    isMasterLoading ||
-    !masterData ||
+    !masterIsReady ||
     !usageStats ||
     !payload
   ) {
@@ -383,7 +387,7 @@ function App() {
                 ? "認証情報を確認中... (1/4)"
                 : !clientIsReady
                   ? "利用状況を取得中... (3/4)"
-                  : isMasterLoading || !masterData
+                  : !masterIsReady
                     ? "データを読み込み中... (4/4)"
                     : !usageStats
                       ? "利用状況を取得中... (3/4)"

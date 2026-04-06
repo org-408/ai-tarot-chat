@@ -103,7 +103,19 @@ export const useClientStore = create<ClientState>()(
       // ============================================
       init: async () => {
         logWithContext("info", "[ClientStore] Initializing");
-        set({ isReady: false, error: null });
+        const cachedUsage = get().usage;
+
+        set({
+          isReady: !!cachedUsage,
+          error: null,
+        });
+
+        if (cachedUsage) {
+          logWithContext("info", "[ClientStore] Using cached usage during init", {
+            planCode: cachedUsage.plan.code,
+            remainingReadings: cachedUsage.remainingReadings,
+          });
+        }
 
         try {
           // ✅ サーバーから利用状況を取得
@@ -115,15 +127,6 @@ export const useClientStore = create<ClientState>()(
           set({ currentPlan, usage, lastFetchedDate: today });
 
           await clientService.saveLastFetchedDate(today);
-
-          // 占い履歴取得は非致命的
-          try {
-            await clientService.getReadingHistory(get().take, get().skip);
-          } catch (readingsError) {
-            logWithContext("warn", "[ClientStore] Failed to fetch reading history (non-critical)", {
-              error: readingsError instanceof Error ? readingsError.message : String(readingsError),
-            });
-          }
 
           set({ isReady: true, error: null });
 

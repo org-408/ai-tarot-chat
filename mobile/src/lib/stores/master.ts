@@ -46,11 +46,42 @@ export const useMasterStore = create<MasterState>()(
       error: null,
 
       init: async () => {
-        try {
-          logWithContext("info", "[MasterStore] Initialization started");
-          set({ isLoading: true, error: null });
+        logWithContext("info", "[MasterStore] Initialization started");
 
-          // 初回は必ずサーバーから取得
+        const localData = get().masterData || DEFAULT_MASTER_DATA;
+
+        set({
+          masterData: localData,
+          isReady: true,
+          isLoading: false,
+          error: null,
+        });
+
+        logWithContext("info", "[MasterStore] Using local master data", {
+          version: localData.version,
+          decksCount: localData.decks?.length || 0,
+          spreadsCount: localData.spreads?.length || 0,
+        });
+
+        try {
+          const versionCheck = await get().checkVersion();
+
+          if (!versionCheck.needsUpdate) {
+            logWithContext(
+              "info",
+              "[MasterStore] Local master data is up to date"
+            );
+            return;
+          }
+
+          set({ isLoading: true });
+
+          logWithContext(
+            "info",
+            "[MasterStore] Update needed, fetching latest master data",
+            versionCheck
+          );
+
           const data = await masterService.getMasterData();
 
           set({
@@ -66,11 +97,19 @@ export const useMasterStore = create<MasterState>()(
             spreadsCount: data.spreads?.length || 0,
           });
         } catch (error) {
-          // フォールバック: バンドルデータ使用
-          console.warn("Using bundled master data", error);
+          const normalizedError =
+            error instanceof Error ? error : new Error(String(error));
+
+          logWithContext(
+            "warn",
+            "[MasterStore] Failed to refresh master data, keeping local copy",
+            { error: normalizedError.message }
+          );
+
           set({
-            masterData: DEFAULT_MASTER_DATA,
             isReady: true,
+            isLoading: false,
+            error: normalizedError,
           });
         }
       },
