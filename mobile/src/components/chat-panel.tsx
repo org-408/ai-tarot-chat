@@ -168,6 +168,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [, setIsFocused] = useState(false);
   const [, setIsKeyboardReady] = useState(false);
+  const wasPersonalRef = useRef(isPersonal);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
@@ -232,12 +233,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isPersonal, masterData.spreads, messages, status]);
 
   useEffect(() => {
-    // isPersonal が切り替わったらストリーミング中のみストップ
-    // status が ready/error の場合はストリーミング完了済みのため stop() を呼ばない
-    // （呼ぶと saveReading 後の canStartPersonal 変化で Phase2 メッセージが途切れる）
-    if (!isPersonal && (status === "streaming" || status === "submitted")) {
+    // Phase2 のストリーミング中に personal モードから外れたときだけ停止する。
+    // クイック占いは常に isPersonal=false のため、単純条件だと初回リクエストまで止めてしまう。
+    const wasPersonal = wasPersonalRef.current;
+    if (
+      wasPersonal &&
+      !isPersonal &&
+      (status === "streaming" || status === "submitted")
+    ) {
       stop();
     }
+    wasPersonalRef.current = isPersonal;
   }, [isPersonal, status, stop]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
