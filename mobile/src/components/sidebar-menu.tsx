@@ -137,7 +137,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
           />
 
           {/* 🔥 サイドバー - drag機能でスワイプ対応 */}
@@ -159,7 +159,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 onClose();
               }
             }}
-            className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 flex flex-col"
+            className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[70] flex flex-col"
           >
             {/* 🔥 ヘッダー部分 */}
             <div className="px-6 py-6 bg-gradient-to-br from-purple-600 to-indigo-600 text-white">
