@@ -162,7 +162,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
             className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[70] flex flex-col"
           >
             {/* 🔥 ヘッダー部分 */}
-            <div className="px-6 py-6 bg-gradient-to-br from-purple-600 to-indigo-600 text-white">
+            <div
+              className="px-6 pb-6 bg-gradient-to-br from-purple-600 to-indigo-600 text-white"
+              style={{ paddingTop: "calc(var(--safe-top) + 1.5rem)" }}
+            >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">メニュー</h2>
                 <button
