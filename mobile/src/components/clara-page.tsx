@@ -21,7 +21,7 @@ import UpperViewer from "./upper-viewer";
 // ─────────────────────────────────────────────
 
 const CLARA_DISCLAIMER =
-  "📖 Clara より：それぞれのカードの意味をお伝えしました！本当はカード同士の関係も読めると良いのですが、まだ勉強中で…💦 各カードのメッセージを組み合わせた総合的な解釈は、あなたの直感に委ねます。きっと答えはあなたの中にあります 🌟";
+  "📖 それぞれのカードの意味をお伝えしました！\n本当はカード同士の関係も読めると良いのですが、まだ勉強中で…💦\n 各カードのメッセージを組み合わせた総合的な解釈は、あなたの直感に委ねます。\nきっと答えはあなたの中にあります 🌟";
 
 const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
   恋愛: "love",
@@ -37,8 +37,14 @@ const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
 function buildClaraMessages(
   drawnCards: DrawnCard[],
   categoryName: string,
+  spreadName: string,
 ): string[] {
   const meaningKey = CATEGORY_TO_MEANING_KEY[categoryName] ?? "love";
+
+  const introMessage =
+    `こんにちは、Claraです。\n` +
+    `今回は「${categoryName}」について、スプレッド「${spreadName}」でカードを読み解いていきますね。\n` +
+    `それぞれの位置がどんな意味を持つのかもあわせて、1枚ずつ丁寧に見ていきましょう。`;
 
   const cardMessages = drawnCards.map((dc) => {
     const card = dc.card!;
@@ -51,10 +57,10 @@ function buildClaraMessages(
       dc.isReversed ? card.reversedKeywords : card.uprightKeywords
     )?.join("、");
 
-    return `**${dc.position}（${orientation}）: ${card.name}**\n\n${text ?? fallback ?? ""}`;
+    return `**${dc.position}（${orientation}）: ${card.name}**\n\nこのカードの位置は${dc.position}を示しています。\n\n${text ?? fallback ?? ""}`;
   });
 
-  return [...cardMessages, CLARA_DISCLAIMER];
+  return [introMessage, ...cardMessages, CLARA_DISCLAIMER];
 }
 
 // ─────────────────────────────────────────────
@@ -158,6 +164,8 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     drawnCards,
     setDrawnCards,
     setIsRevealingCompleted,
+    isRevealingCompleted,
+    setUpperViewerMode,
   } = useSalon();
 
   // Clara は masterData から直接取得（ストアの selectedTarotist は変更しない）
@@ -176,9 +184,18 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     const drawn = drawRandomCards(masterData, selectedSpread);
     setDrawnCards(drawn);
     setIsRevealingCompleted(true); // 全カードを最初からめくれた状態に
-    setClaraMessages(buildClaraMessages(drawn, selectedCategory.name));
+    setClaraMessages(
+      buildClaraMessages(drawn, selectedCategory.name, selectedSpread.name),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
+
+  // クイック占いと同様に、カード表示完了後は上段をプロフィール表示へ戻す
+  useEffect(() => {
+    if (isRevealingCompleted) {
+      setUpperViewerMode("profile");
+    }
+  }, [isRevealingCompleted, setUpperViewerMode]);
 
   // 「占いを始める」ボタン → reading フェーズへ
   const handleStartReading = () => {
@@ -190,6 +207,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   const handleReset = () => {
     setDrawnCards([]);
     setIsRevealingCompleted(false);
+    setUpperViewerMode("grid");
     setClaraMessages([]);
     setPhase("select");
   };

@@ -28,6 +28,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     setSelectedCategory,
     selectedSpread,
     setSelectedSpread,
+    lastClaraCategoryId,
+    lastClaraSpreadId,
+    setLastClaraSelection,
     isPersonal,
   } = useSalon();
 
@@ -144,17 +147,52 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     const isSelectedInList = availableCategories.some(
       (c) => c.id === selectedCategory?.id
     );
-    if (availableCategories.length > 0 && !isSelectedInList) {
-      setSelectedCategory(availableCategories[0]);
+    if (availableCategories.length === 0 || isSelectedInList) return;
+
+    if (claraMode && lastClaraCategoryId) {
+      const lastClaraCategory = availableCategories.find(
+        (category) => category.id === lastClaraCategoryId
+      );
+      if (lastClaraCategory) {
+        setSelectedCategory(lastClaraCategory);
+        return;
+      }
     }
-  }, [availableCategories, selectedCategory, setSelectedCategory]);
+
+    setSelectedCategory(availableCategories[0]);
+  }, [
+    availableCategories,
+    claraMode,
+    lastClaraCategoryId,
+    selectedCategory,
+    setSelectedCategory,
+  ]);
 
   useEffect(() => {
     console.log("[SalonPage] availableSpreads changed", availableSpreads);
-    if (availableSpreads.length > 0 && !selectedSpread) {
-      setSelectedSpread(selectedSpread || availableSpreads[0]);
+    const isSelectedInList = availableSpreads.some(
+      (spread) => spread.id === selectedSpread?.id
+    );
+    if (availableSpreads.length === 0 || isSelectedInList) return;
+
+    if (claraMode && lastClaraSpreadId) {
+      const lastClaraSpread = availableSpreads.find(
+        (spread) => spread.id === lastClaraSpreadId
+      );
+      if (lastClaraSpread) {
+        setSelectedSpread(lastClaraSpread);
+        return;
+      }
     }
-  }, [availableSpreads, selectedSpread, setSelectedSpread]);
+
+    setSelectedSpread(availableSpreads[0]);
+  }, [
+    availableSpreads,
+    claraMode,
+    lastClaraSpreadId,
+    selectedSpread,
+    setSelectedSpread,
+  ]);
 
   const remaining = isPersonal
     ? remainingPersonal
@@ -170,10 +208,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   const handleStartReading = () => {
     if (isDisabled) return;
+    const categoryToUse = selectedCategory || availableCategories[0];
+    const spreadToUse = selectedSpread || availableSpreads[0];
+
+    setSelectedCategory(categoryToUse);
+    setSelectedSpread(spreadToUse);
+    if (claraMode) {
+      setLastClaraSelection(categoryToUse?.id ?? null, spreadToUse?.id ?? null);
+    }
     onHandleStartReading();
-    // ストアに保存(念のため、nullガード付き)
-    setSelectedCategory(selectedCategory || availableCategories[0]);
-    setSelectedSpread(selectedSpread || availableSpreads[0]);
   };
 
   return (

@@ -21,6 +21,8 @@ interface SalonState {
   selectedCategory: ReadingCategory;
   customQuestion: string;
   selectedSpread: Spread;
+  lastClaraCategoryId: string | null;
+  lastClaraSpreadId: string | null;
   drawnCards: DrawnCard[];
   isRevealingCompleted: boolean;
   selectedTargetMode: SelectTargetMode;
@@ -34,6 +36,10 @@ interface SalonState {
   setSelectedCategory: (category: ReadingCategory) => void;
   setCustomQuestion: (question: string) => void;
   setSelectedSpread: (spread: Spread) => void;
+  setLastClaraSelection: (
+    categoryId: string | null,
+    spreadId: string | null
+  ) => void;
   setDrawnCards: (cards: DrawnCard[]) => void;
   setIsRevealingCompleted: (completed: boolean) => void;
   setSelectedTargetMode: (mode: SelectTargetMode) => void;
@@ -62,6 +68,8 @@ export const useSalonStore = create<SalonState>()(
       selectedCategory: initialCategory,
       customQuestion: "",
       selectedSpread: initialSpread,
+      lastClaraCategoryId: null,
+      lastClaraSpreadId: null,
       drawnCards: [],
       isRevealingCompleted: false,
       selectedTargetMode: "tarotist",
@@ -71,10 +79,14 @@ export const useSalonStore = create<SalonState>()(
       isPersonal: false,
       messages: [],
       init: () => {
-        set({
-          selectedCategory: initialCategory,
+        set((state) => ({
+          selectedCategory: state.selectedCategory?.id
+            ? state.selectedCategory
+            : initialCategory,
           customQuestion: "",
-          selectedSpread: initialSpread,
+          selectedSpread: state.selectedSpread?.id
+            ? state.selectedSpread
+            : initialSpread,
           drawnCards: [],
           isRevealingCompleted: false,
           spreadViewerMode: "grid",
@@ -82,12 +94,17 @@ export const useSalonStore = create<SalonState>()(
           lowerViewerMode: "selector",
           isPersonal: false,
           messages: [],
-        });
+        }));
       },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
       setSelectedCategory: (category) => set({ selectedCategory: category }),
       setCustomQuestion: (question) => set({ customQuestion: question }),
       setSelectedSpread: (spread) => set({ selectedSpread: spread }),
+      setLastClaraSelection: (categoryId, spreadId) =>
+        set({
+          lastClaraCategoryId: categoryId,
+          lastClaraSpreadId: spreadId,
+        }),
       setDrawnCards: (cards) => set({ drawnCards: cards }),
       setIsRevealingCompleted: (completed) =>
         set({ isRevealingCompleted: completed }),
