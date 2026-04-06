@@ -54,6 +54,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { saveReading, refreshUsage } = useClient();
   const [isSavingReading, setIsSavingReading] = useState(false);
+  const [isSyncingUsage, setIsSyncingUsage] = useState(false);
 
   const {
     selectedTarotist: tarotist,
@@ -156,9 +157,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       setChatError(resolvedError);
     },
-    onFinish: (message) => {
+    onFinish: async (message) => {
       console.log("Chat finished:", message);
       setChatError(null);
+
+      if (!isPersonal) {
+        setIsSyncingUsage(true);
+        try {
+          await refreshUsage();
+        } catch (error) {
+          console.warn("Failed to refresh usage after quick reading", error);
+        } finally {
+          setIsSyncingUsage(false);
+        }
+      }
     },
   });
 
@@ -185,7 +197,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const canRetry = !!chatError?.retryable && !isInputFixableError;
   const shouldShowBackButton =
     !!chatError ||
-    (isMessageComplete && !isSavingReading && (!isPhase2 || inputDisabled));
+    (isMessageComplete &&
+      !isSavingReading &&
+      !isSyncingUsage &&
+      (!isPhase2 || inputDisabled));
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -634,7 +649,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
         {(status === "submitted" ||
           status === "streaming" ||
-          isSavingReading) && (
+          isSavingReading ||
+          isSyncingUsage) && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div

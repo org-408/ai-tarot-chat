@@ -130,7 +130,6 @@ function App() {
     isReady: clientIsReady,
     usage: usageStats,
     currentPlan,
-    refreshUsage,
   } = useClient();
 
   const { openManage } = useSubscription();
@@ -454,7 +453,6 @@ function App() {
           <ReadingPage
             masterData={masterData}
             onBack={() => {
-              refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
               setPageType("salon");
             }}
             onUnlock={() => setIsNavigationLocked(false)}

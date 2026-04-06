@@ -336,7 +336,11 @@ export const useClientStore = create<ClientState>()(
           const nextReadings = readings.some((item) => item.id === reading.id)
             ? readings.map((item) => (item.id === reading.id ? reading : item))
             : [reading, ...readings];
-          set({ usage, readings: nextReadings });
+          if (data.incrementUsage === false) {
+            set({ readings: nextReadings });
+          } else {
+            set({ usage, readings: nextReadings });
+          }
           return result;
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to save reading", {
