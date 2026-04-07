@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import type { Plan } from "../../shared/lib/types";
 import Header from "./components/header";
-import ReadingTransitionOverlay from "./components/reading-transition-overlay";
+import ReadingPage from "./components/reading-page";
 import SidebarMenu from "./components/sidebar-menu";
 import { useAuth } from "./lib/hooks/use-auth";
 import { useClient } from "./lib/hooks/use-client";
@@ -17,12 +17,10 @@ import type { PageType, UserPlan } from "./types";
 
 const loadSalonPage = () => import("./components/salon-page");
 const loadPersonalPage = () => import("./components/personal-page");
-const loadReadingPage = () => import("./components/reading-page");
 const loadClaraPage = () => import("./components/clara-page");
 
 const SalonPage = lazy(loadSalonPage);
 const PersonalPage = lazy(loadPersonalPage);
-const ReadingPage = lazy(loadReadingPage);
 const PlansPage = lazy(() => import("./components/plans-page"));
 const TarotistPage = lazy(() => import("./components/tarotist-page"));
 const TarotistSwipePage = lazy(() => import("./components/tarotist-swipe-page"));
@@ -113,10 +111,6 @@ function App() {
   // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
   // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
-  const [isPreparingReadingTransition, setIsPreparingReadingTransition] =
-    useState(false);
-  const [isReadingPageReady, setIsReadingPageReady] = useState(false);
-  const [isClaraPageReady, setIsClaraPageReady] = useState(false);
 
   // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
@@ -177,9 +171,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    void loadReadingPage().then(() => setIsReadingPageReady(true));
     void loadPersonalPage();
-    void loadClaraPage().then(() => setIsClaraPageReady(true));
+    void loadClaraPage();
   }, []);
 
   // 🔥 日付変更時の通知表示
@@ -356,42 +349,18 @@ function App() {
   // 占い開始 = AI 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
     if (selectedTarotist?.provider === "OFFLINE") {
-      if (!isClaraPageReady) {
-        setIsPreparingReadingTransition(true);
-      }
-      await loadClaraPage().then(() => setIsClaraPageReady(true));
       setPageType("clara");
       return;
     }
-
-    if (!isReadingPageReady) {
-      setIsPreparingReadingTransition(true);
-    }
-    const readingPagePreload = loadReadingPage().then(() =>
-      setIsReadingPageReady(true),
-    );
 
     const isPaidPlan =
       currentPlan?.code === "STANDARD" || currentPlan?.code === "PREMIUM";
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
-
-    await readingPagePreload;
     setIsNavigationLocked(true); // AI 課金開始 → ナビゲーションロック
     setPageType("reading");
   };
-
-  useEffect(() => {
-    if (!isPreparingReadingTransition) return;
-    if (pageType !== "reading" && pageType !== "clara") return;
-
-    const rafId = window.requestAnimationFrame(() => {
-      setIsPreparingReadingTransition(false);
-    });
-
-    return () => window.cancelAnimationFrame(rafId);
-  }, [isPreparingReadingTransition, pageType]);
 
   // 🔥 起動シーケンスのデバッグログ
   useEffect(() => {
@@ -811,9 +780,6 @@ function App() {
           {payload.user.email}
         </div>
       )}
-      <AnimatePresence>
-        {isPreparingReadingTransition && <ReadingTransitionOverlay />}
-      </AnimatePresence>
       <div className="main-content-area">
         <Suspense fallback={<PageFallback />}>{renderPage()}</Suspense>
       </div>
