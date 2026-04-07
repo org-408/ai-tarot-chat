@@ -13,6 +13,7 @@ import { showInterstitialAd } from "../lib/utils/admob";
 import { drawRandomCards } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 import { ChatPanel } from "./chat-panel";
+import ReadingTransitionOverlay from "./reading-transition-overlay";
 import ShuffleDialog from "./shuffle-dialog";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 import UpperViewer from "./upper-viewer";
@@ -59,6 +60,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
 
   const [phase, setPhase] = useState<"chat" | "reading">("chat");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
+  const [isPreparingReadingTransition, setIsPreparingReadingTransition] =
+    useState(false);
 
   // chatResetKey: null = まだ準備中（ChatPanel をマウントしない）、number = Phase1 ChatPanel のキー
   const [chatResetKey, setChatResetKey] = useState<number | null>(null);
@@ -107,6 +110,16 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     return () => clearTimeout(t);
   }, [phase, drawnCards.length, setIsRevealingCompleted]);
 
+  useEffect(() => {
+    if (!isPreparingReadingTransition || phase !== "reading") return;
+
+    const rafId = window.requestAnimationFrame(() => {
+      setIsPreparingReadingTransition(false);
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [isPreparingReadingTransition, phase]);
+
   // Phase1 → Phase2 へ（無料プランのみ広告表示 → 閉じてから遷移）
   // Phase2 開始 = AI API 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
@@ -115,6 +128,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
       onNavigateToClara?.();
       return;
     }
+    setIsPreparingReadingTransition(true);
     const isPaidPlan =
       currentPlan.code === "STANDARD" || currentPlan.code === "PREMIUM";
     if (!isPaidPlan) {
@@ -139,6 +153,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   if (phase === "reading") {
     return (
       <div className="main-container">
+        {isPreparingReadingTransition && <ReadingTransitionOverlay />}
         <ShuffleDialog
           isOpen={!drawnCards || drawnCards.length === 0}
           onComplete={() => {}}
@@ -203,6 +218,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // ===== Chat Phase =====
   return (
     <div className="main-container">
+      {isPreparingReadingTransition && <ReadingTransitionOverlay />}
       {selectedTargetMode === "tarotist" ? (
         <TarotistCarouselPortrait
           masterData={masterData}
