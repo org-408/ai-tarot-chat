@@ -17,6 +17,8 @@ import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
+const maxOutputTokens = 12288; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
+
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
 
@@ -35,7 +37,8 @@ export async function POST(req: NextRequest) {
       logWithContext("warn", "認証失敗", { path: "/api/readings/simple" });
       return createReadingErrorResponse({
         code: "UNAUTHORIZED",
-        message: "セッションの確認に失敗しました。いったん戻って再度お試しください。",
+        message:
+          "セッションの確認に失敗しました。いったん戻って再度お試しください。",
         status: 401,
         phase: "simple",
       });
@@ -47,7 +50,8 @@ export async function POST(req: NextRequest) {
       logWithContext("warn", "clientId不正", { payload });
       return createReadingErrorResponse({
         code: "UNAUTHORIZED",
-        message: "セッション情報が見つかりません。いったん戻って再度お試しください。",
+        message:
+          "セッション情報が見つかりません。いったん戻って再度お試しください。",
         status: 401,
         phase: "simple",
       });
@@ -108,7 +112,7 @@ export async function POST(req: NextRequest) {
                   placement.isReversed
                     ? placement.card!.reversedKeywords.join(", ")
                     : placement.card!.uprightKeywords.join(", ")
-                }`
+                }`,
             )
             .join("\n")
             .trim()) +
@@ -170,14 +174,15 @@ export async function POST(req: NextRequest) {
               ? homeFreeProviders
                 ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
                 : debugMode
-                ? providers["google"]
-                : providers[provider as keyof typeof providers]
+                  ? providers["google"]
+                  : providers[provider as keyof typeof providers]
               : i === 1
-              ? homeFreeProviders["gemini25"]
-              : homeFreeProviders["google"],
+                ? homeFreeProviders["gemini25"]
+                : homeFreeProviders["google"],
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
+          maxOutputTokens,
           onChunk: (chunk) => {
             console.log(`[readings/simple/route] chunk: `, chunk);
           },
@@ -192,8 +197,7 @@ export async function POST(req: NextRequest) {
           },
           onFinish: async ({ isAborted, responseMessage }) => {
             const hasVisibleText = responseMessage.parts.some(
-              (part) =>
-                part.type === "text" && part.text.trim().length > 0
+              (part) => part.type === "text" && part.text.trim().length > 0,
             );
 
             if (isAborted || !hasVisibleText) {
@@ -220,11 +224,11 @@ export async function POST(req: NextRequest) {
           {
             error,
             clientId,
-          }
+          },
         );
         console.error(
           `[readings/simple/route] シンプル占い試行${i + 1}回目失敗: `,
-          error
+          error,
         );
         if (i === RETRY_COUNT - 1) {
           throw new ReadingRouteError({
@@ -241,7 +245,7 @@ export async function POST(req: NextRequest) {
           `[readings/simple/route] シンプル占い再試行します ${i + 2}回目`,
           {
             clientId,
-          }
+          },
         );
       }
     }
@@ -252,8 +256,7 @@ export async function POST(req: NextRequest) {
     });
     return createReadingUnexpectedErrorResponse(error, {
       code: "INTERNAL_ERROR",
-      message:
-        "占いの開始に失敗しました。時間をおいてもう一度お試しください。",
+      message: "占いの開始に失敗しました。時間をおいてもう一度お試しください。",
       status: 500,
       phase: "simple",
     });
