@@ -1,30 +1,34 @@
 import { motion } from "framer-motion";
 
-interface ReadingTransitionOverlayProps {
-  message?: string;
-}
-
-const ReadingTransitionOverlay: React.FC<ReadingTransitionOverlayProps> = ({
-  message = "占いの準備をしています...",
-}) => {
+const ReadingTransitionOverlay: React.FC = () => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.18 }}
-      className="fixed inset-0 z-[180] flex items-center justify-center bg-[linear-gradient(135deg,#8b9def_0%,#9d7bc2_100%)]"
+      transition={{ duration: 0.12 }}
+      className="fixed inset-0 z-[180] overflow-hidden bg-[linear-gradient(135deg,#8b9def_0%,#9d7bc2_100%)]"
     >
-      <div className="mx-6 w-full max-w-sm rounded-3xl border border-white/30 bg-white/18 px-8 py-10 text-center text-white shadow-2xl backdrop-blur-xl">
+      <motion.div
+        animate={{ opacity: [0.18, 0.28, 0.18] }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="absolute inset-0 bg-white/10 backdrop-blur-sm"
+      />
+      <div className="absolute -top-24 right-[-72px] h-56 w-56 rounded-full bg-white/18 blur-3xl" />
+      <div className="absolute bottom-[-88px] left-[-56px] h-52 w-52 rounded-full bg-indigo-200/25 blur-3xl" />
+      <motion.div
+        initial={{ scale: 0.96, opacity: 0.85 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.14, ease: "easeOut" }}
+        className="absolute inset-0"
+      />
+      <div className="absolute inset-x-0 bottom-10 flex justify-center">
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
-          className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-white/18 shadow-lg"
+          animate={{ opacity: [0.2, 0.45, 0.2], scale: [0.98, 1, 0.98] }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
+          className="h-1.5 w-20 rounded-full bg-white/45 shadow-[0_0_18px_rgba(255,255,255,0.3)]"
         >
-          <div className="h-6 w-6 rounded-full border-2 border-white/40 border-t-white" />
         </motion.div>
-        <p className="text-lg font-bold tracking-wide">AI Tarot Chat</p>
-        <p className="mt-2 text-sm text-white/85">{message}</p>
       </div>
     </motion.div>
   );
