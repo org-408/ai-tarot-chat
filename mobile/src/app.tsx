@@ -115,6 +115,8 @@ function App() {
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
   const [isPreparingReadingTransition, setIsPreparingReadingTransition] =
     useState(false);
+  const [isReadingPageReady, setIsReadingPageReady] = useState(false);
+  const [isClaraPageReady, setIsClaraPageReady] = useState(false);
 
   // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
@@ -175,9 +177,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    void loadReadingPage();
+    void loadReadingPage().then(() => setIsReadingPageReady(true));
     void loadPersonalPage();
-    void loadClaraPage();
+    void loadClaraPage().then(() => setIsClaraPageReady(true));
   }, []);
 
   // 🔥 日付変更時の通知表示
@@ -354,14 +356,20 @@ function App() {
   // 占い開始 = AI 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
     if (selectedTarotist?.provider === "OFFLINE") {
-      setIsPreparingReadingTransition(true);
-      await loadClaraPage();
+      if (!isClaraPageReady) {
+        setIsPreparingReadingTransition(true);
+      }
+      await loadClaraPage().then(() => setIsClaraPageReady(true));
       setPageType("clara");
       return;
     }
 
-    setIsPreparingReadingTransition(true);
-    const readingPagePreload = loadReadingPage();
+    if (!isReadingPageReady) {
+      setIsPreparingReadingTransition(true);
+    }
+    const readingPagePreload = loadReadingPage().then(() =>
+      setIsReadingPageReady(true),
+    );
 
     const isPaidPlan =
       currentPlan?.code === "STANDARD" || currentPlan?.code === "PREMIUM";
