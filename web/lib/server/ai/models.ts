@@ -35,8 +35,8 @@ export const homeFreeProviders = {
   gemini25: google("gemini-2.5-flash-lite"),
   gemini25pro: mistral("ministral-small-latest"),
   claude_h: mistral("mistral-small-latest"),
-  gpt41: google("gemini-2.5-flash"),
-  gpt5: mistral("mistral-small-latest"),
+  gpt41: mistral("mistral-small-latest"),
+  gpt5: google("gemini-2.5-flash"),
   claude_s: google("gemini-2.5-flash"),
   google: google("gemini-2.5-flash"),
 };
