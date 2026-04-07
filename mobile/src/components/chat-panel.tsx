@@ -161,6 +161,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       console.log("Chat finished:", message);
       setChatError(null);
 
+      if (isEndingEarlyRef.current) {
+        isEndingEarlyRef.current = false;
+        setIsEndingSession(true);
+      }
+
       if (!isPersonal) {
         setIsSyncingUsage(true);
         try {
@@ -175,6 +180,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   });
 
   const hasSentInitialMessage = useRef(false);
+  const isEndingEarlyRef = useRef(false);
 
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -813,7 +819,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     : `💬 鑑定について質問できます（残り ${remaining} 問）`}
                 </div>
                 <button
-                  onClick={() => setIsEndingSession(true)}
+                  onClick={() => {
+                    isEndingEarlyRef.current = true;
+                    sendMessage(
+                      { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+                      { body: { isEndingEarly: true } },
+                    );
+                  }}
                   disabled={
                     status === "submitted" ||
                     status === "streaming" ||

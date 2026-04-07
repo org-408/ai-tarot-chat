@@ -60,12 +60,14 @@ export async function POST(req: NextRequest) {
       tarotist,
       spread,
       drawnCards,
+      isEndingEarly,
     }: {
       messages: UIMessage[];
       tarotist: Tarotist;
       spread: Spread;
       customQuestion: string;
       drawnCards: DrawnCard[];
+      isEndingEarly?: boolean;
     } = await req.json();
     const customQuestion =
       clientMessages.length >= 2
@@ -166,6 +168,8 @@ export async function POST(req: NextRequest) {
         ? Math.floor((clientMessages.length - 5) / 2)
         : 0;
     const isLastQuestion = phase2QuestionIndex >= 3;
+    // ユーザーが「占いを終わる」を選択した早期終了
+    const isEarlyEnd = isEndingEarly === true && clientMessages.length > 6;
 
     const drawnCardsText =
       drawnCards.length > 0
@@ -270,6 +274,27 @@ export async function POST(req: NextRequest) {
         `- 占いの結果は必ずしも現実になるとは限らないことを理解してもらうようにすること\n` +
         `- 絵文字や顔文字を使わないこと\n` +
         `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
+        `- です・ます調で話すこと\n`;
+
+    } else if (isEarlyEnd) {
+      // ──────────────────────────────────────────
+      // Phase2: 早期終了（ユーザーが「占いを終わる」を選択）
+      // クロージングメッセージのみ
+      // ──────────────────────────────────────────
+      system =
+        tarotistBase +
+        `先ほどの鑑定を終了します。相談者が本日の占いを終了することを選択しました。\n` +
+        `引いたカードと鑑定内容を踏まえて、${tarotist.name}として温かくセッションを締めくくってください。\n\n` +
+        `【引いたカード】\n${drawnCardsText}\n\n` +
+        `必ず以下の要素でセッションを締めくくってください。\n` +
+        `- 本日のセッションがこれで終わりであることを明確に伝える\n` +
+        `- 相談者へのお礼と、前向きな励ましの言葉を添える\n` +
+        `- 「またいつでもご相談ください」のような言葉で締めくくる\n` +
+        `- ${tarotist.name}として温かく・明確に締めくくること（曖昧な終わり方は不可）\n\n` +
+        `【制約条件】\n` +
+        `- 引いたカードと初回鑑定の内容を踏まえて具体的に締めくくること\n` +
+        `- ${tarotist.name}として自然で温かみのある口調で答えること\n` +
+        `- 絵文字や顔文字を使わないこと\n` +
         `- です・ます調で話すこと\n`;
 
     } else if (!isLastQuestion) {
