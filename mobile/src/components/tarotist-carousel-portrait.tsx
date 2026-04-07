@@ -32,6 +32,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     setSelectedTarotist,
     selectedTargetMode,
     setSelectedTargetMode,
+    isPersonal,
   } = useSalonStore();
 
   // 占い師の取得とフィルタリング
@@ -39,9 +40,10 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     if (!masterData.tarotists) return [];
 
     return masterData.tarotists.filter((tarotist: Tarotist) => {
+      if (isPersonal && tarotist.plan?.code !== "PREMIUM") return false;
       return !!tarotist;
     });
-  }, [masterData]);
+  }, [masterData, isPersonal]);
 
   useEffect(() => {
     console.log(
