@@ -6,7 +6,6 @@ import { createVertex } from "@ai-sdk/google-vertex";
 import { groq } from "@ai-sdk/groq";
 import { mistral } from "@ai-sdk/mistral";
 import { openai } from "@ai-sdk/openai";
-import { togetherai } from "@ai-sdk/togetherai";
 import { createOllama } from "ollama-ai-provider-v2";
 
 export const dynamic = "force-dynamic";
@@ -34,11 +33,11 @@ export const homeProviders = {
 export const homeFreeProviders = {
   gpt5nano: google("gemini-3.1-flash-lite-preview"),
   gemini25: google("gemini-2.5-flash-lite"),
-  gemini25pro: mistral("ministral-8b-latest"),
+  gemini25pro: mistral("ministral-small-latest"),
   claude_h: mistral("mistral-small-latest"),
   gpt41: google("gemini-2.5-flash"),
-  gpt5: mistral("magistral-small-2506"),
-  claude_s: togetherai("MiniMaxAI/MiniMax-M2.5"),
+  gpt5: mistral("mistral-small-latest"),
+  claude_s: google("gemini-2.5-flash"),
   google: google("gemini-2.5-flash"),
 };
 
