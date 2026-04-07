@@ -28,6 +28,7 @@
     "@ai-sdk/groq": "^3.0.34",
     "@ai-sdk/mistral": "^3.0.29",
     "@ai-sdk/openai": "^3.0.51",
+    "@ai-sdk/togetherai": "^2.0.44",
     "@auth/prisma-adapter": "^2.11.0",
     "@prisma/client": "^6.18.0",
     "@radix-ui/react-dialog": "^1.1.15",
