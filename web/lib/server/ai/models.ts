@@ -33,7 +33,7 @@ export const homeProviders = {
 export const homeFreeProviders = {
   gpt5nano: google("gemini-3.1-flash-lite-preview"),
   gemini25: google("gemini-2.5-flash-lite"),
-  gemini25pro: mistral("ministral-small-latest"),
+  gemini25pro: mistral("mistral-small-latest"),
   claude_h: mistral("mistral-small-latest"),
   gpt41: mistral("mistral-small-latest"),
   gpt5: google("gemini-2.5-flash"),
