@@ -156,7 +156,8 @@ export async function POST(req: NextRequest) {
       path: "/api/readings/simple",
     });
 
-    const messages = convertToModelMessages(clientMessages);
+    const messages: Awaited<ReturnType<typeof convertToModelMessages>> =
+      await convertToModelMessages(clientMessages);
 
     for (let i = 0; i < RETRY_COUNT; i++) {
       try {
