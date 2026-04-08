@@ -197,6 +197,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [showSelector, setShowSelector] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const saveStartedRef = useRef(false);
+  const pendingSaveRef = useRef(false);
   const lastPersistedSignatureRef = useRef<string | null>(null);
   const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
 
@@ -484,7 +485,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   };
 
   const persistReading = useEffectEvent((withSavingIndicator: boolean) => {
-    if (saveStartedRef.current || !shouldPersistReading()) {
+    if (saveStartedRef.current) {
+      // 保存中に新しいデータ（クロージングメッセージ等）が来た場合、
+      // 保存完了後に再試行するフラグを立てる
+      if (shouldPersistReading()) {
+        pendingSaveRef.current = true;
+      }
+      return;
+    }
+
+    if (!shouldPersistReading()) {
       return;
     }
 
@@ -494,6 +504,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
 
     saveStartedRef.current = true;
+    pendingSaveRef.current = false;
 
     if (withSavingIndicator) {
       setIsSavingReading(true);
@@ -513,6 +524,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         saveStartedRef.current = false;
         if (withSavingIndicator) {
           setIsSavingReading(false);
+        }
+        // 保存中にスキップされたデータがあれば再試行
+        if (pendingSaveRef.current) {
+          pendingSaveRef.current = false;
+          persistReading(false);
         }
       });
   });
