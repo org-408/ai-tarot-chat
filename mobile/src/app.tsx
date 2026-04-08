@@ -171,6 +171,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    void loadSalonPage();
     void loadPersonalPage();
     void loadClaraPage();
   }, []);
