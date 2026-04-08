@@ -199,6 +199,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const saveStartedRef = useRef(false);
   const pendingSaveRef = useRef(false);
   const lastPersistedSignatureRef = useRef<string | null>(null);
+  const savedReadingIdRef = useRef<string | null>(null);
   const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
 
   const isInputFixableError =
@@ -430,7 +431,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const getTargetMessages = () => messages;
 
-  const buildPersistSignature = (readingIdOverride = savedReadingId) =>
+  const buildPersistSignature = (readingIdOverride = savedReadingIdRef.current ?? savedReadingId) =>
     `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
       .map((msg) => {
         const text = msg.parts
@@ -449,8 +450,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       : -1;
 
     return {
-      readingId: savedReadingId ?? undefined,
-      incrementUsage: isPersonal ? savedReadingId === null : false,
+      readingId: savedReadingIdRef.current ?? savedReadingId ?? undefined,
+      incrementUsage: isPersonal ? (savedReadingIdRef.current ?? savedReadingId) === null : false,
       tarotistId: tarotist.id,
       tarotist,
       spreadId: spread.id,
@@ -512,6 +513,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     void saveReading(buildReadingPayload())
       .then((result) => {
+        savedReadingIdRef.current = result.reading.id;
         setSavedReadingId(result.reading.id);
         lastPersistedSignatureRef.current = buildPersistSignature(
           result.reading.id,
