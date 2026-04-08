@@ -38,16 +38,12 @@ export function useSalon() {
     setMessages,
   } = useSalonStore();
 
-  // パーソナル占い時は selectedPersonalTarotist、クイック占い時は selectedTarotist を使う
-  const activeTarotist = isPersonal ? selectedPersonalTarotist : selectedTarotist;
-
   return {
     // ============================================
     // 占う対象の選択状況（Salon Store から取得）
     // ============================================
     selectedTarotist,
     selectedPersonalTarotist,
-    activeTarotist,
     selectedCategory,
     customQuestion,
     selectedSpread,

@@ -57,7 +57,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [isSyncingUsage, setIsSyncingUsage] = useState(false);
 
   const {
-    activeTarotist: tarotist,
+    selectedTarotist,
+    selectedPersonalTarotist,
     selectedCategory: category,
     selectedSpread: spread,
     drawnCards,
@@ -67,6 +68,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setCustomQuestion,
     setSelectedSpread,
   } = useSalon();
+
+  // パーソナル占いは専用占い師、クイック占いは選択占い師を使用
+  const tarotist = isPersonal ? selectedPersonalTarotist : selectedTarotist;
 
   const { masterData } = useMaster();
 

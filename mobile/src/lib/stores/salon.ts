@@ -18,7 +18,7 @@ import { useMasterStore } from "./master";
 
 interface SalonState {
   selectedTarotist: Tarotist;
-  selectedPersonalTarotist: Tarotist | null;
+  selectedPersonalTarotist: Tarotist;
   selectedCategory: ReadingCategory;
   customQuestion: string;
   selectedSpread: Spread;
@@ -56,6 +56,9 @@ interface SalonState {
 const initialTarotist: Tarotist = useMasterStore
   .getState()
   .masterData.tarotists.find((t) => t.plan?.code === "GUEST")!;
+const initialPersonalTarotist: Tarotist = useMasterStore
+  .getState()
+  .masterData.tarotists.find((t) => t.name === "Ariadne")!;
 const initialCategory: ReadingCategory = useMasterStore
   .getState()
   .masterData.categories.find((c) => c.no === 1)!;
@@ -67,7 +70,7 @@ export const useSalonStore = create<SalonState>()(
   persist(
     (set) => ({
       selectedTarotist: initialTarotist,
-      selectedPersonalTarotist: null,
+      selectedPersonalTarotist: initialPersonalTarotist,
       selectedCategory: initialCategory,
       customQuestion: "",
       selectedSpread: initialSpread,
