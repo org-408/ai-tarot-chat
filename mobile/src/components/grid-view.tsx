@@ -127,6 +127,35 @@ const GridView: React.FC<GridViewProps> = ({
           const displayHeight = isHorizontal ? cardWidth : cardHeight;
           const isFlipped = flippedCards.has(card.id);
 
+          const rotation = (isHorizontal ? -90 : 0) + (card.isReversed ? 180 : 0);
+          const imgStyle: React.CSSProperties = isHorizontal
+            ? {
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: `${displayHeight}px`,
+                height: `${displayWidth}px`,
+                objectFit: "cover",
+                transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+              }
+            : {
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: card.isReversed ? "rotate(180deg)" : undefined,
+              };
+          const backImgStyle: React.CSSProperties = isHorizontal
+            ? {
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: `${displayHeight}px`,
+                height: `${displayWidth}px`,
+                objectFit: "cover",
+                transform: "translate(-50%, -50%) rotate(-90deg)",
+              }
+            : { width: "100%", height: "100%", objectFit: "cover" };
+
           return (
             <motion.div
               key={card.id}
@@ -166,7 +195,7 @@ const GridView: React.FC<GridViewProps> = ({
                   <img
                     src={getCardImagePath(card.card!, true)}
                     alt="Card Back"
-                    className="w-full h-full object-cover"
+                    style={backImgStyle}
                   />
                   {!isFlipped && (
                     <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-[10px] font-bold z-10">
@@ -185,9 +214,7 @@ const GridView: React.FC<GridViewProps> = ({
                   <img
                     src={getCardImagePath(card.card!)}
                     alt={card.card!.name}
-                    className={`w-full h-full object-cover ${
-                      card.isReversed ? "transform rotate-180" : ""
-                    }`}
+                    style={imgStyle}
                   />
                   <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-[10px] font-bold z-10">
                     {card.order}
