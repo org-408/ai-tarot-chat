@@ -31,14 +31,14 @@ export const homeProviders = {
 };
 
 export const homeFreeProviders = {
-  gpt5nano: google("gemini-3.1-flash-lite-preview"),
-  gemini25: google("gemini-2.5-flash-lite"),
+  gpt5nano: mistral("mistral-small-latest"),
+  gemini25: mistral("mistral-small-latest"),
   gemini25pro: mistral("mistral-small-latest"),
   claude_h: mistral("mistral-small-latest"),
   gpt41: mistral("mistral-small-latest"),
-  gpt5: google("gemini-2.5-flash-lite"),
-  claude_s: google("gemini-2.5-flash-lite"),
-  google: google("gemini-2.5-flash"),
+  gpt5: mistral("mistral-small-latest"),
+  claude_s: mistral("mistral-small-latest"),
+  google: mistral("mistral-small-latest"),
 };
 
 // Google Vertex AI用の認証設定
