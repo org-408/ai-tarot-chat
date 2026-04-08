@@ -160,7 +160,7 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false }) => {
   }, []);
 
   return (
-    <div className="w-full h-full bg-white flex flex-col">
+    <div className="w-full h-full bg-white flex flex-col pt-1">
       {/* Embla Carousel */}
       <div className="embla relative flex-1 min-h-0 overflow-hidden" ref={emblaRef}>
         <div className="embla__container flex h-full">
