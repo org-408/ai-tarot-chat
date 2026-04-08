@@ -15,11 +15,11 @@ import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
-const loadSalonPage = () => import("./components/salon-page");
+import SalonPage from "./components/salon-page";
+
 const loadPersonalPage = () => import("./components/personal-page");
 const loadClaraPage = () => import("./components/clara-page");
 
-const SalonPage = lazy(loadSalonPage);
 const PersonalPage = lazy(loadPersonalPage);
 const PlansPage = lazy(() => import("./components/plans-page"));
 const TarotistPage = lazy(() => import("./components/tarotist-page"));
@@ -171,7 +171,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    void loadSalonPage();
     void loadPersonalPage();
     void loadClaraPage();
   }, []);
