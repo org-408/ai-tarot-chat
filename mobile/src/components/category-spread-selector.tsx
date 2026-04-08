@@ -106,8 +106,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             return true;
           }
         } else {
-          // パーソナル占いモードの場合、スプレッドのプラン条件とカテゴリー条件は無視する
-          return true;
+          // パーソナル占いモードの場合、カテゴリー条件は不要だがプラン制限は適用する
+          if (!spread.plan || !currentPlan) return false;
+          return currentPlan.no >= spread.plan!.no;
         }
       })
       .map((spread: Spread) => ({ ...spread, bio: spread.guide }));
