@@ -5,9 +5,6 @@ import { getCardImagePath } from "../lib/utils/salon";
 
 const CARD_ASPECT = 300 / 527;
 
-const VIEW_WIDTH_MAX = 378;
-const VIEW_HEIGHT_MAX = 300;
-
 interface GridViewProps {
   spread: Spread;
   drawnCards: DrawnCard[];
@@ -25,8 +22,8 @@ const GridView: React.FC<GridViewProps> = ({
   onToggleFlip,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [viewWidth, setViewWidth] = useState(VIEW_WIDTH_MAX);
-  const [viewHeight, setViewHeight] = useState(VIEW_HEIGHT_MAX);
+  const [viewWidth, setViewWidth] = useState(0);
+  const [viewHeight, setViewHeight] = useState(0);
 
   useLayoutEffect(() => {
     const updateViewSize = () => {
@@ -57,15 +54,12 @@ const GridView: React.FC<GridViewProps> = ({
   const maxX = Math.max(...drawnCards.map((c) => c.x));
   const maxY = Math.max(...drawnCards.map((c) => c.y));
 
-  const GRID_WIDTH_MAX = 4;
-  const GRID_HEIGHT_MAX = 4;
-
   const colGap = 8;
   const rowGap = 8;
 
   const cardHeight = Math.min(
-    (viewWidth - colGap * 2) / Math.min(maxX + 1, GRID_WIDTH_MAX),
-    (viewHeight - rowGap * 2) / Math.min(maxY + 1, GRID_HEIGHT_MAX)
+    (viewWidth - colGap * 2) / (maxX + 1),
+    (viewHeight - rowGap * 2) / (maxY + 1)
   );
   const cardWidth = cardHeight * CARD_ASPECT;
   const cellSize = cardHeight;
