@@ -58,8 +58,8 @@ const GridView: React.FC<GridViewProps> = ({
   const rowGap = 8;
 
   const cardHeight = Math.min(
-    (viewWidth - colGap * 2) / (maxX + 1),
-    (viewHeight - rowGap * 2) / (maxY + 1)
+    (viewWidth - colGap * maxX) / (maxX + 1),
+    (viewHeight - rowGap * maxY) / (maxY + 1)
   );
   const cardWidth = cardHeight * CARD_ASPECT;
   const cellSize = cardHeight;
@@ -88,7 +88,7 @@ const GridView: React.FC<GridViewProps> = ({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-x-auto pb-2 flex justify-center items-center relative"
+      className="w-full h-full overflow-x-auto flex justify-center items-center relative"
     >
       {/* 🔥 スプレッド名 -洗練されたバッジ */}
       {spread && (
