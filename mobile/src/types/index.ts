@@ -13,6 +13,7 @@ export type PageType =
   | "tarotistSwipe"
   | "swipeableDemo"
   | "history"
+  | "reading-history"
   | "settings"
   | "clara";
 export type SelectTargetMode = "tarotist" | "portrait" | "category" | "spread";

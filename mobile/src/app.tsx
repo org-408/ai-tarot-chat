@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
-import type { Plan } from "../../shared/lib/types";
+import type { Plan, Reading } from "../../shared/lib/types";
 import Header from "./components/header";
 import ReadingPage from "./components/reading-page";
 import SidebarMenu from "./components/sidebar-menu";
@@ -27,6 +27,7 @@ const TarotistSwipePage = lazy(() => import("./components/tarotist-swipe-page"))
 const SwipeableDemo = lazy(() => import("./components/swipeable-demo"));
 const ClaraPage = lazy(loadClaraPage);
 const HistoryPage = lazy(() => import("./components/history-page"));
+const ReadingHistoryPage = lazy(() => import("./components/reading-history-page"));
 const SettingsPage = lazy(() => import("./components/settings-page"));
 const DebugMenu = lazy(() =>
   import("./components/debug-menu").then((module) => ({
@@ -108,6 +109,7 @@ function App() {
   const prevPlanCodeRef = useRef<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
+  const [selectedHistoryReading, setSelectedHistoryReading] = useState<Reading | null>(null);
   // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
   // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
@@ -528,7 +530,24 @@ function App() {
           />
         );
       case "history":
-        return <HistoryPage />;
+        return (
+          <HistoryPage
+            onReadingSelect={(reading) => {
+              setSelectedHistoryReading(reading);
+              setPageType("reading-history");
+            }}
+          />
+        );
+      case "reading-history":
+        return selectedHistoryReading ? (
+          <ReadingHistoryPage
+            reading={selectedHistoryReading}
+            onClose={() => {
+              setSelectedHistoryReading(null);
+              setPageType("history");
+            }}
+          />
+        ) : null;
       case "settings":
         return (
           <SettingsPage
