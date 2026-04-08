@@ -54,6 +54,8 @@ export class ReadingRepository extends BaseRepository {
                 position: card.position,
                 description: card.description,
                 isReversed: card.isReversed,
+                isHorizontal: card.isHorizontal ?? false,
+                keywords: card.keywords ?? [],
               })),
             }
           : undefined,
@@ -103,6 +105,8 @@ export class ReadingRepository extends BaseRepository {
                 position: card.position,
                 description: card.description,
                 isReversed: card.isReversed,
+                isHorizontal: card.isHorizontal ?? false,
+                keywords: card.keywords ?? [],
               }))
             : [],
         },
