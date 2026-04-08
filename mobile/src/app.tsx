@@ -19,15 +19,21 @@ import SalonPage from "./components/salon-page";
 
 const loadPersonalPage = () => import("./components/personal-page");
 const loadClaraPage = () => import("./components/clara-page");
+const loadPlansPage = () => import("./components/plans-page");
+const loadTarotistPage = () => import("./components/tarotist-page");
+const loadTarotistSwipePage = () => import("./components/tarotist-swipe-page");
+const loadSwipeableDemo = () => import("./components/swipeable-demo");
+const loadHistoryPage = () => import("./components/history-page");
+const loadSettingsPage = () => import("./components/settings-page");
 
 const PersonalPage = lazy(loadPersonalPage);
-const PlansPage = lazy(() => import("./components/plans-page"));
-const TarotistPage = lazy(() => import("./components/tarotist-page"));
-const TarotistSwipePage = lazy(() => import("./components/tarotist-swipe-page"));
-const SwipeableDemo = lazy(() => import("./components/swipeable-demo"));
+const PlansPage = lazy(loadPlansPage);
+const TarotistPage = lazy(loadTarotistPage);
+const TarotistSwipePage = lazy(loadTarotistSwipePage);
+const SwipeableDemo = lazy(loadSwipeableDemo);
 const ClaraPage = lazy(loadClaraPage);
-const HistoryPage = lazy(() => import("./components/history-page"));
-const SettingsPage = lazy(() => import("./components/settings-page"));
+const HistoryPage = lazy(loadHistoryPage);
+const SettingsPage = lazy(loadSettingsPage);
 const DebugMenu = lazy(() =>
   import("./components/debug-menu").then((module) => ({
     default: module.DebugMenu,
@@ -91,7 +97,13 @@ const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => (
   </motion.div>
 );
 
-const PageFallback: React.FC = () => <TarotSplashScreen message="読み込み中..." />;
+const PageFallback: React.FC = () => (
+  <div className="flex min-h-full items-center justify-center px-6 py-12">
+    <div className="rounded-2xl bg-white/85 px-5 py-3 text-sm font-medium text-gray-600 shadow-lg backdrop-blur-sm">
+      読み込み中...
+    </div>
+  </div>
+);
 
 function App() {
   // ✅ デバッグモードフラグ（本番は false に設定）
@@ -173,6 +185,12 @@ function App() {
   useEffect(() => {
     void loadPersonalPage();
     void loadClaraPage();
+    void loadPlansPage();
+    void loadTarotistPage();
+    void loadTarotistSwipePage();
+    void loadSwipeableDemo();
+    void loadHistoryPage();
+    void loadSettingsPage();
   }, []);
 
   // 🔥 日付変更時の通知表示

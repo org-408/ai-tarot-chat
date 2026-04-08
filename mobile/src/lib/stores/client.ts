@@ -106,7 +106,6 @@ export const useClientStore = create<ClientState>()(
         const cachedUsage = get().usage;
 
         set({
-          isReady: !!cachedUsage,
           error: null,
         });
 
@@ -139,9 +138,9 @@ export const useClientStore = create<ClientState>()(
             error: error instanceof Error ? error.message : String(error),
           });
 
-          // 初期化失敗でも isReady を true にして先に進める
+          // ネットワーク断などで同期できない場合のみ、キャッシュがあればそれで起動を継続する
           set({
-            isReady: true,
+            isReady: !!cachedUsage,
             error: error instanceof Error ? error : new Error(String(error)),
           });
         }
