@@ -42,13 +42,15 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
 }) => {
   const {
     selectedTargetMode,
-    selectedTarotist,
+    selectedPersonalTarotist,
+    activeTarotist,
     selectedSpread,
     drawnCards,
     setDrawnCards,
     isRevealingCompleted,
     setIsRevealingCompleted,
     setUpperViewerMode,
+    setSelectedTargetMode,
     setIsPersonal,
     init,
   } = useSalon();
@@ -70,6 +72,10 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setPhase1Messages([]);
     init();
     setIsPersonal(true);
+    // パーソナル専用占い師が未選択 or 非PREMIUM なら占い師選択画面へ強制遷移
+    if (!selectedPersonalTarotist || selectedPersonalTarotist.plan?.code !== "PREMIUM") {
+      setSelectedTargetMode("tarotist");
+    }
     setChatResetKey((current) => (current === null ? 0 : current + 1));
     return () => {
       setIsPersonal(false);
@@ -110,8 +116,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // Phase1 → Phase2 へ（無料プランのみ広告表示 → 閉じてから遷移）
   // Phase2 開始 = AI API 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
-    if (!selectedTarotist || !selectedSpread) return;
-    if (selectedTarotist.provider === "OFFLINE") {
+    if (!activeTarotist || !selectedSpread) return;
+    if (activeTarotist.provider === "OFFLINE") {
       onNavigateToClara?.();
       return;
     }

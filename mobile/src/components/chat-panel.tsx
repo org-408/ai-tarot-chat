@@ -57,7 +57,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [isSyncingUsage, setIsSyncingUsage] = useState(false);
 
   const {
-    selectedTarotist: tarotist,
+    activeTarotist: tarotist,
     selectedCategory: category,
     selectedSpread: spread,
     drawnCards,

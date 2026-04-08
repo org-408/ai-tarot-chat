@@ -18,6 +18,7 @@ import { useMasterStore } from "./master";
 
 interface SalonState {
   selectedTarotist: Tarotist;
+  selectedPersonalTarotist: Tarotist | null;
   selectedCategory: ReadingCategory;
   customQuestion: string;
   selectedSpread: Spread;
@@ -33,6 +34,7 @@ interface SalonState {
   messages: UIMessage[];
   init: () => void;
   setSelectedTarotist: (tarotist: Tarotist) => void;
+  setSelectedPersonalTarotist: (tarotist: Tarotist) => void;
   setSelectedCategory: (category: ReadingCategory) => void;
   setCustomQuestion: (question: string) => void;
   setSelectedSpread: (spread: Spread) => void;
@@ -65,6 +67,7 @@ export const useSalonStore = create<SalonState>()(
   persist(
     (set) => ({
       selectedTarotist: initialTarotist,
+      selectedPersonalTarotist: null,
       selectedCategory: initialCategory,
       customQuestion: "",
       selectedSpread: initialSpread,
@@ -97,6 +100,7 @@ export const useSalonStore = create<SalonState>()(
         }));
       },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
+      setSelectedPersonalTarotist: (tarotist) => set({ selectedPersonalTarotist: tarotist }),
       setSelectedCategory: (category) => set({ selectedCategory: category }),
       setCustomQuestion: (question) => set({ customQuestion: question }),
       setSelectedSpread: (spread) => set({ selectedSpread: spread }),
