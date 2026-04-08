@@ -1,12 +1,19 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { ChatMessage, DrawnCard, Reading, TarotCard, Tarotist } from "../../../shared/lib/types";
+import type {
+  DrawnCard,
+  Reading,
+  TarotCard,
+  Tarotist,
+} from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { removeBannerAd, showBannerAd } from "../lib/utils/admob";
 import { getCardImagePath } from "../lib/utils/salon";
+
+const HistoryDetailPage = lazy(() => import("./history-detail-page"));
 
 // ──────────────────────────────────────────
 // Helpers
@@ -69,7 +76,9 @@ const TarotistAvatar: React.FC<{
           onError={() => setImgError(true)}
         />
       ) : (
-        <span className="text-white text-sm font-bold">{avatarLetter(name)}</span>
+        <span className="text-white text-sm font-bold">
+          {avatarLetter(name)}
+        </span>
       )}
     </button>
   );
@@ -115,22 +124,30 @@ const TarotistProfileModal: React.FC<{
           <div className="p-5">
             <div
               className="text-2xl font-bold mb-1"
-              style={{ fontFamily: "'Brush Script MT', cursive", color: tarotist.accentColor ?? "#7c3aed" }}
+              style={{
+                fontFamily: "'Brush Script MT', cursive",
+                color: tarotist.accentColor ?? "#7c3aed",
+              }}
             >
               {tarotist.icon} {tarotist.name}
             </div>
             <div className="text-sm text-gray-500 mb-3">{tarotist.title}</div>
             {tarotist.trait && (
-              <div className="text-sm font-semibold mb-2" style={{ color: tarotist.accentColor ?? "#7c3aed" }}>
+              <div
+                className="text-sm font-semibold mb-2"
+                style={{ color: tarotist.accentColor ?? "#7c3aed" }}
+              >
                 {tarotist.trait}
               </div>
             )}
-            <div className="text-sm text-gray-700 leading-relaxed">{tarotist.bio}</div>
+            <div className="text-sm text-gray-700 leading-relaxed">
+              {tarotist.bio}
+            </div>
           </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 };
 
@@ -148,7 +165,10 @@ function groupByYearMonth(readings: Reading[]) {
   }
   return Array.from(yearMap.entries()).map(([year, monthMap]) => ({
     year,
-    months: Array.from(monthMap.entries()).map(([month, items]) => ({ month, items })),
+    months: Array.from(monthMap.entries()).map(([month, items]) => ({
+      month,
+      items,
+    })),
     total: Array.from(monthMap.values()).reduce((s, a) => s + a.length, 0),
   }));
 }
@@ -165,310 +185,6 @@ function dedup(readings: Reading[]): Reading[] {
 type FilterTab = "all" | "normal" | "personal";
 
 // ──────────────────────────────────────────
-// 詳細ダイアログ（ProfileDialog と同じ中央ポップアップ）
-// ──────────────────────────────────────────
-
-const ReadingDetail: React.FC<{
-  reading: Reading;
-  cardMap: Map<string, TarotCard>;
-  onClose: () => void;
-  onTarotistClick?: (tarotist: Tarotist) => void;
-}> = ({ reading, cardMap, onClose, onTarotistClick }) => {
-  const isPersonal = !!reading.customQuestion;
-  const tarotistName = reading.tarotist?.name ?? "タロティスト";
-  const cards: DrawnCard[] = reading.cards ?? [];
-  const messages: ChatMessage[] = reading.chatMessages ?? [];
-  const lastMessage = [...messages].reverse().find((m) => m.role === "TAROTIST");
-  // パーソナル占いの場合: 「では、占いを始めてください」への最初の返答が実際の鑑定文
-  // 旧データ（Phase1含む全メッセージ保存）・新データ（Phase2のみ保存）共通で動作する
-  const mainReadingMessage = isPersonal
-    ? (() => {
-        // 「では、占いを始めてください」ユーザーメッセージの直後のタロティストメッセージを取得
-        const startIdx = messages.findIndex(
-          (m) => m.role === "USER" && m.message.includes("では、占いを始めてください")
-        );
-        if (startIdx !== -1) {
-          const firstTarotist = messages.slice(startIdx + 1).find((m) => m.role === "TAROTIST");
-          if (firstTarotist) return firstTarotist;
-        }
-        // フォールバック: FINAL_READING の最初のタロティストメッセージ
-        const finalReadingMsg = messages.find(
-          (m) => m.role === "TAROTIST" && m.chatType === "FINAL_READING"
-        );
-        if (finalReadingMsg) return finalReadingMsg;
-        // 最終フォールバック: 最長のタロティストメッセージ
-        return messages
-          .filter((m) => m.role === "TAROTIST")
-          .reduce<ChatMessage | undefined>(
-            (longest, m) =>
-              !longest || m.message.length > longest.message.length ? m : longest,
-            undefined
-          );
-      })()
-    : lastMessage;
-  const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
-
-  return createPortal(
-    <AnimatePresence>
-      {/* 背景 overlay */}
-      <motion.div
-        key="overlay"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        {/* ダイアログ本体 */}
-        <motion.div
-          key="dialog"
-          initial={{ opacity: 0, scale: 0.95, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 8 }}
-          transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col"
-          style={{ maxHeight: "85vh" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* ヘッダー */}
-          <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
-            <TarotistAvatar
-              name={tarotistName}
-              tarotistId={reading.tarotistId}
-              className="w-10 h-10"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (reading.tarotist) onTarotistClick?.(reading.tarotist);
-              }}
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-800 truncate">{tarotistName}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{formatFullDate(reading.createdAt)}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-            >
-              <X className="w-4 h-4 text-gray-500" />
-            </button>
-          </div>
-
-          {/* スクロールエリア */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-4">
-            {/* バッジ */}
-            <div className="flex flex-wrap gap-2">
-              {reading.spread?.name && (
-                <span className="text-xs font-medium text-purple-700 bg-purple-100 px-3 py-1 rounded-full">
-                  {reading.spread.name}
-                </span>
-              )}
-              {isPersonal ? (
-                <span className="text-xs font-medium text-fuchsia-700 bg-fuchsia-100 px-3 py-1 rounded-full">
-                  パーソナル
-                </span>
-              ) : reading.category?.name ? (
-                <span className="text-xs font-medium text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
-                  {reading.category.name}
-                </span>
-              ) : null}
-            </div>
-
-            {/* 質問 */}
-            {(reading.customQuestion || reading.category?.description) && (
-              <div className="bg-purple-50 rounded-xl p-3">
-                <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider mb-1">
-                  ご質問
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {reading.customQuestion ?? reading.category?.description}
-                </p>
-              </div>
-            )}
-
-            {/* カード一覧 */}
-            {cards.length > 0 && (
-              <div>
-                <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider mb-2">
-                  引いたカード
-                </p>
-                <div className="space-y-2">
-                  {[...cards].sort((a, b) => a.order - b.order).map((dc, i) => {
-                    const tarotCard = dc.card ?? cardMap.get(dc.cardId);
-                    return (
-                      <button
-                        key={dc.id ?? i}
-                        type="button"
-                        onClick={() => setSelectedCard(dc)}
-                        className="w-full flex items-start gap-3 bg-gray-50 rounded-xl p-3 active:bg-purple-50/50 transition-colors text-left"
-                      >
-                        <div
-                          className="flex-shrink-0 rounded overflow-hidden border border-purple-200/60 shadow-sm"
-                          style={{ width: 32, height: 56 }}
-                        >
-                          {tarotCard ? (
-                            <img
-                              src={getCardImagePath(tarotCard)}
-                              alt={tarotCard.name}
-                              className={`w-full h-full object-cover ${dc.isReversed ? "rotate-180" : ""}`}
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-b from-purple-300 to-purple-500" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {tarotCard && (
-                              <span className="text-xs font-bold text-gray-800">{tarotCard.name}</span>
-                            )}
-                            {dc.isReversed && (
-                              <span className="text-[10px] text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">
-                                逆位置
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-gray-400 mt-0.5">{dc.position}</p>
-                          {dc.keywords?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {dc.keywords.slice(0, 4).map((kw, ki) => (
-                                <span
-                                  key={ki}
-                                  className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded"
-                                >
-                                  {kw}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* 占い結果 */}
-            {mainReadingMessage && (
-              <div>
-                <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider mb-2">
-                  占い結果
-                </p>
-                <div className="bg-white rounded-xl p-3 border border-purple-100 shadow-sm">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {mainReadingMessage.message}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* 会話履歴（パーソナルのみ） */}
-            {isPersonal && messages.length > 1 && (
-              <details className="group">
-                <summary className="flex items-center gap-1.5 text-[11px] font-semibold text-purple-400 uppercase tracking-wider cursor-pointer list-none select-none">
-                  会話の全記録
-                  <ChevronDown className="w-3.5 h-3.5 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="mt-2 space-y-2">
-                  {messages.map((msg, i) => (
-                    <div
-                      key={msg.id ?? i}
-                      className={`flex ${msg.role === "TAROTIST" ? "justify-start" : "justify-end"}`}
-                    >
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
-                          msg.role === "TAROTIST"
-                            ? "bg-gray-50 border border-gray-100 text-gray-700"
-                            : "bg-purple-100 text-gray-800"
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap leading-relaxed">{msg.message}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
-
-            <div className="h-2" />
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* カード詳細ダイアログ（upper-viewer と同じパターン） */}
-      <AnimatePresence>
-        {selectedCard && (() => {
-          const tarotCard = selectedCard.card ?? cardMap.get(selectedCard.cardId);
-          return (
-            <motion.div
-              className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedCard(null)}
-            >
-              <motion.div
-                className="bg-white rounded-2xl p-6 max-w-sm w-full relative shadow-2xl"
-                initial={{ scale: 0.8, y: 50 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.8, y: 50 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => setSelectedCard(null)}
-                  className="absolute top-3 right-3 p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full flex items-center justify-center">
-                    {selectedCard.order + 1}
-                  </div>
-                  <h3 className="text-base font-bold text-purple-900">
-                    位置の意味: {selectedCard.position}
-                  </h3>
-                </div>
-                {selectedCard.description && (
-                  <div className="text-xs text-gray-600 mb-3 pb-3 border-b border-gray-200">
-                    {selectedCard.description}
-                  </div>
-                )}
-                {tarotCard && (
-                  <>
-                    <div className="flex justify-center mb-4">
-                      <div className="rounded-xl border-4 border-purple-400 shadow-2xl overflow-hidden w-24 h-40">
-                        <img
-                          src={getCardImagePath(tarotCard)}
-                          alt={tarotCard.name}
-                          className={`w-full h-full object-cover ${selectedCard.isReversed ? "rotate-180" : ""}`}
-                        />
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-700 mb-2">
-                      カード: <span className="font-semibold">{tarotCard.name}</span>
-                      {selectedCard.isReversed && (
-                        <span className="text-red-600 ml-2">(逆位置)</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      キーワード:{" "}
-                      {selectedCard.isReversed
-                        ? tarotCard.reversedKeywords.join("、")
-                        : tarotCard.uprightKeywords.join("、")}
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            </motion.div>
-          );
-        })()}
-      </AnimatePresence>
-    </AnimatePresence>,
-    document.body
-  );
-};
-
-// ──────────────────────────────────────────
 // HistoryPage
 // ──────────────────────────────────────────
 
@@ -483,8 +199,9 @@ const TABS: { id: FilterTab; label: string }[] = [
 const HistoryPage: React.FC = () => {
   const { readings, fetchReadings, error, currentPlan } = useClient();
   const { decks } = useMaster();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTarotistProfile, setSelectedTarotistProfile] = useState<Tarotist | null>(null);
+  const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
+  const [selectedTarotistProfile, setSelectedTarotistProfile] =
+    useState<Tarotist | null>(null);
   const [tab, setTab] = useState<FilterTab>("all");
   const [openYears, setOpenYears] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
@@ -492,20 +209,17 @@ const HistoryPage: React.FC = () => {
   const initialLoadDone = useRef(false);
 
   const cardMap = new Map<string, TarotCard>(
-    (decks[0]?.cards ?? []).map((c) => [c.id, c])
+    (decks[0]?.cards ?? []).map((c) => [c.id, c]),
   );
 
   const all = dedup(readings);
 
-  const filtered = tab === "all"
-    ? all
-    : tab === "personal"
-    ? all.filter((r) => !!r.customQuestion)
-    : all.filter((r) => !r.customQuestion);
-
-  const selectedReading = selectedId
-    ? (all.find((r) => r.id === selectedId) ?? null)
-    : null;
+  const filtered =
+    tab === "all"
+      ? all
+      : tab === "personal"
+        ? all.filter((r) => !!r.customQuestion)
+        : all.filter((r) => !r.customQuestion);
 
   useEffect(() => {
     if (initialLoadDone.current) return;
@@ -533,7 +247,8 @@ const HistoryPage: React.FC = () => {
   }, [grouped.length]);
 
   // バナー広告：GUEST/FREE プランのみ表示
-  const showAds = !currentPlan || currentPlan.code === "GUEST" || currentPlan.code === "FREE";
+  const showAds =
+    !currentPlan || currentPlan.code === "GUEST" || currentPlan.code === "FREE";
   useEffect(() => {
     if (!showAds) return;
     showBannerAd();
@@ -617,8 +332,8 @@ const HistoryPage: React.FC = () => {
             {tab === "all"
               ? "まだ占い履歴がありません"
               : tab === "personal"
-              ? "パーソナル占いの履歴がありません"
-              : "通常占いの履歴がありません"}
+                ? "パーソナル占いの履歴がありません"
+                : "通常占いの履歴がありません"}
           </p>
         </div>
       )}
@@ -628,7 +343,10 @@ const HistoryPage: React.FC = () => {
         {grouped.map(({ year, months, total }) => {
           const isOpen = openYears.has(year);
           return (
-            <div key={year} className="rounded-2xl overflow-hidden border border-purple-100/60 bg-white shadow-sm">
+            <div
+              key={year}
+              className="rounded-2xl overflow-hidden border border-purple-100/60 bg-white shadow-sm"
+            >
               {/* 年ヘッダー（タップで開閉） */}
               <button
                 type="button"
@@ -636,7 +354,9 @@ const HistoryPage: React.FC = () => {
                 className="w-full flex items-center justify-between px-4 py-3.5 active:bg-purple-50/40 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-base font-bold text-gray-800">{year}</span>
+                  <span className="text-base font-bold text-gray-800">
+                    {year}
+                  </span>
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                     {total}件
                   </span>
@@ -673,13 +393,13 @@ const HistoryPage: React.FC = () => {
                               const cards: DrawnCard[] = r.cards ?? [];
                               const subtitle = isPersonal
                                 ? r.customQuestion
-                                : r.category?.name ?? r.spread?.name;
+                                : (r.category?.name ?? r.spread?.name);
 
                               return (
                                 <motion.button
                                   key={r.id}
                                   type="button"
-                                  onClick={() => setSelectedId(r.id)}
+                                  onClick={() => setSelectedReading(r)}
                                   whileTap={{ scale: 0.98 }}
                                   className="w-full text-left bg-gray-50/80 rounded-xl p-3 active:bg-purple-50/50 transition-colors"
                                 >
@@ -690,7 +410,10 @@ const HistoryPage: React.FC = () => {
                                       className="w-9 h-9"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (r.tarotist) setSelectedTarotistProfile(r.tarotist);
+                                        if (r.tarotist)
+                                          setSelectedTarotistProfile(
+                                            r.tarotist,
+                                          );
                                       }}
                                     />
                                     <div className="flex-1 min-w-0">
@@ -703,6 +426,11 @@ const HistoryPage: React.FC = () => {
                                         </span>
                                       </div>
                                       <div className="flex flex-wrap gap-1">
+                                        {subtitle && (
+                                          <p className="text-xs text-gray-500 line-clamp-1 mt-1">
+                                            {subtitle}
+                                          </p>
+                                        )}
                                         {r.spread?.name && (
                                           <span className="text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
                                             {r.spread.name}
@@ -714,18 +442,19 @@ const HistoryPage: React.FC = () => {
                                           </span>
                                         )}
                                       </div>
-                                      {subtitle && (
-                                        <p className="text-xs text-gray-500 line-clamp-1 mt-1">{subtitle}</p>
-                                      )}
                                       {cards.length > 0 && (
                                         <div className="flex gap-1 mt-1.5 items-end">
                                           {cards.slice(0, 5).map((dc, ci) => {
-                                            const tc = dc.card ?? cardMap.get(dc.cardId);
+                                            const tc =
+                                              dc.card ?? cardMap.get(dc.cardId);
                                             return (
                                               <div
                                                 key={dc.id ?? ci}
                                                 className="rounded overflow-hidden border border-purple-200/60 shadow-sm flex-shrink-0"
-                                                style={{ width: 18, height: 31 }}
+                                                style={{
+                                                  width: 18,
+                                                  height: 31,
+                                                }}
                                               >
                                                 {tc ? (
                                                   <img
@@ -791,21 +520,34 @@ const HistoryPage: React.FC = () => {
         </div>
       )}
 
-      {/* 詳細ダイアログ */}
-      {selectedReading && (
-        <ReadingDetail
-          reading={selectedReading}
-          cardMap={cardMap}
-          onClose={() => setSelectedId(null)}
-          onTarotistClick={setSelectedTarotistProfile}
-        />
-      )}
       {selectedTarotistProfile && (
         <TarotistProfileModal
           tarotist={selectedTarotistProfile}
           onClose={() => setSelectedTarotistProfile(null)}
         />
       )}
+
+      {/* 履歴詳細（フルスクリーンオーバーレイ） */}
+      <AnimatePresence>
+        {selectedReading && (
+          <motion.div
+            key="history-detail"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-0 z-40 bg-white"
+          >
+            <Suspense fallback={null}>
+              <HistoryDetailPage
+                reading={selectedReading}
+                cardMap={cardMap}
+                onClose={() => setSelectedReading(null)}
+              />
+            </Suspense>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
