@@ -17,7 +17,7 @@ import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
-const maxOutputTokens = 12288; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
+const maxOutputTokens = 65536; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
