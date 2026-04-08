@@ -199,8 +199,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     ? remainingPersonal
     : remainingReadings;
   const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
-  // claraModeおよびdebugModeは回数制限なし
-  const isLimitReached = !claraMode && !(isPersonal && debugMode) && remaining !== undefined && remaining <= 0;
+  // claraModeおよびdebugModeは回数制限なし（isPersonal問わず）
+  const isLimitReached = !claraMode && !debugMode && remaining !== undefined && remaining <= 0;
 
   const isDisabled =
     isLimitReached ||

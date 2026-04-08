@@ -74,7 +74,8 @@ export async function POST(req: NextRequest) {
 
     // ✅ 最初のメッセージ（占い開始時）のみ残回数チェック
     //    以降のターンは saveReading でカウントするためここでは初回のみ制限
-    if (clientMessages.length === 1) {
+    //    debugMode=true の場合は制限をスキップ
+    if (!debugMode && clientMessages.length === 1) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (usage.remainingReadings <= 0) {
         logWithContext("warn", "クイック占い回数上限", { clientId });
