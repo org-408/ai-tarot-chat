@@ -147,6 +147,7 @@ export async function POST(req: NextRequest) {
       `- 絵文字や顔文字を使わないこと\n` +
       `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
       `- です・ます調で話すこと\n` +
+      `- 回答は必ず一回で完結させること。複数回に分けて回答しないこと\n` +
       `- 1回の回答は200文字以上300文字以内とすること\n`;
 
     console.log(`[readings/simple/route] Received POST request`, {
