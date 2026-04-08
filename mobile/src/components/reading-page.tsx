@@ -101,7 +101,13 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
 
         {/* 下半分 */}
         <div className="flex-1 min-h-0">
-          {drawnCards.length > 0 && <ChatPanel onBack={handleBack} onUnlock={onUnlock} />}
+          {drawnCards.length > 0 && (
+            <ChatPanel
+              key={`quick-${selectedSpread?.id ?? "none"}`}
+              onBack={handleBack}
+              onUnlock={onUnlock}
+            />
+          )}
         </div>
       </div>
     </div>

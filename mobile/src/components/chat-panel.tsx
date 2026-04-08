@@ -629,25 +629,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setupAppStateListener();
 
     return () => {
+      // アンマウント時のみ保存（deps変化時には発火させない）
+      // useEffectEvent により persistReading は常に最新状態を参照するため空 deps で正しく動作する
       persistReading(false);
       void appStateListener?.remove();
     };
-  }, [
-    category,
-    customQuestion,
-    drawnCards,
-    initialLen,
-    inputDisabled,
-    isPersonal,
-    isPhase2,
-    isRevealingCompleted,
-    messages,
-    persistReading,
-    saveReading,
-    spread,
-    status,
-    tarotist,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col relative">
