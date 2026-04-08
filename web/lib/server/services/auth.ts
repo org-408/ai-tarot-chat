@@ -6,6 +6,7 @@ import {
   type TicketData,
 } from "@/../shared/lib/types";
 import { auth, signOut } from "@/auth";
+import { Prisma } from "@prisma/client";
 import { logWithContext } from "@/lib/server/logger/logger";
 import {
   authRepository,
@@ -43,32 +44,14 @@ export class AuthService {
     return BaseRepository.transaction(
       { client: clientRepository },
       async ({ client }) => {
-        // 既存デバイスを確認(include: client.plan)
-        let device = await client.getDeviceByDeviceId(params.deviceId);
-
-        if (device) {
-          // デバイス情報を更新
-          device = await client.updateDevice(device.id, {
-            platform: params.platform,
-            appVersion: params.appVersion,
-            osVersion: params.osVersion,
-            pushToken: params.pushToken,
-            lastSeenAt: new Date(),
-          });
-          logWithContext("info", "✅ Device updated:", { device });
-        } else {
-          // 新規デバイス - 新規クライアント作成 (未登録ユーザー)
-          device = await client.createDevice({
-            deviceId: params.deviceId,
-            platform: params.platform,
-            appVersion: params.appVersion,
-            osVersion: params.osVersion,
-            pushToken: params.pushToken,
-            lastSeenAt: new Date(),
-            client: { create: { plan: { connect: { code: "GUEST" } } } },
-          });
-          logWithContext("info", "✅ Device created:", { device });
-        }
+        // upsertでアトミックに作成/更新 (check-then-createの競合を回避)
+        const device = await client.upsertDevice({
+          deviceId: params.deviceId,
+          platform: params.platform,
+          appVersion: params.appVersion,
+          osVersion: params.osVersion,
+          pushToken: params.pushToken,
+        });
 
         if (!device) throw new Error("Failed to create device");
         logWithContext("info", "✅ Device registered/updated:", { device });
@@ -171,15 +154,29 @@ export class AuthService {
     return BaseRepository.transaction(
       { client: clientRepository, auth: authRepository },
       async ({ client, auth }) => {
-        // ✅ 使用済みticketチェック
-        const usedTicket = await auth.findUsedTicket(ticketHash);
-        if (usedTicket) {
-          logWithContext("error", "❌ Ticket already used", {
+        // ✅ チケットを先にINSERTしてアトミックに先取り
+        //    findUsedTicket → markTicketAsUsed の2ステップだと並行リクエストが
+        //    両方とも「未使用」と判定してビジネスロジックを実行してしまう。
+        //    先にINSERTし、一意制約違反なら即失敗させることでDBレベルで排他制御する。
+        try {
+          await auth.markTicketAsUsed({
             ticketHash,
-            usedAt: usedTicket.usedAt,
-            deviceId: usedTicket.deviceId,
+            userId: ticketData.sub,
+            deviceId: params.deviceId,
+            expiresAt: new Date(Date.now() + 2 * 60 * 1000),
           });
-          throw new Error("Ticket already used");
+          logWithContext("info", "✅ Ticket claimed", { ticketHash });
+        } catch (error) {
+          // P2002 = 一意制約違反 → チケット使用済み
+          // それ以外のエラー(FK制約違反など)は再throw
+          if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P2002"
+          ) {
+            logWithContext("error", "❌ Ticket already used", { ticketHash });
+            throw new Error("Ticket already used");
+          }
+          throw error;
         }
 
         // デバイス取得
@@ -238,15 +235,6 @@ export class AuthService {
         if (!finalClient || !finalClient.plan) {
           throw new Error("Failed to get final client or plan");
         }
-
-        // ✅ ticketを使用済みにマーク（有効期限2分後）
-        await auth.markTicketAsUsed({
-          ticketHash,
-          userId: user.id,
-          deviceId: params.deviceId,
-          expiresAt: new Date(Date.now() + 2 * 60 * 1000),
-        });
-        logWithContext("info", "✅ Ticket marked as used", { ticketHash });
 
         // アプリ用JWT生成
         const jwt = await generateJWT<AppJWTPayload>(
@@ -392,9 +380,6 @@ export class AuthService {
     const sumReadingsCount =
       (deviceClient.dailyReadingsCount || 0) +
       (userClient.dailyReadingsCount || 0);
-    const sumCelticsCount =
-      (deviceClient.dailyCelticsCount || 0) +
-      (userClient.dailyCelticsCount || 0);
     const sumPersonalCount =
       (deviceClient.dailyPersonalCount || 0) +
       (userClient.dailyPersonalCount || 0);
@@ -403,13 +388,6 @@ export class AuthService {
     const lastReadingDate = [
       deviceClient.lastReadingDate,
       userClient.lastReadingDate,
-    ]
-      .filter(Boolean)
-      .sort((a, b) => b!.getTime() - a!.getTime())[0];
-
-    const lastCelticReadingDate = [
-      deviceClient.lastCelticReadingDate,
-      userClient.lastCelticReadingDate,
     ]
       .filter(Boolean)
       .sort((a, b) => b!.getTime() - a!.getTime())[0];
@@ -466,10 +444,8 @@ export class AuthService {
       provider,
       plan: { connect: { id: higherPlan.id } },
       dailyReadingsCount: Math.min(sumReadingsCount, higherPlan.maxReadings),
-      dailyCelticsCount: Math.min(sumCelticsCount, higherPlan.maxCeltics),
       dailyPersonalCount: Math.min(sumPersonalCount, higherPlan.maxPersonal),
       lastReadingDate,
-      lastCelticReadingDate,
       lastPersonalReadingDate,
       devices: { connect: uniqueDevices.map((d) => ({ id: d.id })) },
       isRegistered: true,

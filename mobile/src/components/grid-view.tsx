@@ -5,9 +5,6 @@ import { getCardImagePath } from "../lib/utils/salon";
 
 const CARD_ASPECT = 300 / 527;
 
-const VIEW_WIDTH_MAX = 378;
-const VIEW_HEIGHT_MAX = 300;
-
 interface GridViewProps {
   spread: Spread;
   drawnCards: DrawnCard[];
@@ -25,8 +22,8 @@ const GridView: React.FC<GridViewProps> = ({
   onToggleFlip,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [viewWidth, setViewWidth] = useState(VIEW_WIDTH_MAX);
-  const [viewHeight, setViewHeight] = useState(VIEW_HEIGHT_MAX);
+  const [viewWidth, setViewWidth] = useState(0);
+  const [viewHeight, setViewHeight] = useState(0);
 
   useLayoutEffect(() => {
     const updateViewSize = () => {
@@ -57,15 +54,12 @@ const GridView: React.FC<GridViewProps> = ({
   const maxX = Math.max(...drawnCards.map((c) => c.x));
   const maxY = Math.max(...drawnCards.map((c) => c.y));
 
-  const GRID_WIDTH_MAX = 4;
-  const GRID_HEIGHT_MAX = 4;
-
   const colGap = 8;
   const rowGap = 8;
 
   const cardHeight = Math.min(
-    (viewWidth - colGap * 2) / Math.min(maxX + 1, GRID_WIDTH_MAX),
-    (viewHeight - rowGap * 2) / Math.min(maxY + 1, GRID_HEIGHT_MAX)
+    (viewWidth - colGap * maxX) / (maxX + 1),
+    (viewHeight - rowGap * maxY) / (maxY + 1)
   );
   const cardWidth = cardHeight * CARD_ASPECT;
   const cellSize = cardHeight;
@@ -94,7 +88,7 @@ const GridView: React.FC<GridViewProps> = ({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full overflow-x-auto pb-2 flex justify-center items-center relative"
+      className="w-full h-full overflow-x-auto flex justify-center items-center relative"
     >
       {/* 🔥 スプレッド名 -洗練されたバッジ */}
       {spread && (
@@ -132,6 +126,35 @@ const GridView: React.FC<GridViewProps> = ({
           const displayWidth = isHorizontal ? cardHeight : cardWidth;
           const displayHeight = isHorizontal ? cardWidth : cardHeight;
           const isFlipped = flippedCards.has(card.id);
+
+          const rotation = (isHorizontal ? -90 : 0) + (card.isReversed ? 180 : 0);
+          const imgStyle: React.CSSProperties = isHorizontal
+            ? {
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: `${displayHeight}px`,
+                height: `${displayWidth}px`,
+                objectFit: "cover",
+                transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+              }
+            : {
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: card.isReversed ? "rotate(180deg)" : undefined,
+              };
+          const backImgStyle: React.CSSProperties = isHorizontal
+            ? {
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: `${displayHeight}px`,
+                height: `${displayWidth}px`,
+                objectFit: "cover",
+                transform: "translate(-50%, -50%) rotate(-90deg)",
+              }
+            : { width: "100%", height: "100%", objectFit: "cover" };
 
           return (
             <motion.div
@@ -172,7 +195,7 @@ const GridView: React.FC<GridViewProps> = ({
                   <img
                     src={getCardImagePath(card.card!, true)}
                     alt="Card Back"
-                    className="w-full h-full object-cover"
+                    style={backImgStyle}
                   />
                   {!isFlipped && (
                     <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-[10px] font-bold z-10">
@@ -191,9 +214,7 @@ const GridView: React.FC<GridViewProps> = ({
                   <img
                     src={getCardImagePath(card.card!)}
                     alt={card.card!.name}
-                    className={`w-full h-full object-cover ${
-                      card.isReversed ? "transform rotate-180" : ""
-                    }`}
+                    style={imgStyle}
                   />
                   <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/90 text-purple-900 rounded-full flex items-center justify-center text-[10px] font-bold z-10">
                     {card.order}

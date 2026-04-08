@@ -2,36 +2,21 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import type {
-  AppJWTPayload,
-  MasterData,
-  ReadingCategory,
-  Spread,
-  Tarotist,
-} from "../../../shared/lib/types";
+import type { MasterData } from "../../../shared/lib/types";
 import { useSalon } from "../lib/hooks/use-salon";
 import { drawRandomCards } from "../lib/utils/salon";
 import { ChatPanel } from "./chat-panel";
 import ShuffleDialog from "./shuffle-dialog";
 import UpperViewer from "./upper-viewer";
 
-interface ReadingData {
-  tarotist: Tarotist;
-  spread: Spread;
-  category: ReadingCategory;
-}
-
 interface ReadingPageProps {
-  payload: AppJWTPayload;
   masterData: MasterData;
-  readingData: ReadingData;
-  showProfile: boolean;
-  setShowProfile: (show: boolean) => void;
   onBack: () => void;
+  /** AI 課金終了（戻るボタン表示可能）時にナビゲーションロックを解除する */
+  onUnlock: () => void;
 }
 
-// 77枚のカードデータ（MasterDataにない場合のフォールバック）
-const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
+const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock }) => {
   const {
     selectedSpread,
     drawnCards,
@@ -116,7 +101,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack }) => {
 
         {/* 下半分 */}
         <div className="flex-1 min-h-0">
-          {drawnCards.length > 0 && <ChatPanel onBack={handleBack} />}
+          {drawnCards.length > 0 && <ChatPanel onBack={handleBack} onUnlock={onUnlock} />}
         </div>
       </div>
     </div>

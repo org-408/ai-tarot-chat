@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import Link from "next/link";
 import { tarotistService } from "@/lib/server/services";
 import type { Tarotist } from "@/../shared/lib/types";
+import { TarotistsSection } from "@/components/marketing/tarotists-section";
+import { NotifyForm } from "@/components/marketing/notify-form";
 
 export const metadata: Metadata = {
   title: "AI タロット占い — AIが読み解くあなたの未来",
@@ -31,9 +33,9 @@ const features = [
   },
   {
     icon: "📱",
-    title: "マルチプラットフォーム対応",
+    title: "iOS・Android アプリ対応",
     description:
-      "iOS・Androidアプリ、Webブラウザ、いつでもどこでも占いを楽しめます。データは同期されます。",
+      "iPhone・iPad・Androidスマートフォン・タブレットでご利用いただけます（近日公開）。",
   },
 ];
 
@@ -75,7 +77,7 @@ const planHighlights = [
     color: "bg-blue-50 border-blue-200",
     headingColor: "text-blue-700",
     badge: "人気",
-    features: ["1日3回", "7枚以内全スプレッド", "ケルト十字（1日1回）", "広告なし"],
+    features: ["1日3回", "22種のスプレッド", "ケルト十字を含む", "広告なし"],
   },
   {
     name: "プレミアム",
@@ -87,55 +89,6 @@ const planHighlights = [
   },
 ];
 
-function tarotistImagePath(name: string): string {
-  return `/tarotists/${name}.png`;
-}
-
-function TarotistCard({ t }: { t: Tarotist }) {
-  const planName = (t as Tarotist & { plan?: { name: string } }).plan?.name ?? "";
-  const imagePath = tarotistImagePath(t.name);
-
-  return (
-    <div
-      className="group relative rounded-2xl overflow-hidden border border-white/60 bg-white shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
-      style={{
-        background: `linear-gradient(135deg, ${t.primaryColor}44, white)`,
-      }}
-    >
-      {/* プランバッジ */}
-      <span className="absolute top-3 right-3 z-10 text-xs text-slate-500 bg-white/90 rounded-full px-2 py-0.5 border border-slate-100">
-        {planName}
-      </span>
-
-      {/* 占い師の画像 */}
-      <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-transparent to-black/10">
-        <Image
-          src={imagePath}
-          alt={`${t.name} — ${t.title}`}
-          fill
-          className="object-cover object-top"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
-        {/* グラデーションオーバーレイ */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-        {/* 名前・肩書き（画像下部に重ねて表示） */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-lg">{t.icon}</span>
-            <h3 className="font-bold text-base leading-tight">{t.name}</h3>
-          </div>
-          <p className="text-xs text-white/80">{t.title}</p>
-        </div>
-      </div>
-
-      {/* 特徴テキスト */}
-      <div className="p-3">
-        <p className="text-xs text-slate-600 leading-relaxed">{t.trait}</p>
-      </div>
-    </div>
-  );
-}
 
 export default async function LandingPage() {
   // DBから占い師一覧を取得。接続できない場合は空配列にフォールバック
@@ -178,13 +131,16 @@ export default async function LandingPage() {
 
             {/* CTAボタン */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
+              <TrackedLink
                 href="/download"
+                pageName="landing"
+                placement="hero"
+                ctaName="download_app"
                 className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
               >
                 <span>📱</span>
                 アプリをダウンロード
-              </Link>
+              </TrackedLink>
               <Link
                 href="/#features"
                 className="inline-flex items-center gap-2 rounded-full border border-purple-400/50 text-white px-8 py-3.5 text-base font-semibold hover:bg-purple-500/20 transition-all"
@@ -196,7 +152,7 @@ export default async function LandingPage() {
 
             {/* 無料バッジ */}
             <p className="mt-6 text-sm text-purple-300">
-              ゲストプランは無料・登録不要でご利用いただけます
+              近日公開予定 — リリース通知を受け取る
             </p>
           </div>
 
@@ -262,27 +218,7 @@ export default async function LandingPage() {
             </p>
           </div>
 
-          {tarotists.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {tarotists.map((t) => (
-                <TarotistCard key={t.id} t={t} />
-              ))}
-            </div>
-          ) : (
-            // DBから取得できなかった場合のフォールバック表示
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {["🌸 Lily", "🌙 Luna", "⭐ Stella", "🔮 Celine", "✨ Gloria", "💎 Sophia", "👸 Ariadne", "📚 Clara"].map(
-                (label) => (
-                  <div
-                    key={label}
-                    className="rounded-2xl bg-purple-50 border border-purple-100 p-6 flex items-center justify-center"
-                  >
-                    <span className="text-lg font-medium text-slate-700">{label}</span>
-                  </div>
-                )
-              )}
-            </div>
-          )}
+          <TarotistsSection tarotists={tarotists} />
         </div>
       </section>
 
@@ -382,40 +318,17 @@ export default async function LandingPage() {
 
       {/* ===== Download CTA Section ===== */}
       <section className="py-20 sm:py-28 bg-gradient-to-br from-purple-950 via-indigo-900 to-purple-800 text-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-5xl mb-6">🔮</div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            今すぐ占いを始めよう
+            もうすぐリリース
           </h2>
           <p className="text-purple-200 text-lg max-w-xl mx-auto mb-10">
-            登録不要で、今すぐ無料でお試しいただけます。
+            iOS・Androidアプリを準備中です。
             <br />
-            iOS・Android・Webブラウザに対応しています。
+            リリース時にお知らせを受け取りませんか？
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/download"
-              className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-7 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 min-w-[200px] justify-center"
-            >
-              <span className="text-2xl"></span>
-              <span>App Store</span>
-            </Link>
-            <Link
-              href="/download"
-              className="inline-flex items-center gap-3 rounded-2xl bg-white text-purple-900 px-7 py-4 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 min-w-[200px] justify-center"
-            >
-              <span className="text-2xl">🤖</span>
-              <span>Google Play</span>
-            </Link>
-          </div>
-
-          <p className="mt-6 text-sm text-purple-300">
-            または{" "}
-            <Link href="/auth/signin" className="underline hover:text-white transition-colors">
-              Web版でブラウザから利用する
-            </Link>
-          </p>
+          <NotifyForm />
         </div>
       </section>
     </>

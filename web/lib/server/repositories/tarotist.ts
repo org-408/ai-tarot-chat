@@ -21,6 +21,7 @@ export class TarotistRepository extends BaseRepository {
         accentColor: tarotist.accentColor,
         avatarUrl: tarotist.avatarUrl,
         provider: convertToPrismaProviderKey(tarotist.provider!),
+        model: tarotist.model,
         cost: tarotist.cost,
         quality: tarotist.quality,
         planId: tarotist.planId,

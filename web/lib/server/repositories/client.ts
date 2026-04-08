@@ -104,10 +104,34 @@ export class ClientRepository extends BaseRepository {
       where: { id: clientId },
       data: {
         dailyReadingsCount: 0,
-        dailyCelticsCount: 0,
         dailyPersonalCount: 0,
       },
     });
+  }
+
+  async incrementUsageIfWithinLimit(params: {
+    clientId: string;
+    counterField: "dailyReadingsCount" | "dailyPersonalCount";
+    lastDateField: "lastReadingDate" | "lastPersonalReadingDate";
+    limit: number;
+  }): Promise<boolean> {
+    const { clientId, counterField, lastDateField, limit } = params;
+    const result = await this.db.client.updateMany({
+      where: {
+        id: clientId,
+        [counterField]: {
+          lt: limit,
+        },
+      },
+      data: {
+        [counterField]: {
+          increment: 1,
+        },
+        [lastDateField]: new Date(),
+      },
+    });
+
+    return result.count === 1;
   }
 
   // ==================== Device ====================
@@ -149,6 +173,40 @@ export class ClientRepository extends BaseRepository {
       data,
       include: { client: { include: { plan: true, user: true } } },
     });
+  }
+
+  /**
+   * デバイスのupsert
+   * check-then-create の非アトミックパターンを避けるため、
+   * DBの一意制約(deviceId)を利用してアトミックに作成/更新する。
+   */
+  async upsertDevice(params: {
+    deviceId: string;
+    platform?: string | null;
+    appVersion?: string | null;
+    osVersion?: string | null;
+    pushToken?: string | null;
+  }): Promise<Device> {
+    return await this.db.device.upsert({
+      where: { deviceId: params.deviceId },
+      create: {
+        deviceId: params.deviceId,
+        platform: params.platform,
+        appVersion: params.appVersion,
+        osVersion: params.osVersion,
+        pushToken: params.pushToken,
+        lastSeenAt: new Date(),
+        client: { create: { plan: { connect: { code: "GUEST" } } } },
+      },
+      update: {
+        platform: params.platform,
+        appVersion: params.appVersion,
+        osVersion: params.osVersion,
+        pushToken: params.pushToken,
+        lastSeenAt: new Date(),
+      },
+      include: { client: { include: { plan: true, user: true } } },
+    }) as Device;
   }
 
   async deleteDevice(id: string): Promise<void> {

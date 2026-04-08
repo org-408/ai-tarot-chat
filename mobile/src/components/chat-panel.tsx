@@ -1,13 +1,23 @@
 import { useChat } from "@ai-sdk/react";
+import { App as CapacitorApp } from "@capacitor/app";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useEffectEvent, useRef, useState } from "react";
+import type {
+  ReadingErrorCode,
+  SaveReadingInput,
+} from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useClient } from "../lib/hooks/use-client";
+import {
+  createReadingChatErrorFromResponse,
+  isReadingChatError,
+  ReadingChatError,
+} from "../lib/utils/reading-chat-error";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import CategorySpreadSelector from "./category-spread-selector";
@@ -22,6 +32,8 @@ interface ChatPanelProps {
   onKeyboardHeightChange?: React.Dispatch<React.SetStateAction<number>>;
   handleStartReading?: () => void;
   onBack: () => void;
+  /** AI 課金が終了した（戻るボタンが表示できる状態になった）タイミングで呼ぶ */
+  onUnlock?: () => void;
   /** Phase1 の会話履歴を Phase2 の初期メッセージとして渡す */
   initialMessages?: UIMessage[];
   /** messages が変わるたびに呼ばれるコールバック（Phase1 → Phase2 への引き継ぎ用） */
@@ -32,6 +44,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onKeyboardHeightChange,
   handleStartReading,
   onBack,
+  onUnlock,
   initialMessages,
   onMessagesChange,
 }) => {
@@ -39,11 +52,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { saveReading } = useClient();
+  const { saveReading, refreshUsage } = useClient();
   const [isSavingReading, setIsSavingReading] = useState(false);
+  const [isSyncingUsage, setIsSyncingUsage] = useState(false);
 
   const {
-    selectedTarotist: tarotist,
+    selectedTarotist,
+    selectedPersonalTarotist,
     selectedCategory: category,
     selectedSpread: spread,
     drawnCards,
@@ -52,9 +67,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     customQuestion,
     setCustomQuestion,
     setSelectedSpread,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setMessages,
   } = useSalon();
+
+  // パーソナル占いは専用占い師、クイック占いは選択占い師を使用
+  const tarotist = isPersonal ? selectedPersonalTarotist : selectedTarotist;
 
   const { masterData } = useMaster();
 
@@ -62,10 +78,34 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const isPhase2 = isPersonal && (initialMessages?.length ?? 0) > 0;
   const initialLen = initialMessages?.length ?? 0;
   const MAX_PHASE2_QUESTIONS = 3;
+  const inputErrorCodes: ReadingErrorCode[] = [
+    "QUESTION_TOO_SHORT",
+    "QUESTION_TOO_LONG",
+    "MODERATION_BLOCKED",
+  ];
 
   const [inputDisabled, setInputDisabled] = useState(false);
+  const [chatError, setChatError] = useState<ReadingChatError | null>(null);
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const transportFetch: typeof fetch = async (input, init) => {
+    const response = await fetch(input, init);
+
+    if (!response.ok) {
+      throw await createReadingChatErrorFromResponse(response);
+    }
+
+    return response;
+  };
+
+  const {
+    messages,
+    sendMessage,
+    status,
+    stop,
+    regenerate,
+    clearError,
+    setMessages,
+  } = useChat({
     ...(initialMessages && { messages: initialMessages }),
     transport: new DefaultChatTransport({
       api: !isPersonal
@@ -81,27 +121,97 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         category,
         drawnCards,
       },
+      fetch: transportFetch,
     }),
     onError: (err) => {
       console.error("Chat error:", err);
+      const resolvedError = isReadingChatError(err)
+        ? err
+        : new ReadingChatError({
+            message:
+              err.message || "通信に失敗しました。時間をおいて再度お試しください。",
+            status: 0,
+            code: "UNKNOWN",
+            retryable: true,
+          });
+
+      if (
+        !isPhase2 &&
+        inputErrorCodes.includes(resolvedError.code as ReadingErrorCode)
+      ) {
+        const lastMessage = messages[messages.length - 1];
+        const failedInput =
+          lastMessage?.role === "user"
+            ? lastMessage.parts
+                .filter((part) => part.type === "text")
+                .map((part) => (part as { text: string }).text)
+                .join("")
+            : "";
+
+        if (failedInput) {
+          setInputValue(failedInput);
+          setCustomQuestion(failedInput);
+          setMessages((currentMessages) => currentMessages.slice(0, -1));
+        }
+      }
+
+      if (resolvedError.code === "LIMIT_REACHED") {
+        void refreshUsage();
+      }
+
+      setChatError(resolvedError);
     },
-    onFinish: (message) => {
+    onFinish: async (message) => {
       console.log("Chat finished:", message);
+      setChatError(null);
+
+      if (isEndingEarlyRef.current) {
+        isEndingEarlyRef.current = false;
+        setIsEndingSession(true);
+      }
+
+      if (!isPersonal) {
+        setIsSyncingUsage(true);
+        try {
+          await refreshUsage();
+        } catch (error) {
+          console.warn("Failed to refresh usage after quick reading", error);
+        } finally {
+          setIsSyncingUsage(false);
+        }
+      }
     },
   });
 
   const hasSentInitialMessage = useRef(false);
+  const isEndingEarlyRef = useRef(false);
 
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [, setIsFocused] = useState(false);
   const [, setIsKeyboardReady] = useState(false);
+  const wasPersonalRef = useRef(isPersonal);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hasSaved = useRef(false);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+  const saveStartedRef = useRef(false);
+  const pendingSaveRef = useRef(false);
+  const lastPersistedSignatureRef = useRef<string | null>(null);
+  const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
+
+  const isInputFixableError =
+    chatError !== null &&
+    inputErrorCodes.includes(chatError.code as ReadingErrorCode);
+  const hasBlockingError = chatError !== null && !isInputFixableError;
+  const canRetry = !!chatError?.retryable && !isInputFixableError;
+  const shouldShowBackButton =
+    !!chatError ||
+    (isMessageComplete &&
+      !isSavingReading &&
+      !isSyncingUsage &&
+      (!isPhase2 || inputDisabled));
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -149,11 +259,18 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isPersonal, masterData.spreads, messages, status]);
 
   useEffect(() => {
-    // isPersonal が切り替わったらメッセージをストップ
-    if (!isPersonal) {
+    // Phase2 のストリーミング中に personal モードから外れたときだけ停止する。
+    // クイック占いは常に isPersonal=false のため、単純条件だと初回リクエストまで止めてしまう。
+    const wasPersonal = wasPersonalRef.current;
+    if (
+      wasPersonal &&
+      !isPersonal &&
+      (status === "streaming" || status === "submitted")
+    ) {
       stop();
     }
-  }, [isPersonal, stop]);
+    wasPersonalRef.current = isPersonal;
+  }, [isPersonal, status, stop]);
 
   // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
   // useEffect(() => {
@@ -225,6 +342,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, []);
 
   const handleSendMessage = () => {
+    if (chatError) {
+      clearError();
+      setChatError(null);
+    }
     if (messages.length < 3) {
       console.log("step 2 not reached yet, setting custom question");
       setCustomQuestion(inputValue.trim());
@@ -292,6 +413,126 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
 
   useEffect(() => {
+    if (status === "submitted" || status === "streaming") {
+      setChatError(null);
+    }
+  }, [status]);
+
+  const shouldPersistReading = () => {
+    if (status !== "ready") return false;
+
+    return isPhase2
+      ? drawnCards.length > 0 && messages.length > initialLen
+      : (isRevealingCompleted || isPersonal) &&
+          drawnCards.length > 0 &&
+          messages.length > 0;
+  };
+
+  const getTargetMessages = () => messages;
+
+  const buildPersistSignature = (readingIdOverride = savedReadingId) =>
+    `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
+      .map((msg) => {
+        const text = msg.parts
+          .filter((part) => part.type === "text")
+          .map((part) => (part as { text: string }).text)
+          .join("");
+        return `${msg.role}:${text}`;
+      })
+      .join("\u0001")}`;
+
+  const buildReadingPayload = (): SaveReadingInput => {
+    const targetMessages = getTargetMessages();
+    // Phase2 では initialLen 以降の最初の assistant メッセージが初回鑑定（FINAL_READING）
+    const firstPhase2TarotistIdx = isPhase2
+      ? targetMessages.findIndex((m, i) => m.role === "assistant" && i >= initialLen)
+      : -1;
+
+    return {
+      readingId: savedReadingId ?? undefined,
+      incrementUsage: isPersonal ? savedReadingId === null : false,
+      tarotistId: tarotist.id,
+      tarotist,
+      spreadId: spread.id,
+      spread,
+      category: isPersonal ? undefined : category,
+      customQuestion: isPersonal ? customQuestion : undefined,
+      cards: drawnCards,
+      chatMessages: targetMessages.map((msg, i) => {
+        let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
+        if (msg.role === "user") {
+          chatType = "USER_QUESTION";
+        } else if (isPhase2 && i === firstPhase2TarotistIdx) {
+          chatType = "FINAL_READING";
+        } else if (isPhase2) {
+          chatType = "TAROTIST_ANSWER";
+        } else {
+          chatType = "FINAL_READING";
+        }
+
+        return {
+          tarotistId: tarotist.id,
+          tarotist,
+          chatType,
+          role: msg.role === "user" ? "USER" : "TAROTIST",
+          message: msg.parts
+            .filter((part) => part.type === "text")
+            .map((part) => (part as { text: string }).text)
+            .join(""),
+        };
+      }),
+    };
+  };
+
+  const persistReading = useEffectEvent((withSavingIndicator: boolean) => {
+    if (saveStartedRef.current) {
+      // 保存中に新しいデータ（クロージングメッセージ等）が来た場合、
+      // 保存完了後に再試行するフラグを立てる
+      if (shouldPersistReading()) {
+        pendingSaveRef.current = true;
+      }
+      return;
+    }
+
+    if (!shouldPersistReading()) {
+      return;
+    }
+
+    const nextSignature = buildPersistSignature();
+    if (lastPersistedSignatureRef.current === nextSignature) {
+      return;
+    }
+
+    saveStartedRef.current = true;
+    pendingSaveRef.current = false;
+
+    if (withSavingIndicator) {
+      setIsSavingReading(true);
+    }
+
+    void saveReading(buildReadingPayload())
+      .then((result) => {
+        setSavedReadingId(result.reading.id);
+        lastPersistedSignatureRef.current = buildPersistSignature(
+          result.reading.id,
+        );
+      })
+      .catch((error) => {
+        console.warn("Failed to persist reading", error);
+      })
+      .finally(() => {
+        saveStartedRef.current = false;
+        if (withSavingIndicator) {
+          setIsSavingReading(false);
+        }
+        // 保存中にスキップされたデータがあれば再試行
+        if (pendingSaveRef.current) {
+          pendingSaveRef.current = false;
+          persistReading(false);
+        }
+      });
+  });
+  useEffect(() => {
     if (isMessageComplete) return; // 既にフラグ立て済みなら何もしない
 
     // ─────────────────────────────────────────────────────────────
@@ -301,6 +542,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     // エラー時でもフラグを立てることで、戻るボタンが必ず表示される
     // ─────────────────────────────────────────────────────────────
     const isComplete =
+      chatError !== null ||
       (isPhase2
         ? messages.length > (initialMessages?.length ?? 0)
         : (isRevealingCompleted || isPersonal) &&
@@ -311,6 +553,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       setIsMessageComplete(true);
     }
   }, [
+    chatError,
     drawnCards.length,
     initialMessages,
     isPersonal,
@@ -328,6 +571,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
   }, [isEndingSession]);
 
+  // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
+  // shouldShowBackButton が true になった瞬間に一度だけ呼ぶ
+  const hasUnlockedRef = React.useRef(false);
+  useEffect(() => {
+    if (shouldShowBackButton && !hasUnlockedRef.current) {
+      hasUnlockedRef.current = true;
+      onUnlock?.();
+    }
+  }, [shouldShowBackButton, onUnlock]);
+
   useEffect(() => {
     // ─────────────────────────────────────────────────────────────
     // DB 保存:
@@ -335,73 +588,59 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     //   非Phase2 → 鑑定完了後すぐ保存
     //   エラー時は保存しない
     // ─────────────────────────────────────────────────────────────
-    if (status !== "ready") return;
-
-    const shouldSave = isPhase2
-      ? inputDisabled &&
-        drawnCards.length > 0 &&
-        messages.length > (initialMessages?.length ?? 0)
-      : (isRevealingCompleted || isPersonal) &&
-        drawnCards.length > 0 &&
-        messages.length > 0;
-
-    if (shouldSave && !hasSaved.current) {
-      hasSaved.current = true;
-      setIsSavingReading(true);
-      saveReading({
-        tarotistId: tarotist.id,
-        tarotist,
-        spreadId: spread.id,
-        spread,
-        category: isPersonal ? undefined : category,
-        customQuestion: isPersonal ? customQuestion : undefined,
-        cards: drawnCards,
-        chatMessages: (() => {
-          // Phase2 の場合は Phase1 メッセージを除外し、Phase2 のメッセージのみ保存する
-          const targetMessages = isPhase2
-            ? messages.slice(initialLen)
-            : messages;
-
-          // Phase2 の最初のタロティストメッセージのインデックス（実際の鑑定文）
-          const firstPhase2TarotistIdx = isPhase2
-            ? targetMessages.findIndex((m) => m.role === "assistant")
-            : -1;
-
-          return targetMessages.map((msg, i) => {
-            let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
-            if (msg.role === "user") {
-              chatType = "USER_QUESTION";
-            } else if (isPhase2 && i !== firstPhase2TarotistIdx) {
-              // Phase2 の Q&A 回答（鑑定文以外）
-              chatType = "TAROTIST_ANSWER";
-            } else {
-              // 実際の鑑定文
-              chatType = "FINAL_READING";
-            }
-            return {
-              tarotistId: tarotist.id,
-              tarotist,
-              chatType,
-              role: msg.role === "user" ? "USER" : "TAROTIST",
-              message: msg.parts
-                .filter((part) => part.type === "text")
-                .map((part) => (part as { text: string }).text)
-                .join(""),
-            };
-          });
-        })(),
-      }).finally(() => setIsSavingReading(false));
-    }
+    persistReading(true);
   }, [
     category,
     customQuestion,
     drawnCards,
-    initialMessages,
+    initialLen,
     inputDisabled,
     isPersonal,
     isPhase2,
     isRevealingCompleted,
     messages,
+    persistReading,
+    saveReading,
+    spread,
+    status,
+    tarotist,
+  ]);
+
+  useEffect(() => {
+    let appStateListener: PluginListenerHandle | undefined;
+
+    const setupAppStateListener = async () => {
+      try {
+        appStateListener = await CapacitorApp.addListener(
+          "appStateChange",
+          (state) => {
+            if (!state.isActive) {
+              persistReading(false);
+            }
+          },
+        );
+      } catch (error) {
+        console.warn("Failed to attach appStateChange listener", error);
+      }
+    };
+
+    setupAppStateListener();
+
+    return () => {
+      persistReading(false);
+      void appStateListener?.remove();
+    };
+  }, [
+    category,
+    customQuestion,
+    drawnCards,
+    initialLen,
+    inputDisabled,
+    isPersonal,
+    isPhase2,
+    isRevealingCompleted,
+    messages,
+    persistReading,
     saveReading,
     spread,
     status,
@@ -436,7 +675,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
         {(status === "submitted" ||
           status === "streaming" ||
-          isSavingReading) && (
+          isSavingReading ||
+          isSyncingUsage) && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
@@ -462,6 +702,41 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         )}
 
+        {chatError && (
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-900">
+            <div className="font-semibold mb-1">
+              {isInputFixableError
+                ? "入力内容を確認してください"
+                : "占いを続けられませんでした"}
+            </div>
+            <p className="whitespace-pre-wrap leading-6">{chatError.message}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {canRetry && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearError();
+                    setChatError(null);
+                    void regenerate();
+                  }}
+                  className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white"
+                >
+                  もう一度試す
+                </button>
+              )}
+              {!isInputFixableError && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold text-rose-700"
+                >
+                  戻る
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -471,7 +746,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Back Button - Phase1: 保存後すぐ / Phase2: 全質問終了後のみ */}
-      {isMessageComplete && !isSavingReading && (!isPhase2 || inputDisabled) && (
+      {shouldShowBackButton && !isSavingReading && !chatError && (
         <motion.button
           key={"back-button"}
           initial={{ opacity: 0, scale: 0.7, y: 40 }}
@@ -486,7 +761,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase2: セッション終了バナー */}
-      {isPhase2 && inputDisabled && isMessageComplete && (
+      {isPhase2 && inputDisabled && isMessageComplete && !chatError && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -521,11 +796,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               rows={2}
               className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={status === "streaming"}
+              disabled={status === "streaming" || hasBlockingError}
             />
             <button
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || status === "streaming"}
+              disabled={
+                !inputValue.trim() || status === "streaming" || hasBlockingError
+              }
               className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
             >
               <ArrowUp size={18} strokeWidth={2.5} />
@@ -562,8 +839,18 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     : `💬 鑑定について質問できます（残り ${remaining} 問）`}
                 </div>
                 <button
-                  onClick={() => setIsEndingSession(true)}
-                  disabled={status === "submitted" || status === "streaming"}
+                  onClick={() => {
+                    isEndingEarlyRef.current = true;
+                    sendMessage(
+                      { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+                      { body: { isEndingEarly: true } },
+                    );
+                  }}
+                  disabled={
+                    status === "submitted" ||
+                    status === "streaming" ||
+                    hasBlockingError
+                  }
                   className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
                 >
                   占いを終わる
@@ -588,11 +875,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   rows={2}
                   className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                   style={{ maxHeight: "120px" }}
-                  disabled={status === "streaming"}
+                  disabled={status === "streaming" || hasBlockingError}
                 />
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || status === "streaming"}
+                  disabled={
+                    !inputValue.trim() ||
+                    status === "streaming" ||
+                    hasBlockingError
+                  }
                   className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
                 >
                   <ArrowUp size={18} strokeWidth={2.5} />

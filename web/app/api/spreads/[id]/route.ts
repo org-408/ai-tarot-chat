@@ -1,5 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { spreadService } from "@/lib/server/services/spread";
+import { requireAdminSession } from "@/lib/server/utils/admin-guard";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -43,6 +44,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 // スプレッド更新
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const { response } = await requireAdminSession();
+  if (response) return response;
+
   const { id } = await params;
   logWithContext(
     "info",
@@ -68,6 +72,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 // スプレッド削除
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const { response } = await requireAdminSession();
+  if (response) return response;
+
   const { id } = await params;
   logWithContext(
     "info",

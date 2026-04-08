@@ -71,9 +71,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.provider = account.provider;
       }
 
-      // ユーザーIDを保存（初回ログイン時）
+      // ユーザーIDとロールを保存（初回ログイン時のみ）
       if (user?.id) {
-        token.id = user.id; // ← 統一: token.id
+        token.id = user.id;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        token.role = dbUser?.role ?? "USER";
       }
 
       return token;
@@ -87,7 +92,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // ユーザーIDをセッションに追加
       if (token.id && session.user) {
-        session.user.id = token.id as string; // ← 統一: session.user.id
+        session.user.id = token.id as string;
+      }
+
+      // ロールをセッションに追加
+      if (session.user) {
+        session.user.role = (token.role as string) ?? "USER";
       }
 
       return session;

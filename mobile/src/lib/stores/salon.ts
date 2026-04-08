@@ -18,9 +18,12 @@ import { useMasterStore } from "./master";
 
 interface SalonState {
   selectedTarotist: Tarotist;
+  selectedPersonalTarotist: Tarotist;
   selectedCategory: ReadingCategory;
   customQuestion: string;
   selectedSpread: Spread;
+  lastClaraCategoryId: string | null;
+  lastClaraSpreadId: string | null;
   drawnCards: DrawnCard[];
   isRevealingCompleted: boolean;
   selectedTargetMode: SelectTargetMode;
@@ -31,9 +34,14 @@ interface SalonState {
   messages: UIMessage[];
   init: () => void;
   setSelectedTarotist: (tarotist: Tarotist) => void;
+  setSelectedPersonalTarotist: (tarotist: Tarotist) => void;
   setSelectedCategory: (category: ReadingCategory) => void;
   setCustomQuestion: (question: string) => void;
   setSelectedSpread: (spread: Spread) => void;
+  setLastClaraSelection: (
+    categoryId: string | null,
+    spreadId: string | null
+  ) => void;
   setDrawnCards: (cards: DrawnCard[]) => void;
   setIsRevealingCompleted: (completed: boolean) => void;
   setSelectedTargetMode: (mode: SelectTargetMode) => void;
@@ -48,6 +56,9 @@ interface SalonState {
 const initialTarotist: Tarotist = useMasterStore
   .getState()
   .masterData.tarotists.find((t) => t.plan?.code === "GUEST")!;
+const initialPersonalTarotist: Tarotist = useMasterStore
+  .getState()
+  .masterData.tarotists.find((t) => t.name === "Ariadne")!;
 const initialCategory: ReadingCategory = useMasterStore
   .getState()
   .masterData.categories.find((c) => c.no === 1)!;
@@ -59,9 +70,12 @@ export const useSalonStore = create<SalonState>()(
   persist(
     (set) => ({
       selectedTarotist: initialTarotist,
+      selectedPersonalTarotist: initialPersonalTarotist,
       selectedCategory: initialCategory,
       customQuestion: "",
       selectedSpread: initialSpread,
+      lastClaraCategoryId: null,
+      lastClaraSpreadId: null,
       drawnCards: [],
       isRevealingCompleted: false,
       selectedTargetMode: "tarotist",
@@ -71,7 +85,14 @@ export const useSalonStore = create<SalonState>()(
       isPersonal: false,
       messages: [],
       init: () => {
-        set({
+        set((state) => ({
+          selectedCategory: state.selectedCategory?.id
+            ? state.selectedCategory
+            : initialCategory,
+          customQuestion: "",
+          selectedSpread: state.selectedSpread?.id
+            ? state.selectedSpread
+            : initialSpread,
           drawnCards: [],
           isRevealingCompleted: false,
           spreadViewerMode: "grid",
@@ -79,12 +100,18 @@ export const useSalonStore = create<SalonState>()(
           lowerViewerMode: "selector",
           isPersonal: false,
           messages: [],
-        });
+        }));
       },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
+      setSelectedPersonalTarotist: (tarotist) => set({ selectedPersonalTarotist: tarotist }),
       setSelectedCategory: (category) => set({ selectedCategory: category }),
       setCustomQuestion: (question) => set({ customQuestion: question }),
       setSelectedSpread: (spread) => set({ selectedSpread: spread }),
+      setLastClaraSelection: (categoryId, spreadId) =>
+        set({
+          lastClaraCategoryId: categoryId,
+          lastClaraSpreadId: spreadId,
+        }),
       setDrawnCards: (cards) => set({ drawnCards: cards }),
       setIsRevealingCompleted: (completed) =>
         set({ isRevealingCompleted: completed }),

@@ -75,7 +75,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-[420px] mx-auto px-4">
       {/* メインカルーセル */}
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y">
@@ -87,7 +87,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
             return (
               <div
                 key={tarotist.name}
-                className="flex-[0_0_90%] min-w-0 pl-2 pr-2 md:flex-[0_0_85%] md:pl-4 md:pr-4"
+                className="flex-[0_0_100%] min-w-0 px-2"
               >
                 <motion.div
                   animate={{
@@ -120,7 +120,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
                       <img
                         src={`/tarotists/${tarotist.name}.png`}
                         alt={tarotist.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                         onError={(e) => {
                           e.currentTarget.src =
                             "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='40'%3E🔮%3C/text%3E%3C/svg%3E";
@@ -272,7 +272,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
 
       {/* 左右ナビゲーションボタン */}
       <button
-        className="absolute left-1 md:left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg z-10 transition-all"
+        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg z-10 transition-all"
         onClick={scrollPrev}
         aria-label="前の占い師"
       >
@@ -291,7 +291,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
         </svg>
       </button>
       <button
-        className="absolute right-1 md:right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg z-10 transition-all"
+        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg z-10 transition-all"
         onClick={scrollNext}
         aria-label="次の占い師"
       >

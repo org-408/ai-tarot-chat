@@ -66,8 +66,7 @@ const CurrentPlanView: React.FC<CurrentPlanViewProps> = ({
 
       {isStandard && (
         <div className="mb-4 text-sm text-center text-gray-600">
-          通常: {usageStats.remainingReadings}回 または ケルト十字:{" "}
-          {usageStats.remainingCeltics}回
+          通常: {usageStats.remainingReadings}回
         </div>
       )}
 

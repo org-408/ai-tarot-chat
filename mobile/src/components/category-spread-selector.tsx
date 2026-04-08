@@ -22,13 +22,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   claraMode = false,
 }) => {
   const { masterData } = useMaster();
-  const { currentPlan, remainingReadings, remainingCeltics, remainingPersonal } =
-    useClient();
+  const { currentPlan, remainingReadings, remainingPersonal } = useClient();
   const {
     selectedCategory,
     setSelectedCategory,
     selectedSpread,
     setSelectedSpread,
+    lastClaraCategoryId,
+    lastClaraSpreadId,
+    setLastClaraSelection,
     isPersonal,
   } = useSalon();
 
@@ -104,8 +106,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             return true;
           }
         } else {
-          // パーソナル占いモードの場合、スプレッドのプラン条件とカテゴリー条件は無視する
-          return true;
+          // パーソナル占いモードの場合、カテゴリー条件は不要だがプラン制限は適用する
+          if (!spread.plan || !currentPlan) return false;
+          return currentPlan.no >= spread.plan!.no;
         }
       })
       .map((spread: Spread) => ({ ...spread, bio: spread.guide }));
@@ -145,27 +148,59 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     const isSelectedInList = availableCategories.some(
       (c) => c.id === selectedCategory?.id
     );
-    if (availableCategories.length > 0 && !isSelectedInList) {
-      setSelectedCategory(availableCategories[0]);
+    if (availableCategories.length === 0 || isSelectedInList) return;
+
+    if (claraMode && lastClaraCategoryId) {
+      const lastClaraCategory = availableCategories.find(
+        (category) => category.id === lastClaraCategoryId
+      );
+      if (lastClaraCategory) {
+        setSelectedCategory(lastClaraCategory);
+        return;
+      }
     }
-  }, [availableCategories, selectedCategory, setSelectedCategory]);
+
+    setSelectedCategory(availableCategories[0]);
+  }, [
+    availableCategories,
+    claraMode,
+    lastClaraCategoryId,
+    selectedCategory,
+    setSelectedCategory,
+  ]);
 
   useEffect(() => {
     console.log("[SalonPage] availableSpreads changed", availableSpreads);
-    if (availableSpreads.length > 0 && !selectedSpread) {
-      setSelectedSpread(selectedSpread || availableSpreads[0]);
-    }
-  }, [availableSpreads, selectedSpread, setSelectedSpread]);
+    const isSelectedInList = availableSpreads.some(
+      (spread) => spread.id === selectedSpread?.id
+    );
+    if (availableSpreads.length === 0 || isSelectedInList) return;
 
-  const isCeltic = selectedSpread?.code?.toLowerCase().includes("celtic") ?? false;
+    if (claraMode && lastClaraSpreadId) {
+      const lastClaraSpread = availableSpreads.find(
+        (spread) => spread.id === lastClaraSpreadId
+      );
+      if (lastClaraSpread) {
+        setSelectedSpread(lastClaraSpread);
+        return;
+      }
+    }
+
+    setSelectedSpread(availableSpreads[0]);
+  }, [
+    availableSpreads,
+    claraMode,
+    lastClaraSpreadId,
+    selectedSpread,
+    setSelectedSpread,
+  ]);
+
   const remaining = isPersonal
     ? remainingPersonal
-    : isCeltic
-    ? remainingCeltics
     : remainingReadings;
   const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
-  // claraModeおよびdebugModeは回数制限なし
-  const isLimitReached = !claraMode && !(isPersonal && debugMode) && remaining !== undefined && remaining <= 0;
+  // claraModeおよびdebugModeは回数制限なし（isPersonal問わず）
+  const isLimitReached = !claraMode && !debugMode && remaining !== undefined && remaining <= 0;
 
   const isDisabled =
     isLimitReached ||
@@ -174,10 +209,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   const handleStartReading = () => {
     if (isDisabled) return;
+    const categoryToUse = selectedCategory || availableCategories[0];
+    const spreadToUse = selectedSpread || availableSpreads[0];
+
+    setSelectedCategory(categoryToUse);
+    setSelectedSpread(spreadToUse);
+    if (claraMode) {
+      setLastClaraSelection(categoryToUse?.id ?? null, spreadToUse?.id ?? null);
+    }
     onHandleStartReading();
-    // ストアに保存(念のため、nullガード付き)
-    setSelectedCategory(selectedCategory || availableCategories[0]);
-    setSelectedSpread(selectedSpread || availableSpreads[0]);
   };
 
   return (

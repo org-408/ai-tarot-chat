@@ -33,12 +33,12 @@ export const homeProviders = {
 export const homeFreeProviders = {
   gpt5nano: mistral("mistral-small-latest"),
   gemini25: mistral("mistral-small-latest"),
-  gemini25pro: google("gemini-2.5-flash-lite"),
-  claude_h: groq("llama-3.3-70b-versatile"),
-  gpt41: google("gemini-2.5-flash"),
-  gpt5: groq("openai/gpt-oss-120b"),
-  claude_s: groq("openai/gpt-oss-120b"),
-  google: ollama("gemma3:12b"),
+  gemini25pro: mistral("mistral-small-latest"),
+  claude_h: mistral("mistral-small-latest"),
+  gpt41: mistral("mistral-small-latest"),
+  gpt5: mistral("mistral-small-latest"),
+  claude_s: mistral("mistral-large-latest"),
+  google: mistral("mistral-small-latest"),
 };
 
 // Google Vertex AI用の認証設定
@@ -56,12 +56,12 @@ const vertex = createVertex({
 
 // プロバイダマッピング
 export const providers = {
-  gpt5nano: openai("gpt-5-nano"),
+  gpt5nano: openai("gpt-5.4-nano"),
   gemini25: vertex("gemini-2.5-flash"),
   gemini25pro: vertex("gemini-2.5-pro"),
   claude_h: anthropic("claude-haiku-4-5"),
-  gpt41: openai("gpt-4.1"),
-  gpt5: openai("gpt-5"),
+  gpt41: openai("gpt-5.4-mini"),
+  gpt5: openai("gpt-5.4"),
   claude_s: anthropic("claude-sonnet-4-6"),
   google: google("gemini-2.5-pro"),
 };

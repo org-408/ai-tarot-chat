@@ -3,7 +3,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type {
   Plan,
   Reading,
-  ReadingInput,
+  SaveReadingInput,
+  SaveReadingResponse,
   UsageStats,
 } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
@@ -49,10 +50,11 @@ interface ClientState {
   // ============================================
   init: () => Promise<void>;
   setPlan: (plan: Plan) => void; // for lifecycle store
+  debugSetPlan: (plan: Plan) => void;
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
-  saveReading: (data: ReadingInput) => Promise<void>;
+  saveReading: (data: SaveReadingInput) => Promise<SaveReadingResponse>;
   fetchReadings: (params: PaginationParams) => Promise<void>;
   setParams: (params: PaginationParams) => { take: number; skip: number };
   setTake: (take: number) => void;
@@ -101,7 +103,18 @@ export const useClientStore = create<ClientState>()(
       // ============================================
       init: async () => {
         logWithContext("info", "[ClientStore] Initializing");
-        set({ isReady: false, error: null });
+        const cachedUsage = get().usage;
+
+        set({
+          error: null,
+        });
+
+        if (cachedUsage) {
+          logWithContext("info", "[ClientStore] Using cached usage during init", {
+            planCode: cachedUsage.plan.code,
+            remainingReadings: cachedUsage.remainingReadings,
+          });
+        }
 
         try {
           // ✅ サーバーから利用状況を取得
@@ -114,15 +127,6 @@ export const useClientStore = create<ClientState>()(
 
           await clientService.saveLastFetchedDate(today);
 
-          // 占い履歴取得は非致命的
-          try {
-            await clientService.getReadingHistory(get().take, get().skip);
-          } catch (readingsError) {
-            logWithContext("warn", "[ClientStore] Failed to fetch reading history (non-critical)", {
-              error: readingsError instanceof Error ? readingsError.message : String(readingsError),
-            });
-          }
-
           set({ isReady: true, error: null });
 
           logWithContext("info", "[ClientStore] Initialized successfully", {
@@ -134,9 +138,9 @@ export const useClientStore = create<ClientState>()(
             error: error instanceof Error ? error.message : String(error),
           });
 
-          // 初期化失敗でも isReady を true にして先に進める
+          // ネットワーク断などで同期できない場合のみ、キャッシュがあればそれで起動を継続する
           set({
-            isReady: true,
+            isReady: !!cachedUsage,
             error: error instanceof Error ? error : new Error(String(error)),
           });
         }
@@ -147,6 +151,19 @@ export const useClientStore = create<ClientState>()(
           planCode: plan.code,
         });
         set({ currentPlan: plan });
+      },
+
+      debugSetPlan: (plan: Plan) => {
+        logWithContext("info", "[ClientStore] Debug plan override", {
+          planCode: plan.code,
+        });
+
+        const usage = get().usage;
+        set({
+          currentPlan: plan,
+          usage: usage ? { ...usage, plan } : usage,
+          error: null,
+        });
       },
 
       // ============================================
@@ -302,7 +319,7 @@ export const useClientStore = create<ClientState>()(
       // ============================================
       // 占い結果の保存
       // ============================================
-      saveReading: async (data: ReadingInput) => {
+      saveReading: async (data: SaveReadingInput) => {
         set({ error: null });
 
         logWithContext("info", "[ClientStore] Saving reading", { data });
@@ -315,7 +332,15 @@ export const useClientStore = create<ClientState>()(
           // 履歴に追加・usage を最新化
           const { reading, usage } = result;
           const { readings } = get();
-          set({ usage, readings: [reading, ...readings] });
+          const nextReadings = readings.some((item) => item.id === reading.id)
+            ? readings.map((item) => (item.id === reading.id ? reading : item))
+            : [reading, ...readings];
+          if (data.incrementUsage === false) {
+            set({ readings: nextReadings });
+          } else {
+            set({ usage, readings: nextReadings });
+          }
+          return result;
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to save reading", {
             error: error instanceof Error ? error.message : String(error),
@@ -323,6 +348,7 @@ export const useClientStore = create<ClientState>()(
           set({
             error: error instanceof Error ? error : new Error(String(error)),
           });
+          throw error;
         }
       },
 

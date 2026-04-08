@@ -1,5 +1,5 @@
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "料金プラン",
@@ -96,8 +96,8 @@ const plans: Plan[] = [
     badgeColor: "bg-blue-600",
     requiresAuth: true,
     features: [
-      "1日3回まで（7枚以内スプレッド）",
-      "または1日1回ケルト十字",
+      "1日3回まで利用可能",
+      "ケルト十字を含む全22種のスプレッド",
       "全カテゴリ・多彩なスプレッド",
       "占い履歴を保存可能",
       "広告なし",
@@ -131,7 +131,16 @@ const plans: Plan[] = [
       "占い履歴を保存可能",
       "広告なし",
     ],
-    tarotists: ["🌸 Lily", "🌙 Luna", "⭐ Stella", "🔮 Celine", "✨ Gloria", "💎 Sophia", "👸 Ariadne", "📚 Clara"],
+    tarotists: [
+      "🌸 Lily",
+      "🌙 Luna",
+      "⭐ Stella",
+      "🔮 Celine",
+      "✨ Gloria",
+      "💎 Sophia",
+      "👸 Ariadne",
+      "📚 Clara",
+    ],
     spreads: "24種類（全スプレッド）",
     maxReadings: "1日3回",
     hasHistory: true,
@@ -147,7 +156,6 @@ const comparisonRows = [
   { label: "ユーザー登録", values: ["不要", "必要", "必要", "必要"] },
   { label: "1日の利用回数", values: ["1回", "3回", "3回", "3回"] },
   { label: "スプレッド数", values: ["3種", "3種", "22種", "24種"] },
-  { label: "ケルト十字", values: ["×", "×", "1日1回", "○"] },
   { label: "パーソナル占い", values: ["×", "×", "×", "1日1回"] },
   { label: "AI対話（質問）", values: ["×", "×", "×", "○"] },
   { label: "占い履歴", values: ["×", "○", "○", "○"] },
@@ -197,9 +205,13 @@ export default function PricingPage() {
                     {plan.name}
                   </h2>
                   <div className="flex items-end gap-1 mb-2">
-                    <span className="text-3xl font-bold text-slate-900">{plan.price}</span>
+                    <span className="text-3xl font-bold text-slate-900">
+                      {plan.price}
+                    </span>
                     {plan.priceNote && (
-                      <span className="text-slate-500 text-sm mb-1">{plan.priceNote}</span>
+                      <span className="text-slate-500 text-sm mb-1">
+                        {plan.priceNote}
+                      </span>
                     )}
                   </div>
                   <p className="text-sm text-slate-600">{plan.description}</p>
@@ -208,8 +220,13 @@ export default function PricingPage() {
                 {/* 機能リスト */}
                 <ul className="space-y-2 flex-1 mb-6">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-slate-700">
-                      <span className="text-green-500 flex-shrink-0 mt-0.5">✓</span>
+                    <li
+                      key={f}
+                      className="flex items-start gap-2 text-sm text-slate-700"
+                    >
+                      <span className="text-green-500 flex-shrink-0 mt-0.5">
+                        ✓
+                      </span>
                       <span>{f}</span>
                     </li>
                   ))}
@@ -217,7 +234,9 @@ export default function PricingPage() {
 
                 {/* 占い師一覧 */}
                 <div className="mb-5 p-3 bg-white/60 rounded-xl">
-                  <p className="text-xs font-semibold text-slate-500 mb-2">利用できる占い師</p>
+                  <p className="text-xs font-semibold text-slate-500 mb-2">
+                    利用できる占い師
+                  </p>
                   <div className="flex flex-wrap gap-1">
                     {plan.tarotists.map((t) => (
                       <span
@@ -231,12 +250,16 @@ export default function PricingPage() {
                 </div>
 
                 {/* CTA */}
-                <Link
+                <TrackedLink
                   href="/download"
+                  pageName="pricing"
+                  placement="plan_card"
+                  ctaName="select_plan"
+                  planCode={plan.code}
                   className={`w-full rounded-full py-3 text-center text-sm font-semibold transition-all ${plan.ctaStyle}`}
                 >
                   {plan.cta}
-                </Link>
+                </TrackedLink>
               </div>
             ))}
           </div>
@@ -254,9 +277,14 @@ export default function PricingPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left p-4 text-slate-500 font-medium w-40">機能</th>
+                  <th className="text-left p-4 text-slate-500 font-medium w-40">
+                    機能
+                  </th>
                   {plans.map((p) => (
-                    <th key={p.code} className="p-4 text-center font-bold text-slate-800">
+                    <th
+                      key={p.code}
+                      className="p-4 text-center font-bold text-slate-800"
+                    >
                       {p.name}
                     </th>
                   ))}
@@ -268,11 +296,15 @@ export default function PricingPage() {
                     key={row.label}
                     className={`border-b border-slate-50 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}`}
                   >
-                    <td className="p-4 text-slate-600 font-medium">{row.label}</td>
+                    <td className="p-4 text-slate-600 font-medium">
+                      {row.label}
+                    </td>
                     {row.values.map((v, j) => (
                       <td key={j} className="p-4 text-center text-slate-700">
                         {v === "○" ? (
-                          <span className="text-green-500 text-lg font-bold">✓</span>
+                          <span className="text-green-500 text-lg font-bold">
+                            ✓
+                          </span>
                         ) : v === "×" ? (
                           <span className="text-slate-300 text-lg">—</span>
                         ) : (
@@ -317,7 +349,10 @@ export default function PricingPage() {
                 a: "ユーザー登録（フリープラン以上）をいただくと、複数のデバイス間で占い履歴が同期されます。",
               },
             ].map((faq) => (
-              <div key={faq.q} className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
+              <div
+                key={faq.q}
+                className="rounded-2xl border border-slate-100 bg-slate-50 p-6"
+              >
                 <h3 className="font-bold text-slate-900 mb-2">Q. {faq.q}</h3>
                 <p className="text-slate-600 leading-relaxed">A. {faq.a}</p>
               </div>
@@ -329,17 +364,22 @@ export default function PricingPage() {
       {/* ===== Bottom CTA ===== */}
       <section className="py-16 bg-gradient-to-br from-purple-950 via-indigo-900 to-purple-800 text-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">まず無料で試してみよう</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+            まず無料で試してみよう
+          </h2>
           <p className="text-purple-200 mb-8">
             クレジットカード不要。登録なしでもすぐに始められます。
           </p>
-          <Link
+          <TrackedLink
             href="/download"
+            pageName="pricing"
+            placement="final_cta"
+            ctaName="download_app"
             className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
           >
             <span>📱</span>
             アプリをダウンロード
-          </Link>
+          </TrackedLink>
         </div>
       </section>
     </>

@@ -6,10 +6,17 @@ import { logWithContext } from "@/lib/server/logger/logger";
 import { clientService, spreadService } from "@/lib/server/services";
 import { authService } from "@/lib/server/services/auth";
 import { moderatePersonalQuestion } from "@/lib/server/services/moderation";
+import {
+  createReadingErrorResponse,
+  createReadingUnexpectedErrorResponse,
+  ReadingRouteError,
+} from "@/lib/server/utils/reading-error";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
+
+const maxOutputTokens = 12288; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -18,6 +25,7 @@ const RETRY_COUNT = 3;
 
 export async function POST(req: NextRequest) {
   let clientId = "";
+  let phase: "personal-intake" | "personal-reading" = "personal-intake";
   try {
     logWithContext("info", "パーソナル占いリクエスト開始", {
       path: "/api/readings/personal",
@@ -27,14 +35,26 @@ export async function POST(req: NextRequest) {
     const payload = await authService.verifyApiRequest(req);
     if ("error" in payload || !payload) {
       logWithContext("warn", "認証失敗", { path: "/api/readings/personal" });
-      return new Response("unauthorized", { status: 401 });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message:
+          "セッションの確認に失敗しました。いったん戻って再度お試しください。",
+        status: 401,
+        phase,
+      });
     }
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
     if (!clientId) {
       logWithContext("warn", "clientId不正", { payload });
-      return new Response("unauthorized", { status: 401 });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message:
+          "セッション情報が見つかりません。いったん戻って再度お試しください。",
+        status: 401,
+        phase,
+      });
     }
     logWithContext("info", "Client ID確認", { clientId });
 
@@ -44,12 +64,14 @@ export async function POST(req: NextRequest) {
       tarotist,
       spread,
       drawnCards,
+      isEndingEarly,
     }: {
       messages: UIMessage[];
       tarotist: Tarotist;
       spread: Spread;
       customQuestion: string;
       drawnCards: DrawnCard[];
+      isEndingEarly?: boolean;
     } = await req.json();
     const customQuestion =
       clientMessages.length >= 2
@@ -60,6 +82,7 @@ export async function POST(req: NextRequest) {
         : null;
     const provider =
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
+    phase = clientMessages.length <= 3 ? "personal-intake" : "personal-reading";
 
     // 入力バリデーション clientMessages.length === 3 のとき質問文チェック
     if (clientMessages.length === 3) {
@@ -68,10 +91,12 @@ export async function POST(req: NextRequest) {
           clientId,
           questionLength: customQuestion?.length,
         });
-        return Response.json(
-          { error: "5文字以上で入力してください" },
-          { status: 400 }
-        );
+        return createReadingErrorResponse({
+          code: "QUESTION_TOO_SHORT",
+          message: "質問は5文字以上で入力してください。",
+          status: 400,
+          phase,
+        });
       }
 
       if (customQuestion.trim().length > 200) {
@@ -79,10 +104,12 @@ export async function POST(req: NextRequest) {
           clientId,
           questionLength: customQuestion.length,
         });
-        return Response.json(
-          { error: "200文字以内で入力してください" },
-          { status: 400 }
-        );
+        return createReadingErrorResponse({
+          code: "QUESTION_TOO_LONG",
+          message: "質問は200文字以内で入力してください。",
+          status: 400,
+          phase,
+        });
       }
 
       // モデレーションチェック
@@ -97,11 +124,16 @@ export async function POST(req: NextRequest) {
         });
         return Response.json(
           {
-            error: moderation.message,
-            reason: moderation.reason,
-            category: moderation.category,
+            code: "MODERATION_BLOCKED",
+            message: moderation.message,
+            retryable: false,
+            phase,
+            details: {
+              reason: moderation.reason,
+              category: moderation.category,
+            },
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -121,10 +153,12 @@ export async function POST(req: NextRequest) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (usage.remainingPersonal <= 0) {
         logWithContext("warn", "パーソナル占いの回数上限", { clientId });
-        return NextResponse.json(
-          { error: "本日のパーソナル占いの回数上限に達しました" },
-          { status: 429 }
-        );
+        return createReadingErrorResponse({
+          code: "LIMIT_REACHED",
+          message: "本日のパーソナル占いの回数上限に達しました。",
+          status: 429,
+          phase,
+        });
       }
     }
 
@@ -138,6 +172,8 @@ export async function POST(req: NextRequest) {
         ? Math.floor((clientMessages.length - 5) / 2)
         : 0;
     const isLastQuestion = phase2QuestionIndex >= 3;
+    // ユーザーが「占いを終わる」を選択した早期終了
+    const isEarlyEnd = isEndingEarly === true && clientMessages.length > 6;
 
     const drawnCardsText =
       drawnCards.length > 0
@@ -150,7 +186,7 @@ export async function POST(req: NextRequest) {
                   placement.isReversed
                     ? placement.card!.reversedKeywords.join(", ")
                     : placement.card!.uprightKeywords.join(", ")
-                }`
+                }`,
             )
             .join("\n")
             .trim()
@@ -182,7 +218,6 @@ export async function POST(req: NextRequest) {
         `【ご挨拶】\n` +
         `{${tarotist.name}として簡潔な自己紹介と丁寧なご挨拶}\n\n` +
         `本日はどのようなことを占いましょうか？\n`;
-
     } else if (clientMessages.length <= 3) {
       // ──────────────────────────────────────────
       // Phase1-2: スプレッド提案
@@ -193,7 +228,8 @@ export async function POST(req: NextRequest) {
         `スプレッドは以下のリストから選んでください。\n` +
         spreads
           .map(
-            (s) => `- スプレッド番号${s.no}: ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`
+            (s) =>
+              `- スプレッド番号${s.no}: ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`,
           )
           .join("\n") +
         `\n\n` +
@@ -206,7 +242,6 @@ export async function POST(req: NextRequest) {
         `※ スプレッド番号とスプレッド名は両方を波括弧{}で囲んでください\n` +
         `※ 上記リストにある正確なスプレッド番号とスプレッド名を使用してください\n` +
         `※ 例: {19}: {キャリアパス}\n`;
-
     } else if (clientMessages.length <= 6) {
       // ──────────────────────────────────────────
       // Phase2: 初回鑑定
@@ -243,7 +278,26 @@ export async function POST(req: NextRequest) {
         `- 絵文字や顔文字を使わないこと\n` +
         `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
         `- です・ます調で話すこと\n`;
-
+    } else if (isEarlyEnd) {
+      // ──────────────────────────────────────────
+      // Phase2: 早期終了（ユーザーが「占いを終わる」を選択）
+      // クロージングメッセージのみ
+      // ──────────────────────────────────────────
+      system =
+        tarotistBase +
+        `先ほどの鑑定を終了します。相談者が本日の占いを終了することを選択しました。\n` +
+        `引いたカードと鑑定内容を踏まえて、${tarotist.name}として温かくセッションを締めくくってください。\n\n` +
+        `【引いたカード】\n${drawnCardsText}\n\n` +
+        `必ず以下の要素でセッションを締めくくってください。\n` +
+        `- 本日のセッションがこれで終わりであることを明確に伝える\n` +
+        `- 相談者へのお礼と、前向きな励ましの言葉を添える\n` +
+        `- 「またいつでもご相談ください」のような言葉で締めくくる\n` +
+        `- ${tarotist.name}として温かく・明確に締めくくること（曖昧な終わり方は不可）\n\n` +
+        `【制約条件】\n` +
+        `- 引いたカードと初回鑑定の内容を踏まえて具体的に締めくくること\n` +
+        `- ${tarotist.name}として自然で温かみのある口調で答えること\n` +
+        `- 絵文字や顔文字を使わないこと\n` +
+        `- です・ます調で話すこと\n`;
     } else if (!isLastQuestion) {
       // ──────────────────────────────────────────
       // Phase2: 中間質問（1〜2問目）
@@ -260,7 +314,6 @@ export async function POST(req: NextRequest) {
         `- 絵文字や顔文字を使わないこと\n` +
         `- です・ます調で話すこと\n` +
         `- 回答の末尾に残り質問回数は書かないこと（UIが別途表示するため）\n`;
-
     } else {
       // ──────────────────────────────────────────
       // Phase2: 最終質問（3問目）
@@ -296,7 +349,8 @@ export async function POST(req: NextRequest) {
       path: "/api/readings/personal",
     });
 
-    const messages = convertToModelMessages(clientMessages);
+    const messages: Awaited<ReturnType<typeof convertToModelMessages>> =
+      await convertToModelMessages(clientMessages);
 
     for (let i = 0; i < RETRY_COUNT; i++) {
       try {
@@ -309,14 +363,15 @@ export async function POST(req: NextRequest) {
               ? homeFreeProviders
                 ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
                 : debugMode
-                ? providers["google"]
-                : providers[provider as keyof typeof providers]
+                  ? providers["google"]
+                  : providers[provider as keyof typeof providers]
               : i === 1
-              ? homeFreeProviders["gemini25"]
-              : homeFreeProviders["google"],
+                ? homeFreeProviders["gemini25"]
+                : homeFreeProviders["google"],
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
+          maxOutputTokens,
           onChunk: (chunk) => {
             console.log(`[readings/personal/route] chunk: `, chunk);
           },
@@ -337,21 +392,28 @@ export async function POST(req: NextRequest) {
           {
             error,
             clientId,
-          }
+          },
         );
         console.error(
           `[readings/personal/route] パーソナル占い試行${i + 1}回目失敗: `,
-          error
+          error,
         );
         if (i === RETRY_COUNT - 1) {
-          throw error;
+          throw new ReadingRouteError({
+            code: "PROVIDER_TEMPORARY_FAILURE",
+            message:
+              "ただいま占いが混み合っています。少し時間をおいてもう一度お試しください。",
+            status: 503,
+            phase,
+            retryable: true,
+          });
         }
         logWithContext(
           "info",
           `[readings/personal/route] パーソナル占い再試行します ${i + 2}回目`,
           {
             clientId,
-          }
+          },
         );
       }
     }
@@ -360,12 +422,14 @@ export async function POST(req: NextRequest) {
       error,
       clientId,
     });
-    return NextResponse.json(
-      {
-        error,
-        errorMessage: "[readings/personal/route] Internal Server Error",
-      },
-      { status: 500 }
-    );
+    return createReadingUnexpectedErrorResponse(error, {
+      code: "INTERNAL_ERROR",
+      message:
+        phase === "personal-intake"
+          ? "パーソナル占いの準備に失敗しました。時間をおいてもう一度お試しください。"
+          : "パーソナル占いの鑑定に失敗しました。時間をおいてもう一度お試しください。",
+      status: 500,
+      phase,
+    });
   }
 }

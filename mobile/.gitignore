@@ -33,3 +33,7 @@ build/
 # Ruby
 .bundle/
 vendor/
+
+# Firebase
+GoogleService-Info.plist
+google-services.json

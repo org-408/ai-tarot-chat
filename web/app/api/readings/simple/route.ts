@@ -7,10 +7,17 @@ import {
 import { homeFreeProviders, providers } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService, clientService } from "@/lib/server/services";
+import {
+  createReadingErrorResponse,
+  createReadingUnexpectedErrorResponse,
+  ReadingRouteError,
+} from "@/lib/server/utils/reading-error";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
+
+const maxOutputTokens = 12288; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
@@ -28,14 +35,26 @@ export async function POST(req: NextRequest) {
     const payload = await authService.verifyApiRequest(req);
     if ("error" in payload || !payload) {
       logWithContext("warn", "認証失敗", { path: "/api/readings/simple" });
-      return new Response("unauthorized", { status: 401 });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message:
+          "セッションの確認に失敗しました。いったん戻って再度お試しください。",
+        status: 401,
+        phase: "simple",
+      });
     }
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
     if (!clientId) {
       logWithContext("warn", "clientId不正", { payload });
-      return new Response("unauthorized", { status: 401 });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message:
+          "セッション情報が見つかりません。いったん戻って再度お試しください。",
+        status: 401,
+        phase: "simple",
+      });
     }
     logWithContext("info", "Client ID確認", { clientId });
 
@@ -55,22 +74,17 @@ export async function POST(req: NextRequest) {
 
     // ✅ 最初のメッセージ（占い開始時）のみ残回数チェック
     //    以降のターンは saveReading でカウントするためここでは初回のみ制限
-    if (clientMessages.length === 1) {
-      const isCeltic = spread.code.toLowerCase().includes("celtic");
+    //    debugMode=true の場合は制限をスキップ
+    if (!debugMode && clientMessages.length === 1) {
       const usage = await clientService.getUsageAndReset(clientId);
-      if (isCeltic && usage.remainingCeltics <= 0) {
-        logWithContext("warn", "ケルト十字占いの回数上限", { clientId });
-        return NextResponse.json(
-          { error: "本日のケルト十字占いの回数上限に達しました" },
-          { status: 429 }
-        );
-      }
-      if (!isCeltic && usage.remainingReadings <= 0) {
-        logWithContext("warn", "シンプル占いの回数上限", { clientId });
-        return NextResponse.json(
-          { error: "本日のシンプル占いの回数上限に達しました" },
-          { status: 429 }
-        );
+      if (usage.remainingReadings <= 0) {
+        logWithContext("warn", "クイック占い回数上限", { clientId });
+        return createReadingErrorResponse({
+          code: "LIMIT_REACHED",
+          message: "本日のクイック占い回数上限に達しました。",
+          status: 429,
+          phase: "simple",
+        });
       }
     }
 
@@ -99,7 +113,7 @@ export async function POST(req: NextRequest) {
                   placement.isReversed
                     ? placement.card!.reversedKeywords.join(", ")
                     : placement.card!.uprightKeywords.join(", ")
-                }`
+                }`,
             )
             .join("\n")
             .trim()) +
@@ -147,7 +161,8 @@ export async function POST(req: NextRequest) {
       path: "/api/readings/simple",
     });
 
-    const messages = convertToModelMessages(clientMessages);
+    const messages: Awaited<ReturnType<typeof convertToModelMessages>> =
+      await convertToModelMessages(clientMessages);
 
     for (let i = 0; i < RETRY_COUNT; i++) {
       try {
@@ -160,14 +175,15 @@ export async function POST(req: NextRequest) {
               ? homeFreeProviders
                 ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
                 : debugMode
-                ? providers["google"]
-                : providers[provider as keyof typeof providers]
+                  ? providers["google"]
+                  : providers[provider as keyof typeof providers]
               : i === 1
-              ? homeFreeProviders["gemini25"]
-              : homeFreeProviders["google"],
+                ? homeFreeProviders["gemini25"]
+                : homeFreeProviders["google"],
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
+          maxOutputTokens,
           onChunk: (chunk) => {
             console.log(`[readings/simple/route] chunk: `, chunk);
           },
@@ -180,6 +196,27 @@ export async function POST(req: NextRequest) {
             Connection: "keep-alive",
             "X-Accel-Buffering": "no",
           },
+          onFinish: async ({ isAborted, responseMessage }) => {
+            const hasVisibleText = responseMessage.parts.some(
+              (part) => part.type === "text" && part.text.trim().length > 0,
+            );
+
+            if (isAborted || !hasVisibleText) {
+              return;
+            }
+
+            try {
+              await clientService.consumeReadingQuota({
+                clientId,
+                isPersonalReading: false,
+              });
+            } catch (error) {
+              logWithContext("error", "クイック占い回数消費に失敗", {
+                error,
+                clientId,
+              });
+            }
+          },
         });
       } catch (error) {
         logWithContext(
@@ -188,21 +225,28 @@ export async function POST(req: NextRequest) {
           {
             error,
             clientId,
-          }
+          },
         );
         console.error(
           `[readings/simple/route] シンプル占い試行${i + 1}回目失敗: `,
-          error
+          error,
         );
         if (i === RETRY_COUNT - 1) {
-          throw error;
+          throw new ReadingRouteError({
+            code: "PROVIDER_TEMPORARY_FAILURE",
+            message:
+              "ただいま占いが混み合っています。少し時間をおいてもう一度お試しください。",
+            status: 503,
+            phase: "simple",
+            retryable: true,
+          });
         }
         logWithContext(
           "info",
           `[readings/simple/route] シンプル占い再試行します ${i + 2}回目`,
           {
             clientId,
-          }
+          },
         );
       }
     }
@@ -211,9 +255,11 @@ export async function POST(req: NextRequest) {
       error,
       clientId,
     });
-    return NextResponse.json(
-      { error, errorMessage: "[readings/simple/route] Internal Server Error" },
-      { status: 500 }
-    );
+    return createReadingUnexpectedErrorResponse(error, {
+      code: "INTERNAL_ERROR",
+      message: "占いの開始に失敗しました。時間をおいてもう一度お試しください。",
+      status: 500,
+      phase: "simple",
+    });
   }
 }

@@ -29,7 +29,6 @@ export class PlanRepository extends BaseRepository {
         isActive: plan.isActive,
         features: plan.features,
         maxReadings: plan.maxReadings,
-        maxCeltics: plan.maxCeltics,
         maxPersonal: plan.maxPersonal,
         hasPersonal: plan.hasPersonal,
         hasHistory: plan.hasHistory,

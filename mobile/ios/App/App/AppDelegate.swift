@@ -1,13 +1,20 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import os.log
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "AI Tarot Chat", category: "Firebase")
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        } else {
+            logger.error("GoogleService-Info.plist not found. Firebase initialization skipped.")
+        }
         return true
     }
 

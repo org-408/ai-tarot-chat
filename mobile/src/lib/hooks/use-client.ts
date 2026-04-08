@@ -17,6 +17,7 @@ export function useClient() {
     skip,
     error,
     init,
+    debugSetPlan,
     refreshUsage,
     checkAndResetIfNeeded,
     saveReading,
@@ -31,7 +32,6 @@ export function useClient() {
     currentPlan,
     usage,
     remainingReadings: usage?.remainingReadings ?? 0,
-    remainingCeltics: usage?.remainingCeltics ?? 0,
     remainingPersonal: usage?.remainingPersonal ?? 0,
     readings,
     take,
@@ -42,6 +42,7 @@ export function useClient() {
     // アクション
     // ============================================
     init,
+    debugSetPlan,
     refreshUsage,
     checkAndResetIfNeeded,
     saveReading,

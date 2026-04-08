@@ -1,6 +1,6 @@
 import type {
   Reading,
-  ReadingInput,
+  SaveReadingInput,
   SaveReadingResponse,
   UsageStats,
 } from "../../../../shared/lib/types";
@@ -41,7 +41,6 @@ export class ClientService {
       logWithContext("info", "[ClientService] Usage stats fetched", {
         planCode: data.plan.code,
         remainingReadings: data.remainingReadings,
-        remainingCeltics: data.remainingCeltics,
         remainingPersonal: data.remainingPersonal,
       });
 
@@ -122,7 +121,7 @@ export class ClientService {
   /**
    * 占い結果を保存する
    */
-  async saveReading(newReading: ReadingInput): Promise<SaveReadingResponse> {
+  async saveReading(newReading: SaveReadingInput): Promise<SaveReadingResponse> {
     logWithContext("info", "[ClientService] Saving new reading", {
       newReading,
     });

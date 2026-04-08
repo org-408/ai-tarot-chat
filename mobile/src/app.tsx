@@ -1,24 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
-import type {
-  Plan,
-  ReadingCategory,
-  Spread,
-  Tarotist,
-} from "../../shared/lib/types";
-import ClaraPage from "./components/clara-page";
-import { DebugMenu } from "./components/debug-menu";
+import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
+import type { Plan } from "../../shared/lib/types";
 import Header from "./components/header";
-import HistoryPage from "./components/history-page";
-import PersonalPage from "./components/personal-page";
-import PlansPage from "./components/plans-page";
 import ReadingPage from "./components/reading-page";
-import SalonPage from "./components/salon-page";
-import SettingsPage from "./components/settings-page";
 import SidebarMenu from "./components/sidebar-menu";
-import SwipeableDemo from "./components/swipeable-demo";
-import TarotistPage from "./components/tarotist-page";
-import TarotistSwipePage from "./components/tarotist-swipe-page";
 import { useAuth } from "./lib/hooks/use-auth";
 import { useClient } from "./lib/hooks/use-client";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
@@ -29,6 +14,31 @@ import { showInterstitialAd } from "./lib/utils/admob";
 import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
+
+import SalonPage from "./components/salon-page";
+
+const loadPersonalPage = () => import("./components/personal-page");
+const loadClaraPage = () => import("./components/clara-page");
+const loadPlansPage = () => import("./components/plans-page");
+const loadTarotistPage = () => import("./components/tarotist-page");
+const loadTarotistSwipePage = () => import("./components/tarotist-swipe-page");
+const loadSwipeableDemo = () => import("./components/swipeable-demo");
+const loadHistoryPage = () => import("./components/history-page");
+const loadSettingsPage = () => import("./components/settings-page");
+
+const PersonalPage = lazy(loadPersonalPage);
+const PlansPage = lazy(loadPlansPage);
+const TarotistPage = lazy(loadTarotistPage);
+const TarotistSwipePage = lazy(loadTarotistSwipePage);
+const SwipeableDemo = lazy(loadSwipeableDemo);
+const ClaraPage = lazy(loadClaraPage);
+const HistoryPage = lazy(loadHistoryPage);
+const SettingsPage = lazy(loadSettingsPage);
+const DebugMenu = lazy(() =>
+  import("./components/debug-menu").then((module) => ({
+    default: module.DebugMenu,
+  })),
+);
 
 // ─────────────────────────────────────────────
 // プラン失効通知コンポーネント
@@ -87,12 +97,19 @@ const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => (
   </motion.div>
 );
 
+const PageFallback: React.FC = () => (
+  <div className="flex min-h-full items-center justify-center px-6 py-12">
+    <div className="rounded-2xl bg-white/85 px-5 py-3 text-sm font-medium text-gray-600 shadow-lg backdrop-blur-sm">
+      読み込み中...
+    </div>
+  </div>
+);
+
 function App() {
   // ✅ デバッグモードフラグ（本番は false に設定）
   const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
 
   const [pageType, setPageType] = useState<PageType>("salon");
-  const [readingReturnPage, setReadingReturnPage] = useState<PageType>("salon");
   // パーソナル占い再起動用キー（インクリメントで強制再マウント）
   const [personalPageKey, setPersonalPageKey] = useState(0);
   // プラン失効通知（"toast" | "dialog" | null）
@@ -103,12 +120,9 @@ function App() {
   const prevPlanCodeRef = useRef<string | null>(null);
   const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 サイドバー状態
-
-  const [readingData, setReadingData] = useState<{
-    tarotist: Tarotist;
-    spread: Spread;
-    category: ReadingCategory;
-  } | null>(null);
+  // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
+  // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
+  const [isNavigationLocked, setIsNavigationLocked] = useState(false);
 
   // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
@@ -139,14 +153,18 @@ function App() {
     isReady: clientIsReady,
     usage: usageStats,
     currentPlan,
-    refreshUsage,
   } = useClient();
 
   const { openManage } = useSubscription();
 
   // 🔥 マスターデータ取得
   // ✅ 修正: 条件なしで呼び出し（lifecycle.tsがinit()を管理）
-  const { masterData, plans, isLoading: isMasterLoading } = useMaster();
+  const {
+    isReady: masterIsReady,
+    masterData,
+    plans,
+    isLoading: isMasterLoading,
+  } = useMaster();
 
   // 🔥 初期化処理
   useEffect(() => {
@@ -162,6 +180,17 @@ function App() {
       console.log("[App] クリーンアップ完了");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    void loadPersonalPage();
+    void loadClaraPage();
+    void loadPlansPage();
+    void loadTarotistPage();
+    void loadTarotistSwipePage();
+    void loadSwipeableDemo();
+    void loadHistoryPage();
+    void loadSettingsPage();
   }, []);
 
   // 🔥 日付変更時の通知表示
@@ -232,8 +261,8 @@ function App() {
     console.log(
       `[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`,
     );
-    if (pageType === "reading" || pageType === "personal") {
-      // 占い中 → ダイアログ（OKを押してからサロンへ）
+    if (isNavigationLocked) {
+      // AI 課金中 → ダイアログ（OKを押してからサロンへ）
       setPlanExpiredNotification("dialog");
     } else {
       // それ以外 → 即サロンへ + トースト
@@ -254,12 +283,12 @@ function App() {
     const handleTouchEnd = (e: TouchEvent) => {
       const endX = e.changedTouches[0].clientX;
       // 左端20px以内から始まり、50px以上右にスワイプしたら開く
-      // 占い進行中はサイドバーを開かない
+      // AI 課金中はサイドバーを開かない
       if (
         startX < 20 &&
         endX - startX > 50 &&
         !sidebarOpen &&
-        pageType !== "reading"
+        !isNavigationLocked
       ) {
         setSidebarOpen(true);
       }
@@ -279,8 +308,6 @@ function App() {
       console.log("ログイン開始");
       await appLogin();
       console.log("ログイン成功");
-
-      setReadingData(null);
     } catch (err) {
       console.error("ログインエラー:", err);
     }
@@ -294,7 +321,6 @@ function App() {
       console.log("ログアウト成功");
 
       setPageType("salon");
-      setReadingData(null);
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -326,9 +352,10 @@ function App() {
 
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
-    // ReadingPage 中はナビゲーションをブロック
-    if (pageType === "reading") {
-      console.log("ページ変更をブロック: 占い進行中");
+    // AI 課金中はナビゲーションをブロック
+    if (isNavigationLocked) {
+      console.log("ページ変更をブロック: AI 実行中");
+      setSidebarOpen(false);
       return;
     }
     console.log("ページ変更:", page);
@@ -337,27 +364,20 @@ function App() {
 
   // 🔥 占い開始（無料プランのみ広告表示 → 広告が閉じてから遷移）
   // Clara（OFFLINE占い師）が選択されている場合は "いつでも占い" ページへ
-  const handleStartReading = async (returnPage: PageType = "salon") => {
-    console.log(`占い開始: returnPage=${returnPage}`);
+  // 占い開始 = AI 課金開始 → ナビゲーションをロック
+  const handleStartReading = async () => {
     if (selectedTarotist?.provider === "OFFLINE") {
       setPageType("clara");
       return;
     }
+
     const isPaidPlan =
       currentPlan?.code === "STANDARD" || currentPlan?.code === "PREMIUM";
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
-    setReadingReturnPage(returnPage);
+    setIsNavigationLocked(true); // AI 課金開始 → ナビゲーションロック
     setPageType("reading");
-  };
-
-  // 🔥 占いから戻る（戻るボタン）
-  const handleBackFromReading = () => {
-    console.log("占いから戻る");
-    setReadingData(null);
-    refreshUsage().catch((e) => console.warn("refreshUsage failed on back", e));
-    setPageType(readingReturnPage);
   };
 
   // 🔥 起動シーケンスのデバッグログ
@@ -387,8 +407,7 @@ function App() {
     !isInitialized ||
     !authIsReady ||
     !clientIsReady ||
-    isMasterLoading ||
-    !masterData ||
+    !masterIsReady ||
     !usageStats ||
     !payload
   ) {
@@ -402,7 +421,7 @@ function App() {
                 ? "認証情報を確認中... (1/4)"
                 : !clientIsReady
                   ? "利用状況を取得中... (3/4)"
-                  : isMasterLoading || !masterData
+                  : !masterIsReady
                     ? "データを読み込み中... (4/4)"
                     : !usageStats
                       ? "利用状況を取得中... (3/4)"
@@ -445,7 +464,7 @@ function App() {
             masterData={masterData}
             usageStats={usageStats}
             onChangePlan={handleChangePlan}
-            onStartReading={() => handleStartReading("salon")}
+            onStartReading={handleStartReading}
             isChangingPlan={isChangingPlan}
           />
         );
@@ -458,6 +477,8 @@ function App() {
             masterData={masterData}
             onChangePlan={handleChangePlan}
             onBack={() => setPersonalPageKey((k) => k + 1)}
+            onStartReading={() => setIsNavigationLocked(true)}
+            onCompleteReading={() => setIsNavigationLocked(false)}
             isChangingPlan={isChangingPlan}
             onNavigateToClara={() => setPageType("clara")}
           />
@@ -465,12 +486,11 @@ function App() {
       case "reading":
         return (
           <ReadingPage
-            payload={payload}
             masterData={masterData}
-            readingData={readingData!}
-            showProfile={showProfile}
-            setShowProfile={setShowProfile}
-            onBack={handleBackFromReading}
+            onBack={() => {
+              setPageType("salon");
+            }}
+            onUnlock={() => setIsNavigationLocked(false)}
           />
         );
       case "plans":
@@ -757,17 +777,19 @@ function App() {
         currentPlan={currentPlan!.code as UserPlan}
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
-        menuDisabled={pageType === "reading"}
+        menuDisabled={isNavigationLocked}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
-        <DebugMenu
-          devMenuOpen={devMenuOpen}
-          setDevMenuOpen={setDevMenuOpen}
-          setPageType={setPageType}
-        />
+        <Suspense fallback={null}>
+          <DebugMenu
+            devMenuOpen={devMenuOpen}
+            setDevMenuOpen={setDevMenuOpen}
+            setPageType={setPageType}
+          />
+        </Suspense>
       )}
 
       {/* ユーザー情報表示 */}
@@ -776,7 +798,9 @@ function App() {
           {payload.user.email}
         </div>
       )}
-      <div className="main-content-area">{renderPage()}</div>
+      <div className="main-content-area">
+        <Suspense fallback={<PageFallback />}>{renderPage()}</Suspense>
+      </div>
     </div>
   );
 }

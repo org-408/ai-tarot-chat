@@ -115,12 +115,10 @@ model Client {
   plan                 Plan     @relation(fields: [planId], references: [id])
 
   // 利用状況
-  dailyReadingsCount Int      @default(0)
-  lastReadingDate    DateTime?
-  dailyCelticsCount  Int      @default(0)
-  lastCelticReadingDate DateTime?
-  dailyPersonalCount   Int      @default(0)
-  lastPersonalReadingDate     DateTime?
+  dailyReadingsCount      Int      @default(0)
+  lastReadingDate         DateTime?
+  dailyPersonalCount      Int      @default(0)
+  lastPersonalReadingDate DateTime?
 
   // デバイス情報（ゲストユーザー用）
   devices Device[]
@@ -151,12 +149,10 @@ model DailyResetHistory {
   date      DateTime
   resetType String   // "PLAN_CHANGE", "USAGE_CHECK" など
 
-  beforeReadingsCount      Int  @default(0)
-  afterReadingsCount       Int  @default(0)
-  beforeCelticsCount       Int  @default(0)
-  afterCelticsCount        Int  @default(0)
-  beforePersonalCount      Int  @default(0)
-  afterPersonalCount       Int  @default(0)
+  beforeReadingsCount Int  @default(0)
+  afterReadingsCount  Int  @default(0)
+  beforePersonalCount Int  @default(0)
+  afterPersonalCount  Int  @default(0)
 
   createdAt DateTime @default(now())
 
@@ -330,7 +326,6 @@ model Plan {
   isActive    Boolean   @default(true)
   features    String[]  // 含まれる機能の配列
   maxReadings Int       @default(0) // 1ヶ月の最大リーディング回数
-  maxCeltics  Int       @default(0) // 1ヶ月の最大ケルト十字リーディング回数
   maxPersonal Int       @default(0) // 1ヶ月の最大パーソナル占い回数
   hasPersonal Boolean   @default(false)  // パーソナル占い機能の有無
   hasHistory  Boolean   @default(false)  // 履歴保存機能の有無
@@ -562,4 +557,19 @@ model UsedTicket {
 
   @@index([expiresAt])
   @@map("used_tickets")
+}
+
+// ==========================================
+// リリース通知登録
+// ==========================================
+model EmailSubscription {
+  id         String    @id @default(cuid())
+  email      String    @unique @db.VarChar(254)
+  platform   String?   @db.VarChar(20) // "ios" | "android" | "both"
+  notifiedAt DateTime?                 // 送信済み日時（null = 未送信）
+  createdAt  DateTime  @default(now())
+
+  @@index([notifiedAt])
+  @@index([createdAt])
+  @@map("email_subscriptions")
 }

@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { DEFAULT_MASTER_DATA } from "./assets/master-data";
-import { DebugMenu } from "./components/debug-menu";
+
+const DebugMenu = lazy(() =>
+  import("./components/debug-menu").then((module) => ({
+    default: module.DebugMenu,
+  })),
+);
 
 type TarotSplashScreenProps = {
   message?: string;
@@ -41,7 +46,9 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4 relative overflow-hidden">
       {/* 開発メニュー（環境変数で制御） */}
       {isDebugEnabled && (
-        <DebugMenu devMenuOpen={devMenuOpen} setDevMenuOpen={setDevMenuOpen} />
+        <Suspense fallback={null}>
+          <DebugMenu devMenuOpen={devMenuOpen} setDevMenuOpen={setDevMenuOpen} />
+        </Suspense>
       )}
 
       {/* 背景装飾 - 静的 */}
@@ -195,7 +202,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
             </div>
 
             <h1 className="text-5xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-4">
-              Ai Tarot Chat
+              AI Tarot Chat
             </h1>
 
             <p className="text-white/80 text-xl font-medium">
