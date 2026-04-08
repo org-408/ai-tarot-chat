@@ -36,7 +36,7 @@ export const homeFreeProviders = {
   gemini25pro: mistral("mistral-small-latest"),
   claude_h: mistral("mistral-small-latest"),
   gpt41: mistral("mistral-small-latest"),
-  gpt5: mistral("mistral-small-latest"),
+  gpt5: mistral("mistral-medium-latest"),
   claude_s: mistral("mistral-large-latest"),
   google: mistral("mistral-small-latest"),
 };
