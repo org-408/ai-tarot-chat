@@ -28,16 +28,6 @@ function formatRelativeDate(date: Date | string) {
   return d.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
 }
 
-function formatFullDate(date: Date | string) {
-  return new Date(date).toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function avatarLetter(name: string | undefined | null) {
   return (name ?? "タ").charAt(0);
 }
@@ -244,6 +234,8 @@ const HistoryPage: React.FC = () => {
     if (grouped.length > 0 && openYears.size === 0) {
       setOpenYears(new Set([grouped[0].year]));
     }
+  // grouped は毎レンダー新規参照のため length をプロキシに使用（初回ロード時のみ開く）
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grouped.length]);
 
   // バナー広告：GUEST/FREE プランのみ表示

@@ -301,7 +301,7 @@ function App() {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, isNavigationLocked]);
 
   const handleLogin = async () => {
     try {

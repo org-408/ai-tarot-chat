@@ -79,7 +79,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     return () => {
       setIsPersonal(false);
     };
-  }, [canStartPersonal, init, setIsPersonal]);
+  // selectedPersonalTarotist.plan?.code はセッション中の再初期化を防ぐため意図的に除外
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canStartPersonal, init, setIsPersonal, setSelectedTargetMode]);
 
   // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
   useEffect(() => {
