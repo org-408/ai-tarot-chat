@@ -64,8 +64,9 @@ export default async function LogsPage({
       take: LIMIT,
     }),
     prisma.log.count({ where }),
-    prisma.log.groupBy({
-      by: ["source"],
+    prisma.log.findMany({
+      distinct: ["source"],
+      select: { source: true },
       orderBy: { source: "asc" },
     }),
   ]);
