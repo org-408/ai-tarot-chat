@@ -31,13 +31,13 @@ export const homeProviders = {
 };
 
 export const homeFreeProviders = {
-  gpt5nano: mistral("mistral-small-latest"),
-  gemini25: mistral("mistral-small-latest"),
-  gemini25pro: mistral("mistral-small-latest"),
-  claude_h: mistral("mistral-small-latest"),
-  gpt41: mistral("mistral-small-latest"),
-  gpt5: mistral("mistral-small-latest"),
-  claude_s: mistral("mistral-small-latest"),
+  gpt5nano: mistral("mistral-small-2506"),
+  gemini25: mistral("mistral-small-2506"),
+  gemini25pro: mistral("mistral-small-2506"),
+  claude_h: mistral("mistral-small-2506"),
+  gpt41: mistral("mistral-small-2603"),
+  gpt5: mistral("mistral-small-2603"),
+  claude_s: mistral("mistral-small-2603"),
   google: mistral("mistral-small-latest"),
 };
 
