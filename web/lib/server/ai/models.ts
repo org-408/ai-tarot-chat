@@ -37,7 +37,7 @@ export const homeFreeProviders = {
   claude_h: mistral("mistral-small-latest"),
   gpt41: mistral("mistral-small-latest"),
   gpt5: mistral("mistral-small-latest"),
-  claude_s: openai("gpt-5.4-nano"),
+  claude_s: mistral("mistral-small-latest"),
   google: mistral("mistral-small-latest"),
 };
 
