@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { MasterData } from "../../../shared/lib/types";
+import { useClient } from "../lib/hooks/use-client";
 import { useSalon } from "../lib/hooks/use-salon";
 import { drawRandomCards } from "../lib/utils/salon";
 import { ChatPanel } from "./chat-panel";
@@ -24,6 +25,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
     isRevealingCompleted,
     setUpperViewerMode,
   } = useSalon();
+
+  const { remainingReadings } = useClient();
 
   // カードを引く（初回のみ）
   useEffect(() => {
@@ -106,6 +109,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
               key={`quick-${selectedSpread?.id ?? "none"}`}
               onBack={handleBack}
               onUnlock={onUnlock}
+              remainingCount={remainingReadings}
             />
           )}
         </div>

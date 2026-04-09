@@ -198,6 +198,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
                   onKeyboardHeightChange={setKeyboardHeight}
                   onBack={handleBackFromReading}
                   onUnlock={onCompleteReading}
+                  remainingCount={remainingPersonal}
                 />
               </div>
             )}
