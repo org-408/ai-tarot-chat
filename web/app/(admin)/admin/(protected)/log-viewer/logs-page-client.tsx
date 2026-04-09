@@ -14,6 +14,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  MdArrowDownward,
+  MdArrowUpward,
   MdChevronLeft,
   MdChevronRight,
   MdExpandLess,
@@ -44,6 +46,7 @@ type CurrentFilters = {
   level: string;
   date: string;
   keyword: string;
+  sort: string;
 };
 
 const LEVEL_COLOR: Record<string, string> = {
@@ -69,11 +72,7 @@ const DATE_OPTIONS = [
 
 const LEVEL_OPTIONS = ["ALL", "error", "warn", "info", "debug"];
 
-function MetadataCell({
-  metadata,
-}: {
-  metadata: Record<string, unknown> | null;
-}) {
+function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }) {
   const [expanded, setExpanded] = useState(false);
   if (!metadata) return <span className="text-slate-300">-</span>;
 
@@ -132,15 +131,15 @@ export function LogsPageClient({
       const params = new URLSearchParams();
       const nextPage = next.page ?? 1;
       const nextLevel = next.level ?? currentFilters.level;
-      const nextDate =
-        next.date !== undefined ? next.date : currentFilters.date;
-      const nextKeyword =
-        next.keyword !== undefined ? next.keyword : currentFilters.keyword;
+      const nextDate = next.date !== undefined ? next.date : currentFilters.date;
+      const nextKeyword = next.keyword !== undefined ? next.keyword : currentFilters.keyword;
+      const nextSort = next.sort ?? currentFilters.sort;
 
       if (nextPage > 1) params.set("page", String(nextPage));
       if (nextLevel && nextLevel !== "ALL") params.set("level", nextLevel);
       if (nextDate && nextDate !== "all") params.set("date", nextDate);
       if (nextKeyword) params.set("q", nextKeyword);
+      if (nextSort === "asc") params.set("sort", "asc");
 
       const query = params.toString();
       router.push(query ? `/admin/log-viewer?${query}` : "/admin/log-viewer");
@@ -150,6 +149,10 @@ export function LogsPageClient({
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     navigate({ keyword: inputValue.trim() });
+  }
+
+  function toggleSort() {
+    navigate({ sort: currentFilters.sort === "asc" ? "desc" : "asc", page: 1 });
   }
 
   return (
@@ -214,7 +217,19 @@ export function LogsPageClient({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-slate-500 text-left">
-                  <th className="py-2 px-2 w-36">日時</th>
+                  <th className="py-2 px-2 w-36">
+                    <button
+                      onClick={toggleSort}
+                      className="flex items-center gap-1 hover:text-slate-800 transition-colors"
+                    >
+                      日時（発生）
+                      {currentFilters.sort === "asc" ? (
+                        <MdArrowUpward size={14} />
+                      ) : (
+                        <MdArrowDownward size={14} />
+                      )}
+                    </button>
+                  </th>
                   <th className="py-2 px-2 w-16">レベル</th>
                   <th className="py-2 px-2 w-24">ソース</th>
                   <th className="py-2 px-2 w-40">パス</th>
@@ -230,7 +245,7 @@ export function LogsPageClient({
                     className={`border-b text-xs ${LEVEL_ROW_COLOR[log.level] ?? "hover:bg-slate-50"}`}
                   >
                     <td className="py-1.5 px-2 text-slate-500 whitespace-nowrap">
-                      {new Date(log.createdAt).toLocaleString("ja-JP", {
+                      {new Date(log.timestamp).toLocaleString("ja-JP", {
                         month: "2-digit",
                         day: "2-digit",
                         hour: "2-digit",
@@ -241,8 +256,7 @@ export function LogsPageClient({
                     <td className="py-1.5 px-2">
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded border text-xs font-medium ${
-                          LEVEL_COLOR[log.level] ??
-                          "bg-slate-100 text-slate-600 border-slate-200"
+                          LEVEL_COLOR[log.level] ?? "bg-slate-100 text-slate-600 border-slate-200"
                         }`}
                       >
                         {log.level}
@@ -252,9 +266,7 @@ export function LogsPageClient({
                     <td className="py-1.5 px-2 text-slate-500 break-all max-w-[10rem]">
                       {log.path ?? "-"}
                     </td>
-                    <td className="py-1.5 px-2 break-all max-w-xs">
-                      {log.message}
-                    </td>
+                    <td className="py-1.5 px-2 break-all max-w-xs">{log.message}</td>
                     <td className="py-1.5 px-2">
                       {log.clientId ? (
                         <Link
@@ -274,10 +286,7 @@ export function LogsPageClient({
                 ))}
                 {data.logs.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="py-8 text-center text-slate-400"
-                    >
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
                       該当するログはありません。
                     </td>
                   </tr>

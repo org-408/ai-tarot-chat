@@ -7,6 +7,7 @@ interface SearchParams {
   level?: string;
   date?: string;
   q?: string;
+  sort?: string;
 }
 
 const LIMIT = 100;
@@ -18,10 +19,11 @@ export default async function LogsPage({
 }) {
   await assertAdminSession();
 
-  const { page, level, date, q } = await searchParams;
+  const { page, level, date, q, sort } = await searchParams;
   const currentPage = Math.max(1, Number(page ?? 1));
   const levelFilter = level ?? "ALL";
   const keyword = q?.trim() ?? "";
+  const sortDir = sort === "asc" ? "asc" : "desc";
 
   let dateFrom: Date | undefined;
   const today = new Date();
@@ -38,7 +40,7 @@ export default async function LogsPage({
 
   const where = {
     ...(levelFilter !== "ALL" ? { level: levelFilter } : {}),
-    ...(dateFrom ? { createdAt: { gte: dateFrom } } : {}),
+    ...(dateFrom ? { timestamp: { gte: dateFrom } } : {}),
     ...(keyword
       ? {
           OR: [
@@ -49,45 +51,26 @@ export default async function LogsPage({
       : {}),
   };
 
-  let logs: Awaited<ReturnType<typeof prisma.log.findMany<{ select: { id: true; level: true; message: true; metadata: true; clientId: true; path: true; source: true; timestamp: true; createdAt: true } }>>> = [];
-  let total = 0;
-  let errorMessage: string | null = null;
-
-  try {
-    [logs, total] = await Promise.all([
-      prisma.log.findMany({
-        where,
-        select: {
-          id: true,
-          level: true,
-          message: true,
-          metadata: true,
-          clientId: true,
-          path: true,
-          source: true,
-          timestamp: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-        skip: (currentPage - 1) * LIMIT,
-        take: LIMIT,
-      }),
-      prisma.log.count({ where }),
-    ]);
-  } catch (e) {
-    errorMessage = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
-  }
-
-  if (errorMessage) {
-    return (
-      <div className="p-8">
-        <h1 className="text-lg font-bold text-red-600 mb-4">ログ取得エラー</h1>
-        <pre className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-800 whitespace-pre-wrap break-all">
-          {errorMessage}
-        </pre>
-      </div>
-    );
-  }
+  const [logs, total] = await Promise.all([
+    prisma.log.findMany({
+      where,
+      select: {
+        id: true,
+        level: true,
+        message: true,
+        metadata: true,
+        clientId: true,
+        path: true,
+        source: true,
+        timestamp: true,
+        createdAt: true,
+      },
+      orderBy: { timestamp: sortDir },
+      skip: (currentPage - 1) * LIMIT,
+      take: LIMIT,
+    }),
+    prisma.log.count({ where }),
+  ]);
 
   return (
     <LogsPageClient
@@ -111,6 +94,7 @@ export default async function LogsPage({
         level: levelFilter,
         date: date ?? "",
         keyword,
+        sort: sortDir,
       }}
     />
   );
