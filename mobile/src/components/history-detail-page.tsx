@@ -16,7 +16,6 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
   const {
     drawnCards,
     setDrawnCards,
-    setSelectedSpread,
     isRevealingCompleted,
     setIsRevealingCompleted,
     setUpperViewerMode,
@@ -41,7 +40,6 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
       card: dc.card ?? cardMap.get(dc.cardId),
     }));
     setDrawnCards(cards);
-    if (reading.spread) setSelectedSpread(reading.spread);
     setIsRevealingCompleted(true);
     setUpperViewerMode("profile");
 
