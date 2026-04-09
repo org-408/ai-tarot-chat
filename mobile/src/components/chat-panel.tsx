@@ -815,16 +815,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               onKeyDown={handleKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholder="メッセージを入力..."
+              placeholder={
+                messages.length === 0
+                  ? "まずは話しかけてみましょう"
+                  : "占いたい内容・お悩みを入力してください"
+              }
               rows={2}
               className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={status === "streaming" || hasBlockingError}
+              disabled={status === "submitted" || status === "streaming" || hasBlockingError}
             />
             <button
               onClick={handleSendMessage}
               disabled={
-                !inputValue.trim() || status === "streaming" || hasBlockingError
+                !inputValue.trim() || status === "submitted" || status === "streaming" || hasBlockingError
               }
               className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
             >
@@ -908,12 +912,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     rows={2}
                     className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                     style={{ maxHeight: "120px" }}
-                    disabled={status === "streaming" || hasBlockingError}
+                    disabled={status === "submitted" || status === "streaming" || hasBlockingError}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={
                       !inputValue.trim() ||
+                      status === "submitted" ||
                       status === "streaming" ||
                       hasBlockingError
                     }
