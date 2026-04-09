@@ -369,7 +369,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       setInputValue("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
-        textareaRef.current.blur();
       }
     }
   };
@@ -805,7 +804,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* Phase1 入力エリア */}
       {isPersonal && !isPhase2 && !inputDisabled && (
         <motion.div
-          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}${isProcessing ? " pointer-events-none" : ""}`}
+          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
           transition={{
             type: "spring",
             stiffness: 300,
@@ -892,7 +891,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
               {/* 入力エリア */}
               <motion.div
-                className={`px-4 py-3 bg-transparent${isProcessing ? " pointer-events-none" : ""}`}
+                className="px-4 py-3 bg-transparent"
                 transition={{
                   type: "spring",
                   stiffness: 300,
