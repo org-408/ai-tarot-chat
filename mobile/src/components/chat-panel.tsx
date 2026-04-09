@@ -787,9 +787,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               onClick={isExhausted ? undefined : onBack}
               disabled={isExhausted}
             >
-              <span>
+              <motion.span
+                initial={{ opacity: 1 }}
+                animate={!isExhausted ? { opacity: [1, 0.5, 1] } : undefined}
+                transition={{ repeat: Infinity, duration: 3 }}
+              >
                 {isExhausted ? "本日の占いは終了しました" : "← もう一度占う"}
-              </span>
+              </motion.span>
             </motion.button>
           );
         })()}
