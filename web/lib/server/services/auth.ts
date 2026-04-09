@@ -62,10 +62,10 @@ export class AuthService {
           throw new Error("Client not found for device");
         }
 
-        logWithContext("info", "✅ Client for device:", { client: clientData });
+        logWithContext("info", "✅ Client for device:", { client: clientData, clientId: clientData.id });
 
         const user = clientData.user;
-        logWithContext("info", "👤 Associated user:", { user });
+        logWithContext("info", "👤 Associated user:", { user, clientId: clientData.id });
 
         // デバイス登録・更新処理では、既にユーザーが紐づいている可能性もあるため、ユーザー情報も設定
         const token = await generateJWT<AppJWTPayload>(
