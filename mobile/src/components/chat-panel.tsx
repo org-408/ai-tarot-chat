@@ -364,6 +364,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       setInputValue("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
+        textareaRef.current.blur();
       }
     }
   };
