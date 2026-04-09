@@ -802,7 +802,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase1 入力エリア */}
-      {isPersonal && !isPhase2 && !inputDisabled && (
+      {isPersonal && !isPhase2 && !inputDisabled && !isProcessing && (
         <motion.div
           className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
           transition={{
@@ -845,6 +845,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {isPhase2 &&
         isMessageComplete &&
         !inputDisabled &&
+        !isProcessing &&
         (() => {
           const phase2UserCount = messages.filter(
             (m, i) => m.role === "user" && i > initialLen,
