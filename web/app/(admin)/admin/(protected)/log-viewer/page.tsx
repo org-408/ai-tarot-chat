@@ -49,26 +49,45 @@ export default async function LogsPage({
       : {}),
   };
 
-  const [logs, total] = await Promise.all([
-    prisma.log.findMany({
-      where,
-      select: {
-        id: true,
-        level: true,
-        message: true,
-        metadata: true,
-        clientId: true,
-        path: true,
-        source: true,
-        timestamp: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (currentPage - 1) * LIMIT,
-      take: LIMIT,
-    }),
-    prisma.log.count({ where }),
-  ]);
+  let logs: Awaited<ReturnType<typeof prisma.log.findMany<{ select: { id: true; level: true; message: true; metadata: true; clientId: true; path: true; source: true; timestamp: true; createdAt: true } }>>> = [];
+  let total = 0;
+  let errorMessage: string | null = null;
+
+  try {
+    [logs, total] = await Promise.all([
+      prisma.log.findMany({
+        where,
+        select: {
+          id: true,
+          level: true,
+          message: true,
+          metadata: true,
+          clientId: true,
+          path: true,
+          source: true,
+          timestamp: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (currentPage - 1) * LIMIT,
+        take: LIMIT,
+      }),
+      prisma.log.count({ where }),
+    ]);
+  } catch (e) {
+    errorMessage = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="p-8">
+        <h1 className="text-lg font-bold text-red-600 mb-4">ログ取得エラー</h1>
+        <pre className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-800 whitespace-pre-wrap break-all">
+          {errorMessage}
+        </pre>
+      </div>
+    );
+  }
 
   return (
     <LogsPageClient
