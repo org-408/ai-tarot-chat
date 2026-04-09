@@ -228,18 +228,25 @@ export async function POST(req: NextRequest) {
         `スプレッドは以下のリストから選んでください。\n` +
         spreads
           .map(
-            (s) =>
-              `- スプレッド番号${s.no}: ${s.name}: ${s.guide}: 適したジャンル: ${s.category}`,
+            (s) => {
+              const categoryNames =
+                s.categories && s.categories.length > 0
+                  ? s.categories.map((stc) => stc.category?.name).filter(Boolean).join(", ")
+                  : s.category;
+              return `- スプレッド番号${s.no}: ${s.name}: ${s.guide}: 適したジャンル: ${categoryNames}`;
+            },
           )
           .join("\n") +
         `\n\n` +
         `【回答フォーマット】\n` +
         `【おすすめのスプレッド】\n` +
         `相談内容に合ったスプレッドを3つ提案し、それぞれの理由を説明してください。\n` +
+        `各提案は以下の形式で記述してください（波括弧{}は使わないこと）。\n` +
+        `No.スプレッド番号: スプレッド名: 提案理由\n\n` +
         `最後に最もおすすめの1つを選び、必ず以下の形式で記述してください。\n\n` +
         `【特におすすめのスプレッド】\n` +
         `{スプレッド番号}: {スプレッド名}\n\n` +
-        `※ スプレッド番号とスプレッド名は両方を波括弧{}で囲んでください\n` +
+        `※ 【特におすすめのスプレッド】のスプレッド番号とスプレッド名は両方を波括弧{}で囲んでください\n` +
         `※ 上記リストにある正確なスプレッド番号とスプレッド名を使用してください\n` +
         `※ 例: {19}: {キャリアパス}\n`;
     } else if (clientMessages.length <= 6) {

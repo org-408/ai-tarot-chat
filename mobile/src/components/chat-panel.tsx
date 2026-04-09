@@ -240,7 +240,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join("");
           console.log("Extracted string:", str);
-          const match = str.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
+          // 【特におすすめのスプレッド】ヘッダー以降のみをパース対象にする（3提案部分の誤検出を防ぐ）
+          const headerIdx = str.indexOf("【特におすすめのスプレッド】");
+          const targetStr = headerIdx >= 0 ? str.slice(headerIdx) : str;
+          const match = targetStr.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
           const spreadNo = match ? parseInt(match[1], 10) : undefined;
           const spreadName = match ? match[2] : "";
           console.log("Extracted spread no, name:", spreadNo, spreadName);
