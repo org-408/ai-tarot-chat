@@ -5,7 +5,6 @@ import { LogsPageClient } from "./logs-page-client";
 interface SearchParams {
   page?: string;
   level?: string;
-  source?: string;
   date?: string;
   q?: string;
 }
@@ -19,13 +18,11 @@ export default async function LogsPage({
 }) {
   await assertAdminSession();
 
-  const { page, level, source, date, q } = await searchParams;
+  const { page, level, date, q } = await searchParams;
   const currentPage = Math.max(1, Number(page ?? 1));
   const levelFilter = level ?? "ALL";
-  const sourceFilter = source ?? "ALL";
   const keyword = q?.trim() ?? "";
 
-  // 日付フィルター（dashboardと同じく createdAt ベース）
   let dateFrom: Date | undefined;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -41,7 +38,6 @@ export default async function LogsPage({
 
   const where = {
     ...(levelFilter !== "ALL" ? { level: levelFilter } : {}),
-    ...(sourceFilter !== "ALL" ? { source: sourceFilter } : {}),
     ...(dateFrom ? { createdAt: { gte: dateFrom } } : {}),
     ...(keyword
       ? {
@@ -53,7 +49,7 @@ export default async function LogsPage({
       : {}),
   };
 
-  const [logs, total, sources] = await Promise.all([
+  const [logs, total] = await Promise.all([
     prisma.log.findMany({
       where,
       select: {
@@ -72,11 +68,6 @@ export default async function LogsPage({
       take: LIMIT,
     }),
     prisma.log.count({ where }),
-    prisma.log.findMany({
-      distinct: ["source"],
-      select: { source: true },
-      orderBy: { source: "asc" },
-    }),
   ]);
 
   return (
@@ -90,17 +81,15 @@ export default async function LogsPage({
           path: log.path,
           source: log.source,
           clientId: log.clientId,
-          timestamp: log.timestamp?.toISOString() ?? log.createdAt.toISOString(),
+          timestamp: log.timestamp.toISOString(),
           createdAt: log.createdAt.toISOString(),
         })),
         total,
         page: currentPage,
         limit: LIMIT,
       }}
-      sources={sources.map((s) => s.source)}
       currentFilters={{
         level: levelFilter,
-        source: sourceFilter,
         date: date ?? "",
         keyword,
       }}

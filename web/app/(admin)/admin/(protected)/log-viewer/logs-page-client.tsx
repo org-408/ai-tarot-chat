@@ -13,7 +13,13 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { MdChevronLeft, MdChevronRight, MdSearch, MdExpandMore, MdExpandLess } from "react-icons/md";
+import {
+  MdChevronLeft,
+  MdChevronRight,
+  MdExpandLess,
+  MdExpandMore,
+  MdSearch,
+} from "react-icons/md";
 
 type LogRow = {
   id: string;
@@ -36,7 +42,6 @@ type Response = {
 
 type CurrentFilters = {
   level: string;
-  source: string;
   date: string;
   keyword: string;
 };
@@ -53,8 +58,6 @@ const LEVEL_ROW_COLOR: Record<string, string> = {
   error: "bg-red-50 hover:bg-red-100",
   warn: "bg-yellow-50 hover:bg-yellow-100",
   warning: "bg-yellow-50 hover:bg-yellow-100",
-  info: "hover:bg-slate-50",
-  debug: "hover:bg-slate-50",
 };
 
 const DATE_OPTIONS = [
@@ -66,12 +69,16 @@ const DATE_OPTIONS = [
 
 const LEVEL_OPTIONS = ["ALL", "error", "warn", "info", "debug"];
 
-function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }) {
+function MetadataCell({
+  metadata,
+}: {
+  metadata: Record<string, unknown> | null;
+}) {
   const [expanded, setExpanded] = useState(false);
   if (!metadata) return <span className="text-slate-300">-</span>;
 
-  const preview = JSON.stringify(metadata).slice(0, 60);
   const full = JSON.stringify(metadata, null, 2);
+  const preview = full.slice(0, 60);
 
   return (
     <div className="max-w-xs">
@@ -109,11 +116,9 @@ function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }
 
 export function LogsPageClient({
   data,
-  sources,
   currentFilters,
 }: {
   data: Response;
-  sources: string[];
   currentFilters: CurrentFilters;
 }) {
   const router = useRouter();
@@ -127,13 +132,13 @@ export function LogsPageClient({
       const params = new URLSearchParams();
       const nextPage = next.page ?? 1;
       const nextLevel = next.level ?? currentFilters.level;
-      const nextSource = next.source ?? currentFilters.source;
-      const nextDate = next.date !== undefined ? next.date : currentFilters.date;
-      const nextKeyword = next.keyword !== undefined ? next.keyword : currentFilters.keyword;
+      const nextDate =
+        next.date !== undefined ? next.date : currentFilters.date;
+      const nextKeyword =
+        next.keyword !== undefined ? next.keyword : currentFilters.keyword;
 
       if (nextPage > 1) params.set("page", String(nextPage));
       if (nextLevel && nextLevel !== "ALL") params.set("level", nextLevel);
-      if (nextSource && nextSource !== "ALL") params.set("source", nextSource);
       if (nextDate) params.set("date", nextDate);
       if (nextKeyword) params.set("q", nextKeyword);
 
@@ -170,7 +175,7 @@ export function LogsPageClient({
 
             <Select
               value={currentFilters.level}
-              onValueChange={(value) => navigate({ level: value })}
+              onValueChange={(value: string) => navigate({ level: value })}
             >
               <SelectTrigger className="w-32">
                 <SelectValue />
@@ -185,25 +190,8 @@ export function LogsPageClient({
             </Select>
 
             <Select
-              value={currentFilters.source}
-              onValueChange={(value) => navigate({ source: value })}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">全ソース</SelectItem>
-                {sources.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
               value={currentFilters.date}
-              onValueChange={(value) => navigate({ date: value })}
+              onValueChange={(value: string) => navigate({ date: value })}
             >
               <SelectTrigger className="w-36">
                 <SelectValue />
@@ -231,7 +219,7 @@ export function LogsPageClient({
                   <th className="py-2 px-2 w-24">ソース</th>
                   <th className="py-2 px-2 w-40">パス</th>
                   <th className="py-2 px-2">メッセージ</th>
-                  <th className="py-2 px-2 w-32">クライアント</th>
+                  <th className="py-2 px-2 w-24">クライアント</th>
                   <th className="py-2 px-2 w-36">メタデータ</th>
                 </tr>
               </thead>
@@ -242,7 +230,7 @@ export function LogsPageClient({
                     className={`border-b text-xs ${LEVEL_ROW_COLOR[log.level] ?? "hover:bg-slate-50"}`}
                   >
                     <td className="py-1.5 px-2 text-slate-500 whitespace-nowrap">
-                      {new Date(log.timestamp).toLocaleString("ja-JP", {
+                      {new Date(log.createdAt).toLocaleString("ja-JP", {
                         month: "2-digit",
                         day: "2-digit",
                         hour: "2-digit",
@@ -253,7 +241,8 @@ export function LogsPageClient({
                     <td className="py-1.5 px-2">
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded border text-xs font-medium ${
-                          LEVEL_COLOR[log.level] ?? "bg-slate-100 text-slate-600 border-slate-200"
+                          LEVEL_COLOR[log.level] ??
+                          "bg-slate-100 text-slate-600 border-slate-200"
                         }`}
                       >
                         {log.level}
@@ -263,7 +252,9 @@ export function LogsPageClient({
                     <td className="py-1.5 px-2 text-slate-500 break-all max-w-[10rem]">
                       {log.path ?? "-"}
                     </td>
-                    <td className="py-1.5 px-2 break-all max-w-xs">{log.message}</td>
+                    <td className="py-1.5 px-2 break-all max-w-xs">
+                      {log.message}
+                    </td>
                     <td className="py-1.5 px-2">
                       {log.clientId ? (
                         <Link
@@ -283,7 +274,10 @@ export function LogsPageClient({
                 ))}
                 {data.logs.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <td
+                      colSpan={7}
+                      className="py-8 text-center text-slate-400"
+                    >
                       該当するログはありません。
                     </td>
                   </tr>
@@ -298,15 +292,7 @@ export function LogsPageClient({
                 variant="outline"
                 size="sm"
                 disabled={data.page <= 1}
-                onClick={() =>
-                  navigate({
-                    page: data.page - 1,
-                    level: currentFilters.level,
-                    source: currentFilters.source,
-                    date: currentFilters.date,
-                    keyword: currentFilters.keyword,
-                  })
-                }
+                onClick={() => navigate({ page: data.page - 1 })}
               >
                 <MdChevronLeft />
               </Button>
@@ -317,15 +303,7 @@ export function LogsPageClient({
                 variant="outline"
                 size="sm"
                 disabled={data.page >= totalPages}
-                onClick={() =>
-                  navigate({
-                    page: data.page + 1,
-                    level: currentFilters.level,
-                    source: currentFilters.source,
-                    date: currentFilters.date,
-                    keyword: currentFilters.keyword,
-                  })
-                }
+                onClick={() => navigate({ page: data.page + 1 })}
               >
                 <MdChevronRight />
               </Button>
