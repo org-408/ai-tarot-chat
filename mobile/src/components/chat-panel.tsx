@@ -463,7 +463,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       sendMessage({ text: "よろしくお願いします。" });
     } else if (isPhase2 && drawnCards.length > 0) {
       hasSentInitialMessage.current = true;
-      sendMessage({ text: "では、占いを始めてください。" });
+      sendMessage({ text: `${spread?.name}で占ってください。` });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
