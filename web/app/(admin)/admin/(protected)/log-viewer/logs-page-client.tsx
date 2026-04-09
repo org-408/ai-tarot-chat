@@ -61,7 +61,7 @@ const LEVEL_ROW_COLOR: Record<string, string> = {
 };
 
 const DATE_OPTIONS = [
-  { value: "", label: "全期間" },
+  { value: "all", label: "全期間" },
   { value: "hour", label: "直近1時間" },
   { value: "today", label: "今日" },
   { value: "week", label: "過去7日" },
@@ -139,7 +139,7 @@ export function LogsPageClient({
 
       if (nextPage > 1) params.set("page", String(nextPage));
       if (nextLevel && nextLevel !== "ALL") params.set("level", nextLevel);
-      if (nextDate) params.set("date", nextDate);
+      if (nextDate && nextDate !== "all") params.set("date", nextDate);
       if (nextKeyword) params.set("q", nextKeyword);
 
       const query = params.toString();
@@ -190,7 +190,7 @@ export function LogsPageClient({
             </Select>
 
             <Select
-              value={currentFilters.date}
+              value={currentFilters.date || "all"}
               onValueChange={(value: string) => navigate({ date: value })}
             >
               <SelectTrigger className="w-36">
