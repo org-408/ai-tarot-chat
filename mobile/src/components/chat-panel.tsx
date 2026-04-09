@@ -750,28 +750,34 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Back Button - Phase1: 保存後すぐ / Phase2: 全質問終了後のみ */}
-      {shouldShowBackButton && !isSavingReading && !chatError && (() => {
-        const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
-        const isExhausted = !debugMode && remainingCount !== undefined && remainingCount <= 0;
-        return (
-          <motion.button
-            key={"back-button"}
-            initial={{ opacity: 0, scale: 0.7, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.7, y: 40 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className={`absolute bottom-6 right-6 z-50 shadow-xl rounded-full px-5 py-3 font-bold flex items-center gap-2 ${
-              isExhausted
-                ? "bg-white/10 text-gray-400 cursor-not-allowed"
-                : "bg-white/20 text-purple-600"
-            }`}
-            onClick={isExhausted ? undefined : onBack}
-            disabled={isExhausted}
-          >
-            <span>{isExhausted ? "本日の占いは終了しました" : "← もう一度占う"}</span>
-          </motion.button>
-        );
-      })()}
+      {shouldShowBackButton &&
+        !isSavingReading &&
+        !chatError &&
+        (() => {
+          const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
+          const isExhausted =
+            !debugMode && remainingCount !== undefined && remainingCount <= 0;
+          return (
+            <motion.button
+              key={"back-button"}
+              initial={{ opacity: 0, scale: 0.7, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.7, y: 40 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className={`absolute bottom-6 right-6 z-50 shadow-xl rounded-full px-5 py-3 font-bold flex items-center gap-2 ${
+                isExhausted
+                  ? "bg-white/10 text-gray-400 cursor-not-allowed"
+                  : "bg-white/20 text-purple-600"
+              }`}
+              onClick={isExhausted ? undefined : onBack}
+              disabled={isExhausted}
+            >
+              <span>
+                {isExhausted ? "本日の占いは終了しました" : "← もう一度占う"}
+              </span>
+            </motion.button>
+          );
+        })()}
 
       {/* Phase2: セッション終了バナー */}
       {isPhase2 && inputDisabled && isMessageComplete && !chatError && (
@@ -781,7 +787,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           transition={{ duration: 0.4 }}
           className="px-4 py-5 bg-gray-50 border-t border-gray-200 text-center"
         >
-          <div className="text-2xl mb-2">🔮</div>
           <div className="text-sm font-medium text-gray-600 mb-1">
             パーソナル占いセッションが終了しました
           </div>
