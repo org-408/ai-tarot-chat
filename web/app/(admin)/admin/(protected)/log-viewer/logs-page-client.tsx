@@ -140,7 +140,7 @@ export function LogsPageClient({
       if (nextKeyword) params.set("q", nextKeyword);
 
       const query = params.toString();
-      router.push(query ? `/admin/logs?${query}` : "/admin/logs");
+      router.push(query ? `/admin/log-viewer?${query}` : "/admin/log-viewer");
     });
   }
 
