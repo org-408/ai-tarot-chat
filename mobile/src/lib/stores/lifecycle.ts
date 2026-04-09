@@ -148,6 +148,8 @@ export const useLifecycleStore = create<LifecycleState>()(
               isOffline: false,
               offlineMode: "none",
             });
+            // NOTE: init() では isInitialized: false の間は App.tsx useEffect がスキップされるため
+            // setLifecycleBusy は不要。onResume / changePlan のみで使用する。
 
             // ========================================
             // ✅ ステップ0: RC.configure()（最優先・後続すべての前提）
@@ -275,6 +277,12 @@ export const useLifecycleStore = create<LifecycleState>()(
                   .getState()
                   .login(authStateForRC.payload.user.id);
               }
+
+              // ✅ onResume() と対称に: RC の最新 CustomerInfo を明示的に取得してプランを確定する。
+              // login() 後の RC listener は非同期で遅れて発火する場合があり、
+              // isInitialized: true になる前にプランを確定させることで
+              // 「起動直後は FREE 表示 → しばらくしてから PREMIUM に変わる」を防止する。
+              await useSubscriptionStore.getState().refreshCustomerInfo();
             } catch (error) {
               // サブスクリプションは非致命的
               get().errorProcessing("subscription", error as Error, new Date());
@@ -582,6 +590,8 @@ export const useLifecycleStore = create<LifecycleState>()(
           lastError: null,
           isOffline: false, // ✅ レジューム時はオフライン状態をリセット
         });
+        // RC listener の自律的なダウングレードをブロック（onResume 完了まで）
+        useSubscriptionStore.getState().setLifecycleBusy(true);
 
         const authStore = useAuthStore.getState();
         let payload = authStore.payload;
@@ -807,6 +817,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             });
           }
 
+          useSubscriptionStore.getState().setLifecycleBusy(false);
           set({
             isRefreshing: false,
             dateChanged,
@@ -821,6 +832,7 @@ export const useLifecycleStore = create<LifecycleState>()(
           });
         } catch (error) {
           logWithContext("error", "[Lifecycle] Resume failed", { error });
+          useSubscriptionStore.getState().setLifecycleBusy(false);
           set({
             isRefreshing: false,
             error: error as Error,
@@ -993,6 +1005,8 @@ export const useLifecycleStore = create<LifecycleState>()(
         }
 
         set({ isChangingPlan: true, planChangeError: null });
+        // RC listener の自律的なダウングレードをブロック
+        useSubscriptionStore.getState().setLifecycleBusy(true);
 
         logWithContext("info", "[Lifecycle] Starting plan change", {
           from: currentPlanCode,
@@ -1089,6 +1103,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                     "info",
                     "[Lifecycle] Purchase cancelled by user"
                   );
+                  useSubscriptionStore.getState().setLifecycleBusy(false);
                   set({
                     isChangingPlan: false,
                     planChangeError: "購入がキャンセルされました",
@@ -1106,6 +1121,18 @@ export const useLifecycleStore = create<LifecycleState>()(
           logWithContext("info", "[Lifecycle] Updating plan on server");
           await useClientStore.getState().changePlan(newPlan);
 
+          // RC の最新状態を明示的に取得してプランを確定させる。
+          // isLifecycleBusy: true 中に呼ぶことで、確定前の自律的なダウングレードをブロックしつつ
+          // 明示的な refreshCustomerInfo() だけを通過させる。
+          try {
+            await useSubscriptionStore.getState().refreshCustomerInfo();
+          } catch (rcError) {
+            logWithContext("warn", "[Lifecycle] refreshCustomerInfo after changePlan failed (non-critical)", {
+              error: rcError instanceof Error ? rcError.message : String(rcError),
+            });
+          }
+
+          useSubscriptionStore.getState().setLifecycleBusy(false);
           set({ isChangingPlan: false, planChangeError: null });
 
           logWithContext("info", "[Lifecycle] Plan change completed", {
@@ -1119,6 +1146,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             error: errorMessage,
           });
 
+          useSubscriptionStore.getState().setLifecycleBusy(false);
           set({
             isChangingPlan: false,
             planChangeError: `プラン変更に失敗しました: ${errorMessage}`,

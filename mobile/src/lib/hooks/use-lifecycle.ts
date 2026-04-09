@@ -15,6 +15,8 @@ export function useLifecycle() {
     isChangingPlan,
     planChangeError,
     error,
+    isLoggingIn,
+    isLoggingOut,
 
     // ✅ デバッグ用状態
     currentStep,
@@ -51,6 +53,8 @@ export function useLifecycle() {
     isChangingPlan,
     planChangeError,
     error,
+    isLoggingIn,
+    isLoggingOut,
 
     // ✅ デバッグ用状態
     currentStep,

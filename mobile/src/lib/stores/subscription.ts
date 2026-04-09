@@ -20,6 +20,9 @@ interface SubscriptionState {
   customerInfo: CustomerInfo | null;
   isPurchasing: boolean;
   purchaseError: string | null;
+  // lifecycle 処理中フラグ（init / onResume / changePlan から lifecycle.ts が設定）
+  // listener による自律的なダウングレードをブロックするために使用
+  isLifecycleBusy: boolean;
 
   // 復元アラート情報
   restoreAlert: {
@@ -41,6 +44,7 @@ interface SubscriptionState {
   purchasePlan: (targetPlan: Plan) => Promise<CustomerInfo>;
   restorePurchases: () => Promise<CustomerInfo>;
   refreshCustomerInfo: () => Promise<CustomerInfo>;
+  setLifecycleBusy: (busy: boolean) => void;
   openManage: () => Promise<void>;
   getAppUserId: () => Promise<string>;
   isAnonymous: () => Promise<boolean>;
@@ -60,6 +64,11 @@ interface SubscriptionState {
  * - CustomerInfoのキャッシュ
  * - エラーハンドリング
  */
+// refreshCustomerInfo() が明示的に listener() を呼ぶ際にセットされるフラグ。
+// isLifecycleBusy: true でも明示的な呼び出しは通過させるために使用。
+// モジュールレベル変数で管理（persist 対象外、シングルトン）。
+let isExplicitRefreshInProgress = false;
+
 export const useSubscriptionStore = create<SubscriptionState>()(
   persist(
     (set, get) => ({
@@ -71,6 +80,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       customerInfo: null,
       isPurchasing: false,
       purchaseError: null,
+      isLifecycleBusy: false,
       restoreAlert: null,
 
       // ============================================
@@ -151,13 +161,25 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           }
         );
 
-        // チェンジプラン進行中は同期しない
-        const { isPurchasing } = get();
+        // 購入処理中は同期しない
+        const { isPurchasing, isLifecycleBusy } = get();
         if (isPurchasing) {
           // NOTE: 証跡としてログを残す。ここでは状態変更はしない
           logWithContext(
             "info",
             "[SubscriptionStore] Skipping sync during purchase",
+            { entitlements: Object.keys(info.entitlements.active) }
+          );
+          return;
+        }
+
+        // lifecycle 処理中（init / onResume / changePlan）の自律的な RC コールバックは
+        // 中間状態（エンタイトルメントなし）を誤って反映させないためスキップする。
+        // ただし、refreshCustomerInfo() による明示的な呼び出しは通過させる。
+        if (isLifecycleBusy && !isExplicitRefreshInProgress) {
+          logWithContext(
+            "info",
+            "[SubscriptionStore] Skipping autonomous listener during lifecycle operation",
             { entitlements: Object.keys(info.entitlements.active) }
           );
           return;
@@ -682,6 +704,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       refreshCustomerInfo: async () => {
         logWithContext("info", "[SubscriptionStore] Refreshing CustomerInfo");
 
+        isExplicitRefreshInProgress = true;
         try {
           const customerInfo = await subscriptionService.getCustomerInfo();
 
@@ -692,6 +715,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           });
 
           // エンタイトルメントに従ってプランを同期
+          // isLifecycleBusy: true 中でも明示的な呼び出しとして listener を通過させる
           await get().listener(customerInfo);
 
           return customerInfo;
@@ -704,7 +728,21 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             }
           );
           throw error;
+        } finally {
+          isExplicitRefreshInProgress = false;
         }
+      },
+
+      // ============================================
+      // lifecycle ビジー状態の設定
+      // lifecycle.ts の init / onResume / changePlan から呼ばれる
+      // ============================================
+      setLifecycleBusy: (busy: boolean) => {
+        logWithContext(
+          "info",
+          `[SubscriptionStore] setLifecycleBusy: ${busy}`
+        );
+        set({ isLifecycleBusy: busy });
       },
 
       // ============================================
@@ -849,6 +887,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           customerInfo: null,
           isPurchasing: false,
           purchaseError: null,
+          isLifecycleBusy: false,
         });
       },
     }),
@@ -856,9 +895,15 @@ export const useSubscriptionStore = create<SubscriptionState>()(
     {
       name: "subscription-storage",
       partialize: (state) => {
-        // isLoggedIn と isInitialized は起動時に必ず再同期するため永続化しない。
-        // isLoggedIn を永続化すると再起動後に login() のガードで RC.logIn() がスキップされるバグの原因になる。
-        const { isLoggedIn: _isLoggedIn, isInitialized: _isInitialized, ...rest } = state;
+        // isLoggedIn / isInitialized は起動時に必ず再同期するため永続化しない。
+        // isLifecycleBusy は起動時に常に false であるべきなので永続化しない。
+        const {
+          isLoggedIn: _isLoggedIn,
+          isInitialized: _isInitialized,
+          isLifecycleBusy: _isLifecycleBusy,
+          setLifecycleBusy: _setLifecycleBusy,
+          ...rest
+        } = state;
         return rest;
       },
       storage: createJSONStorage(() => ({
