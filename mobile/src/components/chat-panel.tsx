@@ -196,6 +196,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [, setIsKeyboardReady] = useState(false);
   const wasPersonalRef = useRef(isPersonal);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasScrolledForPhase2 = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
@@ -289,6 +290,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   // useEffect(() => {
   //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   // }, [messages]);
+
+  // Phase2 開始時に一番下まで一度だけスクロール
+  useEffect(() => {
+    if (!isPhase2 || hasScrolledForPhase2.current) return;
+    if (messages.length > initialLen) {
+      hasScrolledForPhase2.current = true;
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isPhase2, messages.length, initialLen]);
 
   // キーボード高さの検出 - マウント時に即座にセットアップ
   useEffect(() => {
