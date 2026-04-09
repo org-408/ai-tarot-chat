@@ -799,7 +799,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* Phase1 入力エリア */}
       {isPersonal && !isPhase2 && !inputDisabled && (
         <motion.div
-          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
+          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}${status === "submitted" || status === "streaming" ? " pointer-events-none" : ""}`}
           transition={{
             type: "spring",
             stiffness: 300,
@@ -892,7 +892,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
               {/* 入力エリア */}
               <motion.div
-                className="px-4 py-3 bg-transparent"
+                className={`px-4 py-3 bg-transparent${status === "submitted" || status === "streaming" ? " pointer-events-none" : ""}`}
                 transition={{
                   type: "spring",
                   stiffness: 300,
