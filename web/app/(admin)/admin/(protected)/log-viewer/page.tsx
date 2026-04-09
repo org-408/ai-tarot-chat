@@ -56,8 +56,16 @@ export default async function LogsPage({
   const [logs, total, sources] = await Promise.all([
     prisma.log.findMany({
       where,
-      include: {
-        client: { select: { id: true, name: true, email: true } },
+      select: {
+        id: true,
+        level: true,
+        message: true,
+        metadata: true,
+        clientId: true,
+        path: true,
+        source: true,
+        timestamp: true,
+        createdAt: true,
       },
       orderBy: { createdAt: "desc" },
       skip: (currentPage - 1) * LIMIT,
@@ -81,15 +89,9 @@ export default async function LogsPage({
           metadata: log.metadata as unknown as Record<string, unknown> | null,
           path: log.path,
           source: log.source,
+          clientId: log.clientId,
           timestamp: log.timestamp?.toISOString() ?? log.createdAt.toISOString(),
           createdAt: log.createdAt.toISOString(),
-          client: log.client
-            ? {
-                id: log.client.id,
-                name: log.client.name,
-                email: log.client.email,
-              }
-            : null,
         })),
         total,
         page: currentPage,
