@@ -56,7 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       logWithContext("info", "User signed in", { user });
       const client = await clientService.getClientByUserId(user.id);
       if (client) {
-        logWithContext("info", "Associated client found", { client });
+        logWithContext("info", "Associated client found", { client, clientId: client.id });
         await clientService.updateLoginDate(client.id);
         logWithContext("info", "Client lastLoginAt updated", {
           clientId: client.id,
