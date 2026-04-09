@@ -22,7 +22,7 @@ const retryableByCode: Record<ReadingErrorCode, boolean> = {
   MODERATION_BLOCKED: false,
   PROVIDER_TEMPORARY_FAILURE: true,
   NETWORK_OR_STREAM_FAILURE: true,
-  INTERNAL_ERROR: false,
+  INTERNAL_ERROR: true,
 };
 
 export class ReadingRouteError extends Error {
@@ -68,6 +68,14 @@ export function createReadingErrorResponse({
     },
     { status }
   );
+}
+
+export function isRateLimitError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (/rate.?limit|too.many.request|quota|429/i.test(error.message)) return true;
+  if ("statusCode" in error && (error as { statusCode: number }).statusCode === 429) return true;
+  if ("status" in error && (error as { status: number }).status === 429) return true;
+  return false;
 }
 
 export function createReadingUnexpectedErrorResponse(

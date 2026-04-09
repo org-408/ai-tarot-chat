@@ -150,16 +150,14 @@ export async function POST(req: NextRequest) {
       `- 回答は必ず一回で完結させること。複数回に分けて回答しないこと\n` +
       `- 1回の回答は200文字以上300文字以内とすること\n`;
 
-    console.log(`[readings/simple/route] Received POST request`, {
-      clientMessages,
-      tarotist,
-      spread,
-      category,
-      drawnCards,
+    logWithContext("debug", "シンプル占いリクエストボディ受信", {
+      tarotistId: tarotist?.id,
+      spreadId: spread?.id,
+      categoryId: category?.id,
+      drawnCardsCount: drawnCards?.length,
+      messagesCount: clientMessages?.length,
       debugMode,
-      system,
       provider,
-      path: "/api/readings/simple",
     });
 
     const messages: Awaited<ReturnType<typeof convertToModelMessages>> =
@@ -170,24 +168,21 @@ export async function POST(req: NextRequest) {
         logWithContext("info", "システムプロンプトとメッセージ変換完了", {
           clientId,
         });
+        // i=0: homeFreeProviders (mistral-small-latest)
+        // i=1: providers.gpt5nano (gpt-5.4-nano) フォールバック
+        // i=2: providers.claude_h (claude-haiku-4-5) 最終フォールバック
+        const model =
+          i === 0
+            ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
+            : i === 1
+              ? providers["gpt5nano"]
+              : providers["claude_h"];
         const result = streamText({
-          model:
-            i === 0
-              ? homeFreeProviders
-                ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
-                : debugMode
-                  ? providers["google"]
-                  : providers[provider as keyof typeof providers]
-              : i === 1
-                ? homeFreeProviders["gemini25"]
-                : homeFreeProviders["google"],
+          model,
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
-          onChunk: (chunk) => {
-            console.log(`[readings/simple/route] chunk: `, chunk);
-          },
         });
 
         // テキストストリームのレスポンス（v5公式の推し）
@@ -223,14 +218,7 @@ export async function POST(req: NextRequest) {
         logWithContext(
           "error",
           `[readings/simple/route] シンプル占い試行${i + 1}回目失敗`,
-          {
-            error,
-            clientId,
-          },
-        );
-        console.error(
-          `[readings/simple/route] シンプル占い試行${i + 1}回目失敗: `,
-          error,
+          { error, clientId },
         );
         if (i === RETRY_COUNT - 1) {
           throw new ReadingRouteError({
@@ -242,12 +230,11 @@ export async function POST(req: NextRequest) {
             retryable: true,
           });
         }
+        const nextModel = i === 0 ? "gpt5nano" : "claude_h";
         logWithContext(
-          "info",
-          `[readings/simple/route] シンプル占い再試行します ${i + 2}回目`,
-          {
-            clientId,
-          },
+          "warn",
+          `[readings/simple/route] プロバイダ失敗、${nextModel} にフォールバック (${i + 2}回目)`,
+          { clientId },
         );
       }
     }

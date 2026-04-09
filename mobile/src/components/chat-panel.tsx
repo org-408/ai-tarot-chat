@@ -4,7 +4,7 @@ import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import type {
@@ -12,6 +12,7 @@ import type {
   SaveReadingInput,
 } from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
+import { useAuthStore } from "../lib/stores/auth";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
@@ -89,9 +90,37 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const [inputDisabled, setInputDisabled] = useState(false);
   const [chatError, setChatError] = useState<ReadingChatError | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const transportFetch: typeof fetch = async (input, init) => {
-    const response = await fetch(input, init);
+    let response: Response;
+    try {
+      response = await fetch(input, init);
+    } catch {
+      throw new ReadingChatError({
+        message: "通信に失敗しました。電波の良い場所で再度お試しください。",
+        status: 0,
+        code: "NETWORK_OR_STREAM_FAILURE",
+        retryable: true,
+      });
+    }
+
+    if (response.status === 401) {
+      try {
+        await useAuthStore.getState().refresh();
+        const newToken = useAuthStore.getState().token;
+        const retryInit = {
+          ...init,
+          headers: {
+            ...(init?.headers as Record<string, string>),
+            Authorization: `Bearer ${newToken}`,
+          },
+        };
+        response = await fetch(input, retryInit);
+      } catch {
+        // refresh も失敗した場合はそのまま UNAUTHORIZED として落とす
+      }
+    }
 
     if (!response.ok) {
       throw await createReadingChatErrorFromResponse(response);
@@ -127,15 +156,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       fetch: transportFetch,
     }),
     onError: (err) => {
-      console.error("Chat error:", err);
       const resolvedError = isReadingChatError(err)
         ? err
         : new ReadingChatError({
             message:
               err.message ||
-              "通信に失敗しました。時間をおいて再度お試しください。",
+              "通信に失敗しました。電波の良い場所で再度お試しください。",
             status: 0,
-            code: "UNKNOWN",
+            code: "NETWORK_OR_STREAM_FAILURE",
             retryable: true,
           });
 
@@ -165,8 +193,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       setChatError(resolvedError);
     },
-    onFinish: async (message) => {
-      console.log("Chat finished:", message);
+    onFinish: async () => {
       setChatError(null);
 
       if (isEndingEarlyRef.current) {
@@ -178,8 +205,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         setIsSyncingUsage(true);
         try {
           await refreshUsage();
-        } catch (error) {
-          console.warn("Failed to refresh usage after quick reading", error);
+        } catch {
+          // refreshUsage 失敗は次回起動時に補正されるため通知不要
         } finally {
           setIsSyncingUsage(false);
         }
@@ -206,6 +233,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const lastPersistedSignatureRef = useRef<string | null>(null);
   const savedReadingIdRef = useRef<string | null>(null);
   const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!saveError) return;
+    const t = setTimeout(() => setSaveError(null), 4000);
+    return () => clearTimeout(t);
+  }, [saveError]);
 
   const isInputFixableError =
     chatError !== null &&
@@ -547,8 +580,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           result.reading.id,
         );
       })
-      .catch((error) => {
-        console.warn("Failed to persist reading", error);
+      .catch(() => {
+        if (withSavingIndicator) {
+          setSaveError("占い結果の保存に失敗しました。通信環境をご確認ください。");
+        }
       })
       .finally(() => {
         saveStartedRef.current = false;
@@ -940,6 +975,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             </>
           );
         })()}
+
+      {/* 保存失敗トースト */}
+      <AnimatePresence>
+        {saveError && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-gray-800 text-white px-4 py-2.5 rounded-2xl shadow-lg text-xs font-medium whitespace-nowrap"
+          >
+            <span>⚠️</span>
+            <span>{saveError}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

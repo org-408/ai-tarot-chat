@@ -122,19 +122,18 @@ export async function POST(req: NextRequest) {
           reason: moderation.reason,
           category: moderation.category,
         });
-        return Response.json(
-          {
-            code: "MODERATION_BLOCKED",
-            message: moderation.message,
-            retryable: false,
-            phase,
-            details: {
-              reason: moderation.reason,
-              category: moderation.category,
-            },
+        return createReadingErrorResponse({
+          code: "MODERATION_BLOCKED",
+          message:
+            moderation.message ??
+            "申し訳ございません。その内容は占うことができません。",
+          status: 400,
+          phase,
+          details: {
+            reason: moderation.reason,
+            category: moderation.category,
           },
-          { status: 400 },
-        );
+        });
       }
 
       if (moderation.warning) {
@@ -344,16 +343,14 @@ export async function POST(req: NextRequest) {
         `- です・ます調で話すこと\n`;
     }
 
-    console.log(`[readings/personal/route] Received POST request`, {
-      clientMessages,
-      tarotist,
-      spread,
-      customQuestion,
-      drawnCards,
+    logWithContext("debug", "パーソナル占いリクエストボディ受信", {
+      tarotistId: tarotist?.id,
+      spreadId: spread?.id,
+      drawnCardsCount: drawnCards?.length,
+      messagesCount: clientMessages?.length,
+      phase,
       debugMode,
-      system,
       provider,
-      path: "/api/readings/personal",
     });
 
     const messages: Awaited<ReturnType<typeof convertToModelMessages>> =
@@ -364,24 +361,21 @@ export async function POST(req: NextRequest) {
         logWithContext("info", "システムプロンプトとメッセージ変換完了", {
           clientId,
         });
+        // i=0: homeFreeProviders (mistral-small-latest)
+        // i=1: providers.gpt5nano (gpt-5.4-nano) フォールバック
+        // i=2: providers.claude_h (claude-haiku-4-5) 最終フォールバック
+        const model =
+          i === 0
+            ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
+            : i === 1
+              ? providers["gpt5nano"]
+              : providers["claude_h"];
         const result = streamText({
-          model:
-            i === 0
-              ? homeFreeProviders
-                ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
-                : debugMode
-                  ? providers["google"]
-                  : providers[provider as keyof typeof providers]
-              : i === 1
-                ? homeFreeProviders["gemini25"]
-                : homeFreeProviders["google"],
+          model,
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
-          onChunk: (chunk) => {
-            console.log(`[readings/personal/route] chunk: `, chunk);
-          },
         });
 
         // テキストストリームのレスポンス（v5公式の推し）
@@ -396,14 +390,7 @@ export async function POST(req: NextRequest) {
         logWithContext(
           "error",
           `[readings/personal/route] パーソナル占い試行${i + 1}回目失敗`,
-          {
-            error,
-            clientId,
-          },
-        );
-        console.error(
-          `[readings/personal/route] パーソナル占い試行${i + 1}回目失敗: `,
-          error,
+          { error, clientId },
         );
         if (i === RETRY_COUNT - 1) {
           throw new ReadingRouteError({
@@ -415,12 +402,11 @@ export async function POST(req: NextRequest) {
             retryable: true,
           });
         }
+        const nextModel = i === 0 ? "gpt5nano" : "claude_h";
         logWithContext(
-          "info",
-          `[readings/personal/route] パーソナル占い再試行します ${i + 2}回目`,
-          {
-            clientId,
-          },
+          "warn",
+          `[readings/personal/route] プロバイダ失敗、${nextModel} にフォールバック (${i + 2}回目)`,
+          { clientId },
         );
       }
     }
