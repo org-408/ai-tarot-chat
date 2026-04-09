@@ -15,8 +15,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { MdChevronLeft, MdChevronRight, MdSearch, MdExpandMore, MdExpandLess } from "react-icons/md";
 
-type ClientSummary = { id: string; name: string | null; email: string | null };
-
 type LogRow = {
   id: string;
   level: string;
@@ -24,9 +22,9 @@ type LogRow = {
   metadata: Record<string, unknown> | null;
   path: string | null;
   source: string;
+  clientId: string | null;
   timestamp: string;
   createdAt: string;
-  client: ClientSummary | null;
 };
 
 type Response = {
@@ -267,13 +265,12 @@ export function LogsPageClient({
                     </td>
                     <td className="py-1.5 px-2 break-all max-w-xs">{log.message}</td>
                     <td className="py-1.5 px-2">
-                      {log.client ? (
+                      {log.clientId ? (
                         <Link
-                          href={`/admin/clients/${log.client.id}`}
-                          className="text-sky-600 hover:underline"
+                          href={`/admin/clients/${log.clientId}`}
+                          className="text-sky-600 hover:underline font-mono text-xs"
                         >
-                          <div>{log.client.name ?? "(名前なし)"}</div>
-                          <div className="text-slate-400">{log.client.email ?? "-"}</div>
+                          {log.clientId.slice(0, 8)}…
                         </Link>
                       ) : (
                         <span className="text-slate-300">-</span>
