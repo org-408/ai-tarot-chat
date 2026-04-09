@@ -217,6 +217,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       !isSavingReading &&
       !isSyncingUsage &&
       (!isPhase2 || inputDisabled));
+  const isProcessing =
+    status === "submitted" ||
+    status === "streaming" ||
+    isSavingReading ||
+    isSyncingUsage;
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -800,7 +805,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* Phase1 入力エリア */}
       {isPersonal && !isPhase2 && !inputDisabled && (
         <motion.div
-          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}${status === "submitted" || status === "streaming" ? " pointer-events-none" : ""}`}
+          className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}${isProcessing ? " pointer-events-none" : ""}`}
           transition={{
             type: "spring",
             stiffness: 300,
@@ -824,13 +829,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               rows={2}
               className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={status === "submitted" || status === "streaming" || hasBlockingError}
+              disabled={isProcessing || hasBlockingError}
             />
             <button
               onClick={handleSendMessage}
-              disabled={
-                !inputValue.trim() || status === "submitted" || status === "streaming" || hasBlockingError
-              }
+              disabled={!inputValue.trim() || isProcessing || hasBlockingError}
               className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
             >
               <ArrowUp size={18} strokeWidth={2.5} />
@@ -879,11 +882,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                         { body: { isEndingEarly: true } },
                       );
                     }}
-                    disabled={
-                      status === "submitted" ||
-                      status === "streaming" ||
-                      hasBlockingError
-                    }
+                    disabled={isProcessing || hasBlockingError}
                     className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
                   >
                     占いを終わる
@@ -893,7 +892,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
               {/* 入力エリア */}
               <motion.div
-                className={`px-4 py-3 bg-transparent${status === "submitted" || status === "streaming" ? " pointer-events-none" : ""}`}
+                className={`px-4 py-3 bg-transparent${isProcessing ? " pointer-events-none" : ""}`}
                 transition={{
                   type: "spring",
                   stiffness: 300,
@@ -913,16 +912,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     rows={2}
                     className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                     style={{ maxHeight: "120px" }}
-                    disabled={status === "submitted" || status === "streaming" || hasBlockingError}
+                    disabled={isProcessing || hasBlockingError}
                   />
                   <button
                     onClick={handleSendMessage}
-                    disabled={
-                      !inputValue.trim() ||
-                      status === "submitted" ||
-                      status === "streaming" ||
-                      hasBlockingError
-                    }
+                    disabled={!inputValue.trim() || isProcessing || hasBlockingError}
                     className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
                   >
                     <ArrowUp size={18} strokeWidth={2.5} />
