@@ -25,7 +25,7 @@ export default async function LogsPage({
   const sourceFilter = source ?? "ALL";
   const keyword = q?.trim() ?? "";
 
-  // 日付フィルター
+  // 日付フィルター（dashboardと同じく createdAt ベース）
   let dateFrom: Date | undefined;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -42,7 +42,7 @@ export default async function LogsPage({
   const where = {
     ...(levelFilter !== "ALL" ? { level: levelFilter } : {}),
     ...(sourceFilter !== "ALL" ? { source: sourceFilter } : {}),
-    ...(dateFrom ? { timestamp: { gte: dateFrom } } : {}),
+    ...(dateFrom ? { createdAt: { gte: dateFrom } } : {}),
     ...(keyword
       ? {
           OR: [
@@ -59,7 +59,7 @@ export default async function LogsPage({
       include: {
         client: { select: { id: true, name: true, email: true } },
       },
-      orderBy: { timestamp: "desc" },
+      orderBy: { createdAt: "desc" },
       skip: (currentPage - 1) * LIMIT,
       take: LIMIT,
     }),
@@ -78,10 +78,10 @@ export default async function LogsPage({
           id: log.id,
           level: log.level,
           message: log.message,
-          metadata: log.metadata as Record<string, unknown> | null,
+          metadata: log.metadata as unknown as Record<string, unknown> | null,
           path: log.path,
           source: log.source,
-          timestamp: log.timestamp.toISOString(),
+          timestamp: log.timestamp?.toISOString() ?? log.createdAt.toISOString(),
           createdAt: log.createdAt.toISOString(),
           client: log.client
             ? {
