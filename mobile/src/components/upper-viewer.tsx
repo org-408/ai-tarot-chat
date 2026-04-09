@@ -2,7 +2,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { DrawnCard } from "../../../shared/lib/types";
+import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import { getCardImagePath } from "../lib/utils/salon";
@@ -16,14 +16,14 @@ interface UpperViewerProps {
   claraMode?: boolean;
   /** claraMode と同様に占い師肖像を固定表示する。名前を指定すると /tarotists/{name}.png を使用 */
   profileTarotistName?: string;
+  spread: Spread;
 }
 
 // メインコンポーネント
-const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTarotistName }) => {
+const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTarotistName, spread }) => {
   const offlineName = profileTarotistName ?? (claraMode ? "Clara" : null);
   const { masterData } = useMaster();
   const {
-    selectedSpread: spread,
     drawnCards,
     isRevealingCompleted,
     setIsRevealingCompleted,

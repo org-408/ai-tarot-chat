@@ -67,7 +67,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {drawnCards.length > 0 && (
-            <UpperViewer profileTarotistName={tarotistName} />
+            <UpperViewer profileTarotistName={tarotistName} spread={reading.spread!} />
           )}
         </motion.div>
 

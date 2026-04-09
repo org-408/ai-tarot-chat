@@ -165,7 +165,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
             animate={{ height: isTopCollapsed ? 0 : "45vh" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {drawnCards.length > 0 && <UpperViewer />}
+            {drawnCards.length > 0 && <UpperViewer spread={selectedSpread} />}
           </motion.div>
 
           {/* アコーディオントグル */}
