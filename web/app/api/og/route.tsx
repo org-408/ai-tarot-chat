@@ -40,7 +40,8 @@ export async function GET() {
   const images = TAROTISTS.map(getImageDataUrl);
   const fontData = await loadJapaneseFont();
 
-  const fonts: ConstructorParameters<typeof ImageResponse>[1]["fonts"] = fontData
+  type FontOption = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 };
+  const fonts: FontOption[] = fontData
     ? [{ name: "NotoSansJP", data: fontData, weight: 700 }]
     : [];
 
