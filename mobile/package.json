@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "ui:add": "npx shadcn@latest add ",
-    "reset": "ts-node scripts/reset-app.ts"
+    "reset": "ts-node scripts/reset-app.ts",
+    "build:android": "vite build && npx cap sync android",
+    "aab": "npm run build:android && cd android && ./gradlew bundleRelease",
+    "apk": "npm run build:android && cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.151",

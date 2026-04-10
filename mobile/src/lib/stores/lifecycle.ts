@@ -284,8 +284,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               // 「起動直後は FREE 表示 → しばらくしてから PREMIUM に変わる」を防止する。
               await useSubscriptionStore.getState().refreshCustomerInfo();
             } catch (error) {
-              // サブスクリプションは非致命的
-              get().errorProcessing("subscription", error as Error, new Date());
+              // サブスクリプションは非致命的 (errorProcessing は非ネットワークエラーを re-throw するため使わない)
               if (isNetworkError(error)) {
                 logWithContext(
                   "warn",
