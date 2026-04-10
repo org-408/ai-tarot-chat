@@ -58,7 +58,7 @@ export default async function LogsPage({
       : {}),
   };
 
-  const [logs, total] = await Promise.all([
+  const [logs, total, clients] = await Promise.all([
     prisma.log.findMany({
       where,
       select: {
@@ -77,6 +77,11 @@ export default async function LogsPage({
       take: LIMIT,
     }),
     prisma.log.count({ where }),
+    prisma.client.findMany({
+      where: { deletedAt: null },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   return (
@@ -97,6 +102,7 @@ export default async function LogsPage({
         page: currentPage,
         limit: LIMIT,
       }}
+      clients={clients}
       currentFilters={{
         level: levelFilter,
         date: date ?? "",
