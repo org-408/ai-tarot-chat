@@ -225,7 +225,7 @@ export function ReadingsPageClient({
                   <th className="py-2 px-2">タロティスト</th>
                   <th className="py-2 px-2">スプレッド</th>
                   <th className="py-2 px-2 w-20">カテゴリ</th>
-                  <th className="py-2 px-2 w-20">種別</th>
+                  <th className="py-2 px-2 w-48">質問内容</th>
                   <th className="py-2 px-2 w-10"></th>
                 </tr>
               </thead>
@@ -263,18 +263,16 @@ export function ReadingsPageClient({
                       <div>{reading.spread.name}</div>
                       <div className="text-xs text-slate-400">{reading.spread.cellCount}枚</div>
                     </td>
-                    <td className="py-2 px-2 align-top text-xs">
+                    <td className="py-2 px-2 align-top text-xs text-slate-600">
                       {reading.category?.name ?? "-"}
                     </td>
-                    <td className="py-2 px-2 align-top">
+                    <td className="py-2 px-2 align-top text-xs">
                       {reading.customQuestion ? (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700">
-                          パーソナル
-                        </span>
+                        <p className="text-slate-700 break-all line-clamp-2" title={reading.customQuestion}>
+                          {reading.customQuestion}
+                        </p>
                       ) : (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-100 text-sky-700">
-                          クイック
-                        </span>
+                        <span className="text-slate-300">-</span>
                       )}
                     </td>
                     <td className="py-2 px-2 align-top">
