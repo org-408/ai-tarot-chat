@@ -62,7 +62,7 @@ export default async function ReadingsPage({
       include: {
         client: { select: { id: true, name: true, email: true, isRegistered: true, plan: { select: { id: true, name: true, code: true } } } },
         tarotist: { select: { id: true, name: true, icon: true, model: true } },
-        spread: { select: { id: true, name: true, cells: { select: { id: true } } } },
+        spread: { select: { id: true, name: true, _count: { select: { cells: true } } } },
         category: { select: { id: true, name: true } },
         cards: {
           select: {
@@ -74,16 +74,6 @@ export default async function ReadingsPage({
             card: { select: { name: true, code: true } },
           },
           orderBy: { order: "asc" },
-        },
-        chatMessages: {
-          select: {
-            id: true,
-            role: true,
-            chatType: true,
-            message: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "asc" },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -124,7 +114,7 @@ export default async function ReadingsPage({
           spread: {
             id: r.spread.id,
             name: r.spread.name,
-            cellCount: r.spread.cells.length,
+            cellCount: r.spread._count.cells,
           },
           category: r.category,
           cards: r.cards.map((c) => ({
@@ -135,13 +125,6 @@ export default async function ReadingsPage({
             keywords: c.keywords,
             cardName: c.card.name,
             cardCode: c.card.code,
-          })),
-          chatMessages: r.chatMessages.map((m) => ({
-            id: m.id,
-            role: m.role,
-            chatType: m.chatType,
-            message: m.message,
-            createdAt: m.createdAt.toISOString(),
           })),
         })),
         total,
