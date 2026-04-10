@@ -1,5 +1,6 @@
 "use server";
 
+import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -8,6 +9,7 @@ export async function changeClientPlanAction(input: {
   planId: string;
 }) {
   try {
+    await assertAdminSession();
     await prisma.client.update({
       where: { id: input.clientId },
       data: { planId: input.planId },
