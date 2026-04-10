@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ClientCombobox, type ClientOption } from "@/components/admin/client-combobox";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MdChevronLeft, MdChevronRight, MdSearch } from "react-icons/md";
@@ -57,6 +58,7 @@ type Filters = {
   tarotists: { id: string; name: string; icon: string }[];
   spreads: { id: string; name: string }[];
   categories: { id: string; name: string }[];
+  clients: ClientOption[];
 };
 
 type CurrentFilters = {
@@ -93,7 +95,6 @@ export function ReadingsPageClient({
 }) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState(currentFilters.keyword);
-  const [clientIdInput, setClientIdInput] = useState(currentFilters.clientId);
   const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));
@@ -148,21 +149,11 @@ export function ReadingsPageClient({
               </Button>
             </form>
 
-            <Input
-              placeholder="クライアントID..."
-              value={clientIdInput}
-              onChange={(e) => setClientIdInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && navigate({ clientId: clientIdInput.trim() })}
-              className="w-44 font-mono text-xs"
+            <ClientCombobox
+              clients={filters.clients}
+              value={currentFilters.clientId}
+              onChange={(id) => navigate({ clientId: id })}
             />
-            {currentFilters.clientId && (
-              <button
-                onClick={() => { setClientIdInput(""); navigate({ clientId: "" }); }}
-                className="text-xs text-slate-400 hover:text-slate-600"
-              >
-                ✕ クライアント解除
-              </button>
-            )}
 
             <Select
               value={currentFilters.date || "_all"}

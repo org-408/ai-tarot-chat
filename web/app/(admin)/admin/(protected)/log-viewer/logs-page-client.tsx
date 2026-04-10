@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ClientCombobox, type ClientOption } from "@/components/admin/client-combobox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -151,14 +152,15 @@ function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }
 
 export function LogsPageClient({
   data,
+  clients,
   currentFilters,
 }: {
   data: Response;
+  clients: ClientOption[];
   currentFilters: CurrentFilters;
 }) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState(currentFilters.keyword);
-  const [clientIdInput, setClientIdInput] = useState(currentFilters.clientId);
   const [, startTransition] = useTransition();
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));
@@ -240,21 +242,11 @@ export function LogsPageClient({
               </SelectContent>
             </Select>
 
-            <Input
-              placeholder="クライアントID..."
-              value={clientIdInput}
-              onChange={(e) => setClientIdInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && navigate({ clientId: clientIdInput.trim(), page: 1 })}
-              className="w-44 font-mono text-xs"
+            <ClientCombobox
+              clients={clients}
+              value={currentFilters.clientId}
+              onChange={(id) => navigate({ clientId: id, page: 1 })}
             />
-            {currentFilters.clientId && (
-              <button
-                onClick={() => { setClientIdInput(""); navigate({ clientId: "", page: 1 }); }}
-                className="text-xs text-slate-400 hover:text-slate-600"
-              >
-                ✕ クライアント解除
-              </button>
-            )}
 
             <Select
               value={currentFilters.date || "all"}

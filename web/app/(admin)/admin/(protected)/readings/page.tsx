@@ -59,7 +59,7 @@ export default async function ReadingsPage({
       : {}),
   };
 
-  const [readings, total, tarotists, spreads, categories] = await Promise.all([
+  const [readings, total, tarotists, spreads, categories, clients] = await Promise.all([
     prisma.reading.findMany({
       where,
       include: {
@@ -96,6 +96,11 @@ export default async function ReadingsPage({
     prisma.readingCategory.findMany({
       select: { id: true, name: true },
       orderBy: { no: "asc" },
+    }),
+    prisma.client.findMany({
+      where: { deletedAt: null },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
@@ -138,6 +143,7 @@ export default async function ReadingsPage({
         tarotists: tarotists.map((t) => ({ id: t.id, name: t.name, icon: t.icon })),
         spreads: spreads.map((s) => ({ id: s.id, name: s.name })),
         categories: categories.map((c) => ({ id: c.id, name: c.name })),
+        clients,
       }}
       currentFilters={{
         keyword,
