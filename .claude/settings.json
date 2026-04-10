@@ -5,7 +5,12 @@
       "Bash(cd web && npm run db:generate)",
       "Bash(cd mobile && npm run build)",
       "Bash(git *)",
-      "Bash(gh *)"
+      "Bash(gh *)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Glob(*)",
+      "Grep(*)"
     ]
   }
 }
