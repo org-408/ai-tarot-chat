@@ -2,7 +2,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { DrawnCard } from "../../../shared/lib/types";
+import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import { getCardImagePath } from "../lib/utils/salon";
@@ -14,13 +14,16 @@ const CARD_ASPECT = 300 / 527;
 
 interface UpperViewerProps {
   claraMode?: boolean;
+  /** claraMode と同様に占い師肖像を固定表示する。名前を指定すると /tarotists/{name}.png を使用 */
+  profileTarotistName?: string;
+  spread: Spread;
 }
 
 // メインコンポーネント
-const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false }) => {
+const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTarotistName, spread }) => {
+  const offlineName = profileTarotistName ?? (claraMode ? "Clara" : null);
   const { masterData } = useMaster();
   const {
-    selectedSpread: spread,
     drawnCards,
     isRevealingCompleted,
     setIsRevealingCompleted,
@@ -63,13 +66,6 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false }) => {
   };
 
   useEffect(() => {
-    console.log(
-      "UpperViewer mounted, setting mode to grid",
-      upperViewerMode,
-      spread,
-      drawnCards,
-      isRevealingCompleted
-    );
     setUpperViewerMode("grid");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -169,11 +165,11 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false }) => {
             {/* 🔥 このスライド内でスクロール */}
             <div className="w-full h-full overflow-y-auto px-1 pb-4 backdrop-blur-md rounded-2xl sm:p-4 border border-white/10 shadow-xs">
               {selectedIndex === 0 && (
-                claraMode ? (
+                offlineName ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <img
-                      src="/tarotists/Clara.png"
-                      alt="Clara"
+                      src={`/tarotists/${offlineName}.png`}
+                      alt={offlineName}
                       className="w-full h-full object-cover rounded-2xl"
                       style={{ objectPosition: "center 20%" }}
                     />

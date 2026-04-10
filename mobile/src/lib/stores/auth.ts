@@ -197,6 +197,7 @@ export const useAuthStore = create<AuthState>()(
             "info",
             "[AuthStore] Device registration successful:",
             {
+              clientId: payload.clientId,
               payload,
               isAuthenticated: !!payload.user,
             }
@@ -222,6 +223,7 @@ export const useAuthStore = create<AuthState>()(
           });
 
           logWithContext("info", "[AuthStore] Login successful:", {
+            clientId: payload.clientId,
             payload,
             isAuthenticated: !!payload.user,
           });
@@ -293,6 +295,7 @@ export const useAuthStore = create<AuthState>()(
               "info",
               "[AuthStore] ✅ Token refreshed successfully",
               {
+                clientId: newPayload.clientId,
                 payload: newPayload,
                 isAuthenticated: !!newPayload.user,
               }

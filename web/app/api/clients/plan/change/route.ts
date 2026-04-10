@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
       path: "/api/clients/plan/change",
     }
   );
+  let clientId: string | undefined;
   try {
     // AuthService経由でセッション検証
     const payload = await authService.verifyApiRequest(request);
@@ -26,13 +27,14 @@ export async function POST(request: NextRequest) {
       });
       return new Response("unauthorized", { status: 401 });
     }
-    logWithContext("info", `✅ セッション検証完了`, { payload });
+    clientId = payload.payload.clientId;
+    logWithContext("info", `✅ セッション検証完了`, { payload, clientId });
 
     // リクエストボディ取得
     const { code } = await request.json();
-    const clientId = payload.payload.clientId;
     if (!code) {
       logWithContext("error", "❌ planCode が不足", {
+        clientId,
         code,
         status: 400,
       });
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest) {
     }
     if (client.plan.code !== code || usage.plan.code !== code) {
       logWithContext("error", "❌ プラン変更ミスマッチ", {
+        clientId,
         expected: code,
         actualClient: client.plan.code,
         actualUsage: usage.plan.code,
@@ -70,6 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     logWithContext("info", `✅ プラン変更完了`, {
+      clientId,
       success: true,
       usage,
     });
@@ -79,6 +83,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     logWithContext("error", "❌ プラン変更エラー", {
+      clientId,
       error,
       status: 500,
     });

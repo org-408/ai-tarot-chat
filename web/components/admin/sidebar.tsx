@@ -10,6 +10,8 @@ const NAV = [
   { href: "/admin/tarotists", label: "🔮 タロティスト管理" },
   { href: "/admin/clients", label: "👥 クライアント管理" },
   { href: "/admin/notifications", label: "📨 リリース通知" },
+  { href: "/admin/readings", label: "📖 占い履歴" },
+  { href: "/admin/log-viewer", label: "📋 ログ管理" },
 ];
 
 export function Sidebar() {

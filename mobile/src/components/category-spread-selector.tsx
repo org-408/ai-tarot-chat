@@ -210,7 +210,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const handleStartReading = () => {
     if (isDisabled) return;
     const categoryToUse = selectedCategory || availableCategories[0];
-    const spreadToUse = selectedSpread || availableSpreads[0];
+    const spreadToUse =
+      availableSpreads.find((s) => s.id === selectedSpread?.id) ??
+      availableSpreads[0];
 
     setSelectedCategory(categoryToUse);
     setSelectedSpread(spreadToUse);

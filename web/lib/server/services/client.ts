@@ -41,13 +41,15 @@ export class ClientService {
         const plan = client.plan;
         if (!plan) throw new Error("Plan not found");
 
-        logWithContext("info", "Client plan", { plan });
+        logWithContext("info", "Client plan", { plan, clientId });
 
         // 日付確認
         logWithContext("info", "Client last reading date", {
+          clientId,
           lastReadingDate: client.lastReadingDate,
         });
         logWithContext("info", "Client last personal reading date", {
+          clientId,
           lastPersonalReadingDate: client.lastPersonalReadingDate,
         });
         // ✅ 修正: null は「未実施」として除外し、過去日付のものがあればリセット
@@ -65,9 +67,11 @@ export class ClientService {
           const beforeReadingsCount = client.dailyReadingsCount;
           const beforePersonalCount = client.dailyPersonalCount;
           logWithContext("info", "Before counts - Readings", {
+            clientId: client.id,
             beforeReadingsCount,
           });
           logWithContext("info", "Before counts - Personal", {
+            clientId: client.id,
             beforePersonalCount,
           });
 
@@ -89,9 +93,11 @@ export class ClientService {
         }
 
         logWithContext("info", "Daily readings count", {
+          clientId,
           dailyReadingsCount: client.dailyReadingsCount,
         });
         logWithContext("info", "Daily personal count", {
+          clientId,
           dailyPersonalCount: client.dailyPersonalCount,
         });
 

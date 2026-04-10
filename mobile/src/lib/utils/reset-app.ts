@@ -19,10 +19,10 @@ import { apiClient } from "./api-client";
  */
 export const resetAppData = async () => {
   try {
-    logWithContext("info", "[ResetApp] App data reset started");
-
+    const clientId = useAuthStore.getState().payload?.clientId;
     const deviceId = await storeRepository.get("deviceId");
-    logWithContext("info", "[ResetApp] Current deviceId", { deviceId });
+    logWithContext("info", "[ResetApp] App data reset started", { clientId, deviceId });
+    logWithContext("info", "[ResetApp] Current deviceId", { clientId, deviceId });
 
     // ========================================
     // 1. Zustandストアをリセット

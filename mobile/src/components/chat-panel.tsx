@@ -4,7 +4,7 @@ import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import type {
@@ -12,6 +12,7 @@ import type {
   SaveReadingInput,
 } from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
+import { useAuthStore } from "../lib/stores/auth";
 import { useClient } from "../lib/hooks/use-client";
 import {
   createReadingChatErrorFromResponse,
@@ -20,6 +21,11 @@ import {
 } from "../lib/utils/reading-chat-error";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
+import {
+  createReadingChatErrorFromResponse,
+  isReadingChatError,
+  ReadingChatError,
+} from "../lib/utils/reading-chat-error";
 import CategorySpreadSelector from "./category-spread-selector";
 import { MessageContent } from "./message-content";
 import { RevealPromptPanel } from "./reveal-prompt-panel";
@@ -38,6 +44,8 @@ interface ChatPanelProps {
   initialMessages?: UIMessage[];
   /** messages が変わるたびに呼ばれるコールバック（Phase1 → Phase2 への引き継ぎ用） */
   onMessagesChange?: (messages: UIMessage[]) => void;
+  /** 残り利用回数。0 以下の場合はボタンを無効化して「本日の占いは終了しました」を表示 */
+  remainingCount?: number;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -47,6 +55,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onUnlock,
   initialMessages,
   onMessagesChange,
+  remainingCount,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
@@ -86,9 +95,37 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const [inputDisabled, setInputDisabled] = useState(false);
   const [chatError, setChatError] = useState<ReadingChatError | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const transportFetch: typeof fetch = async (input, init) => {
-    const response = await fetch(input, init);
+    let response: Response;
+    try {
+      response = await fetch(input, init);
+    } catch {
+      throw new ReadingChatError({
+        message: "通信に失敗しました。電波の良い場所で再度お試しください。",
+        status: 0,
+        code: "NETWORK_OR_STREAM_FAILURE",
+        retryable: true,
+      });
+    }
+
+    if (response.status === 401) {
+      try {
+        await useAuthStore.getState().refresh();
+        const newToken = useAuthStore.getState().token;
+        const retryInit = {
+          ...init,
+          headers: {
+            ...(init?.headers as Record<string, string>),
+            Authorization: `Bearer ${newToken}`,
+          },
+        };
+        response = await fetch(input, retryInit);
+      } catch {
+        // refresh も失敗した場合はそのまま UNAUTHORIZED として落とす
+      }
+    }
 
     if (!response.ok) {
       throw await createReadingChatErrorFromResponse(response);
@@ -124,14 +161,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       fetch: transportFetch,
     }),
     onError: (err) => {
-      console.error("Chat error:", err);
       const resolvedError = isReadingChatError(err)
         ? err
         : new ReadingChatError({
             message:
-              err.message || "通信に失敗しました。時間をおいて再度お試しください。",
+              err.message ||
+              "通信に失敗しました。電波の良い場所で再度お試しください。",
             status: 0,
-            code: "UNKNOWN",
+            code: "NETWORK_OR_STREAM_FAILURE",
             retryable: true,
           });
 
@@ -161,8 +198,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       setChatError(resolvedError);
     },
-    onFinish: async (message) => {
-      console.log("Chat finished:", message);
+    onFinish: async () => {
       setChatError(null);
 
       if (isEndingEarlyRef.current) {
@@ -174,8 +210,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         setIsSyncingUsage(true);
         try {
           await refreshUsage();
-        } catch (error) {
-          console.warn("Failed to refresh usage after quick reading", error);
+        } catch {
+          // refreshUsage 失敗は次回起動時に補正されるため通知不要
         } finally {
           setIsSyncingUsage(false);
         }
@@ -192,6 +228,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [, setIsKeyboardReady] = useState(false);
   const wasPersonalRef = useRef(isPersonal);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasScrolledForPhase2 = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
@@ -199,7 +236,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const saveStartedRef = useRef(false);
   const pendingSaveRef = useRef(false);
   const lastPersistedSignatureRef = useRef<string | null>(null);
+  const savedReadingIdRef = useRef<string | null>(null);
   const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!saveError) return;
+    const t = setTimeout(() => setSaveError(null), 4000);
+    return () => clearTimeout(t);
+  }, [saveError]);
 
   const isInputFixableError =
     chatError !== null &&
@@ -212,6 +256,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       !isSavingReading &&
       !isSyncingUsage &&
       (!isPhase2 || inputDisabled));
+  const isProcessing =
+    status === "submitted" ||
+    status === "streaming" ||
+    isSavingReading ||
+    isSyncingUsage;
 
   // デバッグ用: messagesの変更を監視
   useEffect(() => {
@@ -225,7 +274,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       } else {
         // Phase2: autoメッセージ以降のユーザー発言数で判定
         const phase2UserCount = messages.filter(
-          (m, i) => m.role === "user" && i > initialLen
+          (m, i) => m.role === "user" && i > initialLen,
         ).length;
         setInputDisabled(phase2UserCount >= MAX_PHASE2_QUESTIONS);
       }
@@ -239,7 +288,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join("");
           console.log("Extracted string:", str);
-          const match = str.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
+          // 【特におすすめのスプレッド】ヘッダー以降のみをパース対象にする（3提案部分の誤検出を防ぐ）
+          const headerIdx = str.indexOf("【特におすすめのスプレッド】");
+          const targetStr = headerIdx >= 0 ? str.slice(headerIdx) : str;
+          const match = targetStr.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
           const spreadNo = match ? parseInt(match[1], 10) : undefined;
           const spreadName = match ? match[2] : "";
           console.log("Extracted spread no, name:", spreadNo, spreadName);
@@ -276,6 +328,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   // useEffect(() => {
   //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   // }, [messages]);
+
+  // Phase2 開始時に一番下まで一度だけスクロール
+  useEffect(() => {
+    if (!isPhase2 || hasScrolledForPhase2.current) return;
+    if (messages.length > initialLen) {
+      hasScrolledForPhase2.current = true;
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isPhase2, messages.length, initialLen]);
 
   // キーボード高さの検出 - マウント時に即座にセットアップ
   useEffect(() => {
@@ -407,7 +468,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       sendMessage({ text: "よろしくお願いします。" });
     } else if (isPhase2 && drawnCards.length > 0) {
       hasSentInitialMessage.current = true;
-      sendMessage({ text: "では、占いを始めてください。" });
+      sendMessage({ text: `${spread?.name}で占ってください。` });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
@@ -430,7 +491,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const getTargetMessages = () => messages;
 
-  const buildPersistSignature = (readingIdOverride = savedReadingId) =>
+  const buildPersistSignature = (
+    readingIdOverride = savedReadingIdRef.current ?? savedReadingId,
+  ) =>
     `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
       .map((msg) => {
         const text = msg.parts
@@ -445,12 +508,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     const targetMessages = getTargetMessages();
     // Phase2 では initialLen 以降の最初の assistant メッセージが初回鑑定（FINAL_READING）
     const firstPhase2TarotistIdx = isPhase2
-      ? targetMessages.findIndex((m, i) => m.role === "assistant" && i >= initialLen)
+      ? targetMessages.findIndex(
+          (m, i) => m.role === "assistant" && i >= initialLen,
+        )
       : -1;
 
     return {
-      readingId: savedReadingId ?? undefined,
-      incrementUsage: isPersonal ? savedReadingId === null : false,
+      readingId: savedReadingIdRef.current ?? savedReadingId ?? undefined,
+      incrementUsage: isPersonal
+        ? (savedReadingIdRef.current ?? savedReadingId) === null
+        : false,
       tarotistId: tarotist.id,
       tarotist,
       spreadId: spread.id,
@@ -512,13 +579,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     void saveReading(buildReadingPayload())
       .then((result) => {
+        savedReadingIdRef.current = result.reading.id;
         setSavedReadingId(result.reading.id);
         lastPersistedSignatureRef.current = buildPersistSignature(
           result.reading.id,
         );
       })
-      .catch((error) => {
-        console.warn("Failed to persist reading", error);
+      .catch(() => {
+        if (withSavingIndicator) {
+          setSaveError("占い結果の保存に失敗しました。通信環境をご確認ください。");
+        }
       })
       .finally(() => {
         saveStartedRef.current = false;
@@ -543,11 +613,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     // ─────────────────────────────────────────────────────────────
     const isComplete =
       chatError !== null ||
-      (isPhase2
+      ((isPhase2
         ? messages.length > (initialMessages?.length ?? 0)
         : (isRevealingCompleted || isPersonal) &&
           drawnCards.length > 0 &&
-          messages.length > 0) && (status === "ready" || status === "error");
+          messages.length > 0) &&
+        (status === "ready" || status === "error"));
 
     if (isComplete) {
       setIsMessageComplete(true);
@@ -627,25 +698,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setupAppStateListener();
 
     return () => {
+      // アンマウント時のみ保存（deps変化時には発火させない）
+      // useEffectEvent により persistReading は常に最新状態を参照するため空 deps で正しく動作する
       persistReading(false);
       void appStateListener?.remove();
     };
-  }, [
-    category,
-    customQuestion,
-    drawnCards,
-    initialLen,
-    inputDisabled,
-    isPersonal,
-    isPhase2,
-    isRevealingCompleted,
-    messages,
-    persistReading,
-    saveReading,
-    spread,
-    status,
-    tarotist,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col relative">
@@ -746,19 +805,38 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Back Button - Phase1: 保存後すぐ / Phase2: 全質問終了後のみ */}
-      {shouldShowBackButton && !isSavingReading && !chatError && (
-        <motion.button
-          key={"back-button"}
-          initial={{ opacity: 0, scale: 0.7, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.7, y: 40 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="absolute bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
-          onClick={onBack}
-        >
-          <span>← 戻る</span>
-        </motion.button>
-      )}
+      {shouldShowBackButton &&
+        !isSavingReading &&
+        !chatError &&
+        (() => {
+          const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
+          const isExhausted =
+            !debugMode && remainingCount !== undefined && remainingCount <= 0;
+          return (
+            <motion.button
+              key={"back-button"}
+              initial={{ opacity: 0, scale: 0.7, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.7, y: 40 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className={`absolute bottom-6 right-6 z-50 shadow-xl rounded-full px-5 py-3 font-bold flex items-center gap-2 ${
+                isExhausted
+                  ? "bg-white/10 text-gray-400 cursor-not-allowed"
+                  : "bg-white/20 text-purple-600"
+              }`}
+              onClick={isExhausted ? undefined : onBack}
+              disabled={isExhausted}
+            >
+              <motion.span
+                initial={{ opacity: 1 }}
+                animate={!isExhausted ? { opacity: [1, 0.5, 1] } : undefined}
+                transition={{ repeat: Infinity, duration: 3 }}
+              >
+                {isExhausted ? "本日の占いは終了しました" : "← もう一度占う"}
+              </motion.span>
+            </motion.button>
+          );
+        })()}
 
       {/* Phase2: セッション終了バナー */}
       {isPhase2 && inputDisabled && isMessageComplete && !chatError && (
@@ -768,9 +846,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           transition={{ duration: 0.4 }}
           className="px-4 py-5 bg-gray-50 border-t border-gray-200 text-center"
         >
-          <div className="text-2xl mb-2">🔮</div>
           <div className="text-sm font-medium text-gray-600 mb-1">
-            本日のセッションが終了しました
+            パーソナル占いセッションが終了しました
           </div>
           <div className="text-xs text-gray-400">
             またいつでもご相談ください
@@ -779,10 +856,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase1 入力エリア */}
-      {isPersonal && !isPhase2 && !inputDisabled && (
+      {isPersonal && !isPhase2 && !inputDisabled && !isProcessing && (
         <motion.div
           className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
-          transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+            mass: 0.8,
+          }}
         >
           <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
             <textarea
@@ -792,17 +874,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               onKeyDown={handleKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholder="メッセージを入力..."
+              placeholder={
+                messages.length === 0
+                  ? "まずは話しかけてみましょう"
+                  : "占いたい内容・お悩みを入力してください"
+              }
               rows={2}
               className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
               style={{ maxHeight: "120px" }}
-              disabled={status === "streaming" || hasBlockingError}
+              disabled={isProcessing || hasBlockingError}
             />
             <button
               onClick={handleSendMessage}
-              disabled={
-                !inputValue.trim() || status === "streaming" || hasBlockingError
-              }
+              disabled={!inputValue.trim() || isProcessing || hasBlockingError}
               className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
             >
               <ArrowUp size={18} strokeWidth={2.5} />
@@ -812,87 +896,105 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase2: 鑑定完了後 → Q&Aステータスバナー + 入力エリア */}
-      {isPhase2 && isMessageComplete && !inputDisabled && (() => {
-        const phase2UserCount = messages.filter(
-          (m, i) => m.role === "user" && i > initialLen
-        ).length;
-        const remaining = 3 - phase2UserCount;
-        const isLastQ = remaining === 1;
-        return (
-          <>
-            {/* ステータスバナー: 残り問数を常時表示 + 終了ボタン */}
-            <div
-              className={`px-4 py-3 border-t transition-colors ${
-                isLastQ
-                  ? "bg-amber-50 border-amber-100"
-                  : "bg-purple-50 border-purple-100"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div
-                  className={`text-sm font-medium ${
-                    isLastQ ? "text-amber-600" : "text-purple-600"
-                  }`}
-                >
-                  {isLastQ
-                    ? `💬 最後の質問ができます（残り 1 問）`
-                    : `💬 鑑定について質問できます（残り ${remaining} 問）`}
+      {isPhase2 &&
+        isMessageComplete &&
+        !inputDisabled &&
+        !isProcessing &&
+        (() => {
+          const phase2UserCount = messages.filter(
+            (m, i) => m.role === "user" && i > initialLen,
+          ).length;
+          const remaining = 3 - phase2UserCount;
+          const isLastQ = remaining === 1;
+          return (
+            <>
+              {/* ステータスバナー: 残り問数を常時表示 + 終了ボタン */}
+              <div
+                className={`px-4 py-3 border-t transition-colors ${
+                  isLastQ
+                    ? "bg-amber-50 border-amber-100"
+                    : "bg-purple-50 border-purple-100"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div
+                    className={`text-sm font-medium ${
+                      isLastQ ? "text-amber-600" : "text-purple-600"
+                    }`}
+                  >
+                    {isLastQ
+                      ? `💬 最後の質問ができます（残り 1 問）`
+                      : `💬 鑑定について質問できます（残り ${remaining} 問）`}
+                  </div>
+                  <button
+                    onClick={() => {
+                      isEndingEarlyRef.current = true;
+                      sendMessage(
+                        {
+                          text: "ありがとうございました。今日の占いはここで終わりにします。",
+                        },
+                        { body: { isEndingEarly: true } },
+                      );
+                    }}
+                    disabled={isProcessing || hasBlockingError}
+                    className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
+                  >
+                    占いを終わる
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    isEndingEarlyRef.current = true;
-                    sendMessage(
-                      { text: "ありがとうございました。今日の占いはここで終わりにします。" },
-                      { body: { isEndingEarly: true } },
-                    );
-                  }}
-                  disabled={
-                    status === "submitted" ||
-                    status === "streaming" ||
-                    hasBlockingError
-                  }
-                  className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
-                >
-                  占いを終わる
-                </button>
               </div>
-            </div>
 
-            {/* 入力エリア */}
-            <motion.div
-              className="px-4 py-3 bg-transparent"
-              transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
-            >
-              <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
-                <textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                  placeholder="カードや鑑定について質問する..."
-                  rows={2}
-                  className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
-                  style={{ maxHeight: "120px" }}
-                  disabled={status === "streaming" || hasBlockingError}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={
-                    !inputValue.trim() ||
-                    status === "streaming" ||
-                    hasBlockingError
-                  }
-                  className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
-                >
-                  <ArrowUp size={18} strokeWidth={2.5} />
-                </button>
-              </div>
-            </motion.div>
-          </>
-        );
-      })()}
+              {/* 入力エリア */}
+              <motion.div
+                className="px-4 py-3 bg-transparent"
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  mass: 0.8,
+                }}
+              >
+                <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
+                  <textarea
+                    ref={textareaRef}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder="カードや鑑定について質問する..."
+                    rows={2}
+                    className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
+                    style={{ maxHeight: "120px" }}
+                    disabled={isProcessing || hasBlockingError}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isProcessing || hasBlockingError}
+                    className="absolute right-2 bottom-2 w-8 h-8 bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:opacity-50 text-white rounded-full flex items-center justify-center transition-colors"
+                  >
+                    <ArrowUp size={18} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          );
+        })()}
+
+      {/* 保存失敗トースト */}
+      <AnimatePresence>
+        {saveError && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-gray-800 text-white px-4 py-2.5 rounded-2xl shadow-lg text-xs font-medium whitespace-nowrap"
+          >
+            <span>⚠️</span>
+            <span>{saveError}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

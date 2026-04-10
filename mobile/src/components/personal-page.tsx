@@ -79,7 +79,17 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     return () => {
       setIsPersonal(false);
     };
-  }, [canStartPersonal, init, setIsPersonal]);
+  // selectedPersonalTarotist.plan?.code はセッション中の再初期化を防ぐため意図的に除外
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canStartPersonal, init, setIsPersonal, setSelectedTargetMode]);
+
+  // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
+  useEffect(() => {
+    return () => {
+      onCompleteReading();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
   useEffect(() => {
@@ -163,7 +173,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
             animate={{ height: isTopCollapsed ? 0 : "45vh" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {drawnCards.length > 0 && <UpperViewer />}
+            {drawnCards.length > 0 && <UpperViewer spread={selectedSpread} />}
           </motion.div>
 
           {/* アコーディオントグル */}
@@ -196,6 +206,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
                   onKeyboardHeightChange={setKeyboardHeight}
                   onBack={handleBackFromReading}
                   onUnlock={onCompleteReading}
+                  remainingCount={remainingPersonal}
                 />
               </div>
             )}

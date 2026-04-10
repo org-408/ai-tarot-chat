@@ -133,6 +133,8 @@ function App() {
     isOffline,
     offlineMode,
     isChangingPlan,
+    isLoggingIn,
+    isLoggingOut,
     planChangeError,
     init,
     cleanup,
@@ -224,10 +226,12 @@ function App() {
   // ※ 起動時の補正は lifecycle.init() Step6 で実施済みのため、ここは実行中の変更のみ担当
   // ※ isInitialized が false の間はスキップ（起動時は Step6 が担当）
   // ※ isChangingPlan 中は中間状態で誤発火するためスキップ
+  // ※ isLoggingIn / isLoggingOut 中も RC の中間状態が混入するためスキップ
   const { selectedTarotist, setSelectedTarotist } = useSalon();
   useEffect(() => {
     if (!isInitialized) return; // 起動時はスキップ（lifecycle.init() Step6 が担当）
     if (isChangingPlan) return;
+    if (isLoggingIn || isLoggingOut) return; // ログイン・ログアウト中の中間状態を除外
     if (!currentPlan || !selectedTarotist?.plan) return;
     if (!canUseTarotist(selectedTarotist.plan, currentPlan)) {
       // 現在のプランで使える最高ランクの占い師に自動切り替え
@@ -242,7 +246,7 @@ function App() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlan?.code, isChangingPlan, isInitialized]);
+  }, [currentPlan?.code, isChangingPlan, isInitialized, isLoggingIn, isLoggingOut]);
 
   // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
   useEffect(() => {
@@ -301,7 +305,7 @@ function App() {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, isNavigationLocked]);
 
   const handleLogin = async () => {
     try {

@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { MdChevronLeft, MdChevronRight, MdSearch } from "react-icons/md";
@@ -156,6 +157,7 @@ export function ClientsPageClient({
                   <th className="py-2 px-2 w-24">最終ログイン</th>
                   <th className="py-2 px-2 w-16 text-center">今日</th>
                   <th className="py-2 px-2 w-36">プラン変更</th>
+                  <th className="py-2 px-2 w-16"></th>
                 </tr>
               </thead>
               <tbody>
@@ -214,11 +216,19 @@ export function ClientsPageClient({
                         </SelectContent>
                       </Select>
                     </td>
+                    <td className="py-2 px-2">
+                      <Link
+                        href={`/admin/clients/${client.id}`}
+                        className="text-xs text-sky-600 hover:underline whitespace-nowrap"
+                      >
+                        詳細 →
+                      </Link>
+                    </td>
                   </tr>
                 ))}
                 {data.clients.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
                       該当するクライアントはいません。
                     </td>
                   </tr>

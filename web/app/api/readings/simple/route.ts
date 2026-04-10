@@ -4,7 +4,7 @@ import {
   Spread,
   Tarotist,
 } from "@/../shared/lib/types";
-import { homeFreeProviders, providers } from "@/lib/server/ai/models";
+import { experimentalProviders } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService, clientService } from "@/lib/server/services";
 import {
@@ -17,7 +17,7 @@ import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
-const maxOutputTokens = 12288; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
+const maxOutputTokens = 65536; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Render の関数切断対策にも有効
@@ -147,18 +147,17 @@ export async function POST(req: NextRequest) {
       `- 絵文字や顔文字を使わないこと\n` +
       `- 相談者に寄り添い、優しく丁寧に説明すること\n` +
       `- です・ます調で話すこと\n` +
+      `- 回答は必ず一回で完結させること。複数回に分けて回答しないこと\n` +
       `- 1回の回答は200文字以上300文字以内とすること\n`;
 
-    console.log(`[readings/simple/route] Received POST request`, {
-      clientMessages,
-      tarotist,
-      spread,
-      category,
-      drawnCards,
+    logWithContext("debug", "シンプル占いリクエストボディ受信", {
+      tarotistId: tarotist?.id,
+      spreadId: spread?.id,
+      categoryId: category?.id,
+      drawnCardsCount: drawnCards?.length,
+      messagesCount: clientMessages?.length,
       debugMode,
-      system,
       provider,
-      path: "/api/readings/simple",
     });
 
     const messages: Awaited<ReturnType<typeof convertToModelMessages>> =
@@ -169,32 +168,37 @@ export async function POST(req: NextRequest) {
         logWithContext("info", "システムプロンプトとメッセージ変換完了", {
           clientId,
         });
+        // 実験的になるが、しばらくは無料プロバイダを中心にしつつ、claude, gpt を含めるリトライ構成とする
+        const model =
+          i === 0
+            ? experimentalProviders["primary"]
+            : i === 1
+              ? experimentalProviders["secondary"]
+              : experimentalProviders["tertiary"];
+
+        // NOTE: streamText() は lazy — 呼び出し時点では AI プロバイダへの HTTP リクエストは発生しない。
+        // 実際のリクエストはストリームが消費される時（reader.read()）に初めて発火する。
+        // そのため try/catch を機能させるには以下の対策が必要:
+        // 1. maxRetries: 0 で SDK 内蔵リトライを無効化（このループで制御）
+        // 2. onError で再スローしてストリームエラーを reader.read() に伝播
+        // 3. await reader.read() で最初のチャンクを読んで即時エラー（429 等）を検出
         const result = streamText({
-          model:
-            i === 0
-              ? homeFreeProviders
-                ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
-                : debugMode
-                  ? providers["google"]
-                  : providers[provider as keyof typeof providers]
-              : i === 1
-                ? homeFreeProviders["gemini25"]
-                : homeFreeProviders["google"],
+          model,
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
-          onChunk: (chunk) => {
-            console.log(`[readings/simple/route] chunk: `, chunk);
-          },
+          maxRetries: 0,
         });
 
-        // テキストストリームのレスポンス（v5公式の推し）
-        return result.toUIMessageStreamResponse({
+        const streamResponse = result.toUIMessageStreamResponse({
           headers: {
             "Cache-Control": "no-cache, no-transform",
             Connection: "keep-alive",
             "X-Accel-Buffering": "no",
+          },
+          onError: (error: unknown) => {
+            throw error;
           },
           onFinish: async ({ isAborted, responseMessage }) => {
             const hasVisibleText = responseMessage.parts.some(
@@ -218,18 +222,48 @@ export async function POST(req: NextRequest) {
             }
           },
         });
+
+        // 最初のチャンクを読み取ることでストリームを開始し、プロバイダエラーを早期検出する。
+        // 429 などの即時エラーはここで throw され、catch ブロックでフォールバックが動く。
+        const reader = streamResponse.body!.getReader();
+        const { done, value } = await reader.read();
+
+        if (done) {
+          throw new Error("AI プロバイダが空のストリームを返しました");
+        }
+
+        // 最初のチャンク受信成功。プロキシストリームで残りをクライアントに転送する。
+        const { readable, writable } = new TransformStream<
+          Uint8Array,
+          Uint8Array
+        >();
+        const writer = writable.getWriter();
+        await writer.write(value);
+
+        (async () => {
+          try {
+            while (true) {
+              const { done: chunkDone, value: chunk } = await reader.read();
+              if (chunkDone) break;
+              await writer.write(chunk);
+            }
+            await writer.close();
+          } catch (pipeError) {
+            logWithContext(
+              "error",
+              "[readings/simple/route] ストリームパイプエラー",
+              { error: pipeError, clientId },
+            );
+            await writer.abort(pipeError as Error);
+          }
+        })();
+
+        return new Response(readable, { headers: streamResponse.headers });
       } catch (error) {
         logWithContext(
           "error",
           `[readings/simple/route] シンプル占い試行${i + 1}回目失敗`,
-          {
-            error,
-            clientId,
-          },
-        );
-        console.error(
-          `[readings/simple/route] シンプル占い試行${i + 1}回目失敗: `,
-          error,
+          { error, clientId },
         );
         if (i === RETRY_COUNT - 1) {
           throw new ReadingRouteError({
@@ -241,12 +275,11 @@ export async function POST(req: NextRequest) {
             retryable: true,
           });
         }
+        const nextModel = i === 0 ? "gpt5nano" : "claude_h";
         logWithContext(
-          "info",
-          `[readings/simple/route] シンプル占い再試行します ${i + 2}回目`,
-          {
-            clientId,
-          },
+          "warn",
+          `[readings/simple/route] プロバイダ失敗、${nextModel} にフォールバック (${i + 2}回目)`,
+          { clientId },
         );
       }
     }

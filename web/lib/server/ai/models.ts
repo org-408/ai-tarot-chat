@@ -31,14 +31,23 @@ export const homeProviders = {
 };
 
 export const homeFreeProviders = {
-  gpt5nano: mistral("mistral-small-latest"),
-  gemini25: mistral("mistral-small-latest"),
-  gemini25pro: mistral("mistral-small-latest"),
-  claude_h: mistral("mistral-small-latest"),
-  gpt41: mistral("mistral-small-latest"),
-  gpt5: mistral("mistral-small-latest"),
-  claude_s: mistral("mistral-large-latest"),
+  gpt5nano: mistral("mistral-small-2506"),
+  gemini25: mistral("mistral-small-2506"),
+  gemini25pro: mistral("mistral-small-2506"),
+  claude_h: mistral("mistral-small-2506"),
+  gpt41: mistral("mistral-small-2603"),
+  gpt5: mistral("mistral-small-2603"),
+  claude_s: mistral("mistral-small-2603"),
   google: mistral("mistral-small-latest"),
+};
+
+// 実験的になるが、しばらくは無料プロバイダを中心にしつつ、claude, gpt を含めるリトライ構成とする
+export const experimentalProviders = {
+  primary: mistral("mistral-small-2603"),
+  secondary: mistral("mistral-small-2506"),
+  tertiary: anthropic("claude-haiku-4-5"),
+  quaternary: openai("gpt-5.4-nano"),
+  quinary: openai("gpt-5.4-mini"),
 };
 
 // Google Vertex AI用の認証設定
