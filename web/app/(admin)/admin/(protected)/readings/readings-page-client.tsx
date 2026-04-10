@@ -61,6 +61,7 @@ type Filters = {
 
 type CurrentFilters = {
   keyword: string;
+  clientId: string;
   tarotistId: string;
   spreadId: string;
   categoryId: string;
@@ -92,14 +93,17 @@ export function ReadingsPageClient({
 }) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState(currentFilters.keyword);
+  const [clientIdInput, setClientIdInput] = useState(currentFilters.clientId);
   const [selectedReading, setSelectedReading] = useState<ReadingRow | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));
 
   function navigate(next: Partial<CurrentFilters & { page: number }>) {
     const params = new URLSearchParams();
-    const nextPage = next.page ?? (next.keyword !== undefined || next.tarotistId !== undefined || next.spreadId !== undefined || next.categoryId !== undefined || next.date !== undefined ? 1 : data.page);
+    const isFilterChange = next.keyword !== undefined || next.clientId !== undefined || next.tarotistId !== undefined || next.spreadId !== undefined || next.categoryId !== undefined || next.date !== undefined;
+    const nextPage = next.page ?? (isFilterChange ? 1 : data.page);
     const nextKeyword = next.keyword ?? currentFilters.keyword;
+    const nextClientId = next.clientId !== undefined ? next.clientId : currentFilters.clientId;
     const nextTarotistId = next.tarotistId ?? currentFilters.tarotistId;
     const nextSpreadId = next.spreadId ?? currentFilters.spreadId;
     const nextCategoryId = next.categoryId ?? currentFilters.categoryId;
@@ -107,6 +111,7 @@ export function ReadingsPageClient({
 
     if (nextPage > 1) params.set("page", String(nextPage));
     if (nextKeyword) params.set("q", nextKeyword);
+    if (nextClientId) params.set("cid", nextClientId);
     if (nextTarotistId) params.set("tarotistId", nextTarotistId);
     if (nextSpreadId) params.set("spreadId", nextSpreadId);
     if (nextCategoryId) params.set("categoryId", nextCategoryId);
@@ -142,6 +147,22 @@ export function ReadingsPageClient({
                 検索
               </Button>
             </form>
+
+            <Input
+              placeholder="クライアントID..."
+              value={clientIdInput}
+              onChange={(e) => setClientIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && navigate({ clientId: clientIdInput.trim() })}
+              className="w-44 font-mono text-xs"
+            />
+            {currentFilters.clientId && (
+              <button
+                onClick={() => { setClientIdInput(""); navigate({ clientId: "" }); }}
+                className="text-xs text-slate-400 hover:text-slate-600"
+              >
+                ✕ クライアント解除
+              </button>
+            )}
 
             <Select
               value={currentFilters.date || "_all"}

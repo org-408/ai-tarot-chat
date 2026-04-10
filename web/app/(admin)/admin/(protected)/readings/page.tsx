@@ -5,6 +5,7 @@ import { ReadingsPageClient } from "./readings-page-client";
 interface SearchParams {
   page?: string;
   q?: string;
+  cid?: string;
   tarotistId?: string;
   spreadId?: string;
   categoryId?: string;
@@ -20,10 +21,11 @@ export default async function ReadingsPage({
 }) {
   await assertAdminSession();
 
-  const { page, q, tarotistId, spreadId, categoryId, date } =
+  const { page, q, cid, tarotistId, spreadId, categoryId, date } =
     await searchParams;
   const currentPage = Math.max(1, Number(page ?? 1));
   const keyword = q?.trim() ?? "";
+  const clientIdFilter = cid?.trim() ?? "";
 
   // 日付フィルター
   let dateFrom: Date | undefined;
@@ -43,6 +45,7 @@ export default async function ReadingsPage({
 
   const where = {
     ...(dateFrom ? { createdAt: { gte: dateFrom, ...(dateTo ? { lte: dateTo } : {}) } } : {}),
+    ...(clientIdFilter ? { clientId: clientIdFilter } : {}),
     ...(tarotistId ? { tarotistId } : {}),
     ...(spreadId ? { spreadId } : {}),
     ...(categoryId ? { categoryId } : {}),
@@ -138,6 +141,7 @@ export default async function ReadingsPage({
       }}
       currentFilters={{
         keyword,
+        clientId: clientIdFilter,
         tarotistId: tarotistId ?? "",
         spreadId: spreadId ?? "",
         categoryId: categoryId ?? "",

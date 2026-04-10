@@ -319,7 +319,7 @@ export function ClientDetailPage({
           <CardTitle className="text-base">
             直近の占い履歴（最新20件）
             <Link
-              href={`/admin/readings?q=${encodeURIComponent(client.email ?? client.name ?? "")}`}
+              href={`/admin/readings?cid=${encodeURIComponent(client.id)}`}
               className="ml-3 text-xs text-sky-600 hover:underline font-normal"
             >
               全件表示 →
