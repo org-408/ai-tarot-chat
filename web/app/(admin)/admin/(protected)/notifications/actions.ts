@@ -1,10 +1,8 @@
 "use server";
 
 import { notificationService, type NotificationPlatform } from "@/lib/server/services/notification";
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 
 export async function listBatchesAction() {
-  await assertAdminSession();
   try {
     const batches = await notificationService.listBatches();
     return {
@@ -28,7 +26,6 @@ export async function listBatchesAction() {
 }
 
 export async function listSubscribersAction() {
-  await assertAdminSession();
   try {
     const subscribers = await notificationService.listAllSubscribers();
     return {
@@ -54,7 +51,6 @@ export async function sendNewBatchAction(
   body: string,
   platform: NotificationPlatform
 ) {
-  await assertAdminSession();
   try {
     const result = await notificationService.sendNewBatch(title, body, platform);
     return { ok: true as const, ...result };

@@ -1,11 +1,7 @@
 // middleware.ts
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export default auth((req) => {
-  // req.auth に認証情報が入る
-  console.log("Middleware auth:", req.auth);
-
+export default function middleware(req: NextRequest) {
   // ✅ Next.js 16 対応: リクエストヘッダーを明示的に転送する
   //    Next.js 16 では NextResponse.next() だけではオリジナルのリクエストヘッダー
   //    (Authorization など) がルートハンドラーに届かない場合がある
@@ -34,7 +30,7 @@ export default auth((req) => {
   }
 
   return res;
-});
+}
 
 export const config = {
   matcher: [

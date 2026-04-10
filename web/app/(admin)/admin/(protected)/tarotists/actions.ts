@@ -2,7 +2,6 @@
 
 import type { TarotistInput } from "@/../shared/lib/types";
 import { tarotistService } from "@/lib/server/services/tarotist";
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -37,8 +36,6 @@ function revalidateTarotistPages() {
 }
 
 export async function createTarotistAction(input: TarotistActionInput) {
-  await assertAdminSession();
-
   try {
     await tarotistService.createTarotist(toTarotistInput(input));
     revalidateTarotistPages();
@@ -52,8 +49,6 @@ export async function createTarotistAction(input: TarotistActionInput) {
 }
 
 export async function updateTarotistAction(id: string, input: TarotistActionInput) {
-  await assertAdminSession();
-
   try {
     await tarotistService.updateTarotist(id, toTarotistInput(input), false);
     revalidateTarotistPages();
@@ -67,8 +62,6 @@ export async function updateTarotistAction(id: string, input: TarotistActionInpu
 }
 
 export async function deleteTarotistAction(id: string) {
-  await assertAdminSession();
-
   try {
     await tarotistService.deleteTarotist(id, true);
     revalidateTarotistPages();
@@ -82,8 +75,6 @@ export async function deleteTarotistAction(id: string) {
 }
 
 export async function restoreTarotistAction(id: string) {
-  await assertAdminSession();
-
   try {
     await prisma.tarotist.update({
       where: { id },

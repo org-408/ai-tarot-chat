@@ -2,7 +2,6 @@
 
 import type { SpreadInput } from "@/../shared/lib/types";
 import { spreadService } from "@/lib/server/services/spread";
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { revalidatePath } from "next/cache";
 
 function revalidateSpreadPages() {
@@ -10,8 +9,6 @@ function revalidateSpreadPages() {
 }
 
 export async function createSpreadAction(input: SpreadInput) {
-  await assertAdminSession();
-
   try {
     const spread = await spreadService.createSpread(input);
     revalidateSpreadPages();
@@ -25,8 +22,6 @@ export async function createSpreadAction(input: SpreadInput) {
 }
 
 export async function updateSpreadAction(id: string, input: SpreadInput) {
-  await assertAdminSession();
-
   try {
     const spread = await spreadService.updateSpreadById(id, input);
     revalidateSpreadPages();
@@ -40,8 +35,6 @@ export async function updateSpreadAction(id: string, input: SpreadInput) {
 }
 
 export async function deleteSpreadAction(id: string) {
-  await assertAdminSession();
-
   try {
     await spreadService.deleteSpreadById(id);
     revalidateSpreadPages();
