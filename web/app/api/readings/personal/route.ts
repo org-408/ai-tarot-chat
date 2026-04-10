@@ -377,53 +377,14 @@ export async function POST(req: NextRequest) {
           maxOutputTokens,
         });
 
-        const streamResponse = result.toUIMessageStreamResponse({
+        // テキストストリームのレスポンス（v5公式の推し）
+        return result.toUIMessageStreamResponse({
           headers: {
             "Cache-Control": "no-cache, no-transform",
             Connection: "keep-alive",
             "X-Accel-Buffering": "no",
           },
-          onError: (error: unknown) => {
-            throw error;
-          },
         });
-
-        // 最初のチャンクを読み取ることでストリームを開始し、プロバイダエラーを早期検出する。
-        // 429 などの即時エラーはここで throw され、catch ブロックでフォールバックが動く。
-        const reader = streamResponse.body!.getReader();
-        const { done, value } = await reader.read();
-
-        if (done) {
-          throw new Error("AI プロバイダが空のストリームを返しました");
-        }
-
-        // 最初のチャンク受信成功。プロキシストリームで残りをクライアントに転送する。
-        const { readable, writable } = new TransformStream<
-          Uint8Array,
-          Uint8Array
-        >();
-        const writer = writable.getWriter();
-        await writer.write(value);
-
-        (async () => {
-          try {
-            while (true) {
-              const { done: chunkDone, value: chunk } = await reader.read();
-              if (chunkDone) break;
-              await writer.write(chunk);
-            }
-            await writer.close();
-          } catch (pipeError) {
-            logWithContext(
-              "error",
-              "[readings/personal/route] ストリームパイプエラー",
-              { error: pipeError, clientId },
-            );
-            await writer.abort(pipeError as Error);
-          }
-        })();
-
-        return new Response(readable, { headers: streamResponse.headers });
       } catch (error) {
         logWithContext(
           "error",
