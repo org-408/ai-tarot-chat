@@ -14,11 +14,6 @@ import type {
 import { useAuth } from "../lib/hooks/use-auth";
 import { useAuthStore } from "../lib/stores/auth";
 import { useClient } from "../lib/hooks/use-client";
-import {
-  createReadingChatErrorFromResponse,
-  isReadingChatError,
-  ReadingChatError,
-} from "../lib/utils/reading-chat-error";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import {
