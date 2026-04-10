@@ -4,8 +4,8 @@ import { notificationService } from "@/lib/server/services/notification";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 
 export async function getBatchDetailAction(batchId: string) {
-  await assertAdminSession();
   try {
+    await assertAdminSession();
     const detail = await notificationService.getBatchDetail(batchId);
     if (!detail) return { ok: false as const, error: "バッチが見つかりません" };
     const { batch, sents, unsent } = detail;
@@ -43,8 +43,8 @@ export async function getBatchDetailAction(batchId: string) {
 }
 
 export async function resendUnsentAction(batchId: string) {
-  await assertAdminSession();
   try {
+    await assertAdminSession();
     const result = await notificationService.resendUnsent(batchId);
     return { ok: true as const, ...result };
   } catch (error) {
