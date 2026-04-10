@@ -1,5 +1,4 @@
 import { planService } from "@/lib/server/services/plan";
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { prisma } from "@/prisma/prisma";
 import { ClientsPageClient } from "./clients-page-client";
 
@@ -16,7 +15,6 @@ export default async function ClientsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await assertAdminSession();
 
   const { page, plan, q } = await searchParams;
   const currentPage = Math.max(1, Number(page ?? 1));

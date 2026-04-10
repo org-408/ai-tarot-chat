@@ -77,12 +77,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // ロールは毎回DBから取得（キャッシュによる権限昇格を防ぐ）
+      // DB接続エラーの場合は既存のroleを保持してセッションを維持する
       if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true },
-        });
-        token.role = dbUser?.role ?? "USER";
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true },
+          });
+          token.role = dbUser?.role ?? "USER";
+        } catch {
+          // 一時的なDB障害時はJWTに保存済みのroleを維持
+          token.role = token.role ?? "USER";
+        }
       }
 
       return token;

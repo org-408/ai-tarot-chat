@@ -1,4 +1,3 @@
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { prisma } from "@/prisma/prisma";
 import { ReadingsPageClient } from "./readings-page-client";
 
@@ -19,7 +18,6 @@ export default async function ReadingsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await assertAdminSession();
 
   const { page, q, cid, tarotistId, spreadId, categoryId, date } =
     await searchParams;

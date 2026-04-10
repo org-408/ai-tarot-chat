@@ -1,4 +1,3 @@
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { prisma } from "@/prisma/prisma";
 import { LogsPageClient } from "./logs-page-client";
 
@@ -19,7 +18,6 @@ export default async function LogsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  await assertAdminSession();
 
   const { page, level, date, q, cid, sort, sortBy } = await searchParams;
   const currentPage = Math.max(1, Number(page ?? 1));

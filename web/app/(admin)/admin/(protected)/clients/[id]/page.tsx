@@ -1,4 +1,3 @@
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { planService } from "@/lib/server/services/plan";
 import { prisma } from "@/prisma/prisma";
 import { notFound } from "next/navigation";
@@ -9,7 +8,6 @@ export default async function ClientDetailServerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await assertAdminSession();
 
   const { id } = await params;
 
