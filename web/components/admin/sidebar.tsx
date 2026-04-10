@@ -6,9 +6,12 @@ import { useSidebar } from "./sidebar-context";
 
 const NAV = [
   { href: "/admin", label: "📊 ダッシュボード", exact: true },
+  { href: "/admin/stats", label: "📈 利用統計" },
+  { href: "/admin/revenue", label: "💰 収益レポート" },
   { href: "/admin/spreads", label: "🎴 スプレッド管理" },
   { href: "/admin/tarotists", label: "🔮 タロティスト管理" },
   { href: "/admin/clients", label: "👥 クライアント管理" },
+  { href: "/admin/users", label: "🛡️ 管理者管理" },
   { href: "/admin/notifications", label: "📨 リリース通知" },
   { href: "/admin/readings", label: "📖 占い履歴" },
   { href: "/admin/log-viewer", label: "📋 ログ管理" },
