@@ -8,11 +8,11 @@ export const metadata: Metadata = {
     default: "AI タロット占い — AIが読み解くあなたの未来",
   },
   description:
-    "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
+    "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
   openGraph: {
     title: "AI タロット占い — AIが読み解くあなたの未来",
     description:
-      "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
+      "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
     type: "website",
     locale: "ja_JP",
     images: [{ url: "/api/og", width: 1200, height: 630, alt: "AI タロット占い" }],

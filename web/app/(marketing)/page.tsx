@@ -9,7 +9,7 @@ import { NotifyForm } from "@/components/marketing/notify-form";
 export const metadata: Metadata = {
   title: "AI タロット占い — AIが読み解くあなたの未来",
   description:
-    "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android・Web対応。無料プランあり。",
+    "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。",
 };
 
 const features = [
@@ -21,7 +21,7 @@ const features = [
   },
   {
     icon: "🃏",
-    title: "24種以上のスプレッド",
+    title: "22種のスプレッド",
     description:
       "ワンカードから10枚のケルト十字、12ヶ月のイヤースプレッドまで。恋愛・仕事・金運など幅広いテーマに対応。",
   },
@@ -124,7 +124,7 @@ export default async function LandingPage() {
 
             {/* サブタイトル */}
             <p className="text-lg sm:text-xl text-purple-200 max-w-2xl mx-auto mb-10 leading-relaxed">
-              個性豊かな8人のAI占い師と、24種以上のスプレッドで
+              個性豊かな8人のAI占い師と、22種のスプレッドで
               <br className="hidden sm:block" />
               本格的なタロットリーディングを体験しよう。
             </p>
@@ -227,7 +227,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              24種以上のスプレッド
+              22種のスプレッド
             </h2>
             <p className="text-slate-600 text-lg max-w-xl mx-auto">
               シンプルなワンカードから複雑なケルト十字まで。
