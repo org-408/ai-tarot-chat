@@ -97,7 +97,7 @@ export async function GET() {
               marginBottom: 12,
             }}
           >
-            8人のAI占い師と24種以上のスプレッドで
+            8人のAI占い師と22種のスプレッドで
           </div>
           <div
             style={{
