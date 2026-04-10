@@ -112,7 +112,7 @@ export async function GET() {
 
           {/* プラットフォームバッジ */}
           <div style={{ display: "flex", gap: 12 }}>
-            {["iOS", "Android", "Web"].map((p) => (
+            {["iOS", "Android"].map((p) => (
               <div
                 key={p}
                 style={{
