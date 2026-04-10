@@ -10,9 +10,8 @@ function revalidateSpreadPages() {
 }
 
 export async function createSpreadAction(input: SpreadInput) {
-  await assertAdminSession();
-
   try {
+    await assertAdminSession();
     const spread = await spreadService.createSpread(input);
     revalidateSpreadPages();
     return { ok: true as const, spread };
@@ -25,9 +24,8 @@ export async function createSpreadAction(input: SpreadInput) {
 }
 
 export async function updateSpreadAction(id: string, input: SpreadInput) {
-  await assertAdminSession();
-
   try {
+    await assertAdminSession();
     const spread = await spreadService.updateSpreadById(id, input);
     revalidateSpreadPages();
     return { ok: true as const, spread };
@@ -40,9 +38,8 @@ export async function updateSpreadAction(id: string, input: SpreadInput) {
 }
 
 export async function deleteSpreadAction(id: string) {
-  await assertAdminSession();
-
   try {
+    await assertAdminSession();
     await spreadService.deleteSpreadById(id);
     revalidateSpreadPages();
     return { ok: true as const };

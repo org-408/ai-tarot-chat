@@ -4,8 +4,8 @@ import { notificationService, type NotificationPlatform } from "@/lib/server/ser
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 
 export async function listBatchesAction() {
-  await assertAdminSession();
   try {
+    await assertAdminSession();
     const batches = await notificationService.listBatches();
     return {
       ok: true as const,
@@ -28,8 +28,8 @@ export async function listBatchesAction() {
 }
 
 export async function listSubscribersAction() {
-  await assertAdminSession();
   try {
+    await assertAdminSession();
     const subscribers = await notificationService.listAllSubscribers();
     return {
       ok: true as const,
@@ -54,8 +54,8 @@ export async function sendNewBatchAction(
   body: string,
   platform: NotificationPlatform
 ) {
-  await assertAdminSession();
   try {
+    await assertAdminSession();
     const result = await notificationService.sendNewBatch(title, body, platform);
     return { ok: true as const, ...result };
   } catch (error) {

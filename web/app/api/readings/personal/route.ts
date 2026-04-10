@@ -369,20 +369,12 @@ export async function POST(req: NextRequest) {
             : i === 1
               ? experimentalProviders["secondary"]
               : experimentalProviders["tertiary"];
-
-        // NOTE: streamText() は lazy — 呼び出し時点では AI プロバイダへの HTTP リクエストは発生しない。
-        // 実際のリクエストはストリームが消費される時（reader.read()）に初めて発火する。
-        // そのため try/catch を機能させるには以下の対策が必要:
-        // 1. maxRetries: 0 で SDK 内蔵リトライを無効化（このループで制御）
-        // 2. onError で再スローしてストリームエラーを reader.read() に伝播
-        // 3. await reader.read() で最初のチャンクを読んで即時エラー（429 等）を検出
         const result = streamText({
           model,
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
-          maxRetries: 0,
         });
 
         const streamResponse = result.toUIMessageStreamResponse({

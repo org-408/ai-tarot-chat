@@ -8,9 +8,8 @@ export async function changeClientPlanAction(input: {
   clientId: string;
   planId: string;
 }) {
-  await assertAdminSession();
-
   try {
+    await assertAdminSession();
     await prisma.client.update({
       where: { id: input.clientId },
       data: { planId: input.planId },

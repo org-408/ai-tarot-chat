@@ -91,14 +91,6 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
-  useEffect(() => {
-    return () => {
-      onCompleteReading();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Reading phase 開始時にカードを引く
   useEffect(() => {
     if (phase === "reading" && masterData && selectedSpread) {
