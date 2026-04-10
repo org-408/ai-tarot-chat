@@ -1,4 +1,4 @@
-package com.aitarotchat.app;
+package com.atelierflowlab.aitarotchat;
 
 import android.os.Bundle;
 import androidx.core.graphics.Insets;

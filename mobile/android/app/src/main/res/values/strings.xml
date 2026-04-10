@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">AI Tarot Chat</string>
     <string name="title_activity_main">AI Tarot Chat</string>
-    <string name="package_name">com.aitarotchat.app</string>
-    <string name="custom_url_scheme">com.aitarotchat.app</string>
+    <string name="package_name">com.atelierflowlab.aitarotchat</string>
+    <string name="custom_url_scheme">com.atelierflowlab.aitarotchat</string>
     <!-- ⚠️ 本番リリース前に AdMob コンソールの実際の App ID に差し替えること -->
     <string name="admob_app_id">ca-app-pub-4816184261186506~6224138976</string>
 </resources>
