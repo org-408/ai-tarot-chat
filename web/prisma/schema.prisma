@@ -563,13 +563,49 @@ model UsedTicket {
 // リリース通知登録
 // ==========================================
 model EmailSubscription {
-  id         String    @id @default(cuid())
-  email      String    @unique @db.VarChar(254)
-  platform   String?   @db.VarChar(20) // "ios" | "android" | "both"
-  notifiedAt DateTime?                 // 送信済み日時（null = 未送信）
-  createdAt  DateTime  @default(now())
+  id               String    @id @default(cuid())
+  email            String    @unique @db.VarChar(254)
+  platform         String?   @db.VarChar(20) // "ios" | "android" | "both"
+  unsubscribeToken String?   @unique @db.VarChar(64)
+  unsubscribedAt   DateTime?
+  createdAt        DateTime  @default(now())
 
-  @@index([notifiedAt])
+  sents            NotificationSent[]
+
   @@index([createdAt])
+  @@index([unsubscribedAt])
   @@map("email_subscriptions")
+}
+
+model NotificationBatch {
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(200)
+  body        String    @db.Text
+  platform    String    @db.VarChar(20) // "all" | "ios" | "android" | "both"
+  sentAt      DateTime?
+  totalSent   Int       @default(0)
+  totalFailed Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  sents       NotificationSent[]
+
+  @@index([createdAt])
+  @@map("notification_batches")
+}
+
+model NotificationSent {
+  id             String            @id @default(cuid())
+  batchId        String
+  batch          NotificationBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  subscriptionId String
+  subscription   EmailSubscription @relation(fields: [subscriptionId], references: [id])
+  email          String            @db.VarChar(254)
+  status         String            @db.VarChar(20) // "success" | "failed"
+  error          String?           @db.Text
+  sentAt         DateTime          @default(now())
+
+  @@unique([batchId, subscriptionId])
+  @@index([batchId])
+  @@index([subscriptionId])
+  @@map("notification_sents")
 }
