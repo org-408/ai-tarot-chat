@@ -2,8 +2,17 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { fetchReadingMessages } from "@/app/(admin)/admin/(protected)/readings/actions";
+import { useEffect, useState } from "react";
 import type { ReadingRow } from "@/app/(admin)/admin/(protected)/readings/readings-page-client";
+
+type ChatMessageRow = {
+  id: string;
+  role: string;
+  chatType: string;
+  message: string;
+  createdAt: Date;
+};
 
 const PLAN_COLOR: Record<string, string> = {
   GUEST: "bg-gray-100 text-gray-600",
@@ -19,11 +28,16 @@ export function ReadingDetailModal({
   reading: ReadingRow;
   onClose: () => void;
 }) {
-  const [showAllChat, setShowAllChat] = useState(false);
+  const [messages, setMessages] = useState<ChatMessageRow[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(true);
 
-  const visibleMessages = showAllChat
-    ? reading.chatMessages
-    : reading.chatMessages.slice(0, 3);
+  useEffect(() => {
+    setLoadingMessages(true);
+    fetchReadingMessages(reading.id).then((msgs) => {
+      setMessages(msgs);
+      setLoadingMessages(false);
+    });
+  }, [reading.id]);
 
   return (
     <div
@@ -35,7 +49,18 @@ export function ReadingDetailModal({
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* ヘッダー */}
         <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
-          <h2 className="font-semibold text-base">占い詳細</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-base">占い詳細</h2>
+            {reading.customQuestion ? (
+              <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                パーソナル
+              </span>
+            ) : (
+              <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-sky-100 text-sky-700">
+                クイック
+              </span>
+            )}
+          </div>
           <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose}>
             ✕
           </Button>
@@ -147,13 +172,17 @@ export function ReadingDetailModal({
           )}
 
           {/* チャット履歴 */}
-          {reading.chatMessages.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                チャット履歴 ({reading.chatMessages.length}件)
-              </h3>
+          <section>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              チャット履歴{!loadingMessages && ` (${messages.length}件)`}
+            </h3>
+            {loadingMessages ? (
+              <p className="text-xs text-slate-400 text-center py-4">読み込み中...</p>
+            ) : messages.length === 0 ? (
+              <p className="text-xs text-slate-400">チャット履歴なし</p>
+            ) : (
               <div className="space-y-2">
-                {visibleMessages.map((msg) => {
+                {messages.map((msg) => {
                   const isTarotist = msg.role === "TAROTIST";
                   return (
                     <div
@@ -177,21 +206,9 @@ export function ReadingDetailModal({
                     </div>
                   );
                 })}
-                {reading.chatMessages.length > 3 && !showAllChat && (
-                  <div className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs text-slate-500"
-                      onClick={() => setShowAllChat(true)}
-                    >
-                      全て表示 ({reading.chatMessages.length}件)
-                    </Button>
-                  </div>
-                )}
               </div>
-            </section>
-          )}
+            )}
+          </section>
         </div>
       </div>
     </div>

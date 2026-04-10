@@ -51,7 +51,6 @@ export type ReadingRow = {
   spread: { id: string; name: string; cellCount: number };
   category: { id: string; name: string } | null;
   cards: CardRow[];
-  chatMessages: ChatMessageRow[];
 };
 
 type Filters = {
@@ -226,6 +225,7 @@ export function ReadingsPageClient({
                   <th className="py-2 px-2">タロティスト</th>
                   <th className="py-2 px-2">スプレッド</th>
                   <th className="py-2 px-2 w-20">カテゴリ</th>
+                  <th className="py-2 px-2 w-20">種別</th>
                   <th className="py-2 px-2 w-10"></th>
                 </tr>
               </thead>
@@ -267,6 +267,17 @@ export function ReadingsPageClient({
                       {reading.category?.name ?? "-"}
                     </td>
                     <td className="py-2 px-2 align-top">
+                      {reading.customQuestion ? (
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700">
+                          パーソナル
+                        </span>
+                      ) : (
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-sky-100 text-sky-700">
+                          クイック
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 px-2 align-top">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -280,7 +291,7 @@ export function ReadingsPageClient({
                 ))}
                 {data.readings.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
                       該当する占い履歴はありません。
                     </td>
                   </tr>
