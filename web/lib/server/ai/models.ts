@@ -41,6 +41,15 @@ export const homeFreeProviders = {
   google: mistral("mistral-small-latest"),
 };
 
+// 実験的になるが、しばらくは無料プロバイダを中心にしつつ、claude, gpt を含めるリトライ構成とする
+export const experimentalProviders = {
+  primary: mistral("mistral-small-2603"),
+  secondary: mistral("mistral-small-2506"),
+  tertiary: anthropic("claude-haiku-4-5"),
+  quaternary: openai("gpt-5.4-nano"),
+  quinary: openai("gpt-5.4-mini"),
+};
+
 // Google Vertex AI用の認証設定
 const vertex = createVertex({
   project: process.env.GOOGLE_VERTEX_PROJECT!,

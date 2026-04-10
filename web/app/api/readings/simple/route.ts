@@ -4,7 +4,7 @@ import {
   Spread,
   Tarotist,
 } from "@/../shared/lib/types";
-import { homeFreeProviders, providers } from "@/lib/server/ai/models";
+import { experimentalProviders } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService, clientService } from "@/lib/server/services";
 import {
@@ -168,15 +168,13 @@ export async function POST(req: NextRequest) {
         logWithContext("info", "システムプロンプトとメッセージ変換完了", {
           clientId,
         });
-        // i=0: homeFreeProviders (mistral-small-latest)
-        // i=1: providers.gpt5nano (gpt-5.4-nano) フォールバック
-        // i=2: providers.claude_h (claude-haiku-4-5) 最終フォールバック
+        // 実験的になるが、しばらくは無料プロバイダを中心にしつつ、claude, gpt を含めるリトライ構成とする
         const model =
           i === 0
-            ? homeFreeProviders[provider as keyof typeof homeFreeProviders]
+            ? experimentalProviders["primary"]
             : i === 1
-              ? providers["gpt5nano"]
-              : providers["claude_h"];
+              ? experimentalProviders["secondary"]
+              : experimentalProviders["tertiary"];
 
         // NOTE: streamText() は lazy — 呼び出し時点では AI プロバイダへの HTTP リクエストは発生しない。
         // 実際のリクエストはストリームが消費される時（reader.read()）に初めて発火する。
@@ -235,8 +233,10 @@ export async function POST(req: NextRequest) {
         }
 
         // 最初のチャンク受信成功。プロキシストリームで残りをクライアントに転送する。
-        const { readable, writable } =
-          new TransformStream<Uint8Array, Uint8Array>();
+        const { readable, writable } = new TransformStream<
+          Uint8Array,
+          Uint8Array
+        >();
         const writer = writable.getWriter();
         await writer.write(value);
 
