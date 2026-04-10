@@ -3,39 +3,65 @@
 import { notificationService, type NotificationPlatform } from "@/lib/server/services/notification";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 
-export async function previewNotificationTargetsAction(platform: NotificationPlatform) {
+export async function listBatchesAction() {
   await assertAdminSession();
-
   try {
-    const subscribers = await notificationService.listPendingSubscribers(platform);
+    const batches = await notificationService.listBatches();
     return {
       ok: true as const,
-      subscribers: subscribers.map((subscriber) => ({
-        id: subscriber.id,
-        email: subscriber.email,
-        platform: subscriber.platform,
-        notifiedAt: subscriber.notifiedAt?.toISOString() ?? null,
-        createdAt: subscriber.createdAt.toISOString(),
+      batches: batches.map((b) => ({
+        id: b.id,
+        title: b.title,
+        platform: b.platform,
+        sentAt: b.sentAt?.toISOString() ?? null,
+        totalSent: b.totalSent,
+        totalFailed: b.totalFailed,
+        createdAt: b.createdAt.toISOString(),
       })),
     };
   } catch (error) {
     return {
       ok: false as const,
-      error: error instanceof Error ? error.message : "登録者の取得に失敗しました",
+      error: error instanceof Error ? error.message : "取得に失敗しました",
     };
   }
 }
 
-export async function sendNotificationsAction(platform: NotificationPlatform) {
+export async function listSubscribersAction() {
   await assertAdminSession();
-
   try {
-    const result = await notificationService.sendReleaseNotifications(platform);
+    const subscribers = await notificationService.listAllSubscribers();
+    return {
+      ok: true as const,
+      subscribers: subscribers.map((s) => ({
+        id: s.id,
+        email: s.email,
+        platform: s.platform,
+        unsubscribedAt: s.unsubscribedAt?.toISOString() ?? null,
+        createdAt: s.createdAt.toISOString(),
+      })),
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "取得に失敗しました",
+    };
+  }
+}
+
+export async function sendNewBatchAction(
+  title: string,
+  body: string,
+  platform: NotificationPlatform
+) {
+  await assertAdminSession();
+  try {
+    const result = await notificationService.sendNewBatch(title, body, platform);
     return { ok: true as const, ...result };
   } catch (error) {
     return {
       ok: false as const,
-      error: error instanceof Error ? error.message : "メール送信に失敗しました",
+      error: error instanceof Error ? error.message : "送信に失敗しました",
     };
   }
 }
