@@ -9,6 +9,21 @@ export const metadata: Metadata = {
   },
   description:
     "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android・Web対応。",
+  openGraph: {
+    title: "AI タロット占い — AIが読み解くあなたの未来",
+    description:
+      "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android・Web対応。",
+    type: "website",
+    locale: "ja_JP",
+    images: [{ url: "/api/og", width: 1200, height: 630, alt: "AI タロット占い" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI タロット占い",
+    description:
+      "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう",
+    images: ["/api/og"],
+  },
 };
 
 const navLinks = [
