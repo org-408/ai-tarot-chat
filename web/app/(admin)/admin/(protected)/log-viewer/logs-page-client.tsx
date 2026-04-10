@@ -47,6 +47,7 @@ type CurrentFilters = {
   level: string;
   date: string;
   keyword: string;
+  clientId: string;
   sort: string;
   sortBy: string;
 };
@@ -157,6 +158,7 @@ export function LogsPageClient({
 }) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState(currentFilters.keyword);
+  const [clientIdInput, setClientIdInput] = useState(currentFilters.clientId);
   const [, startTransition] = useTransition();
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));
@@ -168,11 +170,13 @@ export function LogsPageClient({
       const nextLevel = next.level ?? currentFilters.level;
       const nextDate = next.date !== undefined ? next.date : currentFilters.date;
       const nextKeyword = next.keyword !== undefined ? next.keyword : currentFilters.keyword;
+      const nextClientId = next.clientId !== undefined ? next.clientId : currentFilters.clientId;
       const nextSort = next.sort ?? currentFilters.sort;
       const nextSortBy = next.sortBy ?? currentFilters.sortBy;
 
       if (nextPage > 1) params.set("page", String(nextPage));
       if (nextLevel && nextLevel !== "ALL") params.set("level", nextLevel);
+      if (nextClientId) params.set("cid", nextClientId);
       if (nextDate && nextDate !== "all") params.set("date", nextDate);
       if (nextKeyword) params.set("q", nextKeyword);
       if (nextSort === "asc") params.set("sort", "asc");
@@ -185,7 +189,7 @@ export function LogsPageClient({
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    navigate({ keyword: inputValue.trim() });
+    navigate({ keyword: inputValue.trim(), clientId: clientIdInput.trim() });
   }
 
   function handleSort(field: string) {
@@ -235,6 +239,22 @@ export function LogsPageClient({
                 ))}
               </SelectContent>
             </Select>
+
+            <Input
+              placeholder="クライアントID..."
+              value={clientIdInput}
+              onChange={(e) => setClientIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && navigate({ clientId: clientIdInput.trim(), page: 1 })}
+              className="w-44 font-mono text-xs"
+            />
+            {currentFilters.clientId && (
+              <button
+                onClick={() => { setClientIdInput(""); navigate({ clientId: "", page: 1 }); }}
+                className="text-xs text-slate-400 hover:text-slate-600"
+              >
+                ✕ クライアント解除
+              </button>
+            )}
 
             <Select
               value={currentFilters.date || "all"}

@@ -364,7 +364,7 @@ export function ClientDetailPage({
           <CardTitle className="text-base">
             直近のログ（最新20件）
             <Link
-              href={`/admin/log-viewer?q=${encodeURIComponent(client.id)}`}
+              href={`/admin/log-viewer?cid=${encodeURIComponent(client.id)}`}
               className="ml-3 text-xs text-sky-600 hover:underline font-normal"
             >
               全件表示 →
