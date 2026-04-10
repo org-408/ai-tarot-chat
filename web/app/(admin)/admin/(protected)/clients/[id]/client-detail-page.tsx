@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { MdArrowBack } from "react-icons/md";
+import { MdArrowBack, MdArrowDownward, MdArrowUpward, MdUnfoldMore } from "react-icons/md";
 import { changeClientPlanAction } from "../actions";
 
 type PlanSummary = { id: string; name: string; code: string };
@@ -65,6 +65,7 @@ type ClientDetail = {
     path: string | null;
     source: string;
     timestamp: string;
+    createdAt: string;
   }[];
 };
 
@@ -107,6 +108,24 @@ export function ClientDetailPage({
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [logSortField, setLogSortField] = useState("timestamp");
+  const [logSortDir, setLogSortDir] = useState<"asc" | "desc">("desc");
+
+  function handleLogSort(field: string) {
+    if (logSortField === field) {
+      setLogSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setLogSortField(field);
+      setLogSortDir("desc");
+    }
+  }
+
+  const sortedLogs = [...client.recentLogs].sort((a, b) => {
+    const av = a[logSortField as keyof typeof a] ?? "";
+    const bv = b[logSortField as keyof typeof b] ?? "";
+    const cmp = String(av).localeCompare(String(bv));
+    return logSortDir === "asc" ? cmp : -cmp;
+  });
 
   function handlePlanUpdate(nextPlanId: string) {
     setError("");
@@ -359,18 +378,29 @@ export function ClientDetailPage({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-slate-500 text-left">
-                    <th className="py-2 px-2">日時</th>
-                    <th className="py-2 px-2 w-16">レベル</th>
-                    <th className="py-2 px-2 w-24">ソース</th>
-                    <th className="py-2 px-2 w-32">パス</th>
-                    <th className="py-2 px-2">メッセージ</th>
+                  <tr className="border-b text-left">
+                    {(["timestamp", "createdAt", "level", "source", "path", "message"] as const).map((f) => (
+                      <th key={f} className="py-2 px-2">
+                        <button
+                          onClick={() => handleLogSort(f)}
+                          className={`flex items-center gap-0.5 hover:text-slate-800 transition-colors whitespace-nowrap text-xs ${logSortField === f ? "text-slate-800 font-semibold" : "text-slate-500"}`}
+                        >
+                          {{ timestamp: "発生日時", createdAt: "DB記録日時", level: "レベル", source: "ソース", path: "パス", message: "メッセージ" }[f]}
+                          {logSortField === f ? (
+                            logSortDir === "asc" ? <MdArrowUpward size={12} /> : <MdArrowDownward size={12} />
+                          ) : (
+                            <MdUnfoldMore size={12} className="opacity-30" />
+                          )}
+                        </button>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {client.recentLogs.map((l) => (
+                  {sortedLogs.map((l) => (
                     <tr key={l.id} className="border-b hover:bg-slate-50 text-xs">
                       <td className="py-1.5 px-2 text-slate-500 whitespace-nowrap">{fmt(l.timestamp)}</td>
+                      <td className="py-1.5 px-2 text-slate-400 whitespace-nowrap">{fmt(l.createdAt)}</td>
                       <td className="py-1.5 px-2">
                         <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${LEVEL_COLOR[l.level] ?? "bg-slate-100 text-slate-600"}`}>
                           {l.level}

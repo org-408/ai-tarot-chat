@@ -8,6 +8,7 @@ interface SearchParams {
   date?: string;
   q?: string;
   sort?: string;
+  sortBy?: string;
 }
 
 const LIMIT = 100;
@@ -19,11 +20,14 @@ export default async function LogsPage({
 }) {
   await assertAdminSession();
 
-  const { page, level, date, q, sort } = await searchParams;
+  const { page, level, date, q, sort, sortBy } = await searchParams;
   const currentPage = Math.max(1, Number(page ?? 1));
   const levelFilter = level ?? "ALL";
   const keyword = q?.trim() ?? "";
   const sortDir = sort === "asc" ? "asc" : "desc";
+  const VALID_SORT_FIELDS = ["timestamp", "createdAt", "level", "source", "path", "message", "clientId"] as const;
+  type SortField = typeof VALID_SORT_FIELDS[number];
+  const sortField: SortField = VALID_SORT_FIELDS.includes(sortBy as SortField) ? (sortBy as SortField) : "timestamp";
 
   let dateFrom: Date | undefined;
   const today = new Date();
@@ -65,7 +69,7 @@ export default async function LogsPage({
         timestamp: true,
         createdAt: true,
       },
-      orderBy: { timestamp: sortDir },
+      orderBy: { [sortField]: sortDir },
       skip: (currentPage - 1) * LIMIT,
       take: LIMIT,
     }),
@@ -95,6 +99,7 @@ export default async function LogsPage({
         date: date ?? "",
         keyword,
         sort: sortDir,
+        sortBy: sortField,
       }}
     />
   );

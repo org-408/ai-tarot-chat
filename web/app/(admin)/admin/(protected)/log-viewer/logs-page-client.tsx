@@ -21,6 +21,7 @@ import {
   MdExpandLess,
   MdExpandMore,
   MdSearch,
+  MdUnfoldMore,
 } from "react-icons/md";
 
 type LogRow = {
@@ -47,6 +48,7 @@ type CurrentFilters = {
   date: string;
   keyword: string;
   sort: string;
+  sortBy: string;
 };
 
 const LEVEL_COLOR: Record<string, string> = {
@@ -71,6 +73,39 @@ const DATE_OPTIONS = [
 ];
 
 const LEVEL_OPTIONS = ["ALL", "error", "warn", "info", "debug"];
+
+function SortTh({
+  label,
+  field,
+  currentSortBy,
+  currentSort,
+  onSort,
+  className,
+}: {
+  label: string;
+  field: string;
+  currentSortBy: string;
+  currentSort: string;
+  onSort: (field: string) => void;
+  className?: string;
+}) {
+  const active = currentSortBy === field;
+  return (
+    <th className={`py-2 px-2 ${className ?? ""}`}>
+      <button
+        onClick={() => onSort(field)}
+        className={`flex items-center gap-0.5 hover:text-slate-800 transition-colors whitespace-nowrap ${active ? "text-slate-800 font-semibold" : "text-slate-500"}`}
+      >
+        {label}
+        {active ? (
+          currentSort === "asc" ? <MdArrowUpward size={13} /> : <MdArrowDownward size={13} />
+        ) : (
+          <MdUnfoldMore size={13} className="opacity-30" />
+        )}
+      </button>
+    </th>
+  );
+}
 
 function MetadataCell({ metadata }: { metadata: Record<string, unknown> | null }) {
   const [expanded, setExpanded] = useState(false);
@@ -134,12 +169,14 @@ export function LogsPageClient({
       const nextDate = next.date !== undefined ? next.date : currentFilters.date;
       const nextKeyword = next.keyword !== undefined ? next.keyword : currentFilters.keyword;
       const nextSort = next.sort ?? currentFilters.sort;
+      const nextSortBy = next.sortBy ?? currentFilters.sortBy;
 
       if (nextPage > 1) params.set("page", String(nextPage));
       if (nextLevel && nextLevel !== "ALL") params.set("level", nextLevel);
       if (nextDate && nextDate !== "all") params.set("date", nextDate);
       if (nextKeyword) params.set("q", nextKeyword);
       if (nextSort === "asc") params.set("sort", "asc");
+      if (nextSortBy && nextSortBy !== "timestamp") params.set("sortBy", nextSortBy);
 
       const query = params.toString();
       router.push(query ? `/admin/log-viewer?${query}` : "/admin/log-viewer");
@@ -151,9 +188,16 @@ export function LogsPageClient({
     navigate({ keyword: inputValue.trim() });
   }
 
-  function toggleSort() {
-    navigate({ sort: currentFilters.sort === "asc" ? "desc" : "asc", page: 1 });
+  function handleSort(field: string) {
+    const isSameField = currentFilters.sortBy === field;
+    navigate({
+      sortBy: field,
+      sort: isSameField ? (currentFilters.sort === "asc" ? "desc" : "asc") : "desc",
+      page: 1,
+    });
   }
+
+  const sortProps = { currentSortBy: currentFilters.sortBy, currentSort: currentFilters.sort, onSort: handleSort };
 
   return (
     <div className="space-y-4 p-2">
@@ -216,26 +260,15 @@ export function LogsPageClient({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-slate-500 text-left">
-                  <th className="py-2 px-2 w-36">
-                    <button
-                      onClick={toggleSort}
-                      className="flex items-center gap-1 hover:text-slate-800 transition-colors"
-                    >
-                      日時（発生）
-                      {currentFilters.sort === "asc" ? (
-                        <MdArrowUpward size={14} />
-                      ) : (
-                        <MdArrowDownward size={14} />
-                      )}
-                    </button>
-                  </th>
-                  <th className="py-2 px-2 w-16">レベル</th>
-                  <th className="py-2 px-2 w-24">ソース</th>
-                  <th className="py-2 px-2 w-40">パス</th>
-                  <th className="py-2 px-2">メッセージ</th>
-                  <th className="py-2 px-2 w-24">クライアント</th>
-                  <th className="py-2 px-2 w-36">メタデータ</th>
+                <tr className="border-b text-left">
+                  <SortTh label="発生日時" field="timestamp" className="w-36" {...sortProps} />
+                  <SortTh label="DB記録日時" field="createdAt" className="w-36" {...sortProps} />
+                  <SortTh label="レベル" field="level" className="w-16" {...sortProps} />
+                  <SortTh label="ソース" field="source" className="w-24" {...sortProps} />
+                  <SortTh label="パス" field="path" className="w-40" {...sortProps} />
+                  <SortTh label="メッセージ" field="message" {...sortProps} />
+                  <SortTh label="クライアント" field="clientId" className="w-24" {...sortProps} />
+                  <th className="py-2 px-2 w-36 text-slate-500">メタデータ</th>
                 </tr>
               </thead>
               <tbody>
@@ -246,6 +279,15 @@ export function LogsPageClient({
                   >
                     <td className="py-1.5 px-2 text-slate-500 whitespace-nowrap">
                       {new Date(log.timestamp).toLocaleString("ja-JP", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </td>
+                    <td className="py-1.5 px-2 text-slate-400 whitespace-nowrap">
+                      {new Date(log.createdAt).toLocaleString("ja-JP", {
                         month: "2-digit",
                         day: "2-digit",
                         hour: "2-digit",
@@ -286,7 +328,7 @@ export function LogsPageClient({
                 ))}
                 {data.logs.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
                       該当するログはありません。
                     </td>
                   </tr>

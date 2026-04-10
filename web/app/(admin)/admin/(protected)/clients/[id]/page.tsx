@@ -108,6 +108,7 @@ export default async function ClientDetailServerPage({
           path: l.path,
           source: l.source,
           timestamp: l.timestamp.toISOString(),
+          createdAt: l.createdAt.toISOString(),
         })),
       }}
       plans={plans.map((p) => ({ id: p.id, name: p.name, code: p.code }))}
