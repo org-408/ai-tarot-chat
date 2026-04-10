@@ -177,20 +177,30 @@ export async function POST(req: NextRequest) {
             : i === 1
               ? providers["gpt5nano"]
               : providers["claude_h"];
+
+        // NOTE: streamText() は lazy — 呼び出し時点では AI プロバイダへの HTTP リクエストは発生しない。
+        // 実際のリクエストはストリームが消費される時（reader.read()）に初めて発火する。
+        // そのため try/catch を機能させるには以下の対策が必要:
+        // 1. maxRetries: 0 で SDK 内蔵リトライを無効化（このループで制御）
+        // 2. onError で再スローしてストリームエラーを reader.read() に伝播
+        // 3. await reader.read() で最初のチャンクを読んで即時エラー（429 等）を検出
         const result = streamText({
           model,
           messages:
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
+          maxRetries: 0,
         });
 
-        // テキストストリームのレスポンス（v5公式の推し）
-        return result.toUIMessageStreamResponse({
+        const streamResponse = result.toUIMessageStreamResponse({
           headers: {
             "Cache-Control": "no-cache, no-transform",
             Connection: "keep-alive",
             "X-Accel-Buffering": "no",
+          },
+          onError: (error: unknown) => {
+            throw error;
           },
           onFinish: async ({ isAborted, responseMessage }) => {
             const hasVisibleText = responseMessage.parts.some(
@@ -214,6 +224,41 @@ export async function POST(req: NextRequest) {
             }
           },
         });
+
+        // 最初のチャンクを読み取ることでストリームを開始し、プロバイダエラーを早期検出する。
+        // 429 などの即時エラーはここで throw され、catch ブロックでフォールバックが動く。
+        const reader = streamResponse.body!.getReader();
+        const { done, value } = await reader.read();
+
+        if (done) {
+          throw new Error("AI プロバイダが空のストリームを返しました");
+        }
+
+        // 最初のチャンク受信成功。プロキシストリームで残りをクライアントに転送する。
+        const { readable, writable } =
+          new TransformStream<Uint8Array, Uint8Array>();
+        const writer = writable.getWriter();
+        await writer.write(value);
+
+        (async () => {
+          try {
+            while (true) {
+              const { done: chunkDone, value: chunk } = await reader.read();
+              if (chunkDone) break;
+              await writer.write(chunk);
+            }
+            await writer.close();
+          } catch (pipeError) {
+            logWithContext(
+              "error",
+              "[readings/simple/route] ストリームパイプエラー",
+              { error: pipeError, clientId },
+            );
+            await writer.abort(pipeError as Error);
+          }
+        })();
+
+        return new Response(readable, { headers: streamResponse.headers });
       } catch (error) {
         logWithContext(
           "error",
