@@ -161,6 +161,7 @@ export function LogsPageClient({
 }) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState(currentFilters.keyword);
+  const [clientIdInput, setClientIdInput] = useState(currentFilters.clientId);
   const [, startTransition] = useTransition();
 
   const totalPages = Math.max(1, Math.ceil(data.total / data.limit));

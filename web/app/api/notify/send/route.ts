@@ -1,33 +1,38 @@
 import { notificationService } from "@/lib/server/services/notification";
 import { NextRequest, NextResponse } from "next/server";
+
 const ADMIN_SECRET = process.env.ADMIN_API_SECRET;
 
 export async function POST(req: NextRequest) {
-  // 管理者シークレットで認証
   const authHeader = req.headers.get("authorization");
   if (!ADMIN_SECRET || authHeader !== `Bearer ${ADMIN_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({}));
-  const platform: string = body?.platform ?? "both"; // 絞り込み用（省略時は全員）
+  const title: string = body?.title ?? "";
+  const text: string = body?.body ?? "";
+  const platform: string = body?.platform ?? "all";
   const dryRun: boolean = body?.dryRun ?? false;
 
-  const subscribers = await notificationService.listPendingSubscribers(
-    platform as "all" | "ios" | "android" | "both"
-  );
+  if (!title || !text) {
+    return NextResponse.json({ error: "title と body は必須です" }, { status: 400 });
+  }
 
-  if (subscribers.length === 0) {
-    return NextResponse.json({ ok: true, sent: 0, message: "送信対象者がいません" });
+  if (!["all", "ios", "android", "both"].includes(platform)) {
+    return NextResponse.json({ error: "platform が不正です" }, { status: 400 });
   }
 
   if (dryRun) {
-    return NextResponse.json({ ok: true, dryRun: true, count: subscribers.length, emails: subscribers.map((s) => s.email) });
+    const subscribers = await notificationService.listActiveSubscribers();
+    return NextResponse.json({ ok: true, dryRun: true, count: subscribers.length });
   }
 
-  const { sent, errors } = await notificationService.sendReleaseNotifications(
+  const result = await notificationService.sendNewBatch(
+    title,
+    text,
     platform as "all" | "ios" | "android" | "both"
   );
 
-  return NextResponse.json({ ok: true, sent, errors: errors.length > 0 ? errors : undefined });
+  return NextResponse.json({ ok: true, ...result });
 }
