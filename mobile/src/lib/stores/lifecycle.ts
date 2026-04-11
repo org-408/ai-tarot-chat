@@ -78,6 +78,7 @@ import { useMasterStore } from "./master";
 import { useSubscriptionStore } from "./subscription";
 
 let appStateListener: PluginListenerHandle | null = null;
+let networkRecoveryHandler: EventListener | null = null;
 
 // ✅ メモリ上のPromiseキャッシュ(競合状態を完全に防ぐ)
 let initPromise: Promise<void> | null = null;
@@ -523,6 +524,15 @@ export const useLifecycleStore = create<LifecycleState>()(
         }).then((listener) => {
           appStateListener = listener;
         });
+
+        // ✅ フォアグラウンドのままネットワーク復帰したときの自動リカバリー
+        networkRecoveryHandler = () => {
+          if (get().isOffline) {
+            logWithContext("info", "[Lifecycle] Network recovered - triggering resume");
+            get().onResume();
+          }
+        };
+        window.addEventListener("online", networkRecoveryHandler);
       },
 
       cleanup: () => {
@@ -531,6 +541,10 @@ export const useLifecycleStore = create<LifecycleState>()(
         if (appStateListener) {
           appStateListener.remove();
           appStateListener = null;
+        }
+        if (networkRecoveryHandler) {
+          window.removeEventListener("online", networkRecoveryHandler);
+          networkRecoveryHandler = null;
         }
       },
 
@@ -817,17 +831,19 @@ export const useLifecycleStore = create<LifecycleState>()(
           }
 
           useSubscriptionStore.getState().setLifecycleBusy(false);
+          // ✅ resume が正常完了したらオフラインモードをリセット（一時的なネットワーク断から復帰）
           set({
             isRefreshing: false,
+            isOffline: false,
+            offlineMode: "none",
             dateChanged,
             lastResumedAt: currentDate,
             currentStep: "complete",
           });
 
-          const { isOffline, offlineMode } = get();
           logWithContext("info", "[Lifecycle] Resume complete", {
-            isOffline,
-            offlineMode,
+            isOffline: false,
+            offlineMode: "none",
           });
         } catch (error) {
           logWithContext("error", "[Lifecycle] Resume failed", { error });

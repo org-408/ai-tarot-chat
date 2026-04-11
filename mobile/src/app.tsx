@@ -731,8 +731,8 @@ function App() {
           🔄 {getStepLabel()}
         </div>
       )}
-      {/* ✅ オフライン通知 */}
-      {isOffline && offlineMode === "limited" && (
+      {/* ✅ オフライン通知（デバッグモードのみ） */}
+      {isDebugEnabled && isOffline && offlineMode === "limited" && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-600 text-white p-2 rounded-full text-xs shadow-lg">
           📡 {getOfflineModeLabel()}
         </div>
