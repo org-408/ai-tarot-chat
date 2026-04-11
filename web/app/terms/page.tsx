@@ -7,7 +7,7 @@ export default function TermsPage() {
   const lastUpdated = "2026年3月20日";
   const appName = "AI タロット占い";
   const developerName = "Atelier Flow Lab";
-  const contactEmail = "ai.tarot.chat@gmail.com";
+  const contactEmail = "support@ariadne-ai.app";
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
