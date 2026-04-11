@@ -21,9 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     // リクエストボディ取得
-    const {
-      body: { version },
-    } = await request.json();
+    const { version } = await request.json();
 
     // 更新チェック
     logWithContext(
@@ -36,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     logWithContext("info", "✅ マスターデータ更新チェック完了", { result });
 
-    return NextResponse.json({ result }, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     logWithContext("error", "❌ 更新チェックエラー", {
       error,

@@ -576,8 +576,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       .then((result) => {
         savedReadingIdRef.current = result.reading.id;
         setSavedReadingId(result.reading.id);
-        lastPersistedSignatureRef.current = buildPersistSignature(
-          result.reading.id,
+        // 保存した時点の内容をベースに readingId だけ差し替える。
+        // .then() 実行時の最新 state で buildPersistSignature() を再計算すると、
+        // 保存完了を待つ間に追加されたメッセージ（クロージング等）まで "保存済み" と
+        // 誤認識し、pendingSaveRef によるリトライがスキップされてしまう。
+        const [, ...rest] = nextSignature.split("::");
+        lastPersistedSignatureRef.current = [result.reading.id, ...rest].join(
+          "::",
         );
       })
       .catch(() => {

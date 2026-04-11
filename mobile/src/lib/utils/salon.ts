@@ -71,7 +71,7 @@ export const drawRandomCards = (
     const isReversed = Math.random() > 0.5;
 
     return {
-      id: `${card.id}-${index}`, // 仮にユニークIDを生成
+      id: `${card.code}-${index}`,
       x: cell.x,
       y: cell.y,
       order: cell.order || index,
@@ -85,8 +85,8 @@ export const drawRandomCards = (
       isReversed,
       card,
       keywords: !isReversed ? card.uprightKeywords : card.reversedKeywords,
-      cardId: card.id,
-      createdAt: new Date(), // 仮の作成日時
+      cardId: card.code, // DB の cuid ではなく安定した code を使う
+      createdAt: new Date(),
     };
   });
 };
