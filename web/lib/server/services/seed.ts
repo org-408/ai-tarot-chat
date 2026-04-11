@@ -474,9 +474,12 @@ export class SeedService {
         console.log(`Seeded ${decks.length} tarot decks with cards.`);
 
         // マスターバージョンデータのシード
+        // タイムスタンプベースのバージョンを使用することで、
+        // db:seed 実行後にモバイルアプリが必ず最新データを取得できるようにする
+        const seedVersion = new Date().toISOString().replace(/[:.]/g, "-");
         await masterConfigRepo.createMasterConfig({
           key: "MASTER_VERSION",
-          version: "1.0.0",
+          version: seedVersion,
           description: "Initial master data version",
         });
         console.log("Seeded master configuration.");
