@@ -6,7 +6,7 @@ export const metadata = {
 export default function DeleteAccountPage() {
   const appName = "AI タロット占い";
   const developerName = "Atelier Flow Lab";
-  const contactEmail = "ai.tarot.chat@gmail.com";
+  const contactEmail = "support@ariadne-ai.app";
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
