@@ -44,3 +44,4 @@ yarn-error.log*
 
 # key files
 ai-*.json
+expanded-*.json
