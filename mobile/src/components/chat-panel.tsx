@@ -607,14 +607,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     // ─────────────────────────────────────────────────────────────
     // isMessageComplete を立てる条件:
-    //   Phase2  → 初回鑑定完了（ready）または通信エラー
+    //   Phase2  → initialLen 以降に assistant メッセージが届いた（ready）または通信エラー
     //   非Phase2 → 鑑定完了（ready）または通信エラー
     // エラー時でもフラグを立てることで、戻るボタンが必ず表示される
+    //
+    // Phase2 で "messages.length > initialLen" を使うと、sendMessage() の内部実装で
+    // messages store と status store が別々の useSyncExternalStore で管理されているため、
+    // user メッセージ追加直後（status がまだ "ready"）に誤って isMessageComplete が立つ
+    // tearing が発生する。assistant メッセージの有無で判定することでこれを防ぐ。
     // ─────────────────────────────────────────────────────────────
     const isComplete =
       chatError !== null ||
       ((isPhase2
-        ? messages.length > (initialMessages?.length ?? 0)
+        ? messages.some((m, i) => m.role === "assistant" && i >= initialLen)
         : (isRevealingCompleted || isPersonal) &&
           drawnCards.length > 0 &&
           messages.length > 0) &&
@@ -626,7 +631,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [
     chatError,
     drawnCards.length,
-    initialMessages,
+    initialLen,
     isPersonal,
     isPhase2,
     isRevealingCompleted,
