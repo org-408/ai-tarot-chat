@@ -975,10 +975,10 @@ export const useLifecycleStore = create<LifecycleState>()(
        * ✅ ヘルパー: 現在のプランを取得
        */
       getCurrentPlan: () => {
-        // client が都度取得しているはず
-        // 基本的に随時 RevenueCat と同期しているはずなので、
-        // 気にせず clientStore を参照すれば良いはず
-        return useClientStore.getState().currentPlan;
+        // currentPlan は一時的に先行更新されることがあるため、
+        // サーバーと最後に同期した usage.plan を優先して判定する。
+        const clientState = useClientStore.getState();
+        return clientState.usage?.plan ?? clientState.currentPlan;
       },
 
       /**
