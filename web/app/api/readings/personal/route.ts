@@ -23,6 +23,8 @@ export const maxDuration = 60;
 
 const RETRY_COUNT = 3;
 
+const moderationCheckerAvailable = false; // 一旦モデレーションチェックは無効化（2026-04-12）※有効にする場合は true に変更
+
 export async function POST(req: NextRequest) {
   let clientId = "";
   let phase: "personal-intake" | "personal-reading" = "personal-intake";
@@ -113,34 +115,36 @@ export async function POST(req: NextRequest) {
       }
 
       // モデレーションチェック
-      logWithContext("debug", "モデレーションチェック開始", { clientId });
-      const moderation = await moderatePersonalQuestion(customQuestion);
+      if (moderationCheckerAvailable) {
+        logWithContext("debug", "モデレーションチェック開始", { clientId });
+        const moderation = await moderatePersonalQuestion(customQuestion);
 
-      if (!moderation.allowed) {
-        logWithContext("warn", "モデレーションNG", {
-          clientId,
-          reason: moderation.reason,
-          category: moderation.category,
-        });
-        return createReadingErrorResponse({
-          code: "MODERATION_BLOCKED",
-          message:
-            moderation.message ??
-            "申し訳ございません。その内容は占うことができません。",
-          status: 400,
-          phase,
-          details: {
+        if (!moderation.allowed) {
+          logWithContext("warn", "モデレーションNG", {
+            clientId,
             reason: moderation.reason,
             category: moderation.category,
-          },
-        });
-      }
+          });
+          return createReadingErrorResponse({
+            code: "MODERATION_BLOCKED",
+            message:
+              moderation.message ??
+              "申し訳ございません。その内容は占うことができません。",
+            status: 400,
+            phase,
+            details: {
+              reason: moderation.reason,
+              category: moderation.category,
+            },
+          });
+        }
 
-      if (moderation.warning) {
-        logWithContext("info", "モデレーション警告", {
-          clientId,
-          warning: moderation.warning,
-        });
+        if (moderation.warning) {
+          logWithContext("info", "モデレーション警告", {
+            clientId,
+            warning: moderation.warning,
+          });
+        }
       }
     }
 
