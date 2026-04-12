@@ -64,24 +64,32 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // chatResetKey: null = まだ準備中（ChatPanel をマウントしない）、number = Phase1 ChatPanel のキー
   const [chatResetKey, setChatResetKey] = useState<number | null>(null);
 
-  // 初回マウント: 残回数がある場合のみ init → isPersonal=true → ChatPanel マウント許可
+  // アンマウント時に isPersonal をリセット（canStartPersonal 変化時には実行しない）
+  // Phase2 保存で remainingPersonal が 0 になると canStartPersonal=false になり、
+  // 以前は cleanup が setIsPersonal(false) を呼んで isPhase2=false になっていた。
+  // isPersonal のリセットはアンマウント時のみ行う。
+  useEffect(() => {
+    setIsPersonal(true);
+    return () => {
+      setIsPersonal(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 初回マウント: 残回数がある場合のみ init → ChatPanel マウント許可
   useEffect(() => {
     if (!canStartPersonal) return;
     setPhase("chat");
     setPhase1Messages([]);
     init();
-    setIsPersonal(true);
     // パーソナル専用占い師が非PREMIUM なら占い師選択画面へ強制遷移
     if (selectedPersonalTarotist.plan?.code !== "PREMIUM") {
       setSelectedTargetMode("tarotist");
     }
     setChatResetKey((current) => (current === null ? 0 : current + 1));
-    return () => {
-      setIsPersonal(false);
-    };
   // selectedPersonalTarotist.plan?.code はセッション中の再初期化を防ぐため意図的に除外
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canStartPersonal, init, setIsPersonal, setSelectedTargetMode]);
+  }, [canStartPersonal, init, setSelectedTargetMode]);
 
   // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
   useEffect(() => {
