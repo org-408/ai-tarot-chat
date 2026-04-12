@@ -10,7 +10,6 @@ import type {
 } from "../../../shared/lib/types";
 import { useSalon } from "../lib/hooks/use-salon";
 import { drawRandomCards } from "../lib/utils/salon";
-import type { UserPlan } from "../types";
 import CategorySpreadSelector from "./category-spread-selector";
 import { MessageContent } from "./message-content";
 import ShuffleDialog from "./shuffle-dialog";
@@ -149,14 +148,12 @@ const ClaraPanel: React.FC<ClaraPanelProps> = ({
 interface ClaraPageProps {
   masterData: MasterData;
   currentPlan: Plan;
-  onChangePlan: (plan: UserPlan) => void;
   onBack: () => void;
 }
 
 const ClaraPage: React.FC<ClaraPageProps> = ({
   masterData,
   currentPlan: _currentPlan,
-  onChangePlan: _onChangePlan,
 }) => {
   const {
     selectedSpread,
@@ -296,7 +293,9 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
           animate={{ height: isTopCollapsed ? 0 : "45vh" }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {drawnCards.length > 0 && <UpperViewer claraMode={true} spread={selectedSpread} />}
+          {drawnCards.length > 0 && (
+            <UpperViewer claraMode={true} spread={selectedSpread} />
+          )}
         </motion.div>
 
         {/* アコーディオントグル */}

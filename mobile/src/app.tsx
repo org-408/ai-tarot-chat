@@ -246,7 +246,13 @@ function App() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlan?.code, isChangingPlan, isInitialized, isLoggingIn, isLoggingOut]);
+  }, [
+    currentPlan?.code,
+    isChangingPlan,
+    isInitialized,
+    isLoggingIn,
+    isLoggingOut,
+  ]);
 
   // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
   useEffect(() => {
@@ -544,7 +550,6 @@ function App() {
           <ClaraPage
             masterData={masterData}
             currentPlan={currentPlan!}
-            onChangePlan={handleChangePlan}
             onBack={() => setPageType("salon")}
           />
         );
