@@ -253,12 +253,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     inputErrorCodes.includes(chatError.code as ReadingErrorCode);
   const hasBlockingError = chatError !== null && !isInputFixableError;
   const canRetry = !!chatError?.retryable && !isInputFixableError;
+  const phase2AllAnswered =
+    messages.filter((m, i) => m.role === "assistant" && i >= initialLen)
+      .length >= MAX_PHASE2_QUESTIONS;
   const shouldShowBackButton =
     !!chatError ||
     (isMessageComplete &&
       !isSavingReading &&
       !isSyncingUsage &&
-      (!isPhase2 || inputDisabled));
+      (!isPhase2 || (inputDisabled && phase2AllAnswered)));
   const isProcessing =
     status === "submitted" ||
     status === "streaming" ||
@@ -852,7 +855,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         })()}
 
       {/* Phase2: セッション終了バナー */}
-      {isPhase2 && inputDisabled && isMessageComplete && !chatError && (
+      {isPhase2 &&
+        inputDisabled &&
+        isMessageComplete &&
+        !chatError &&
+        phase2AllAnswered && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
