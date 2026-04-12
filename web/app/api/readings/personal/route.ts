@@ -148,11 +148,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ✅ パーソナル占いの残回数チェック（実際の占いフェーズ開始時のみ）
+    // ✅ パーソナル占いの残回数チェック（Phase2 初回鑑定開始時のみ）
     //    length <= 1: 挨拶フェーズ、length <= 3: スプレッド提案フェーズ
-    //    length > 3: 実際の占いフェーズ → ここで初めて personal カウントを消費
+    //    length 4〜6: Phase2 初回鑑定フェーズ → ここで personal カウントを消費チェック
+    //    length > 6: Phase2 フォローアップ質問（同一セッション継続）→ チェック不要
     //    debugMode=true の場合は制限をスキップ
-    if (!debugMode && clientMessages.length > 3) {
+    if (!debugMode && clientMessages.length > 3 && clientMessages.length <= 6) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (usage.remainingPersonal <= 0) {
         logWithContext("warn", "パーソナル占いの回数上限", { clientId });
