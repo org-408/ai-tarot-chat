@@ -137,6 +137,24 @@ export const useSalonStore = create<SalonState>()(
           await storeRepository.delete(name);
         },
       })),
+      // セッション固有の状態は永続化しない。
+      // isPersonal / drawnCards / isRevealingCompleted / messages は
+      // init() でリセットされる揮発性フィールドであり、非同期 hydration が
+      // init() + setIsPersonal(true) の後に完了すると "isPersonal: false" で
+      // 上書きされ Phase2 が誤動作する原因となる。
+      partialize: (state) => ({
+        selectedTarotist: state.selectedTarotist,
+        selectedPersonalTarotist: state.selectedPersonalTarotist,
+        selectedCategory: state.selectedCategory,
+        customQuestion: state.customQuestion,
+        selectedSpread: state.selectedSpread,
+        lastClaraCategoryId: state.lastClaraCategoryId,
+        lastClaraSpreadId: state.lastClaraSpreadId,
+        selectedTargetMode: state.selectedTargetMode,
+        spreadViewerMode: state.spreadViewerMode,
+        upperViewerMode: state.upperViewerMode,
+        lowerViewerMode: state.lowerViewerMode,
+      }),
     }
   )
 );

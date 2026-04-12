@@ -199,14 +199,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       if (isEndingEarlyRef.current) {
         isEndingEarlyRef.current = false;
         setIsEndingSession(true);
-      } else if (isPhase2 && inputDisabled) {
+      } else if (isPhase2) {
         // 3問すべて使い切った後の最終回答が完了 → 自動でクロージングメッセージを送信
-        // 「占いを終わる」ボタンと同じフローを経由してクロージング応答を取得する
-        isEndingEarlyRef.current = true;
-        sendMessage(
-          { text: "ありがとうございました。今日の占いはここで終わりにします。" },
-          { body: { isEndingEarly: true } },
-        );
+        // inputDisabled は React state のため hydration 等で誤 true になり得る。
+        // messages を直接カウントして確実に 3 問消費済みか判定する。
+        const phase2UserCount = messages.filter(
+          (m, i) => m.role === "user" && i > initialLen,
+        ).length;
+        if (phase2UserCount >= MAX_PHASE2_QUESTIONS) {
+          isEndingEarlyRef.current = true;
+          sendMessage(
+            { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+            { body: { isEndingEarly: true } },
+          );
+        }
       }
 
       if (!isPersonal) {
