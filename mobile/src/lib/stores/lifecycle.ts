@@ -693,6 +693,17 @@ export const useLifecycleStore = create<LifecycleState>()(
             // ログイン状態なら RevenueCat と同期
             if (authStore.isAuthenticated && payload?.user && payload.user.id) {
               await subscriptionStore.login(payload.user.id);
+            } else if (useSubscriptionStore.getState().isLoggedIn) {
+              // アプリの認証トークンが無効でも RC はまだログイン状態のケース。
+              // （例: 401/500 → registerDevice() による一時的な認証切れ）
+              // ここで logout() を呼ぶと RC が匿名ユーザーに切り替わり、
+              // 空のエンタイトルメントが返ってサーバー側プランが GUEST に
+              // ダウングレードされる。RC セッションはアプリ認証と独立しているため、
+              // logout() をスキップして RC セッションを維持する。
+              logWithContext(
+                "info",
+                "[Lifecycle] App auth unavailable but RC is logged in — preserving RC session to protect subscription"
+              );
             } else {
               await subscriptionStore.logout();
             }
@@ -845,6 +856,10 @@ export const useLifecycleStore = create<LifecycleState>()(
               currentDate: currentDate.toDateString(),
             });
           }
+
+          // changePlan() と同様、Capacitor イベントブリッジの遅延 customerInfoUpdated を
+          // isLifecycleBusy = true のままドレインしてから busy 解除する
+          await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
           useSubscriptionStore.getState().setLifecycleBusy(false);
           // ✅ resume が正常完了したらオフラインモードをリセット（一時的なネットワーク断から復帰）
@@ -1162,6 +1177,21 @@ export const useLifecycleStore = create<LifecycleState>()(
               error: rcError instanceof Error ? rcError.message : String(rcError),
             });
           }
+
+          // ============================================================
+          // Capacitor イベントブリッジの遅延イベントをドレインする
+          //
+          // 問題: Purchases.logIn() は Promise 解決と customerInfoUpdated
+          // イベントを別々の macrotask として JS に届ける。
+          // lifecycle 全体は microtask/Promise チェーンで完走するため、
+          // logIn() 時点の「空エンタイトルメント」イベントが
+          // setLifecycleBusy(false) の後に届いて誤ダウングレードを引き起こす。
+          //
+          // 修正: setTimeout(0) で一度マクロタスクキューを空にし、
+          // 古いイベントを isLifecycleBusy = true のままブロックしてから
+          // busy フラグを解除する。
+          // ============================================================
+          await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
           useSubscriptionStore.getState().setLifecycleBusy(false);
           set({ isChangingPlan: false, planChangeError: null });

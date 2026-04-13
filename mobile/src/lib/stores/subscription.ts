@@ -186,6 +186,38 @@ export const useSubscriptionStore = create<SubscriptionState>()(
         }
 
         try {
+          // ============================================================
+          // 自律コールバック限定: requestDate でステイル判定
+          //
+          // Capacitor イベントブリッジは customerInfoUpdated を macrotask として届けるため、
+          // Purchases.logIn() の空エンタイトルメントイベントが
+          // refreshCustomerInfo() による確定後に遅れて到着することがある。
+          // setTimeout(0) で大半はドレインできるが、
+          // ブリッジ遅延が setTimeout より長い場合は素通りする。
+          //
+          // 対策: store の customerInfo.requestDate より古いイベントは無視する。
+          // requestDate は RC サーバーがそのデータを返した時刻なので、
+          // logIn 時(購入前)のデータは refreshCustomerInfo 後のデータより古い。
+          // ============================================================
+          if (!isExplicitRefreshInProgress) {
+            const currentCustomerInfo = get().customerInfo;
+            if (currentCustomerInfo?.requestDate && info.requestDate) {
+              const currentMs = new Date(currentCustomerInfo.requestDate).getTime();
+              const incomingMs = new Date(info.requestDate).getTime();
+              if (incomingMs < currentMs) {
+                logWithContext(
+                  "warn",
+                  "[SubscriptionStore] Skipping stale autonomous customerInfoUpdated (requestDate older than confirmed state)",
+                  {
+                    incomingRequestDate: info.requestDate,
+                    currentRequestDate: currentCustomerInfo.requestDate,
+                  }
+                );
+                return;
+              }
+            }
+          }
+
           // 状態変更
           set({ customerInfo: info });
           logWithContext(
@@ -214,15 +246,24 @@ export const useSubscriptionStore = create<SubscriptionState>()(
 
           if (!newPlan) {
             // エンタイトルメント空 = 有料プラン未加入 or サブスク期限切れ
-            // 認証状態に応じて FREE / GUEST にダウングレード
+            // 認証状態・RC ログイン状態に応じてダウングレード先を決定
             const isAuthenticated = useAuthStore.getState().isAuthenticated;
-            const defaultPlanCode = isAuthenticated ? "FREE" : "GUEST";
+            const { isLoggedIn } = get();
+
+            // RC がログイン済み（identified user）の場合は最低でも FREE にする。
+            // これにより、onResume の認証エラー回復中（registerDevice() 後など）に
+            // RC セッションが残っていて isAuthenticated = false になっているケースで
+            // GUEST へ誤ってダウングレードされるのを防ぐ。
+            // ※ 明示的ログアウト時は subscriptionStore.logout() で isLoggedIn = false に
+            //   なってから listener が呼ばれるため、GUEST への通常パスは維持される。
+            const defaultPlanCode =
+              isAuthenticated || isLoggedIn ? "FREE" : "GUEST";
             const defaultPlan = plans.find((p) => p.code === defaultPlanCode);
             if (defaultPlan) {
               logWithContext(
                 "info",
                 "[SubscriptionStore] No active entitlement, downgrading to default plan",
-                { defaultPlanCode }
+                { defaultPlanCode, isAuthenticated, isLoggedIn }
               );
               await useClientStore.getState().changePlan(defaultPlan);
             }
