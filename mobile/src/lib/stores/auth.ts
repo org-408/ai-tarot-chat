@@ -181,8 +181,15 @@ export const useAuthStore = create<AuthState>()(
           });
           set({ isReady: true }); // エラーでも isReady は true にする
         }
-        const newStored = await authService.getStoredPayload();
-        set({ token: newStored.token });
+        try {
+          const newStored = await authService.getStoredPayload();
+          set({ token: newStored.token });
+        } catch (syncError) {
+          // getStoredPayload が万が一スローしても起動を妨げない
+          logWithContext("warn", "[AuthStore] Failed to sync token state after init", {
+            error: syncError instanceof Error ? syncError.message : String(syncError),
+          });
+        }
       },
 
       registerDevice: async () => {
