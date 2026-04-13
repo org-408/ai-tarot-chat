@@ -198,7 +198,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       if (isEndingEarlyRef.current) {
         isEndingEarlyRef.current = false;
-        setIsEndingSession(true);
+        // クロージング AI 応答完了 → "saving" ステージへ遷移（DB 保存開始を待つ）
+        setPhase2Stage("saving");
       } else if (isPhase2) {
         // 3問すべて使い切った後の最終回答が完了 → 自動でクロージングメッセージを送信
         // inputDisabled は React state のため hydration 等で誤 true になり得る。
@@ -241,7 +242,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
-  const [isEndingSession, setIsEndingSession] = useState(false);
+  // Phase2 セッション進行状態:
+  //   "chatting" → Q1/Q2/Q3 応答中
+  //   "saving"   → クロージング AI 完了、DB 保存中
+  //   "done"     → DB 保存完了、ナビゲーション解除済み
+  type Phase2Stage = "chatting" | "saving" | "done";
+  const [phase2Stage, setPhase2Stage] = useState<Phase2Stage>("chatting");
   const saveStartedRef = useRef(false);
   const pendingSaveRef = useRef(false);
   const lastPersistedSignatureRef = useRef<string | null>(null);
@@ -259,15 +265,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     inputErrorCodes.includes(chatError.code as ReadingErrorCode);
   const hasBlockingError = chatError !== null && !isInputFixableError;
   const canRetry = !!chatError?.retryable && !isInputFixableError;
-  const phase2AllAnswered =
-    messages.filter((m, i) => m.role === "assistant" && i > initialLen + 1)
-      .length >= MAX_PHASE2_QUESTIONS;
+  // shouldShowBackButton:
+  //   Phase2  → phase2Stage === "done"（保存完了後のみ）
+  //   非Phase2 → AI 応答完了 & 保存・同期完了
+  //   エラー   → 常に表示（脱出手段を確保）
   const shouldShowBackButton =
     !!chatError ||
-    (isMessageComplete &&
-      !isSavingReading &&
-      !isSyncingUsage &&
-      (!isPhase2 || (inputDisabled && phase2AllAnswered)));
+    (isPhase2
+      ? phase2Stage === "done"
+      : isMessageComplete && !isSavingReading && !isSyncingUsage);
   const isProcessing =
     status === "submitted" ||
     status === "streaming" ||
@@ -616,12 +622,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         if (pendingSaveRef.current) {
           pendingSaveRef.current = false;
           persistReading(false);
-        } else if (isPhase2 && isEndingSession && !hasUnlockedRef.current) {
-          // Phase2 のクロージング保存が完全に完了した後にナビゲーションロックを解除する。
-          // useEffect ではなくここで呼ぶことで「保存完了後」を保証できる。
-          // isEndingSession=true はクロージング AI レスポンス完了時にのみ true になるため、
-          // Q3 回答後の中間保存では呼ばれず、最終保存（またはそのリトライ）でのみ呼ばれる。
+        } else if (isPhase2 && phase2Stage === "saving" && !hasUnlockedRef.current) {
+          // Phase2 "saving" ステージ = クロージング AI 完了後の最終保存。
+          // 保存完了のタイミングで "done" に遷移し、ナビゲーションロックを解除する。
+          // hasUnlockedRef で二重呼び出しを防ぐ（retry 時に phase2Stage の
+          // re-render が未コミットでも "saving" と見える可能性があるため）。
           hasUnlockedRef.current = true;
+          setPhase2Stage("done");
           onUnlockRef.current?.();
         }
       });
@@ -663,13 +670,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     messages,
     status,
   ]);
-
-  // 「占いを終わる」ボタン押下時に入力を無効化
-  useEffect(() => {
-    if (isEndingSession) {
-      setInputDisabled(true);
-    }
-  }, [isEndingSession]);
 
   // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
   // Phase2 の場合は保存完了後に persistReading.finally() から呼び出すため、
@@ -875,14 +875,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         })()}
 
       {/* Phase2: セッション終了バナー */}
-      {/* !isSavingReading && !isSyncingUsage を追加することで保存・利用回数更新完了後に表示 */}
+      {/* phase2Stage === "done" = 保存完了後のみ表示（早期表示を防ぐ） */}
       {isPhase2 &&
-        inputDisabled &&
-        isMessageComplete &&
-        !isSavingReading &&
-        !isSyncingUsage &&
-        !chatError &&
-        phase2AllAnswered && (
+        phase2Stage === "done" &&
+        !chatError && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
