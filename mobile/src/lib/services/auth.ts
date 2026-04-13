@@ -38,16 +38,23 @@ export class AuthService {
     if (!token) {
       return { token: null, deviceId: null, clientId: null, userId: null };
     }
-    const payload = await this.decodeStoredToken(token || "");
-    const { deviceId, clientId, user } = payload;
-    const userId = user?.id || null;
-    logWithContext("info", "[AuthService] Retrieved stored token payload", {
-      deviceId,
-      clientId,
-      userId,
-    });
-
-    return { token, deviceId, clientId, userId };
+    try {
+      const payload = await this.decodeStoredToken(token);
+      const { deviceId, clientId, user } = payload;
+      const userId = user?.id || null;
+      logWithContext("info", "[AuthService] Retrieved stored token payload", {
+        deviceId,
+        clientId,
+        userId,
+      });
+      return { token, deviceId, clientId, userId };
+    } catch (decodeError) {
+      // 期限切れ・署名不一致などデコード失敗 → null として扱い再認証を促す
+      logWithContext("warn", "[AuthService] Stored token is invalid or expired, treating as no token", {
+        error: decodeError instanceof Error ? decodeError.message : String(decodeError),
+      });
+      return { token: null, deviceId: null, clientId: null, userId: null };
+    }
   }
 
   /**
