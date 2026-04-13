@@ -260,7 +260,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const hasBlockingError = chatError !== null && !isInputFixableError;
   const canRetry = !!chatError?.retryable && !isInputFixableError;
   const phase2AllAnswered =
-    messages.filter((m, i) => m.role === "assistant" && i >= initialLen)
+    messages.filter((m, i) => m.role === "assistant" && i > initialLen + 1)
       .length >= MAX_PHASE2_QUESTIONS;
   const shouldShowBackButton =
     !!chatError ||
