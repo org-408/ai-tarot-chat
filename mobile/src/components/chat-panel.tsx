@@ -590,11 +590,24 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
 
     if (!shouldPersistReading()) {
+      // 保存条件を満たさなくても、クロージングが完了していれば "done" に遷移する。
+      // （例: 既に全データ保存済みで status が再び "ready" になったケース）
+      if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
+        hasUnlockedRef.current = true;
+        setPhase2Stage("done");
+        onUnlockRef.current?.();
+      }
       return;
     }
 
     const nextSignature = buildPersistSignature();
     if (lastPersistedSignatureRef.current === nextSignature) {
+      // シグネチャ一致 = 既に保存済み。クロージングが完了していれば "done" に遷移する。
+      if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
+        hasUnlockedRef.current = true;
+        setPhase2Stage("done");
+        onUnlockRef.current?.();
+      }
       return;
     }
 
@@ -632,10 +645,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         if (pendingSaveRef.current) {
           pendingSaveRef.current = false;
           persistReading(false);
+          // リトライが no-op（シグネチャ一致 or shouldPersistReading=false）だった場合、
+          // saveStartedRef は false のまま。その場合も "done" チェックを行う。
+          // ※リトライが実際に保存を開始した場合は saveStartedRef=true になるため
+          //   そのリトライの .finally() に処理を委ねる。
+          if (!saveStartedRef.current) {
+            if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
+              hasUnlockedRef.current = true;
+              setPhase2Stage("done");
+              onUnlockRef.current?.();
+            }
+          }
         } else if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
           // isClosingCompleteRef は onFinish 内で同期的に true になる ref。
-          // phase2Stage（React state）ではなく ref を参照することで、
-          // effect 発火タイミングと onFinish のレンダーサイクルのズレを回避する。
           hasUnlockedRef.current = true;
           setPhase2Stage("done");
           onUnlockRef.current?.();
