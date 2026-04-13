@@ -634,12 +634,28 @@ export const useLifecycleStore = create<LifecycleState>()(
                   { status }
                 );
 
-                await useAuthStore.getState().registerDevice();
-
-                logWithContext(
-                  "info",
-                  "[Lifecycle] Device re-registered successfully"
-                );
+                try {
+                  await useAuthStore.getState().registerDevice();
+                  logWithContext(
+                    "info",
+                    "[Lifecycle] Device re-registered successfully"
+                  );
+                } catch (reregError) {
+                  // 再登録失敗は非致命的 - 次の onResume で再試行される
+                  logWithContext(
+                    "warn",
+                    "[Lifecycle] Device re-registration failed during resume (non-critical)",
+                    {
+                      error:
+                        reregError instanceof Error
+                          ? reregError.message
+                          : String(reregError),
+                    }
+                  );
+                  if (isNetworkError(reregError)) {
+                    set({ isOffline: true, offlineMode: "limited" });
+                  }
+                }
               } else {
                 logWithContext(
                   "warn",
