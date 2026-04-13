@@ -616,6 +616,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         if (pendingSaveRef.current) {
           pendingSaveRef.current = false;
           persistReading(false);
+        } else if (isPhase2 && isEndingSession && !hasUnlockedRef.current) {
+          // Phase2 のクロージング保存が完全に完了した後にナビゲーションロックを解除する。
+          // useEffect ではなくここで呼ぶことで「保存完了後」を保証できる。
+          // isEndingSession=true はクロージング AI レスポンス完了時にのみ true になるため、
+          // Q3 回答後の中間保存では呼ばれず、最終保存（またはそのリトライ）でのみ呼ばれる。
+          hasUnlockedRef.current = true;
+          onUnlockRef.current?.();
         }
       });
   });
@@ -665,14 +672,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isEndingSession]);
 
   // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
-  // shouldShowBackButton が true になった瞬間に一度だけ呼ぶ
+  // Phase2 の場合は保存完了後に persistReading.finally() から呼び出すため、
+  // この effect では非 Phase2 またはエラー時のみ解除する。
+  // （Phase2 で useEffect から呼ぶと、保存開始前に解除されてしまうため）
   const hasUnlockedRef = React.useRef(false);
+  // persistReading の finally（非同期コンテキスト）から最新の onUnlock を参照するための ref
+  const onUnlockRef = React.useRef(onUnlock);
   useEffect(() => {
-    if (shouldShowBackButton && !hasUnlockedRef.current) {
+    onUnlockRef.current = onUnlock;
+  }, [onUnlock]);
+  useEffect(() => {
+    if (shouldShowBackButton && (!isPhase2 || !!chatError) && !hasUnlockedRef.current) {
       hasUnlockedRef.current = true;
       onUnlock?.();
     }
-  }, [shouldShowBackButton, onUnlock]);
+  }, [shouldShowBackButton, isPhase2, chatError, onUnlock]);
 
   useEffect(() => {
     // ─────────────────────────────────────────────────────────────
@@ -861,9 +875,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         })()}
 
       {/* Phase2: セッション終了バナー */}
+      {/* !isSavingReading && !isSyncingUsage を追加することで保存・利用回数更新完了後に表示 */}
       {isPhase2 &&
         inputDisabled &&
         isMessageComplete &&
+        !isSavingReading &&
+        !isSyncingUsage &&
         !chatError &&
         phase2AllAnswered && (
         <motion.div
