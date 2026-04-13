@@ -599,7 +599,6 @@ export class ClientService {
       }
     );
   }
-}
 
   /**
    * 管理者による利用回数の手動リセット
