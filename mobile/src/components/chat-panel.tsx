@@ -935,9 +935,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase2: 鑑定完了後 → Q&Aステータスバナー + 入力エリア */}
+      {/* phase2Stage === "chatting" も必須:
+          「占いを終わる」早期終了パスでは phase2UserCount < 3 のまま終わるため
+          inputDisabled が false のままになる。この条件がないと "done" 後に入力欄が再出現する */}
       {isPhase2 &&
         isMessageComplete &&
         !inputDisabled &&
+        phase2Stage === "chatting" &&
         !isProcessing &&
         (() => {
           const phase2UserCount = messages.filter(
