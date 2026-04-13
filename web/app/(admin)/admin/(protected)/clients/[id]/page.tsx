@@ -29,6 +29,9 @@ export default async function ClientDetailServerPage({
           },
           orderBy: { changedAt: "desc" },
         },
+        adminResetHistories: {
+          orderBy: { createdAt: "desc" },
+        },
         readings: {
           include: {
             tarotist: { select: { id: true, name: true, icon: true } },
@@ -100,6 +103,17 @@ export default async function ClientDetailServerPage({
           tarotist: r.tarotist,
           spread: r.spread,
           category: r.category,
+        })),
+        adminResetHistories: client.adminResetHistories.map((h) => ({
+          id: h.id,
+          resetType: h.resetType,
+          adminEmail: h.adminEmail,
+          reason: h.reason,
+          beforeReadingsCount: h.beforeReadingsCount,
+          beforePersonalCount: h.beforePersonalCount,
+          afterReadingsCount: h.afterReadingsCount,
+          afterPersonalCount: h.afterPersonalCount,
+          createdAt: h.createdAt.toISOString(),
         })),
         recentLogs: client.logs.map((l) => ({
           id: l.id,

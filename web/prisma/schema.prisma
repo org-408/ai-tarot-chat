@@ -136,6 +136,7 @@ model Client {
   planChangeHistories PlanChangeHistory[]
   chatMessages ChatMessage[]
   dailyResetHistories DailyResetHistory[]
+  adminResetHistories AdminResetHistory[]
   logs Log[]
 
   @@index([email])
@@ -158,6 +159,22 @@ model DailyResetHistory {
 
   @@index([clientId, date])
 }
+model AdminResetHistory {
+  id                  String   @id @default(cuid())
+  clientId            String
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  resetType           String   // "READINGS" | "PERSONAL" | "ALL"
+  adminEmail          String
+  reason              String?  @db.Text
+  beforeReadingsCount Int      @default(0)
+  beforePersonalCount Int      @default(0)
+  afterReadingsCount  Int      @default(0)
+  afterPersonalCount  Int      @default(0)
+  createdAt           DateTime @default(now())
+
+  @@index([clientId])
+}
+
 // ==========================================
 // タロットデッキモデル
 // ==========================================
