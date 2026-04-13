@@ -8,11 +8,11 @@ interface UsagePageProps {
 
 const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
   const { usage, refreshUsage } = useClient();
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsRefreshing(true);
-    refreshUsage().finally(() => setIsRefreshing(false));
+    setIsLoading(true);
+    refreshUsage().finally(() => setIsLoading(false));
   }, [refreshUsage]);
 
   const plan = usage?.plan;
@@ -42,16 +42,30 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
           <ChevronLeft size={20} className="text-gray-600" />
         </button>
         <h1 className="text-base font-semibold text-gray-900">利用回数</h1>
-        {isRefreshing && (
-          <span className="ml-auto text-xs text-gray-400">更新中...</span>
-        )}
       </div>
 
-      {/* usage がまだない場合のみフル loading 表示 */}
-      {!usage ? (
-        <div className="flex items-center justify-center py-16">
-          <p className="text-sm text-gray-400">読み込み中...</p>
-        </div>
+      {isLoading ? (
+        /* スケルトン */
+        <>
+          <div className="mx-4 mb-4 h-16 bg-gray-100 rounded-xl animate-pulse" />
+          <div className="px-4 pt-2 pb-1">
+            <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
+          </div>
+          <div className="mx-4 rounded-xl overflow-hidden border border-gray-100">
+            {[0, 1].map((i) => (
+              <div key={i} className={`bg-white px-4 py-4 ${i === 0 ? "border-b border-gray-100" : ""}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-gray-100 animate-pulse" />
+                    <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+                  </div>
+                  <div className="h-4 w-16 bg-gray-100 rounded animate-pulse" />
+                </div>
+                <div className="w-full h-1.5 bg-gray-100 rounded-full animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <>
           {/* プラン */}
