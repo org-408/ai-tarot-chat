@@ -198,7 +198,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       if (isEndingEarlyRef.current) {
         isEndingEarlyRef.current = false;
-        // クロージング AI 応答完了 → "saving" ステージへ遷移（DB 保存開始を待つ）
+        // ref を先に同期更新（.finally() から React レンダーサイクル外で参照するため）
+        isClosingCompleteRef.current = true;
+        // UI 用ステートも更新（入力エリア非表示・バナー表示のトリガー）
         setPhase2Stage("saving");
       } else if (isPhase2) {
         // 3問すべて使い切った後の最終回答が完了 → 自動でクロージングメッセージを送信
@@ -231,6 +233,14 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const hasSentInitialMessage = useRef(false);
   const isEndingEarlyRef = useRef(false);
+  // クロージング AI 応答完了フラグ（Reactステートではなく ref で管理する理由:
+  // useEffectEvent のクロージャは「effect 発火時点のレンダー値」を捕捉する。
+  // setPhase2Stage("saving") は onFinish 内で呼ばれるが、それが反映された
+  // レンダーよりも前に persistReading effect が発火するため、.finally() 内で
+  // phase2Stage===state を参照しても "chatting" のままになってしまう。
+  // ref は React のレンダーサイクルと無関係に同期更新されるため、.finally() から
+  // 安全に参照できる。)
+  const isClosingCompleteRef = useRef(false);
 
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -622,11 +632,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         if (pendingSaveRef.current) {
           pendingSaveRef.current = false;
           persistReading(false);
-        } else if (isPhase2 && phase2Stage === "saving" && !hasUnlockedRef.current) {
-          // Phase2 "saving" ステージ = クロージング AI 完了後の最終保存。
-          // 保存完了のタイミングで "done" に遷移し、ナビゲーションロックを解除する。
-          // hasUnlockedRef で二重呼び出しを防ぐ（retry 時に phase2Stage の
-          // re-render が未コミットでも "saving" と見える可能性があるため）。
+        } else if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
+          // isClosingCompleteRef は onFinish 内で同期的に true になる ref。
+          // phase2Stage（React state）ではなく ref を参照することで、
+          // effect 発火タイミングと onFinish のレンダーサイクルのズレを回避する。
           hasUnlockedRef.current = true;
           setPhase2Stage("done");
           onUnlockRef.current?.();
