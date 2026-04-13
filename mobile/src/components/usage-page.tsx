@@ -8,11 +8,11 @@ interface UsagePageProps {
 
 const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
   const { usage, refreshUsage } = useClient();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
-    refreshUsage().finally(() => setIsLoading(false));
+    setIsRefreshing(true);
+    refreshUsage().finally(() => setIsRefreshing(false));
   }, [refreshUsage]);
 
   const plan = usage?.plan;
@@ -42,9 +42,13 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
           <ChevronLeft size={20} className="text-gray-600" />
         </button>
         <h1 className="text-base font-semibold text-gray-900">利用回数</h1>
+        {isRefreshing && (
+          <span className="ml-auto text-xs text-gray-400">更新中...</span>
+        )}
       </div>
 
-      {isLoading ? (
+      {/* usage がまだない場合のみフル loading 表示 */}
+      {!usage ? (
         <div className="flex items-center justify-center py-16">
           <p className="text-sm text-gray-400">読み込み中...</p>
         </div>
