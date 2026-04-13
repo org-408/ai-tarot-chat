@@ -70,18 +70,21 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setPhase("chat");
     setPhase1Messages([]);
     init();
-    setIsPersonal(true);
+    setIsPersonal(true); // init() が isPersonal:false をセットするため必ず後に上書き
     // パーソナル専用占い師が非PREMIUM なら占い師選択画面へ強制遷移
     if (selectedPersonalTarotist.plan?.code !== "PREMIUM") {
       setSelectedTargetMode("tarotist");
     }
     setChatResetKey((current) => (current === null ? 0 : current + 1));
-    return () => {
-      setIsPersonal(false);
-    };
-  // selectedPersonalTarotist.plan?.code はセッション中の再初期化を防ぐため意図的に除外
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // selectedPersonalTarotist.plan?.code はセッション中の再初期化を防ぐため意図的に除外
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canStartPersonal, init, setIsPersonal, setSelectedTargetMode]);
+
+  // アンマウント時のみ isPersonal をリセット（canStartPersonal 変化時には発火させない）
+  useEffect(() => {
+    return () => setIsPersonal(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // アンマウント時の安全網: 異常終了・強制ナビゲーション時にロックを必ず解除
   useEffect(() => {

@@ -199,6 +199,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       if (isEndingEarlyRef.current) {
         isEndingEarlyRef.current = false;
         setIsEndingSession(true);
+      } else if (isPhase2) {
+        // 3問すべて使い切った後の最終回答が完了 → 自動でクロージングメッセージを送信
+        // inputDisabled は React state のため hydration 等で誤 true になり得る。
+        // messages を直接カウントして確実に 3 問消費済みか判定する。
+        const phase2UserCount = messages.filter(
+          (m, i) => m.role === "user" && i > initialLen,
+        ).length;
+        if (phase2UserCount >= MAX_PHASE2_QUESTIONS) {
+          isEndingEarlyRef.current = true;
+          sendMessage(
+            { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+            { body: { isEndingEarly: true } },
+          );
+        }
       }
 
       if (!isPersonal) {
@@ -245,12 +259,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     inputErrorCodes.includes(chatError.code as ReadingErrorCode);
   const hasBlockingError = chatError !== null && !isInputFixableError;
   const canRetry = !!chatError?.retryable && !isInputFixableError;
+  const phase2AllAnswered =
+    messages.filter((m, i) => m.role === "assistant" && i >= initialLen)
+      .length >= MAX_PHASE2_QUESTIONS;
   const shouldShowBackButton =
     !!chatError ||
     (isMessageComplete &&
       !isSavingReading &&
       !isSyncingUsage &&
-      (!isPhase2 || inputDisabled));
+      (!isPhase2 || (inputDisabled && phase2AllAnswered)));
   const isProcessing =
     status === "submitted" ||
     status === "streaming" ||
@@ -607,14 +624,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     // ─────────────────────────────────────────────────────────────
     // isMessageComplete を立てる条件:
-    //   Phase2  → 初回鑑定完了（ready）または通信エラー
+    //   Phase2  → initialLen 以降に assistant メッセージが届いた（ready）または通信エラー
     //   非Phase2 → 鑑定完了（ready）または通信エラー
     // エラー時でもフラグを立てることで、戻るボタンが必ず表示される
+    //
+    // Phase2 で "messages.length > initialLen" を使うと、sendMessage() の内部実装で
+    // messages store と status store が別々の useSyncExternalStore で管理されているため、
+    // user メッセージ追加直後（status がまだ "ready"）に誤って isMessageComplete が立つ
+    // tearing が発生する。assistant メッセージの有無で判定することでこれを防ぐ。
     // ─────────────────────────────────────────────────────────────
     const isComplete =
       chatError !== null ||
       ((isPhase2
-        ? messages.length > (initialMessages?.length ?? 0)
+        ? messages.some((m, i) => m.role === "assistant" && i >= initialLen)
         : (isRevealingCompleted || isPersonal) &&
           drawnCards.length > 0 &&
           messages.length > 0) &&
@@ -626,7 +648,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [
     chatError,
     drawnCards.length,
-    initialMessages,
+    initialLen,
     isPersonal,
     isPhase2,
     isRevealingCompleted,
@@ -839,7 +861,11 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         })()}
 
       {/* Phase2: セッション終了バナー */}
-      {isPhase2 && inputDisabled && isMessageComplete && !chatError && (
+      {isPhase2 &&
+        inputDisabled &&
+        isMessageComplete &&
+        !chatError &&
+        phase2AllAnswered && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

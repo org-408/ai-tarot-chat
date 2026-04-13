@@ -252,6 +252,20 @@ export class ClientRepository extends BaseRepository {
       where: { id },
     });
   }
+
+  // ==================== AdminResetHistory ====================
+  async createAdminResetHistory(
+    data: Prisma.AdminResetHistoryCreateInput
+  ) {
+    return this.db.adminResetHistory.create({ data });
+  }
+
+  async getAdminResetHistoriesByClientId(clientId: string) {
+    return this.db.adminResetHistory.findMany({
+      where: { clientId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
 }
 
 export const clientRepository = new ClientRepository();

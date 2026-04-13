@@ -29,7 +29,7 @@ export function useClient() {
     // 利用状況（Client Store から取得）
     // ============================================
     isReady,
-    currentPlan,
+    currentPlan: usage?.plan ?? currentPlan,
     usage,
     remainingReadings: usage?.remainingReadings ?? 0,
     remainingPersonal: usage?.remainingPersonal ?? 0,

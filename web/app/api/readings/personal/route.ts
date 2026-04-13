@@ -23,6 +23,8 @@ export const maxDuration = 60;
 
 const RETRY_COUNT = 3;
 
+const moderationCheckerAvailable = false; // 一旦モデレーションチェックは無効化（2026-04-12）※有効にする場合は true に変更
+
 export async function POST(req: NextRequest) {
   let clientId = "";
   let phase: "personal-intake" | "personal-reading" = "personal-intake";
@@ -113,42 +115,45 @@ export async function POST(req: NextRequest) {
       }
 
       // モデレーションチェック
-      logWithContext("debug", "モデレーションチェック開始", { clientId });
-      const moderation = await moderatePersonalQuestion(customQuestion);
+      if (moderationCheckerAvailable) {
+        logWithContext("debug", "モデレーションチェック開始", { clientId });
+        const moderation = await moderatePersonalQuestion(customQuestion);
 
-      if (!moderation.allowed) {
-        logWithContext("warn", "モデレーションNG", {
-          clientId,
-          reason: moderation.reason,
-          category: moderation.category,
-        });
-        return createReadingErrorResponse({
-          code: "MODERATION_BLOCKED",
-          message:
-            moderation.message ??
-            "申し訳ございません。その内容は占うことができません。",
-          status: 400,
-          phase,
-          details: {
+        if (!moderation.allowed) {
+          logWithContext("warn", "モデレーションNG", {
+            clientId,
             reason: moderation.reason,
             category: moderation.category,
-          },
-        });
-      }
+          });
+          return createReadingErrorResponse({
+            code: "MODERATION_BLOCKED",
+            message:
+              moderation.message ??
+              "申し訳ございません。その内容は占うことができません。",
+            status: 400,
+            phase,
+            details: {
+              reason: moderation.reason,
+              category: moderation.category,
+            },
+          });
+        }
 
-      if (moderation.warning) {
-        logWithContext("info", "モデレーション警告", {
-          clientId,
-          warning: moderation.warning,
-        });
+        if (moderation.warning) {
+          logWithContext("info", "モデレーション警告", {
+            clientId,
+            warning: moderation.warning,
+          });
+        }
       }
     }
 
-    // ✅ パーソナル占いの残回数チェック（実際の占いフェーズ開始時のみ）
+    // ✅ パーソナル占いの残回数チェック（Phase2 初回鑑定開始時のみ）
     //    length <= 1: 挨拶フェーズ、length <= 3: スプレッド提案フェーズ
-    //    length > 3: 実際の占いフェーズ → ここで初めて personal カウントを消費
+    //    length 4〜6: Phase2 初回鑑定フェーズ → ここで personal カウントを消費チェック
+    //    length > 6: Phase2 フォローアップ質問（同一セッション継続）→ チェック不要
     //    debugMode=true の場合は制限をスキップ
-    if (!debugMode && clientMessages.length > 3) {
+    if (!debugMode && clientMessages.length > 3 && clientMessages.length <= 6) {
       const usage = await clientService.getUsageAndReset(clientId);
       if (usage.remainingPersonal <= 0) {
         logWithContext("warn", "パーソナル占いの回数上限", { clientId });
