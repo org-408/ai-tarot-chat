@@ -300,7 +300,7 @@ MISTRAL_API_KEY               # Mistral
 
 ### 利用量制限
 
-- `Client.dailyReadingsCount`, `dailyCelticsCount`, `dailyPersonalCount` で管理
+- `Client.dailyReadingsCount`（クイック占い）, `dailyPersonalCount`（パーソナル占い）で管理
 - 日付変更時に `DailyResetHistory` を記録してリセット
 - プランごとに上限が異なる
 

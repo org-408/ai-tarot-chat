@@ -1,8 +1,9 @@
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
-import { ChevronRight, ExternalLink, LogIn, LogOut, Star } from "lucide-react";
+import { BarChart2, ChevronRight, ExternalLink, LogIn, LogOut, Star } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import type { Plan } from "../../../shared/lib/types";
+import UsagePage from "./usage-page";
 
 interface SettingsPageProps {
   isAuthenticated: boolean;
@@ -93,6 +94,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onLogout,
   onManageSubscriptions,
 }) => {
+  const [view, setView] = useState<"main" | "usage">("main");
+
   // ネイティブ（iOS/Android）では App.getInfo() でバイナリの実バージョンを取得
   // Web/開発時は vite.config.ts で埋め込んだ package.json のバージョンにフォールバック
   const [appVersion, setAppVersion] = useState<string>(__APP_VERSION__);
@@ -123,6 +126,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         return currentPlan.name;
     }
   };
+
+  if (view === "usage") {
+    return <UsagePage onBack={() => setView("main")} />;
+  }
 
   return (
     <div className="main-container pb-10">
@@ -170,6 +177,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             />
           </>
         )}
+      </RowGroup>
+
+      {/* ── 利用回数 ──────────────────── */}
+      <SectionHeader label="利用回数" />
+      <RowGroup>
+        <Row
+          icon={<BarChart2 size={16} />}
+          label="今日の利用回数"
+          description="クイック占い・パーソナル占いの使用状況"
+          onClick={() => setView("usage")}
+        />
       </RowGroup>
 
       {/* ── サブスクリプション ─────────── */}

@@ -601,4 +601,60 @@ export class ClientService {
   }
 }
 
+  /**
+   * 管理者による利用回数の手動リセット
+   */
+  async adminResetUsage(params: {
+    clientId: string;
+    resetType: "READINGS" | "PERSONAL" | "ALL";
+    adminEmail: string;
+    reason?: string;
+  }): Promise<UsageStats> {
+    const { clientId, resetType, adminEmail, reason } = params;
+
+    const client = await clientRepository.getClientById(clientId);
+    if (!client) throw new Error("Client not found");
+
+    const plan = client.plan;
+    if (!plan) throw new Error("Plan not found");
+
+    const beforeReadingsCount = client.dailyReadingsCount;
+    const beforePersonalCount = client.dailyPersonalCount;
+
+    const updateData: Record<string, number> = {};
+    if (resetType === "READINGS" || resetType === "ALL") {
+      updateData.dailyReadingsCount = 0;
+    }
+    if (resetType === "PERSONAL" || resetType === "ALL") {
+      updateData.dailyPersonalCount = 0;
+    }
+
+    const updatedClient = await clientRepository.updateClient(clientId, updateData);
+
+    await clientRepository.createAdminResetHistory({
+      client: { connect: { id: clientId } },
+      resetType,
+      adminEmail,
+      reason,
+      beforeReadingsCount,
+      beforePersonalCount,
+      afterReadingsCount: updatedClient.dailyReadingsCount,
+      afterPersonalCount: updatedClient.dailyPersonalCount,
+    });
+
+    return {
+      plan,
+      isRegistered: updatedClient.isRegistered,
+      lastLoginAt: updatedClient.lastLoginAt,
+      hasDailyReset: false,
+      dailyReadingsCount: updatedClient.dailyReadingsCount,
+      dailyPersonalCount: updatedClient.dailyPersonalCount,
+      remainingReadings: Math.max(0, plan.maxReadings - updatedClient.dailyReadingsCount),
+      remainingPersonal: Math.max(0, plan.maxPersonal - updatedClient.dailyPersonalCount),
+      lastReadingDate: updatedClient.lastReadingDate,
+      lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
+    };
+  }
+}
+
 export const clientService = new ClientService();
