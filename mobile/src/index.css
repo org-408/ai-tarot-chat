@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../shared/components/**/*.{ts,tsx}";
 
 :root {
   /* セーフエリア CSS カスタムプロパティ

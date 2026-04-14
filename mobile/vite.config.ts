@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "fs";
+import path from "path";
 import { defineConfig } from "vite";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf-8")) as {
@@ -10,6 +11,11 @@ const pkg = JSON.parse(readFileSync("./package.json", "utf-8")) as {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@shared": path.resolve(__dirname, "../shared"),
+    },
+  },
   define: {
     // package.json の version をビルド時定数として埋め込む
     // ネイティブ環境では App.getInfo() が優先される（web/開発時フォールバック）

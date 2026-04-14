@@ -25,6 +25,39 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@shared/*": [
+        "../shared/*"
+      ],
+      "react": [
+        "./node_modules/@types/react/index.d.ts"
+      ],
+      "react/jsx-runtime": [
+        "./node_modules/@types/react/jsx-runtime.d.ts"
+      ],
+      "react/jsx-dev-runtime": [
+        "./node_modules/@types/react/jsx-dev-runtime.d.ts"
+      ],
+      "@ai-sdk/react": [
+        "./node_modules/@ai-sdk/react"
+      ],
+      "ai": [
+        "./node_modules/ai"
+      ],
+      "framer-motion": [
+        "./node_modules/framer-motion"
+      ],
+      "lucide-react": [
+        "./node_modules/lucide-react"
+      ],
+      "react-markdown": [
+        "./node_modules/react-markdown"
+      ],
+      "remark-breaks": [
+        "./node_modules/remark-breaks"
+      ],
+      "remark-gfm": [
+        "./node_modules/remark-gfm"
       ]
     },
     "typeRoots": [
@@ -36,6 +69,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "../shared/**/*.ts",
+    "../shared/**/*.tsx",
     ".next/types/**/*.ts",
     "types/**/*.d.ts",
     "lib/utils/date.ts",
