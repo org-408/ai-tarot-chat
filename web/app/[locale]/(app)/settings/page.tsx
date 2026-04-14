@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
+import { useThemePreference } from "@/lib/client/hooks/use-theme";
 
 // ────────────────────────────────────────────
 // UI パーツ
@@ -180,7 +180,7 @@ export default function SettingsPage({
   const locale = useLocale();
   const { data: session } = useSession();
   const { usage, refreshUsage } = useClientStore();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useThemePreference();
 
   const [portalLoading, setPortalLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
