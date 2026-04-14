@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className="app-header">
       <div className="header-container">
         {/* 🔥 ハンバーガーメニューボタン */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 relative">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
           <button
             onClick={onMenuClick}
             disabled={menuDisabled}
