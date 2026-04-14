@@ -6,8 +6,12 @@
       "Edit(*)",
       "Write(*)",
       "Glob(*)",
-      "Grep(*)"
+      "Grep(*)",
+      "Agent(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "TodoWrite(*)"
     ]
   },
-  "autoApprove": ["Edit", "Write", "Bash", "Glob", "Grep", "Read"]
+  "autoApprove": ["Edit", "Write", "Bash", "Glob", "Grep", "Read", "Agent", "WebFetch", "WebSearch", "TodoWrite"]
 }
