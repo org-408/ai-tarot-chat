@@ -26,10 +26,18 @@ export async function POST(request: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         const clientId = session.metadata?.clientId;
         const planCode = session.metadata?.planCode;
+        const stripeCustomerId = typeof session.customer === "string"
+          ? session.customer
+          : session.customer?.id ?? null;
 
         if (clientId && planCode) {
           await clientService.changePlan(clientId, planCode);
           logWithContext("info", "Stripe: plan updated", { clientId, planCode });
+        }
+
+        if (clientId && stripeCustomerId) {
+          await clientService.updateStripeCustomerId(clientId, stripeCustomerId);
+          logWithContext("info", "Stripe: customer ID saved", { clientId, stripeCustomerId });
         }
         break;
       }

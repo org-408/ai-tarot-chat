@@ -47,3 +47,23 @@ export async function saveReading(data: SaveReadingInput): Promise<Reading> {
   if (!res.ok) throw new Error("占い結果の保存に失敗しました");
   return res.json();
 }
+
+export async function deleteAccount(): Promise<void> {
+  const res = await fetch("/api/clients/me", {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("アカウントの削除に失敗しました");
+}
+
+export async function openStripePortal(returnUrl: string): Promise<string> {
+  const res = await fetch("/api/stripe/portal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ returnUrl }),
+  });
+  if (!res.ok) throw new Error("ポータルの起動に失敗しました");
+  const { url } = await res.json();
+  return url;
+}

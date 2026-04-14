@@ -54,6 +54,7 @@
     "next": "^16.1.6",
     "next-auth": "^5.0.0-beta.29",
     "next-intl": "^4.9.1",
+    "next-themes": "^0.4.6",
     "ollama-ai-provider-v2": "^1.5.1",
     "radix-ui": "^1.4.3",
     "react": "^19.2.4",
@@ -70,8 +71,8 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@swc/helpers": ">=0.5.21",
     "@eslint/eslintrc": "^3",
+    "@swc/helpers": ">=0.5.21",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19.2.14",

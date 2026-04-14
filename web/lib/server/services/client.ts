@@ -145,6 +145,22 @@ export class ClientService {
     await clientRepository.hardDeleteClientByDeviceId(deviceId);
   }
 
+  /**
+   * アカウント削除（soft delete）
+   * GDPR / App Store / Google Play ポリシー対応
+   */
+  async deleteAccount(clientId: string): Promise<void> {
+    await clientRepository.softDeleteClient(clientId);
+    logWithContext("info", "Account soft-deleted", { clientId });
+  }
+
+  /**
+   * Stripe カスタマーIDを保存
+   */
+  async updateStripeCustomerId(clientId: string, stripeCustomerId: string): Promise<void> {
+    await clientRepository.updateClient(clientId, { stripeCustomerId });
+  }
+
   async getDeviceById(deviceId: string) {
     return clientRepository.getDeviceById(deviceId);
   }
