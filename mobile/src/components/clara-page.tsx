@@ -19,6 +19,9 @@ import UpperViewer from "./upper-viewer";
 // 定数
 // ─────────────────────────────────────────────
 
+/** スプレッドビューを表示してからプロフィールへ切り替えるまでの時間 (ms) */
+const SPREAD_VIEW_DISPLAY_MS = 2000;
+
 const CLARA_DISCLAIMER =
   "📖 それぞれのカードの意味をお伝えしました！\n本当はカード同士の関係も読めると良いのですが、まだ勉強中で…💦\n 各カードのメッセージを組み合わせた総合的な解釈は、あなたの直感に委ねます。\nきっと答えはあなたの中にあります 🌟";
 
@@ -187,10 +190,11 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // クイック占いと同様に、カード表示完了後は上段をプロフィール表示へ戻す
+  // カード表示完了後、スプレッドビューを少し見せてから上段をプロフィール表示へ戻す
   useEffect(() => {
     if (isRevealingCompleted) {
-      setUpperViewerMode("profile");
+      const t = setTimeout(() => setUpperViewerMode("profile"), SPREAD_VIEW_DISPLAY_MS);
+      return () => clearTimeout(t);
     }
   }, [isRevealingCompleted, setUpperViewerMode]);
 

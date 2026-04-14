@@ -31,6 +31,9 @@ interface PersonalPageProps {
   onNavigateToClara?: () => void;
 }
 
+/** スプレッドビューを表示してからプロフィールへ切り替えるまでの時間 (ms) */
+const SPREAD_VIEW_DISPLAY_MS = 2000;
+
 const PersonalPage: React.FC<PersonalPageProps> = ({
   currentPlan,
   masterData,
@@ -105,7 +108,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // カードめくり完了時の処理（めくれたカードが見える時間を確保してからプロフィールへ切替）
   useEffect(() => {
     if (isRevealingCompleted) {
-      const t = setTimeout(() => setUpperViewerMode("profile"), 1500);
+      const t = setTimeout(() => setUpperViewerMode("profile"), SPREAD_VIEW_DISPLAY_MS);
       return () => clearTimeout(t);
     }
   }, [isRevealingCompleted, setUpperViewerMode]);

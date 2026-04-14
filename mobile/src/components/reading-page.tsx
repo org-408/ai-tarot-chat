@@ -1,4 +1,7 @@
 "use client";
+/** スプレッドビューを表示してからプロフィールへ切り替えるまでの時間 (ms) */
+const SPREAD_VIEW_DISPLAY_MS = 2000;
+
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -43,10 +46,10 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
   useEffect(() => {
     console.log("isRevealingComplete changed:", isRevealingCompleted);
     if (isRevealingCompleted) {
-      // カードめくり完了時の処理
+      // カードめくり完了時の処理（スプレッドビューを少し見せてからプロフィールへ切替）
       console.log("Card revealing is complete.");
-      // プロフィール表示に切り替え TODO: 将来的に占い師のアニメーションを入れる
-      setUpperViewerMode("profile");
+      const t = setTimeout(() => setUpperViewerMode("profile"), SPREAD_VIEW_DISPLAY_MS);
+      return () => clearTimeout(t);
     }
   }, [isRevealingCompleted, setUpperViewerMode]);
 
