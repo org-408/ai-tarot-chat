@@ -9,15 +9,17 @@ export default function middleware(req: NextRequest) {
 
   // API / auth / admin / 静的アセット / マーケティングページは intl ルーティングをスキップ
   const skipIntl =
+    pathname === "/" ||                        // マーケティング LP (root)
     pathname.startsWith("/api/") ||
     pathname.startsWith("/auth/") ||
-    pathname.startsWith("/(admin)") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/terms") ||
     pathname.startsWith("/delete-account") ||
     pathname.startsWith("/download") ||
-    pathname.startsWith("/pricing");
+    pathname.startsWith("/pricing") ||
+    pathname.startsWith("/admin") ||           // 管理画面
+    pathname.startsWith("/signin");            // 管理者サインイン
 
   // ✅ リクエストヘッダーを明示的に転送 (Next.js 16 対応)
   const requestHeaders = new Headers(req.headers);
