@@ -48,34 +48,66 @@ export const useMasterStore = create<MasterState>()(
       init: async () => {
         logWithContext("info", "[MasterStore] Initialization started");
 
-        const localData = get().masterData || DEFAULT_MASTER_DATA;
+        const persistedData = get().masterData;
+        const isFirstLaunch = !persistedData?.version;
 
+        if (isFirstLaunch) {
+          // 初回起動: サーバーから取得完了まで isReady: false のまま待つ
+          // (DEFAULT_MASTER_DATA の id は環境ごとに異なるため使用不可)
+          logWithContext("info", "[MasterStore] First launch, fetching from server");
+          set({ isLoading: true, isReady: false });
+          try {
+            const data = await masterService.getMasterData();
+            set({
+              masterData: data,
+              isReady: true,
+              isLoading: false,
+              error: null,
+            });
+            logWithContext("info", "[MasterStore] First launch fetch completed", {
+              version: data.version,
+              decksCount: data.decks?.length || 0,
+            });
+          } catch (error) {
+            const normalizedError =
+              error instanceof Error ? error : new Error(String(error));
+            logWithContext("error", "[MasterStore] First launch fetch failed", {
+              error: normalizedError.message,
+            });
+            // 失敗時は DEFAULT_MASTER_DATA で fallback（一部機能は制限される）
+            set({
+              masterData: DEFAULT_MASTER_DATA,
+              isReady: true,
+              isLoading: false,
+              error: normalizedError,
+            });
+          }
+          return;
+        }
+
+        // 2回目以降: キャッシュを即座に使い、バックグラウンドでバージョンチェック
         set({
-          masterData: localData,
+          masterData: persistedData,
           isReady: true,
           isLoading: false,
           error: null,
         });
 
-        logWithContext("info", "[MasterStore] Using local master data", {
-          version: localData.version,
-          decksCount: localData.decks?.length || 0,
-          spreadsCount: localData.spreads?.length || 0,
+        logWithContext("info", "[MasterStore] Using cached master data", {
+          version: persistedData.version,
+          decksCount: persistedData.decks?.length || 0,
+          spreadsCount: persistedData.spreads?.length || 0,
         });
 
         try {
           const versionCheck = await get().checkVersion();
 
           if (!versionCheck.needsUpdate) {
-            logWithContext(
-              "info",
-              "[MasterStore] Local master data is up to date"
-            );
+            logWithContext("info", "[MasterStore] Local master data is up to date");
             return;
           }
 
           set({ isLoading: true });
-
           logWithContext(
             "info",
             "[MasterStore] Update needed, fetching latest master data",
@@ -83,7 +115,6 @@ export const useMasterStore = create<MasterState>()(
           );
 
           const data = await masterService.getMasterData();
-
           set({
             masterData: data,
             isReady: true,
@@ -102,7 +133,7 @@ export const useMasterStore = create<MasterState>()(
 
           logWithContext(
             "warn",
-            "[MasterStore] Failed to refresh master data, keeping local copy",
+            "[MasterStore] Failed to refresh master data, keeping cached copy",
             { error: normalizedError.message }
           );
 

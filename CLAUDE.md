@@ -328,3 +328,29 @@ MISTRAL_API_KEY               # Mistral
 3. **SSE ストリーミング**: モバイルでは `CapacitorHttp.enabled: false` を維持、ネイティブ HTTP に置き換えると壊れる
 4. **ゲストユーザー**: `Client.userId` が null のため、認証前提のクエリには注意
 5. **プラン制限**: スプレッドにも `planId` があり、プランに応じてアクセス可否が変わる
+
+---
+
+## `mobile/src/assets/master-data.ts` の運用
+
+`master-data.ts` は各環境の DB から生成される自動生成ファイルで、**TarotCard の `id`（DB の cuid）が環境ごとに異なる**。モバイルアプリは `DrawnCard.cardId` として `card.id` を使用するため、ビルド対象環境の DB から生成したファイルをリポジトリに含める必要がある。
+
+### 環境別の生成手順
+
+```bash
+cd web
+
+# staging 向けビルド前
+npm run db:master:staging    # web/.env.staging の DATABASE_URL を使って生成
+# または
+DATABASE_URL=<staging の接続URL> npm run db:master
+
+# production 向けビルド前
+npm run db:master:production  # web/.env.production の DATABASE_URL を使って生成
+```
+
+### 注意事項
+
+- `master-data.ts` は `main` ブランチと `staging` ブランチで内容が異なることがある（正常）
+- DB リセット（`db:reset+`）後は必ず `db:master` を再実行して `master-data.ts` を更新すること
+- マスターデータ（TarotCard 等）を変更した場合も同様に再実行が必要

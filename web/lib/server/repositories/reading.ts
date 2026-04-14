@@ -32,36 +32,9 @@ export class ReadingRepository extends BaseRepository {
 
   // ==================== Reading ====================
 
-  /**
-   * クライアントから送られた cardId を DB 上の実際の ID に解決する。
-   * tarotist/spread/category と同様に、persisted な古い ID を使わず
-   * 安定した識別子（card.code）でDBから最新の ID を再解決する。
-   */
-  private async resolveCardIds(
-    cards: ReadingInput["cards"]
-  ): Promise<Map<string, string>> {
-    if (!Array.isArray(cards) || cards.length === 0) return new Map();
-
-    const codes = cards
-      .map((c) => c.card?.code)
-      .filter((code): code is string => !!code);
-
-    const foundByCode = await this.db.tarotCard.findMany({
-      where: { code: { in: codes } },
-      select: { id: true, code: true },
-    });
-    const codeToId = new Map(foundByCode.map((c) => [c.code, c.id]));
-
-    return new Map(
-      cards.map((c) => [c.cardId, codeToId.get(c.card?.code ?? "") ?? c.cardId])
-    );
-  }
-
   async createReading(reading: ReadingInput): Promise<Reading> {
     const { tarotist, spread, category } =
       await this.resolveReadingRelations(reading);
-
-    const cardIdMap = await this.resolveCardIds(reading.cards);
 
     const created = await this.db.reading.create({
       data: {
@@ -74,7 +47,7 @@ export class ReadingRepository extends BaseRepository {
         cards: Array.isArray(reading.cards)
           ? {
               create: reading.cards.map((card) => ({
-                cardId: cardIdMap.get(card.cardId) ?? card.cardId,
+                cardId: card.cardId,
                 x: card.x,
                 y: card.y,
                 order: card.order,
@@ -102,7 +75,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     });
@@ -113,8 +86,6 @@ export class ReadingRepository extends BaseRepository {
   async updateReading(id: string, reading: ReadingInput): Promise<Reading> {
     const { tarotist, spread, category } =
       await this.resolveReadingRelations(reading);
-
-    const cardIdMap = await this.resolveCardIds(reading.cards);
 
     const updated = await this.db.reading.update({
       where: { id },
@@ -127,7 +98,7 @@ export class ReadingRepository extends BaseRepository {
           deleteMany: {},
           create: Array.isArray(reading.cards)
             ? reading.cards.map((card) => ({
-                cardId: cardIdMap.get(card.cardId) ?? card.cardId,
+                cardId: card.cardId,
                 x: card.x,
                 y: card.y,
                 order: card.order,
@@ -157,7 +128,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     });
@@ -174,7 +145,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     })) as unknown as Reading | null; // 型アサーションを追加
@@ -196,7 +167,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     })) as unknown as Reading[]; // 型アサーションを追加
@@ -218,7 +189,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     })) as unknown as Reading[]; // 型アサーションを追加
@@ -234,7 +205,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     })) as unknown as Reading[]; // 型アサーションを追加
@@ -250,7 +221,7 @@ export class ReadingRepository extends BaseRepository {
         tarotist: true,
         spread: true,
         category: true,
-        cards: true,
+        cards: { include: { card: true } },
         chatMessages: true,
       },
     })) as unknown as Reading[]; // 型アサーションを追加

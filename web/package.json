@@ -12,6 +12,8 @@
     "db:studio": "npx prisma studio",
     "db:seed": "tsx prisma/seed.ts && tsx prisma/generate-master.ts",
     "db:master": "tsx prisma/generate-master.ts",
+    "db:master:staging": "dotenv -e .env.staging -- tsx prisma/generate-master.ts",
+    "db:master:production": "dotenv -e .env.production -- tsx prisma/generate-master.ts",
     "db:admin-set": "tsx prisma/set-admin.ts",
     "ui:add": "npx shadcn@latest add ",
     "dev": "next dev --turbopack",

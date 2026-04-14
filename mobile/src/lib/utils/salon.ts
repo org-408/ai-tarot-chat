@@ -85,7 +85,7 @@ export const drawRandomCards = (
       isReversed,
       card,
       keywords: !isReversed ? card.uprightKeywords : card.reversedKeywords,
-      cardId: card.code, // DB の cuid ではなく安定した code を使う
+      cardId: card.id,
       createdAt: new Date(),
     };
   });
