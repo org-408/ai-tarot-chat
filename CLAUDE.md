@@ -340,14 +340,16 @@ MISTRAL_API_KEY               # Mistral
 ```bash
 cd web
 
-# staging 向けビルド前
-npm run db:master:staging    # web/.env.staging の DATABASE_URL を使って生成
-# または
-DATABASE_URL=<staging の接続URL> npm run db:master
+# staging 向けビルド前（DATABASE_URL を直接渡す）
+DATABASE_URL="postgresql://..." npm run db:master:staging
 
 # production 向けビルド前
-npm run db:master:production  # web/.env.production の DATABASE_URL を使って生成
+DATABASE_URL="postgresql://..." npm run db:master:production
 ```
+
+> **なぜ `dotenv -e .env.staging` ではないか**  
+> `generate-master.ts` は PrismaClient を直接使うスクリプトで、Prisma CLI と異なり `.env` を自動ロードしない。  
+> 環境変数を `DATABASE_URL=xxx` でインライン指定するのが最もシンプルで確実。
 
 ### 注意事項
 
