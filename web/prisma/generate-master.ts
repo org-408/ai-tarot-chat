@@ -39,7 +39,7 @@ function toTypeScriptLiteral(obj: unknown, indent = 0): string {
         const keyStr = validKey ? key : `"${key}"`;
         return `${spaces}  ${keyStr}: ${toTypeScriptLiteral(
           value,
-          indent + 1
+          indent + 1,
         )},`;
       })
       .join("\n");
