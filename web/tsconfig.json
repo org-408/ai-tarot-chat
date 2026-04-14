@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@shared/*": [
+        "../shared/*"
       ]
     },
     "typeRoots": [
@@ -36,6 +39,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "../shared/**/*.ts",
+    "../shared/**/*.tsx",
     ".next/types/**/*.ts",
     "types/**/*.d.ts",
     "lib/utils/date.ts",
