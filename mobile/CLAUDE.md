@@ -119,3 +119,88 @@ Keyboard: {
 ## 型定義
 
 `shared/lib/types.ts` の型を import して使用。モバイル固有の型は `mobile/src/types/` に定義。
+
+---
+
+## Phase2 チャット保存アーキテクチャ（chat-panel.tsx）
+
+### セッションクローズの 2 パターン
+
+Phase2（パーソナル占い）には、クロージングシーケンスを起動する経路が 2 つある。
+
+| 経路 | トリガー |
+|---|---|
+| 手動 | ユーザーが「占いを終わる」ボタンを押す |
+| 自動 | 3 問使い切り後に `onFinish` が自動送信 |
+
+**両方とも `handleSessionClose()` を経由する**（`chat-panel.tsx`）。
+直接 `sendMessage` を書かず、必ずこの関数を使うこと。
+
+```typescript
+const handleSessionClose = useCallback(() => {
+  isEndingEarlyRef.current = true;   // クロージング中フラグ
+  sendMessage(
+    { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+    { body: { isEndingEarly: true } },
+  );
+}, [sendMessage]);
+```
+
+`onFinish` 内から呼ぶ場合は `handleSessionCloseRef.current()` 経由（非同期クロージャ対応）。
+
+### tearing 問題と shouldPersistReading ガード
+
+AI SDK v6 の `useChat` は `messages` と `status` を別々の `useSyncExternalStore` で管理している。React event handler から `sendMessage` を呼ぶと、`messages` にクロージングユーザーメッセージが追加された瞬間に `status` がまだ `"ready"` のままというウィンドウ（tearing）が発生する。
+
+この状態で `shouldPersistReading()` が `true` を返すと、**AI クロージング応答が含まれない保存**が走ってしまう。
+
+これを防ぐため `shouldPersistReading` に以下のガードを入れている。
+
+```typescript
+// クロージングシーケンス中は closingAI がまだ届いていないため保存しない
+if (isPhase2 && isEndingEarlyRef.current) return false;
+```
+
+`isEndingEarlyRef` は `handleSessionClose` で `true` に立てられ、`onFinish`（AI クロージング応答受信後）で `false` に戻る。
+
+### 保存完了後のロック解除フロー
+
+```
+sendMessage(closingUserMsg)
+  └─ [streaming]
+  └─ status → "ready"  ← onFinish より先に発火（AI SDK v6 の挙動）
+       └─ shouldPersistReading() → false（isEndingEarlyRef=true のため）
+  └─ onFinish 発火
+       ├─ isEndingEarlyRef = false
+       ├─ isClosingCompleteRef = true   ← ref: .finally() など非同期から参照
+       ├─ setIsClosingComplete(true)    ← state: 専用 effect のリアクティブトリガー
+       └─ setPhase2Stage("saving")
+  └─ isClosingComplete 専用 effect 発火
+       └─ persistReading(true)         ← closingAI 込みで保存
+            └─ .finally(): isClosingCompleteRef=true → setPhase2Stage("done")
+                 └─ onUnlock() でナビゲーションロック解除
+```
+
+### phase2Stage ステートマシン
+
+```
+"chatting" → （クロージング完了）→ "saving" → （DB 保存完了）→ "done"
+```
+
+- `shouldShowBackButton` は `phase2Stage === "done"` のときのみ `true` になる
+- `"saving"` 中はバウンドカーソルを表示し続ける（空白期間を防ぐ）
+
+### 保存の重複防止（シグネチャ方式）
+
+`buildPersistSignature()` が `readingId::inputDisabled::メッセージ列` のハッシュを生成する。`lastPersistedSignatureRef` と一致する場合は保存をスキップ。
+
+保存中に新データが届いた場合は `pendingSaveRef = true` を立て、`.finally()` でリトライする。リトライは `withSavingIndicator=false` で実行するため `isSavingReading` インジケーターは表示されない。
+
+### テスト観点
+
+Phase2 の保存を変更した場合は以下 2 パターンを必ず確認する。
+
+1. **手動クローズ**: 1〜2 問答えた後に「占いを終わる」→ closingUser ＋ closingAI 両方が DB に保存されているか
+2. **オートクローズ**: 3 問使い切り → 同上
+
+途中保存（各 Q&A 応答後）が壊れていないかも確認したい場合は「2 問後に手動クローズ」が一番効率的（途中保存 2 回 ＋ クロージング保存 1 回を一度に確認できる）。

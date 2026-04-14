@@ -108,6 +108,44 @@ import { useSQLite } from "@/lib/repositories/database";
 
 プランの変更は BFF の `POST /api/clients/plan/change` にも通知して DB を同期する。
 
+## Phase2 セッションクローズの実装ルール
+
+### handleSessionClose を必ず使う
+
+クロージングメッセージの送信は **`handleSessionClose()`** を経由すること。直接 `sendMessage` を書かない。
+
+```typescript
+// ✅ 正しい
+handleSessionClose();
+
+// ❌ 直接書かない
+isEndingEarlyRef.current = true;
+sendMessage({ text: "ありがとうございました..." }, { body: { isEndingEarly: true } });
+```
+
+手動「占いを終わる」ボタンと、3 問使い切り後のオートクローズ（`onFinish` 内）の両方が同じ関数を使う設計になっている。
+
+### shouldPersistReading の isEndingEarlyRef ガード
+
+`shouldPersistReading()` には以下のガードが入っている。**削除しないこと**。
+
+```typescript
+if (isPhase2 && isEndingEarlyRef.current) return false;
+```
+
+**理由**: `useChat` の `messages` と `status` は別の `useSyncExternalStore` で管理されており、React event handler から `sendMessage` を呼ぶと tearing（`messages` にクロージングユーザーメッセージがあるのに `status = "ready"` のまま）が発生する。このガードがないと AI クロージング応答が含まれない不完全な保存が走る。
+
+### isClosingComplete は ref と state の両方を更新する
+
+`onFinish` 内でのクロージング完了処理では必ず両方を更新すること。
+
+```typescript
+isClosingCompleteRef.current = true;  // 非同期コンテキスト（.finally() など）用
+setIsClosingComplete(true);           // リアクティブ effect トリガー用
+```
+
+どちらか片方だけでは「done 遷移が発火しない」バグが再発する。
+
 ## iOS / Android 固有の注意点
 
 - **iOS**: Apple Sign In 用の `AuthKey_*.p8` はプロジェクトルートに配置 (Git 管理外)
