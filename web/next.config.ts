@@ -1,16 +1,16 @@
+import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    // Google プロフィール画像のドメインを許可
     domains: [
-      "lh3.googleusercontent.com", // Google プロフィール画像
-      "googleusercontent.com", // Google画像全般
-      "graph.facebook.com", // Facebook画像（将来用）
-      "platform-lookaside.fbsbx.com", // Facebook画像（将来用）
+      "lh3.googleusercontent.com",
+      "googleusercontent.com",
+      "graph.facebook.com",
+      "platform-lookaside.fbsbx.com",
     ],
-    // リモート画像パターン設定
     remotePatterns: [
       {
         protocol: "https",
@@ -28,4 +28,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

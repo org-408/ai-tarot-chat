@@ -1,0 +1,128 @@
+{
+  "common": {
+    "send": "Send",
+    "back": "Back",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signInWithGoogle": "Sign in with Google",
+    "continueAsGuest": "Continue as Guest",
+    "or": "or"
+  },
+  "chat": {
+    "placeholder": "Type a message...",
+    "endReading": "End Reading",
+    "questionsRemaining": "{{count}} questions remaining",
+    "saving": "Saving...",
+    "done": "Reading complete"
+  },
+  "nav": {
+    "salon": "Salon",
+    "history": "History",
+    "tarotists": "Tarotists",
+    "settings": "Settings",
+    "plans": "Plans"
+  },
+  "salon": {
+    "title": "Tarot Salon",
+    "selectType": "Choose a reading type",
+    "quickReading": "Quick Reading",
+    "personalReading": "Personal Reading",
+    "quickDesc": "Draw cards and get an instant AI interpretation",
+    "personalDesc": "Explore your concerns in a deep dialogue with the AI",
+    "startReading": "Start Reading",
+    "remainingQuick": "{{count}} quick readings left today",
+    "remainingPersonal": "{{count}} personal readings left today",
+    "limitReached": "You have reached today's reading limit",
+    "selectTarotist": "Choose a tarotist",
+    "selectCategory": "Choose a category",
+    "selectSpread": "Choose a spread"
+  },
+  "reading": {
+    "shufflePrompt": "Shuffle the cards",
+    "startPersonal": "Start Personal Reading",
+    "cards": "Cards",
+    "grid": "Grid",
+    "carousel": "Carousel",
+    "profile": "Profile",
+    "revealAll": "Reveal All Cards",
+    "allRevealed": "All cards revealed",
+    "title": "Tarot Reading",
+    "loadError": "Failed to load reading"
+  },
+  "personal": {
+    "title": "Personal Reading",
+    "phase1Title": "Tell us about your concern",
+    "phase2Title": "The cards speak",
+    "phase1Desc": "The tarotist asks questions to deeply understand your situation",
+    "premiumOnly": "Personal readings require a premium tarotist",
+    "startCards": "Draw Cards"
+  },
+  "history": {
+    "title": "Reading History",
+    "empty": "No reading history yet",
+    "all": "All",
+    "quick": "Quick",
+    "personal": "Personal",
+    "loadMore": "Load More",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "noHistory": "History is not saved on this plan",
+    "detail": "Detail"
+  },
+  "plans": {
+    "title": "Plans",
+    "current": "Current Plan",
+    "upgrade": "Upgrade",
+    "downgrade": "Downgrade",
+    "popular": "Popular",
+    "perMonth": "per month",
+    "free": "Free",
+    "subscribe": "Choose This Plan",
+    "manageSubscription": "Manage Subscription",
+    "cancelAnytime": "Cancel anytime",
+    "features": "Features",
+    "requiresAuth": "Sign in required",
+    "checkoutError": "Failed to start checkout"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "email": "Email",
+    "plan": "Plan",
+    "usage": "Usage",
+    "todayQuick": "Today's Quick Readings",
+    "todayPersonal": "Today's Personal Readings",
+    "subscription": "Subscription",
+    "manageSubscription": "Manage Subscription",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "appInfo": "App Info",
+    "version": "Version",
+    "notSignedIn": "Not signed in"
+  },
+  "tarotist": {
+    "title": "Tarotists",
+    "premiumOnly": "Premium Tarotists",
+    "locked": "Plan required",
+    "quality": "Quality",
+    "selectForReading": "Read with this tarotist"
+  },
+  "auth": {
+    "signInTitle": "AI Tarot Chat",
+    "signInSubtitle": "Tarot readings with AI dialogue",
+    "signInDescription": "Sign in to experience deep readings with our tarotists",
+    "secureAuth": "Secure Auth",
+    "dataProtection": "Data Protected",
+    "tagline": "Ancient wisdom meets modern AI",
+    "taglineSubline": "Illuminating your unique destiny"
+  }
+}

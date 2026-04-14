@@ -4,7 +4,16 @@
     "back": "戻る",
     "close": "閉じる",
     "loading": "読み込み中...",
-    "error": "エラーが発生しました"
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "signIn": "サインイン",
+    "signOut": "サインアウト",
+    "signInWithGoogle": "Google でサインイン",
+    "continueAsGuest": "ゲストとして続ける",
+    "or": "または"
   },
   "chat": {
     "placeholder": "メッセージを入力...",
@@ -12,5 +21,108 @@
     "questionsRemaining": "残り{{count}}問",
     "saving": "保存中...",
     "done": "占いが完了しました"
+  },
+  "nav": {
+    "salon": "サロン",
+    "history": "占い履歴",
+    "tarotists": "占い師",
+    "settings": "設定",
+    "plans": "プラン"
+  },
+  "salon": {
+    "title": "タロットサロン",
+    "selectType": "占いの種類を選んでください",
+    "quickReading": "クイック占い",
+    "personalReading": "パーソナル占い",
+    "quickDesc": "カードを引いてAIが即座に解釈します",
+    "personalDesc": "あなたの悩みをAIと対話しながら深く占います",
+    "startReading": "占いを始める",
+    "remainingQuick": "クイック占い残り{{count}}回",
+    "remainingPersonal": "パーソナル占い残り{{count}}回",
+    "limitReached": "本日の占い回数上限に達しました",
+    "selectTarotist": "占い師を選んでください",
+    "selectCategory": "ジャンルを選んでください",
+    "selectSpread": "スプレッドを選んでください"
+  },
+  "reading": {
+    "shufflePrompt": "カードをシャッフルしてください",
+    "startPersonal": "パーソナル占いを始める",
+    "cards": "カード",
+    "grid": "グリッド",
+    "carousel": "カルーセル",
+    "profile": "プロフィール",
+    "revealAll": "すべてのカードをめくる",
+    "allRevealed": "すべてのカードが開きました",
+    "title": "タロット占い",
+    "loadError": "占いの読み込みに失敗しました"
+  },
+  "personal": {
+    "title": "パーソナル占い",
+    "phase1Title": "あなたの悩みを教えてください",
+    "phase2Title": "カードが答えます",
+    "phase1Desc": "占い師があなたの状況を深く理解するために質問します",
+    "premiumOnly": "パーソナル占いはプレミアム占い師のみ対応しています",
+    "startCards": "カードを引く"
+  },
+  "history": {
+    "title": "占い履歴",
+    "empty": "まだ占い履歴がありません",
+    "all": "すべて",
+    "quick": "クイック",
+    "personal": "パーソナル",
+    "loadMore": "もっと見る",
+    "today": "今日",
+    "yesterday": "昨日",
+    "daysAgo": "{{count}}日前",
+    "noHistory": "このプランでは履歴は保存されません",
+    "detail": "詳細"
+  },
+  "plans": {
+    "title": "プラン",
+    "current": "現在のプラン",
+    "upgrade": "アップグレード",
+    "downgrade": "ダウングレード",
+    "popular": "人気",
+    "perMonth": "月額",
+    "free": "無料",
+    "subscribe": "このプランにする",
+    "manageSubscription": "サブスクリプション管理",
+    "cancelAnytime": "いつでもキャンセル可能",
+    "features": "特典",
+    "requiresAuth": "サインインが必要です",
+    "checkoutError": "決済の開始に失敗しました"
+  },
+  "settings": {
+    "title": "設定",
+    "account": "アカウント",
+    "email": "メールアドレス",
+    "plan": "プラン",
+    "usage": "利用状況",
+    "todayQuick": "今日のクイック占い",
+    "todayPersonal": "今日のパーソナル占い",
+    "subscription": "サブスクリプション",
+    "manageSubscription": "サブスクリプションを管理",
+    "legal": "法的情報",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "appInfo": "アプリ情報",
+    "version": "バージョン",
+    "notSignedIn": "サインインしていません"
+  },
+  "tarotist": {
+    "title": "占い師一覧",
+    "premiumOnly": "プレミアム占い師",
+    "locked": "プランが必要",
+    "quality": "品質",
+    "selectForReading": "この占い師で占う"
+  },
+  "auth": {
+    "signInTitle": "AI タロット占い",
+    "signInSubtitle": "AIと対話するタロット占い",
+    "signInDescription": "サインインして占い師たちと深いリーディングを体験しましょう",
+    "secureAuth": "安全な認証",
+    "dataProtection": "データ保護",
+    "tagline": "数千年の叡智と最新AI技術の融合",
+    "taglineSubline": "あなただけの運命を照らします"
   }
 }
