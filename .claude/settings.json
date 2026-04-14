@@ -12,5 +12,6 @@
       "Glob(*)",
       "Grep(*)"
     ]
-  }
+  },
+  "autoApprove": ["Edit", "Write", "Bash", "Glob", "Grep", "Read"]
 }
