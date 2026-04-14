@@ -3,15 +3,6 @@ import { logWithContext } from "@/lib/server/logger/logger";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2026-03-25.dahlia",
-});
-
-const PRICE_MAP: Record<string, string | undefined> = {
-  STANDARD: process.env.STRIPE_PRICE_STANDARD,
-  PREMIUM: process.env.STRIPE_PRICE_PREMIUM,
-};
-
 export async function POST(request: NextRequest) {
   try {
     const payload = await authService.verifyApiRequest(request);
@@ -21,6 +12,15 @@ export async function POST(request: NextRequest) {
       planCode: string;
       successUrl: string;
       cancelUrl: string;
+    };
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
+      apiVersion: "2026-03-25.dahlia",
+    });
+
+    const PRICE_MAP: Record<string, string | undefined> = {
+      STANDARD: process.env.STRIPE_PRICE_STANDARD,
+      PREMIUM: process.env.STRIPE_PRICE_PREMIUM,
     };
 
     const priceId = PRICE_MAP[planCode];
