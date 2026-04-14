@@ -6,7 +6,7 @@ import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useEffectEvent, useRef, useState } from "react";
+import React, { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import type {
   ReadingErrorCode,
   SaveReadingInput,
