@@ -47,87 +47,86 @@
 :root {
   --radius: 0.625rem;
 
-  /* 🌞 ライトテーマ（スカイブルー基調） */
-  --background: oklch(0.98 0.03 230); /* 淡い水色 */
-  --foreground: oklch(0.2 0.03 240); /* 濃紺に近い文字色 */
-  --card: oklch(0.99 0.02 230);
+  /* 🌞 ライトテーマ（アメジスト基調） */
+  --background: #F8F6FF;
+  --foreground: #1F1735;
+  --card: #FFFFFF;
   --card-foreground: var(--foreground);
   --popover: var(--card);
   --popover-foreground: var(--foreground);
 
-  --primary: oklch(0.65 0.2 230); /* メインのスカイブルー */
-  --primary-foreground: oklch(0.98 0.02 230);
+  --primary: #7C3AED;
+  --primary-foreground: #FFFFFF;
 
-  --secondary: oklch(0.85 0.12 230); /* 補助的なブルー */
-  --secondary-foreground: var(--foreground);
+  --secondary: #F3F0FF;
+  --secondary-foreground: #1F1735;
 
-  --muted: oklch(0.92 0.03 230);
-  --muted-foreground: oklch(0.35 0.05 240);
+  --muted: #F3F0FF;
+  --muted-foreground: #6B6380;
 
-  --accent: oklch(0.75 0.15 230); /* アクセントブルー */
-  --accent-foreground: var(--foreground);
+  --accent: #EDE9FE;
+  --accent-foreground: #7C3AED;
 
-  --destructive: oklch(0.65 0.2 30); /* 赤みのある注意色 */
-  --border: oklch(0.9 0.02 230);
-  --input: oklch(0.9 0.02 230);
-  --ring: oklch(0.65 0.2 230);
+  --destructive: #DC2626;
+  --border: #E4DFFF;
+  --input: #E4DFFF;
+  --ring: #7C3AED;
 
-  /* チャート用カラーパレットを青系で揃える */
-  --chart-1: oklch(0.7 0.2 230);
-  --chart-2: oklch(0.6 0.15 240);
-  --chart-3: oklch(0.8 0.15 220);
-  --chart-4: oklch(0.75 0.12 200);
-  --chart-5: oklch(0.85 0.18 250);
+  --chart-1: #7C3AED;
+  --chart-2: #A78BFA;
+  --chart-3: #C4B5FD;
+  --chart-4: #5B21B6;
+  --chart-5: #DDD6FE;
 
   /* サイドバー */
-  --sidebar: oklch(0.96 0.02 230);
+  --sidebar: #F3F0FF;
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }
 
 .dark {
-  /* 🌙 ダークテーマ（ブルー基調） */
-  --background: oklch(0.2 0.03 240); /* 濃紺 */
-  --foreground: oklch(0.95 0.02 230); /* 明るい水色の文字 */
-  --card: oklch(0.25 0.04 240);
+  /* 🌙 ダークテーマ（深夜のアメジスト） */
+  --background: #0D0A1A;
+  --foreground: #EDE9FE;
+  --card: #1A1330;
   --card-foreground: var(--foreground);
   --popover: var(--card);
   --popover-foreground: var(--foreground);
 
-  --primary: oklch(0.75 0.15 230); /* 鮮やかなブルー */
-  --primary-foreground: oklch(0.98 0.02 230);
+  --primary: #A78BFA;
+  --primary-foreground: #0D0A1A;
 
-  --secondary: oklch(0.4 0.05 240);
-  --secondary-foreground: var(--foreground);
+  --secondary: #251B42;
+  --secondary-foreground: #EDE9FE;
 
-  --muted: oklch(0.3 0.03 240);
-  --muted-foreground: oklch(0.7 0.1 230);
+  --muted: #251B42;
+  --muted-foreground: #8B7EAA;
 
-  --accent: oklch(0.6 0.12 230);
-  --accent-foreground: var(--foreground);
+  --accent: #3B1F6A;
+  --accent-foreground: #A78BFA;
 
-  --destructive: oklch(0.65 0.2 30);
-  --border: oklch(0.4 0.04 240);
-  --input: oklch(0.35 0.03 240);
-  --ring: oklch(0.65 0.2 230);
+  --destructive: #F87171;
+  --border: #2E2050;
+  --input: #2E2050;
+  --ring: #A78BFA;
 
-  --chart-1: oklch(0.7 0.2 230);
-  --chart-2: oklch(0.6 0.15 240);
-  --chart-3: oklch(0.8 0.15 220);
-  --chart-4: oklch(0.75 0.12 200);
-  --chart-5: oklch(0.85 0.18 250);
+  --chart-1: #A78BFA;
+  --chart-2: #7C3AED;
+  --chart-3: #C4B5FD;
+  --chart-4: #DDD6FE;
+  --chart-5: #5B21B6;
 
-  --sidebar: oklch(0.25 0.04 240);
+  --sidebar: #1A1330;
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }

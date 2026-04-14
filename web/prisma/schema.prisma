@@ -128,6 +128,9 @@ model Client {
   provider     String?  // "google", "apple" 何でサインインしたか
   lastLoginAt  DateTime?
 
+  // Stripe
+  stripeCustomerId String?
+
   // お気に入りスプレッド
   favoriteSpreads FavoriteSpread[]
 

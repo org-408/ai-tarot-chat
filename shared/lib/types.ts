@@ -133,6 +133,9 @@ export type Client = {
   provider?: string | null; // "google", "apple" 何でサインインしたか
   lastLoginAt?: Date | null;
 
+  // Stripe
+  stripeCustomerId?: string | null;
+
   // お気に入りスプレッド
   favoriteSpreads?: FavoriteSpread[];
 
