@@ -37,3 +37,5 @@ vendor/
 # Firebase
 GoogleService-Info.plist
 google-services.json
+
+src/assets/master-data.ts
