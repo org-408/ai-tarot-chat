@@ -828,7 +828,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         {(status === "submitted" ||
           status === "streaming" ||
           isSavingReading ||
-          isSyncingUsage) && (
+          isSyncingUsage ||
+          // Phase2 の "saving" フェーズ全体でカーソルを表示し続ける。
+          // 1回目の保存完了後にリトライ保存が走る場合、リトライは
+          // withSavingIndicator=false のため isSavingReading が立たず、
+          // カーソルが消えて "done" が来るまで空白になってしまう。
+          (isPhase2 && phase2Stage === "saving")) && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
