@@ -194,6 +194,32 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       setChatError(resolvedError);
     },
     onFinish: async () => {
+      // Phase1 で空のAIレスポンスが返ってきた場合、エラーとして処理する
+      // （プロバイダが例外を投げずに空レスポンスを返すケースの対策）
+      // status→"ready" は onFinish より先に発火するため、messages はこの時点で更新済み
+      if (isPersonal && !isPhase2) {
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg?.role === "assistant") {
+          const lastMsgText = lastMsg.parts
+            .filter((p) => p.type === "text")
+            .map((p) => (p as { text: string }).text)
+            .join("");
+          if (!lastMsgText.trim()) {
+            console.warn("Empty AI response detected in Phase1, removing message and showing error");
+            setMessages((prev) => prev.slice(0, -1));
+            setChatError(
+              new ReadingChatError({
+                message: "占い師からの応答を受信できませんでした。もう一度お試しください。",
+                status: 0,
+                code: "NETWORK_OR_STREAM_FAILURE",
+                retryable: true,
+              }),
+            );
+            return;
+          }
+        }
+      }
+
       setChatError(null);
 
       if (isEndingEarlyRef.current) {
@@ -338,6 +364,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             .map((part) => (part as { text: string }).text)
             .join("");
           console.log("Extracted string:", str);
+          // AIレスポンスが空の場合（プロバイダが空レスポンスを返したケース）は
+          // スプレッド選択フェーズに進まない。onFinish でエラー処理される。
+          if (!str.trim()) {
+            console.warn("Empty AI response in Phase1-2, not advancing to spread selection");
+            return;
+          }
           // 【特におすすめのスプレッド】ヘッダー以降のみをパース対象にする（3提案部分の誤検出を防ぐ）
           const headerIdx = str.indexOf("【特におすすめのスプレッド】");
           const targetStr = headerIdx >= 0 ? str.slice(headerIdx) : str;
