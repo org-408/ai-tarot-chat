@@ -212,11 +212,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           (m, i) => m.role === "user" && i > initialLen,
         ).length;
         if (phase2UserCount >= MAX_PHASE2_QUESTIONS) {
-          isEndingEarlyRef.current = true;
-          sendMessage(
-            { text: "ありがとうございました。今日の占いはここで終わりにします。" },
-            { body: { isEndingEarly: true } },
-          );
+          handleSessionCloseRef.current();
         }
       }
 
@@ -235,6 +231,28 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const hasSentInitialMessage = useRef(false);
   const isEndingEarlyRef = useRef(false);
+
+  // handleSessionClose の ref（onFinish の非同期クロージャから最新の関数を参照するため）
+  const handleSessionCloseRef = useRef<() => void>(() => {});
+
+  /**
+   * セッションクローズ処理（手動「占いを終わる」とオートクローズの共通処理）。
+   * isEndingEarlyRef を立ててからクロージングメッセージを送信する。
+   * onFinish 内では handleSessionCloseRef.current() 経由で呼び出す。
+   */
+  const handleSessionClose = useCallback(() => {
+    isEndingEarlyRef.current = true;
+    sendMessage(
+      { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+      { body: { isEndingEarly: true } },
+    );
+  }, [sendMessage]);
+
+  // ref を常に最新の関数に同期する
+  useEffect(() => {
+    handleSessionCloseRef.current = handleSessionClose;
+  }, [handleSessionClose]);
+
   // クロージング AI 応答完了フラグ（ref + state の二重管理）:
   //   ref  → .finally() など非同期コンテキストから同期的に参照するため
   //   state → onFinish 完了をリアクティブに検知し、専用 effect から
@@ -513,6 +531,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const shouldPersistReading = () => {
     if (status !== "ready") return false;
+
+    // クロージングシーケンス中（isEndingEarlyRef=true）は closingAI がまだ
+    // messages に届いていない可能性がある。tearing により status="ready" かつ
+    // messages に closingUser だけが入った状態で保存が走るのを防ぐ。
+    // closingAI が届いた後に onFinish が isEndingEarlyRef を false に戻し、
+    // isClosingComplete 専用 effect が persistReading を呼ぶ。
+    if (isPhase2 && isEndingEarlyRef.current) return false;
 
     return isPhase2
       ? drawnCards.length > 0 && messages.length > initialLen
@@ -1032,15 +1057,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                       : `💬 鑑定について質問できます（残り ${remaining} 問）`}
                   </div>
                   <button
-                    onClick={() => {
-                      isEndingEarlyRef.current = true;
-                      sendMessage(
-                        {
-                          text: "ありがとうございました。今日の占いはここで終わりにします。",
-                        },
-                        { body: { isEndingEarly: true } },
-                      );
-                    }}
+                    onClick={handleSessionClose}
                     disabled={isProcessing || hasBlockingError}
                     className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
                   >
