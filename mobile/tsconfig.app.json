@@ -24,7 +24,14 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/*"],
+      "@ai-sdk/react": ["./node_modules/@ai-sdk/react"],
+      "ai": ["./node_modules/ai"],
+      "framer-motion": ["./node_modules/framer-motion"],
+      "lucide-react": ["./node_modules/lucide-react"],
+      "react-markdown": ["./node_modules/react-markdown"],
+      "remark-breaks": ["./node_modules/remark-breaks"],
+      "remark-gfm": ["./node_modules/remark-gfm"]
     }
   },
   "include": ["src", "../shared"]
