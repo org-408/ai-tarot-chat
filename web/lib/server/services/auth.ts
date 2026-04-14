@@ -556,6 +556,7 @@ export class AuthService {
 
   /**
    * API リクエストの認証をチェック(ゲスト・ユーザー両対応)
+   * JWT ヘッダーがない場合は NextAuth セッション Cookie でフォールバック (Web クライアント用)
    * @returns { payload } または { error: NextResponse }
    */
   async verifyApiRequest(
@@ -564,11 +565,47 @@ export class AuthService {
     try {
       const payload = await this.getPayloadFromRequest(request);
       return { payload };
-    } catch (error) {
-      logWithContext("error", "❌ APIリクエスト認証エラー:", { error });
+    } catch {
+      // JWT ヘッダーがない場合、NextAuth セッションで試みる (Web クライアント)
+      if (typeof request !== "string") {
+        const webPayload = await this.verifyNextAuthSession(request);
+        if (webPayload) return { payload: webPayload };
+      }
+      logWithContext("warn", "❌ APIリクエスト認証失敗 (JWT + NextAuth ともに無効)");
       return {
         error: NextResponse.json({ error: "認証失敗" }, { status: 401 }),
       };
+    }
+  }
+
+  /**
+   * NextAuth セッション Cookie から AppJWTPayload を生成 (Web クライアント専用)
+   * セッションが有効で clientId が取得できる場合のみ返す
+   */
+  private async verifyNextAuthSession(
+    request: NextRequest
+  ): Promise<AppJWTPayload | null> {
+    try {
+      const session = await auth();
+      if (!session?.user?.id) return null;
+
+      const userId = session.user.id;
+      const client = await clientRepository.getClientByUserId(userId);
+      if (!client) return null;
+
+      return {
+        t: "app",
+        clientId: client.id,
+        deviceId: `web:${userId}`,
+        provider: (session as { provider?: string }).provider ?? "google",
+        user: {
+          id: userId,
+          email: session.user.email ?? undefined,
+        },
+      } as AppJWTPayload;
+    } catch (error) {
+      logWithContext("warn", "NextAuth セッション検証エラー:", { error });
+      return null;
     }
   }
 
