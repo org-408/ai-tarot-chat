@@ -10,8 +10,23 @@
       "Agent(*)",
       "WebFetch(*)",
       "WebSearch(*)",
-      "TodoWrite(*)"
+      "TodoWrite(*)",
+      "mcp__*(*)"
     ]
   },
-  "autoApprove": ["Edit", "Write", "Bash", "Glob", "Grep", "Read", "Agent", "WebFetch", "WebSearch", "TodoWrite"]
+  "autoApprove": [
+    "Edit",
+    "Write",
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Agent",
+    "WebFetch",
+    "WebSearch",
+    "TodoWrite",
+    "mcp__ccd_session__mark_chapter",
+    "mcp__ccd_session__spawn_task"
+  ],
+  "dangerouslySkipPermissions": true
 }
