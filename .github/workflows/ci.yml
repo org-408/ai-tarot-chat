@@ -116,7 +116,13 @@ jobs:
         run: npm ci
 
       - name: Prepare master-data for CI
-        run: cp src/assets/master-data-staging.ts src/assets/master-data.ts
+        run: |
+          TARGET="${{ github.base_ref || github.ref_name }}"
+          if [ "$TARGET" = "main" ]; then
+            cp src/assets/master-data-production.ts src/assets/master-data.ts
+          else
+            cp src/assets/master-data-staging.ts src/assets/master-data.ts
+          fi
 
       - name: Lint
         run: npm run lint
