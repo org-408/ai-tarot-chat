@@ -532,11 +532,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const shouldPersistReading = () => {
     if (status !== "ready") return false;
 
-    return isPhase2
-      ? drawnCards.length > 0 && messages.length > initialLen
-      : (isRevealingCompleted || isPersonal) &&
-          drawnCards.length > 0 &&
-          messages.length > 0;
+    if (isPhase2) {
+      if (drawnCards.length === 0 || messages.length <= initialLen) return false;
+      // Phase2 では必ず AI 応答（assistant メッセージ）が末尾にある状態で保存する。
+      // sendMessage(closingUserMsg) を React event handler から呼ぶと
+      // useSyncExternalStore の tearing により status="ready" かつ messages の
+      // 末尾が user（closingUser のみ）のレンダーが発生する。
+      // このタイミングで保存すると closingAI 抜きで保存されてしまうため、
+      // 末尾が assistant のときだけ保存を許可する。
+      return messages[messages.length - 1]?.role === "assistant";
+    }
+
+    return (isRevealingCompleted || isPersonal) &&
+      drawnCards.length > 0 &&
+      messages.length > 0;
   };
 
   const getTargetMessages = () => messages;
