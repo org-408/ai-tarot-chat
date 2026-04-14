@@ -1,6 +1,6 @@
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
-import { BarChart2, ChevronRight, ExternalLink, LogIn, LogOut, Star } from "lucide-react";
+import { BarChart2, ChevronRight, ExternalLink, LogIn, LogOut, Star, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import type { Plan } from "../../../shared/lib/types";
 import UsagePage from "./usage-page";
@@ -12,6 +12,7 @@ interface SettingsPageProps {
   onLogin: () => void;
   onLogout: () => void;
   onManageSubscriptions: () => void;
+  onDeleteAccount: () => Promise<void>;
 }
 
 const BFF_URL =
@@ -93,8 +94,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onLogin,
   onLogout,
   onManageSubscriptions,
+  onDeleteAccount,
 }) => {
   const [view, setView] = useState<"main" | "usage">("main");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // ネイティブ（iOS/Android）では App.getInfo() でバイナリの実バージョンを取得
   // Web/開発時は vite.config.ts で埋め込んだ package.json のバージョンにフォールバック
@@ -110,6 +114,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const openUrl = async (url: string) => {
     await Browser.open({ url });
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await onDeleteAccount();
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const planLabel = () => {
@@ -135,6 +149,36 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     <div className="main-container pb-10">
       <div className="page-title pt-3">⚙️ 設定</div>
 
+      {/* ── アカウント削除確認ダイアログ ─── */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-base font-bold text-gray-900 mb-2">
+              アカウントを削除しますか？
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              占い履歴などすべてのデータが削除されます。この操作は取り消せません。
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-700 active:bg-gray-50 disabled:opacity-50"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white active:bg-red-600 disabled:opacity-50"
+              >
+                {isDeleting ? "削除中..." : "削除する"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── アカウント ─────────────────── */}
       <SectionHeader label="アカウント" />
       <RowGroup>
@@ -154,6 +198,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               icon={<LogOut size={16} />}
               label="サインアウト"
               onClick={onLogout}
+              danger
+            />
+            <Row
+              icon={<Trash2 size={16} />}
+              label="アカウントを削除"
+              description="すべてのデータが削除されます"
+              onClick={() => setShowDeleteConfirm(true)}
               danger
             />
           </>

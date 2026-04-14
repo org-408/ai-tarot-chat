@@ -12,6 +12,7 @@ import { useSalon } from "./lib/hooks/use-salon";
 import { useSalonStore } from "./lib/stores/salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import { showInterstitialAd } from "./lib/utils/admob";
+import { Http } from "./lib/utils/http";
 import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
@@ -371,6 +372,13 @@ function App() {
     }
   };
 
+  // 🔥 アカウント削除処理
+  const handleDeleteAccount = async () => {
+    await Http.executeRequest({ method: "DELETE", path: "/api/clients/me", requiresAuth: true });
+    await appLogout();
+    setPageType("salon");
+  };
+
   // 🔥 RevenueCat Customer Center へ移動
   const handleManageSubscriptions = async () => {
     console.log("Customer Center へ移動");
@@ -599,6 +607,7 @@ function App() {
             onLogin={handleLogin}
             onLogout={handleLogout}
             onManageSubscriptions={handleManageSubscriptions}
+            onDeleteAccount={handleDeleteAccount}
           />
         );
       default:

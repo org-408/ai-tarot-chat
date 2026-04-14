@@ -1,30 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
 import { getMeasurementId } from "@/lib/client/analytics/ga";
-import Script from "next/script";
 
 export function GoogleAnalytics() {
   const measurementId = getMeasurementId();
 
-  if (!measurementId) {
-    return null;
-  }
+  useEffect(() => {
+    if (!measurementId) return;
 
-  return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag('js', new Date());
-          gtag('config', '${measurementId}', { send_page_view: false });
-        `}
-      </Script>
-    </>
-  );
+    // Load gtag.js script
+    const script1 = document.createElement("script");
+    script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    script1.async = true;
+    document.head.appendChild(script1);
+
+    // Initialize gtag
+    window.dataLayer = window.dataLayer || [];
+    function gtag(...args: unknown[]) {
+      window.dataLayer.push(args);
+    }
+    window.gtag = gtag as (...args: unknown[]) => void;
+    gtag("js", new Date());
+    gtag("config", measurementId, { send_page_view: false });
+
+    return () => {
+      document.head.removeChild(script1);
+    };
+  }, [measurementId]);
+
+  return null;
 }

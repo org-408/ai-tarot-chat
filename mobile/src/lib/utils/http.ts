@@ -5,7 +5,7 @@ import { storeRepository } from "../repositories/store";
 const BFF_URL = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
 
 type RequestConfig = {
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "DELETE";
   path: string;
   body?: unknown;
   requiresAuth: boolean;
@@ -196,13 +196,13 @@ export class Http {
       }
     }
 
-    // ✅ GET は window.fetch() を使用
+    // ✅ GET / DELETE は window.fetch() を使用
     //    iOS の CapacitorHttp.request({ method: "GET" }) はカスタムヘッダー（Authorization等）を
     //    ドロップする既知の問題がある。WKWebView の fetch() は CORS + カスタムヘッダーを正しく送信する。
     //    POST は引き続き CapacitorHttp.request() を使用（問題なし）。
-    if (method === "GET") {
+    if (method === "GET" || method === "DELETE") {
       const fetchResponse = await fetch(url, {
-        method: "GET",
+        method,
         headers,
       });
 
