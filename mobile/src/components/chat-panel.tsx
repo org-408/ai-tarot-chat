@@ -838,7 +838,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           console.log("Rendering message:", { index, message, textContent });
 
           return (
-            <div key={index}>
+            <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
               {message.role === "user" ? (
                 <div className="bg-gray-100 rounded-3xl px-4 py-3 inline-block max-w-[85%]">
                   <p className="text-base text-gray-900 whitespace-pre-wrap">
