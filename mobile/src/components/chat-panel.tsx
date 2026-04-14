@@ -198,8 +198,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       if (isEndingEarlyRef.current) {
         isEndingEarlyRef.current = false;
-        // ref を先に同期更新（.finally() から React レンダーサイクル外で参照するため）
+        // ref を先に同期更新（.finally() など非同期コンテキストから参照するため）
         isClosingCompleteRef.current = true;
+        // state も更新（リアクティブなトリガーとして専用 effect が使用する）
+        setIsClosingComplete(true);
         // UI 用ステートも更新（入力エリア非表示・バナー表示のトリガー）
         setPhase2Stage("saving");
       } else if (isPhase2) {
@@ -233,14 +235,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const hasSentInitialMessage = useRef(false);
   const isEndingEarlyRef = useRef(false);
-  // クロージング AI 応答完了フラグ（Reactステートではなく ref で管理する理由:
-  // useEffectEvent のクロージャは「effect 発火時点のレンダー値」を捕捉する。
-  // setPhase2Stage("saving") は onFinish 内で呼ばれるが、それが反映された
-  // レンダーよりも前に persistReading effect が発火するため、.finally() 内で
-  // phase2Stage===state を参照しても "chatting" のままになってしまう。
-  // ref は React のレンダーサイクルと無関係に同期更新されるため、.finally() から
-  // 安全に参照できる。)
+  // クロージング AI 応答完了フラグ（ref + state の二重管理）:
+  //   ref  → .finally() など非同期コンテキストから同期的に参照するため
+  //   state → onFinish 完了をリアクティブに検知し、専用 effect から
+  //           persistReading を確実にトリガーするため
+  // AI SDK v6 では status→"ready" が onFinish より先に発火するケースがあり、
+  // status dep だけでは effect 発火時に ref がまだ false のまま "done" チェックが
+  // スキップされる。isClosingComplete state をトリガーにすることで、
+  // onFinish 完了後に確実に persistReading が呼ばれるようにする。
   const isClosingCompleteRef = useRef(false);
+  const [isClosingComplete, setIsClosingComplete] = useState(false);
 
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -725,6 +729,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     //   Phase2  → Q&A セッション完了時（inputDisabled=true）に保存
     //   非Phase2 → 鑑定完了後すぐ保存
     //   エラー時は保存しない
+    //
+    // phase2Stage を deps に含める理由:
+    //   AI SDK v6 では status → "ready" が onFinish より先に発火するケースがある。
+    //   その場合、status 変化で effect が発火した時点では isClosingCompleteRef が
+    //   まだ false のため、シグネチャ一致パスで "done" チェックがスキップされる。
+    //   直後に onFinish が isClosingCompleteRef=true + setPhase2Stage("saving") を
+    //   実行するが、phase2Stage が deps にないと effect が再発火せず "done" に
+    //   遷移できない。phase2Stage を deps に加えることで "saving" への遷移時に
+    //   effect が確実に再発火し、isClosingCompleteRef=true の状態で "done" を設定できる。
     // ─────────────────────────────────────────────────────────────
     persistReading(true);
   }, [
@@ -738,11 +751,24 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     isRevealingCompleted,
     messages,
     persistReading,
+    phase2Stage,
     saveReading,
     spread,
     status,
     tarotist,
   ]);
+
+  // クロージング完了時に persistReading を確実にトリガーする専用 effect。
+  // AI SDK v6 では status→"ready" が onFinish より先に発火するケースがあり、
+  // メインの persist effect が isClosingCompleteRef=false の状態で実行されてしまう
+  // ことがある（シグネチャ一致パスで "done" チェックがスキップされ、その後
+  // onFinish が ref を true に更新しても他の deps 変化がなければ effect が
+  // 再発火しない）。isClosingComplete state は onFinish 内で同期的に
+  // true にセットされるため、この effect は onFinish 完了後に確実に発火する。
+  useEffect(() => {
+    if (!isClosingComplete || !isPhase2) return;
+    persistReading(true);
+  }, [isClosingComplete, isPhase2, persistReading]);
 
   useEffect(() => {
     let appStateListener: PluginListenerHandle | undefined;
