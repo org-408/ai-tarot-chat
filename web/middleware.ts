@@ -1,17 +1,35 @@
-// middleware.ts
-import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { type NextRequest, NextResponse } from "next/server";
+import { routing } from "./i18n/routing";
+
+const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(req: NextRequest) {
-  // ✅ Next.js 16 対応: リクエストヘッダーを明示的に転送する
-  //    Next.js 16 では NextResponse.next() だけではオリジナルのリクエストヘッダー
-  //    (Authorization など) がルートハンドラーに届かない場合がある
-  const requestHeaders = new Headers(req.headers);
-  const res = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  const { pathname } = req.nextUrl;
 
+  // API / auth / admin / 静的アセット / マーケティングページは intl ルーティングをスキップ
+  const skipIntl =
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/(admin)") ||
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/terms") ||
+    pathname.startsWith("/delete-account") ||
+    pathname.startsWith("/download") ||
+    pathname.startsWith("/pricing");
+
+  // ✅ リクエストヘッダーを明示的に転送 (Next.js 16 対応)
+  const requestHeaders = new Headers(req.headers);
+
+  let res: NextResponse;
+  if (skipIntl) {
+    res = NextResponse.next({ request: { headers: requestHeaders } });
+  } else {
+    res = intlMiddleware(req) as NextResponse;
+  }
+
+  // CORS ヘッダー (モバイルアプリ対応)
   const origin = req.headers.get("origin");
   if (origin) {
     res.headers.set("Access-Control-Allow-Origin", origin);
@@ -24,7 +42,6 @@ export default function middleware(req: NextRequest) {
     res.headers.set("Vary", "Origin");
   }
 
-  // OPTIONS の場合は即レスで終了
   if (req.method === "OPTIONS") {
     return new NextResponse(null, { status: 204, headers: res.headers });
   }
@@ -34,5 +51,6 @@ export default function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|privacy|terms|delete-account).*)"],
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|tarotists|cards).*)",
+  ],
 };
