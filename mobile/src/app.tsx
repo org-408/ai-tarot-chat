@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import type { Plan } from "../../shared/lib/types";
 import Header from "./components/header";
 import ReadingPage from "./components/reading-page";
@@ -9,6 +9,7 @@ import { useClient } from "./lib/hooks/use-client";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
 import { useSalon } from "./lib/hooks/use-salon";
+import { useSalonStore } from "./lib/stores/salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import { showInterstitialAd } from "./lib/utils/admob";
 import { canUseTarotist } from "./lib/utils/salon";
@@ -59,6 +60,29 @@ const PlanExpiredToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     >
       <span>⚠️</span>
       <span>プランが変更されました。ご利用のプランをご確認ください。</span>
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// 強制アンロック通知コンポーネント
+// ─────────────────────────────────────────────
+
+const ForceUnlockToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  useEffect(() => {
+    const t = setTimeout(onClose, 2500);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="fixed top-28 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-amber-500 text-white px-4 py-2.5 rounded-2xl shadow-lg text-sm font-medium whitespace-nowrap"
+    >
+      <span>🔓</span>
+      <span>ナビゲーションを強制解除しました</span>
     </motion.div>
   );
 };
@@ -123,6 +147,17 @@ function App() {
   // 🔥 AI API 課金中のナビゲーションロック（pageType に依存しない）
   // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
+  const [showForceUnlockToast, setShowForceUnlockToast] = useState(false);
+
+  // 🔥 ロック中のメニュー長押しによる強制アンロック（ハング時の救済措置）
+  const handleForceUnlock = useCallback(() => {
+    console.log("[App] Force unlock triggered by long press");
+    useSalonStore.getState().init();
+    setIsNavigationLocked(false);
+    setPageType("salon");
+    setPersonalPageKey((k) => k + 1);
+    setShowForceUnlockToast(true);
+  }, []);
 
   // 🔥 ライフサイクル管理（✅ デバッグ情報追加）
   const {
@@ -771,6 +806,13 @@ function App() {
         )}
       </AnimatePresence>
 
+      {/* 🔓 強制アンロックトースト（2.5秒で自動消去） */}
+      <AnimatePresence>
+        {showForceUnlockToast && (
+          <ForceUnlockToast onClose={() => setShowForceUnlockToast(false)} />
+        )}
+      </AnimatePresence>
+
       {/* 🔥 プラン失効ダイアログ（占い中に失効した場合） */}
       <AnimatePresence>
         {planExpiredNotification === "dialog" && (
@@ -787,6 +829,7 @@ function App() {
         currentPage={pageType}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
         menuDisabled={isNavigationLocked}
+        onForceUnlock={handleForceUnlock}
         showProfile={showProfile}
         setShowProfile={setShowProfile}
       />

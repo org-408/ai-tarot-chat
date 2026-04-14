@@ -1,4 +1,5 @@
 import { useSalon } from "../lib/hooks/use-salon";
+import { useForceLongPress } from "../lib/hooks/use-force-unlock";
 import type { PageType, UserPlan } from "../types";
 
 interface HeaderProps {
@@ -6,6 +7,7 @@ interface HeaderProps {
   currentPage: PageType;
   onMenuClick: () => void;
   menuDisabled?: boolean;
+  onForceUnlock?: () => void;
   showProfile: boolean;
   setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -15,10 +17,21 @@ const Header: React.FC<HeaderProps> = ({
   currentPage,
   onMenuClick,
   menuDisabled = false,
+  onForceUnlock,
   showProfile,
   setShowProfile,
 }) => {
   const { selectedTarotist, isPersonal } = useSalon();
+
+  const { handlers: longPressHandlers, progress, isHolding } = useForceLongPress(
+    onForceUnlock ?? (() => {}),
+    { enabled: menuDisabled && !!onForceUnlock }
+  );
+
+  // SVG 円弧の計算（半径 14、円周 ≒ 87.96）
+  const RADIUS = 14;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
   console.log(
     `[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`
   );
@@ -90,26 +103,58 @@ const Header: React.FC<HeaderProps> = ({
     <header className="app-header">
       <div className="header-container">
         {/* 🔥 ハンバーガーメニューボタン */}
-        <button
-          onClick={onMenuClick}
-          disabled={menuDisabled}
-          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          aria-label="メニューを開く"
-        >
-          <svg
-            className="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 relative">
+          <button
+            onClick={onMenuClick}
+            disabled={menuDisabled}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="メニューを開く"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+
+          {/* ロングプレス中の円弧プログレス */}
+          {isHolding && (
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 40 40"
+            >
+              <circle
+                cx="20"
+                cy="20"
+                r={RADIUS}
+                fill="none"
+                stroke="white"
+                strokeOpacity={0.7}
+                strokeWidth={2.5}
+                strokeDasharray={CIRCUMFERENCE}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                transform="rotate(-90 20 20)"
+              />
+            </svg>
+          )}
+
+          {/* ロック中のみ表示するポインターイベントキャプチャレイヤー */}
+          {menuDisabled && (
+            <div
+              className="absolute inset-0 z-10 touch-none"
+              {...longPressHandlers}
             />
-          </svg>
-        </button>
+          )}
+        </div>
 
         <div
           onClick={() => {
