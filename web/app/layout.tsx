@@ -17,7 +17,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="ja">
+      <head>
+        {/* ダークモード FOUC 防止: localStorage の theme を読んで class を事前適用 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <GoogleAnalytics />
         <Providers>{children}</Providers>
