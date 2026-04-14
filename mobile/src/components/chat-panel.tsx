@@ -532,13 +532,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const shouldPersistReading = () => {
     if (status !== "ready") return false;
 
-    // クロージングシーケンス中（isEndingEarlyRef=true）は closingAI がまだ
-    // messages に届いていない可能性がある。tearing により status="ready" かつ
-    // messages に closingUser だけが入った状態で保存が走るのを防ぐ。
-    // closingAI が届いた後に onFinish が isEndingEarlyRef を false に戻し、
-    // isClosingComplete 専用 effect が persistReading を呼ぶ。
-    if (isPhase2 && isEndingEarlyRef.current) return false;
-
     return isPhase2
       ? drawnCards.length > 0 && messages.length > initialLen
       : (isRevealingCompleted || isPersonal) &&
