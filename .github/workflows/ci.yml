@@ -115,6 +115,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare master-data for CI
+        run: cp src/assets/master-data-staging.ts src/assets/master-data.ts
+
       - name: Lint
         run: npm run lint
 
