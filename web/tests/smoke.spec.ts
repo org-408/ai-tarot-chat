@@ -10,9 +10,12 @@ for (const { name, path } of PAGES) {
   test(`${name}: TypeError がないこと`, async ({ page }) => {
     const typeErrors: string[] = [];
 
-    // 未処理の JS エラーを捕捉（(void 0) is not a function はここに出る）
+    // TypeError のみ捕捉（(void 0) is not a function 等の JSX runtime クラッシュが対象）
+    // DB 未接続・認証エラー等のサーバーサイドエラーは対象外
     page.on("pageerror", (err) => {
-      typeErrors.push(err.message);
+      if (err.name === "TypeError" || err.message.toLowerCase().startsWith("typeerror")) {
+        typeErrors.push(err.message);
+      }
     });
 
     await page.goto(path);
