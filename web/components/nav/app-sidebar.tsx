@@ -14,7 +14,7 @@ import {
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { History, Settings, Sparkles, Star, User, Wand2 } from "lucide-react";
+import { History, Sparkles, Star, User, Wand2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 const NAV_ITEMS = [
@@ -85,27 +85,15 @@ export function AppSidebar({ locale }: { locale: string }) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => navigate("settings")}
-                  isActive={pathname.includes("/settings")}
-                  tooltip={t("settings")}
-                >
-                  <Settings />
-                  <span>{t("settings")}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
+      {/* クリックで設定ページへ（Claude/ChatGPT スタイル） */}
       <SidebarFooter className="p-3">
-        <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+        <button
+          type="button"
+          onClick={() => navigate("settings")}
+          className="flex items-center gap-2 w-full rounded-lg p-2 hover:bg-sidebar-accent transition-colors group-data-[collapsible=icon]:justify-center"
+        >
           <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
             {session?.user?.image ? (
               <img
@@ -117,7 +105,7 @@ export function AppSidebar({ locale }: { locale: string }) {
               <User className="w-4 h-4 text-purple-600" />
             )}
           </div>
-          <div className="group-data-[collapsible=icon]:hidden flex-1 min-w-0">
+          <div className="group-data-[collapsible=icon]:hidden flex-1 min-w-0 text-left">
             <p className="text-sm font-medium truncate">{displayName}</p>
             <span
               className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${planBadgeClass}`}
@@ -125,7 +113,7 @@ export function AppSidebar({ locale }: { locale: string }) {
               {planCode}
             </span>
           </div>
-        </div>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
