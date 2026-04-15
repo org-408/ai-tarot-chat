@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import {
   SidebarInset,
@@ -5,6 +6,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -13,6 +15,11 @@ interface Props {
 }
 
 export default async function AppLayout({ children, params }: Props) {
+  const session = await auth();
+  if (!session) {
+    redirect("/auth/signin");
+  }
+
   const { locale } = await params;
 
   return (
