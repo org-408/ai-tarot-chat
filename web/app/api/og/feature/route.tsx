@@ -108,7 +108,7 @@ export async function GET() {
               letterSpacing: "-0.5px",
             }}
           >
-            AI タロット占い
+            Ariadne - AIタロット占い
           </span>
         </div>
 
