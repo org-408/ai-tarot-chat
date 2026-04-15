@@ -297,8 +297,16 @@ export class ClientService {
     return BaseRepository.transaction(
       { client: clientRepository },
       async ({ client: clientRepo }) => {
-        let client = await clientRepo.getClientById(clientId);
+        const client = await clientRepo.getClientById(clientId);
         if (!client) throw new Error("Client not found");
+
+        // plan は resetDailyCounts より前に取得する。
+        // resetDailyCounts は include: { plan } なしで返すため、
+        // client を上書きすると plan が null になりバグる。
+        const plan = client.plan;
+        if (!plan) {
+          throw new Error("Plan not found");
+        }
 
         const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
           .some((date) => date !== null && !isSameDayJST(date));
@@ -307,7 +315,7 @@ export class ClientService {
           const beforeReadingsCount = client.dailyReadingsCount;
           const beforePersonalCount = client.dailyPersonalCount;
 
-          client = await clientRepo.resetDailyCounts(client.id);
+          await clientRepo.resetDailyCounts(client.id);
           await clientRepo.createDailyResetHistory({
             client: { connect: { id: client.id } },
             date: new Date(),
@@ -317,11 +325,6 @@ export class ClientService {
             afterPersonalCount: 0,
             afterReadingsCount: 0,
           });
-        }
-
-        const plan = client.plan;
-        if (!plan) {
-          throw new Error("Plan not found");
         }
 
         const quotaConfig = isPersonalReading
