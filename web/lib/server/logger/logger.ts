@@ -175,14 +175,16 @@ function serializeContext(context?: LogMetadata): LogMetadata | undefined {
   return Object.fromEntries(
     Object.entries(context).map(([k, v]) => {
       if (v instanceof Error) {
+        // name/message/stack は non-enumerable のため Object.entries では取れない → 明示取得
+        // ReadingRouteError の code/status/phase など独自フィールドは enumerable なので entries で取得
+        const ownEnumProps = Object.fromEntries(Object.entries(v));
         return [
           k,
           {
             name: v.name,
             message: v.message,
             stack: v.stack,
-            // ReadingRouteError など独自フィールドも取れるよう spread
-            ...v,
+            ...ownEnumProps,
           },
         ];
       }
