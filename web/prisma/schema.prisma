@@ -667,3 +667,11 @@ model XPost {
   @@index([scheduledAt])
   @@map("x_posts")
 }
+
+model XPostConfig {
+  id              String   @id @default("singleton")
+  autoPostEnabled Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+
+  @@map("x_post_config")
+}

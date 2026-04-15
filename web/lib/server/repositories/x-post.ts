@@ -113,3 +113,26 @@ class XPostRepository extends BaseRepository {
 }
 
 export const xPostRepository = new XPostRepository();
+
+// ==========================================
+// XPostConfig (自動投稿設定)
+// ==========================================
+
+class XPostConfigRepository extends BaseRepository {
+  async get(): Promise<{ autoPostEnabled: boolean }> {
+    const config = await this.db.xPostConfig.findUnique({
+      where: { id: "singleton" },
+    });
+    return { autoPostEnabled: config?.autoPostEnabled ?? false };
+  }
+
+  async setAutoPostEnabled(enabled: boolean): Promise<void> {
+    await this.db.xPostConfig.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", autoPostEnabled: enabled },
+      update: { autoPostEnabled: enabled },
+    });
+  }
+}
+
+export const xPostConfigRepository = new XPostConfigRepository();
