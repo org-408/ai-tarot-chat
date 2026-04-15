@@ -1,0 +1,495 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { XPostStatus, XPostType } from "@prisma/client";
+import {
+  generateContentAction,
+  createDraftAction,
+  schedulePostAction,
+  postNowAction,
+  postNewNowAction,
+  deletePostAction,
+  loadPostsAction,
+} from "./actions";
+
+type XPostItem = {
+  id: string;
+  content: string;
+  tweetId: string | null;
+  status: XPostStatus;
+  postType: XPostType;
+  error: string | null;
+  scheduledAt: string | null;
+  postedAt: string | null;
+  isAuto: boolean;
+  createdAt: string;
+};
+
+const STATUS_LABEL: Record<XPostStatus, string> = {
+  DRAFT: "下書き",
+  SCHEDULED: "予約済み",
+  POSTED: "投稿済み",
+  FAILED: "失敗",
+  CANCELLED: "キャンセル",
+};
+
+const STATUS_COLOR: Record<XPostStatus, string> = {
+  DRAFT: "bg-zinc-100 text-zinc-600",
+  SCHEDULED: "bg-blue-100 text-blue-700",
+  POSTED: "bg-green-100 text-green-700",
+  FAILED: "bg-red-100 text-red-700",
+  CANCELLED: "bg-zinc-100 text-zinc-400",
+};
+
+const TYPE_LABEL: Record<XPostType, string> = {
+  DAILY_CARD: "今日のタロット",
+  APP_PROMO: "アプリ宣伝",
+  TAROT_TIP: "タロット豆知識",
+  MANUAL: "手動",
+};
+
+const TYPE_COLOR: Record<XPostType, string> = {
+  DAILY_CARD: "bg-violet-100 text-violet-700",
+  APP_PROMO: "bg-orange-100 text-orange-700",
+  TAROT_TIP: "bg-teal-100 text-teal-700",
+  MANUAL: "bg-zinc-100 text-zinc-600",
+};
+
+const POST_TYPE_OPTIONS: { value: XPostType; label: string }[] = [
+  { value: XPostType.MANUAL, label: "手動（AI生成なし）" },
+  { value: XPostType.DAILY_CARD, label: "今日のタロット" },
+  { value: XPostType.APP_PROMO, label: "アプリ宣伝" },
+  { value: XPostType.TAROT_TIP, label: "タロット豆知識" },
+];
+
+const MAX_CHARS = 280;
+
+type Props = {
+  initialPosts: XPostItem[];
+  totalCount: number;
+  twitterConfigured: boolean;
+};
+
+export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured }: Props) {
+  const [tab, setTab] = useState<"compose" | "history">("compose");
+
+  // Compose state
+  const [postType, setPostType] = useState<XPostType>(XPostType.DAILY_CARD);
+  const [content, setContent] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [composeError, setComposeError] = useState<string | null>(null);
+  const [composeSuccess, setComposeSuccess] = useState<string | null>(null);
+
+  // History state
+  const [posts, setPosts] = useState<XPostItem[]>(initialPosts);
+  const [statusFilter, setStatusFilter] = useState<XPostStatus | "ALL">("ALL");
+  const [historyError, setHistoryError] = useState<string | null>(null);
+
+  const [isPending, startTransition] = useTransition();
+
+  const charCount = [...content].length; // Unicode 文字数カウント
+  const isOverLimit = charCount > MAX_CHARS;
+
+  function clearCompose() {
+    setContent("");
+    setScheduledAt("");
+    setComposeError(null);
+    setComposeSuccess(null);
+  }
+
+  async function handleGenerate() {
+    if (postType === XPostType.MANUAL) {
+      setComposeError("手動モードでは AI 生成は使用できません");
+      return;
+    }
+    setComposeError(null);
+    setComposeSuccess(null);
+    startTransition(async () => {
+      const res = await generateContentAction(postType);
+      if (res.ok) {
+        setContent(res.content);
+      } else {
+        setComposeError(res.error);
+      }
+    });
+  }
+
+  async function handlePostNow() {
+    if (!content.trim()) {
+      setComposeError("投稿内容を入力してください");
+      return;
+    }
+    if (isOverLimit) {
+      setComposeError(`${MAX_CHARS}文字以内で入力してください`);
+      return;
+    }
+    setComposeError(null);
+    setComposeSuccess(null);
+    startTransition(async () => {
+      const res = await postNewNowAction({ content, postType });
+      if (res.ok) {
+        setComposeSuccess("投稿しました！");
+        clearCompose();
+        await refreshHistory();
+      } else {
+        setComposeError(res.error);
+      }
+    });
+  }
+
+  async function handleSaveDraft() {
+    if (!content.trim()) {
+      setComposeError("投稿内容を入力してください");
+      return;
+    }
+    setComposeError(null);
+    setComposeSuccess(null);
+    startTransition(async () => {
+      const res = await createDraftAction({ content, postType });
+      if (res.ok) {
+        setComposeSuccess("下書き保存しました");
+        clearCompose();
+        await refreshHistory();
+      } else {
+        setComposeError(res.error);
+      }
+    });
+  }
+
+  async function handleSchedule() {
+    if (!content.trim()) {
+      setComposeError("投稿内容を入力してください");
+      return;
+    }
+    if (!scheduledAt) {
+      setComposeError("予約日時を選択してください");
+      return;
+    }
+    if (isOverLimit) {
+      setComposeError(`${MAX_CHARS}文字以内で入力してください`);
+      return;
+    }
+    setComposeError(null);
+    setComposeSuccess(null);
+    startTransition(async () => {
+      const res = await schedulePostAction({ content, postType, scheduledAt });
+      if (res.ok) {
+        setComposeSuccess("予約投稿を設定しました");
+        clearCompose();
+        await refreshHistory();
+      } else {
+        setComposeError(res.error);
+      }
+    });
+  }
+
+  async function refreshHistory(newFilter?: XPostStatus | "ALL") {
+    const filter = newFilter ?? statusFilter;
+    const res = await loadPostsAction({
+      status: filter === "ALL" ? undefined : filter,
+    });
+    if (res.ok) {
+      setPosts(res.posts);
+      setHistoryError(null);
+    } else {
+      setHistoryError(res.error);
+    }
+  }
+
+  async function handleFilterChange(filter: XPostStatus | "ALL") {
+    setStatusFilter(filter);
+    await refreshHistory(filter);
+  }
+
+  async function handlePostNowFromHistory(id: string) {
+    startTransition(async () => {
+      const res = await postNowAction(id);
+      if (res.ok) {
+        await refreshHistory();
+      } else {
+        setHistoryError(res.error);
+      }
+    });
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("この投稿を削除しますか？")) return;
+    startTransition(async () => {
+      const res = await deletePostAction(id);
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        setHistoryError(res.error);
+      }
+    });
+  }
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">𝕏 投稿管理</h1>
+          <p className="text-zinc-500 text-sm mt-1">X (Twitter) 投稿の作成・管理・自動投稿</p>
+        </div>
+        {!twitterConfigured && (
+          <div className="text-xs bg-amber-50 border border-amber-200 text-amber-700 rounded-md px-3 py-2">
+            ⚠️ Twitter API 未設定（投稿には環境変数の設定が必要です）
+          </div>
+        )}
+      </div>
+
+      {/* Tab */}
+      <div className="flex gap-2 border-b mb-6">
+        {(["compose", "history"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => {
+              setTab(t);
+              if (t === "history") refreshHistory();
+            }}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+              tab === t
+                ? "border-sky-600 text-sky-600"
+                : "border-transparent text-zinc-500 hover:text-zinc-700"
+            }`}
+          >
+            {t === "compose" ? "投稿作成" : `投稿履歴（${totalCount}件）`}
+          </button>
+        ))}
+      </div>
+
+      {/* Compose Tab */}
+      {tab === "compose" && (
+        <div className="space-y-4">
+          {/* Post type */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1">投稿タイプ</label>
+            <select
+              value={postType}
+              onChange={(e) => setPostType(e.target.value as XPostType)}
+              className="border rounded-md px-3 py-2 text-sm w-full max-w-xs"
+            >
+              {POST_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* AI generate button */}
+          {postType !== XPostType.MANUAL && (
+            <button
+              onClick={handleGenerate}
+              disabled={isPending}
+              className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 transition"
+            >
+              {isPending ? "生成中…" : "✨ AI で生成"}
+            </button>
+          )}
+
+          {/* Text area */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1">
+              投稿内容
+            </label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={5}
+              placeholder="ツイート内容を入力、または上の「AI で生成」ボタンで自動入力"
+              className="w-full border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
+            <div className={`text-right text-xs mt-1 ${isOverLimit ? "text-red-500 font-bold" : "text-zinc-400"}`}>
+              {charCount} / {MAX_CHARS}
+            </div>
+          </div>
+
+          {/* Schedule datetime */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1">
+              予約投稿日時（省略時は即時 or 下書き）
+            </label>
+            <input
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm"
+            />
+          </div>
+
+          {/* Error / Success */}
+          {composeError && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {composeError}
+            </div>
+          )}
+          {composeSuccess && (
+            <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+              {composeSuccess}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={handlePostNow}
+              disabled={isPending || isOverLimit || !content.trim()}
+              className="px-4 py-2 rounded-md bg-sky-600 text-white text-sm font-medium hover:bg-sky-700 disabled:opacity-50 transition"
+            >
+              {isPending ? "処理中…" : "今すぐ投稿"}
+            </button>
+            <button
+              onClick={handleSchedule}
+              disabled={isPending || isOverLimit || !content.trim() || !scheduledAt}
+              className="px-4 py-2 rounded-md bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition"
+            >
+              予約投稿
+            </button>
+            <button
+              onClick={handleSaveDraft}
+              disabled={isPending || !content.trim()}
+              className="px-4 py-2 rounded-md border text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 transition"
+            >
+              下書き保存
+            </button>
+            <button
+              onClick={clearCompose}
+              disabled={isPending}
+              className="px-4 py-2 rounded-md border text-sm text-zinc-400 hover:bg-zinc-50 disabled:opacity-50 transition"
+            >
+              クリア
+            </button>
+          </div>
+
+          {/* Auto-posting info */}
+          <div className="mt-8 p-4 bg-zinc-50 rounded-lg border text-sm text-zinc-600">
+            <p className="font-medium mb-2">🤖 自動投稿について</p>
+            <ul className="space-y-1 text-xs text-zinc-500 list-disc list-inside">
+              <li>GitHub Actions の定期実行（毎日 9:00 JST）で自動投稿されます</li>
+              <li>曜日ごとにローテーション: 日・火・木 = 今日のタロット / 月・金 = 豆知識 / 水・土 = アプリ宣伝</li>
+              <li>手動で今すぐ実行: <code className="bg-zinc-100 px-1 rounded">POST /api/cron/x-posts</code>（Authorization ヘッダー必要）</li>
+              <li>GitHub Secrets に <code className="bg-zinc-100 px-1 rounded">APP_URL</code> と <code className="bg-zinc-100 px-1 rounded">CRON_SECRET</code> を設定してください</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* History Tab */}
+      {tab === "history" && (
+        <div className="space-y-4">
+          {/* Filter */}
+          <div className="flex gap-2 flex-wrap">
+            {(["ALL", ...Object.values(XPostStatus)] as (XPostStatus | "ALL")[]).map((s) => (
+              <button
+                key={s}
+                onClick={() => handleFilterChange(s)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                  statusFilter === s
+                    ? "bg-sky-600 text-white"
+                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                }`}
+              >
+                {s === "ALL" ? "すべて" : STATUS_LABEL[s]}
+              </button>
+            ))}
+          </div>
+
+          {historyError && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {historyError}
+            </div>
+          )}
+
+          {/* Table */}
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-zinc-600 w-1/2">内容</th>
+                  <th className="text-left px-4 py-3 font-medium text-zinc-600">タイプ</th>
+                  <th className="text-left px-4 py-3 font-medium text-zinc-600">ステータス</th>
+                  <th className="text-left px-4 py-3 font-medium text-zinc-600">日時</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {posts.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="text-center text-zinc-400 py-8 text-sm">
+                      投稿履歴はありません
+                    </td>
+                  </tr>
+                )}
+                {posts.map((post) => (
+                  <tr key={post.id} className="hover:bg-zinc-50 transition">
+                    <td className="px-4 py-3">
+                      <div className="line-clamp-2 text-zinc-700 max-w-xs">{post.content}</div>
+                      {post.error && (
+                        <div className="text-xs text-red-500 mt-1 truncate max-w-xs" title={post.error}>
+                          エラー: {post.error}
+                        </div>
+                      )}
+                      {post.tweetId && (
+                        <a
+                          href={`https://x.com/i/web/status/${post.tweetId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-sky-500 hover:underline mt-1 block"
+                        >
+                          X で見る →
+                        </a>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLOR[post.postType]}`}>
+                        {TYPE_LABEL[post.postType]}
+                      </span>
+                      {post.isAuto && (
+                        <span className="ml-1 text-xs text-zinc-400">🤖</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLOR[post.status]}`}>
+                        {STATUS_LABEL[post.status]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">
+                      {post.postedAt
+                        ? new Date(post.postedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+                        : post.scheduledAt
+                        ? `${new Date(post.scheduledAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} 予定`
+                        : new Date(post.createdAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2 justify-end">
+                        {(post.status === XPostStatus.DRAFT ||
+                          post.status === XPostStatus.FAILED ||
+                          post.status === XPostStatus.SCHEDULED) && (
+                          <button
+                            onClick={() => handlePostNowFromHistory(post.id)}
+                            disabled={isPending}
+                            className="text-xs px-2 py-1 rounded bg-sky-100 text-sky-700 hover:bg-sky-200 disabled:opacity-50 transition"
+                          >
+                            今すぐ投稿
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          disabled={isPending}
+                          className="text-xs px-2 py-1 rounded bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50 transition"
+                        >
+                          削除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

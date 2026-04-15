@@ -629,3 +629,41 @@ model NotificationSent {
   @@index([subscriptionId])
   @@map("notification_sents")
 }
+
+// ==========================================
+// X (Twitter) 投稿管理
+// ==========================================
+
+enum XPostStatus {
+  DRAFT
+  SCHEDULED
+  POSTED
+  FAILED
+  CANCELLED
+}
+
+enum XPostType {
+  DAILY_CARD // 今日のタロット
+  APP_PROMO  // アプリ宣伝
+  TAROT_TIP  // タロット豆知識
+  MANUAL     // 手動投稿
+}
+
+model XPost {
+  id          String      @id @default(cuid())
+  content     String      @db.Text
+  tweetId     String?
+  status      XPostStatus @default(DRAFT)
+  postType    XPostType   @default(MANUAL)
+  error       String?     @db.Text
+  scheduledAt DateTime?
+  postedAt    DateTime?
+  isAuto      Boolean     @default(false)
+  prompt      String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("x_posts")
+}
