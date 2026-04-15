@@ -18,7 +18,7 @@
   "chat": {
     "placeholder": "メッセージを入力...",
     "endReading": "占いを終わる",
-    "questionsRemaining": "残り{{count}}問",
+    "questionsRemaining": "残り{count}問",
     "saving": "保存中...",
     "done": "占いが完了しました"
   },
@@ -37,8 +37,8 @@
     "quickDesc": "カードを引いてAIが即座に解釈します",
     "personalDesc": "あなたの悩みをAIと対話しながら深く占います",
     "startReading": "占いを始める",
-    "remainingQuick": "クイック占い残り{{count}}回",
-    "remainingPersonal": "パーソナル占い残り{{count}}回",
+    "remainingQuick": "クイック占い残り{count}回",
+    "remainingPersonal": "パーソナル占い残り{count}回",
     "limitReached": "本日の占い回数上限に達しました",
     "selectTarotist": "占い師を選んでください",
     "selectCategory": "ジャンルを選んでください",
@@ -50,8 +50,7 @@
     "categoryQuestion": "どのジャンルを占いますか？",
     "spreadQuestion": "どのスプレッドで占いますか？",
     "spreadSubtitle": "（カテゴリごとに選択肢が変わります）",
-    "startReading": "占いを始める",
-    "remainingToday": "今日はあと{{count}}回",
+    "remainingToday": "今日はあと{count}回",
     "loading": "読み込み中..."
   },
   "reading": {
@@ -83,7 +82,7 @@
     "loadMore": "もっと見る",
     "today": "今日",
     "yesterday": "昨日",
-    "daysAgo": "{{count}}日前",
+    "daysAgo": "{count}日前",
     "noHistory": "このプランでは履歴は保存されません",
     "detail": "詳細"
   },
@@ -113,7 +112,7 @@
     "usage": "利用回数",
     "quickReading": "クイック占い",
     "personalReading": "パーソナル占い",
-    "usageCount": "{{used}} / {{max}} 回",
+    "usageCount": "{used} / {max} 回",
     "unlimited": "無制限",
     "usageResetNote": "日本時間 0:00 にリセット",
     "subscription": "サブスクリプション",

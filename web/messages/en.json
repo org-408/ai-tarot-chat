@@ -18,7 +18,7 @@
   "chat": {
     "placeholder": "Type a message...",
     "endReading": "End Reading",
-    "questionsRemaining": "{{count}} questions remaining",
+    "questionsRemaining": "{count} questions remaining",
     "saving": "Saving...",
     "done": "Reading complete"
   },
@@ -37,12 +37,21 @@
     "quickDesc": "Draw cards and get an instant AI interpretation",
     "personalDesc": "Explore your concerns in a deep dialogue with the AI",
     "startReading": "Start Reading",
-    "remainingQuick": "{{count}} quick readings left today",
-    "remainingPersonal": "{{count}} personal readings left today",
+    "remainingQuick": "{count} quick readings left today",
+    "remainingPersonal": "{count} personal readings left today",
     "limitReached": "You have reached today's reading limit",
     "selectTarotist": "Choose a tarotist",
     "selectCategory": "Choose a category",
-    "selectSpread": "Choose a spread"
+    "selectSpread": "Choose a spread",
+    "selectCategoryAndSpread": "Choose a category and spread",
+    "categoryLabel": "Category",
+    "spreadLabel": "Spread",
+    "selectPlaceholder": "Please select",
+    "categoryQuestion": "Which category would you like?",
+    "spreadQuestion": "Which spread would you like?",
+    "spreadSubtitle": "(Options vary by category)",
+    "remainingToday": "{count} readings left today",
+    "loading": "Loading..."
   },
   "reading": {
     "shufflePrompt": "Shuffle the cards",
@@ -73,7 +82,7 @@
     "loadMore": "Load More",
     "today": "Today",
     "yesterday": "Yesterday",
-    "daysAgo": "{{count}} days ago",
+    "daysAgo": "{count} days ago",
     "noHistory": "History is not saved on this plan",
     "detail": "Detail"
   },
@@ -103,7 +112,7 @@
     "usage": "Daily Usage",
     "quickReading": "Quick Reading",
     "personalReading": "Personal Reading",
-    "usageCount": "{{used}} / {{max}}",
+    "usageCount": "{used} / {max}",
     "unlimited": "Unlimited",
     "usageResetNote": "Resets at midnight JST",
     "subscription": "Subscription",
@@ -132,7 +141,8 @@
     "premiumOnly": "Premium Tarotists",
     "locked": "Plan required",
     "quality": "Quality",
-    "selectForReading": "Read with this tarotist"
+    "selectForReading": "Read with this tarotist",
+    "noTarotists": "No tarotists found"
   },
   "auth": {
     "signInTitle": "AI Tarot Chat",
