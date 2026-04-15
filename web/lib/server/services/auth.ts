@@ -272,7 +272,7 @@ export class AuthService {
       logWithContext("warn", "⚠️ No user to sign out", { payload });
     }
     // client, device の存在確認をし、なければトークンとの紐付けを切って、新しいトークンを発行する
-    const device = await clientService.getDeviceById(payload.deviceId);
+    const device = await clientService.getDeviceByDeviceId(payload.deviceId);
     if (!device) {
       // device が存在しない場合は救済しない(よっぽどのことがないと発生しないと思われる)
       logWithContext("error", "device not found. token will be invalidated", {

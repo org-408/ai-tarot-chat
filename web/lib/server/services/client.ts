@@ -165,6 +165,10 @@ export class ClientService {
     return clientRepository.getDeviceById(deviceId);
   }
 
+  async getDeviceByDeviceId(deviceId: string) {
+    return clientRepository.getDeviceByDeviceId(deviceId);
+  }
+
   async updateDevice(
     deviceId: string,
     data: Partial<{
@@ -670,6 +674,7 @@ export class ClientService {
       lastPersonalReadingDate: updatedClient.lastPersonalReadingDate,
     };
   }
+
 }
 
 export const clientService = new ClientService();
