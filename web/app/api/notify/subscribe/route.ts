@@ -1,4 +1,4 @@
-import { upsertSubscription } from "@/lib/server/repositories/notification";
+import { notificationService } from "@/lib/server/services/notification";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await upsertSubscription(email, platform);
+    await notificationService.subscribe(email, platform);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

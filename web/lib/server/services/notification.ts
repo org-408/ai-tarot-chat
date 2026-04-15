@@ -69,6 +69,21 @@ export class NotificationService {
   // 登録者
   // ==========================================
 
+  /** メールアドレスをサブスクリプションに登録（既存なら platform 更新） */
+  async subscribe(email: string, platform: string) {
+    return repo.upsertSubscription(email, platform);
+  }
+
+  /** 配信停止トークンからサブスクリプションを取得 */
+  async getByUnsubscribeToken(token: string) {
+    return repo.findSubscriptionByToken(token);
+  }
+
+  /** 配信停止トークンで配信停止処理を実行 */
+  async performUnsubscribeByToken(token: string) {
+    return repo.unsubscribeByToken(token);
+  }
+
   async listActiveSubscribers() {
     return repo.listActiveSubscriptions();
   }
