@@ -43,6 +43,7 @@ export default function PersonalPage({
   params: Promise<{ locale: string }>;
 }) {
   const t = useTranslations("personal");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [locale, setLocale] = useState("ja");
   const { data: session } = useSession();
@@ -148,12 +149,26 @@ export default function PersonalPage({
   if (!selectedSpread || !selectedTarotist) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-gray-500">占い師とスプレッドを選択してください</p>
+        <p className="text-gray-500">{t("selectTarotistAndSpread")}</p>
         <button
           onClick={() => router.push(`/${locale}/salon`)}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
-          サロンに戻る
+          {tCommon("backToSalon")}
+        </button>
+      </div>
+    );
+  }
+
+  if (selectedTarotist.plan?.code !== "PREMIUM") {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-gray-500">{t("premiumOnly")}</p>
+        <button
+          onClick={() => router.push(`/${locale}/salon`)}
+          className="px-4 py-2 bg-purple-500 text-white rounded-lg"
+        >
+          {tCommon("backToSalon")}
         </button>
       </div>
     );

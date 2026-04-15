@@ -170,7 +170,7 @@ export default function PlansPage() {
                 }`}
               >
                 {checkoutLoading === plan.code
-                  ? "処理中..."
+                  ? t("processing")
                   : isCurrent
                     ? t("current")
                     : t("subscribe")}

@@ -50,6 +50,16 @@ export default function SalonPage({
     setSelectedTarotist(tarotist);
   };
 
+  // プランにパーソナル占い権限があるか（usage未取得中は制限しない）
+  const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
+
+  // canPersonal が false になった場合は quick に戻す
+  useEffect(() => {
+    if (!canPersonal && readingType === "personal") {
+      setReadingType("quick");
+    }
+  }, [canPersonal, readingType]);
+
   const remainingQuick = usage?.remainingReadings;
   const remainingPersonal = usage?.remainingPersonal;
 
@@ -83,21 +93,42 @@ export default function SalonPage({
       </div>
 
       {/* 占い種別タブ */}
-      <div className="flex gap-3 mb-8 justify-center">
-        {(["quick", "personal"] as ReadingType[]).map((type) => (
-          <button
-            key={type}
-            onClick={() => setReadingType(type)}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-              readingType === type
-                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105"
-                : "bg-white border border-gray-200 text-gray-600 hover:border-purple-300"
-            }`}
-          >
-            {type === "quick" ? t("quickReading") : t("personalReading")}
-          </button>
-        ))}
+      <div className="flex gap-3 mb-6 justify-center">
+        {(["quick", "personal"] as ReadingType[]).map((type) => {
+          const isDisabled = type === "personal" && !canPersonal;
+          return (
+            <button
+              key={type}
+              onClick={() => !isDisabled && setReadingType(type)}
+              disabled={isDisabled}
+              title={isDisabled ? t("personalPremiumRequired") : undefined}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                readingType === type
+                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105"
+                  : isDisabled
+                  ? "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-purple-300"
+              }`}
+            >
+              {type === "quick" ? (
+                t("quickReading")
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  {t("personalReading")}
+                  {isDisabled && <span aria-hidden="true">🔒</span>}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
+
+      {/* プレミアム未加入の場合の案内 */}
+      {!canPersonal && usage && (
+        <p className="text-center text-xs text-amber-600 mb-4">
+          🔒 {t("personalPremiumRequired")}
+        </p>
+      )}
 
       {/* 種別説明 */}
       <p className="text-center text-sm text-gray-500 mb-6">

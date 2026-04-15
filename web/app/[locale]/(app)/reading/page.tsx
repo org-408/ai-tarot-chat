@@ -41,6 +41,7 @@ export default function ReadingPage({
   params: Promise<{ locale: string }>;
 }) {
   const t = useTranslations("reading");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [locale, setLocale] = useState("ja");
   const { data: session } = useSession();
@@ -132,7 +133,7 @@ export default function ReadingPage({
           onClick={() => router.push(`/${locale}/salon`)}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
-          サロンに戻る
+          {tCommon("backToSalon")}
         </button>
       </div>
     );
