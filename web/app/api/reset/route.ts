@@ -1,5 +1,5 @@
 import { logWithContext } from "@/lib/server/logger/logger";
-import { prisma } from "@/prisma/prisma";
+import { resetService } from "@/lib/server/services/reset";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -18,23 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Reading 関連を先に削除（onDelete: Cascade なしのため FK制約に従い逆順で削除）
-    await prisma.chatMessage.deleteMany({});
-    await prisma.drawnCard.deleteMany({});
-    await prisma.reading.deleteMany({});
-    // その後 client, device, log, user テーブルをクリア
-    await prisma.planChangeHistory.deleteMany({});
-    await prisma.client.deleteMany({});
-    await prisma.device.deleteMany({});
-    await prisma.log.deleteMany({});
-    await prisma.user.deleteMany({});
-    await prisma.session.deleteMany({});
-    await prisma.account.deleteMany({});
-
-    logWithContext("info", "Database reset successfully", {
-      path: "/api/reset",
-    });
-
+    await resetService.resetDatabase();
     return NextResponse.json({ success: true });
   } catch (error) {
     logWithContext("error", "Error resetting database", {

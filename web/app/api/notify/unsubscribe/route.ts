@@ -1,7 +1,4 @@
-import {
-  findSubscriptionByToken,
-  unsubscribeByToken,
-} from "@/lib/server/repositories/notification";
+import { notificationService } from "@/lib/server/services/notification";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -14,7 +11,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const sub = await findSubscriptionByToken(token);
+  const sub = await notificationService.getByUnsubscribeToken(token);
   if (!sub) {
     return new NextResponse(errorHtml("無効なリンクです"), {
       status: 404,
@@ -28,7 +25,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  await unsubscribeByToken(token);
+  await notificationService.performUnsubscribeByToken(token);
 
   return new NextResponse(successHtml(sub.email, false), {
     headers: { "Content-Type": "text/html; charset=utf-8" },
