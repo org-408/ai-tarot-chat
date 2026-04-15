@@ -1,14 +1,15 @@
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { xPostRepository } from "@/lib/server/repositories/x-post";
+import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositories/x-post";
 import { isTwitterConfigured } from "@/lib/server/services/twitter";
 import { XPostsPageClient } from "./x-posts-page-client";
 
 export default async function XPostsPage() {
   await assertAdminSession();
 
-  const [posts, totalCount] = await Promise.all([
+  const [posts, totalCount, config] = await Promise.all([
     xPostRepository.findMany({ limit: 50 }),
     xPostRepository.count(),
+    xPostConfigRepository.get(),
   ]);
 
   const initialPosts = posts.map((p) => ({
@@ -29,6 +30,7 @@ export default async function XPostsPage() {
       initialPosts={initialPosts}
       totalCount={totalCount}
       twitterConfigured={isTwitterConfigured()}
+      initialAutoPostEnabled={config.autoPostEnabled}
     />
   );
 }
