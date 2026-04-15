@@ -17,7 +17,7 @@
     "db:admin-set": "tsx prisma/set-admin.ts",
     "ui:add": "npx shadcn@latest add ",
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },
