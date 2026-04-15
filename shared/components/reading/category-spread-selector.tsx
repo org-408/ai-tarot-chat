@@ -10,6 +10,31 @@ import type { AccordionItem } from "../ui/accordion";
 import { Accordion } from "../ui/accordion";
 import { ScrollableRadioSelector } from "../ui/scrollable-radio-selector";
 
+interface CategorySpreadSelectorLabels {
+  /** トップに表示するプロンプト (パーソナル占いモード用) */
+  selectSpreadPrompt?: string;
+  /** トップに表示するプロンプト (クイック占いモード用) */
+  selectCategoryAndSpreadPrompt?: string;
+  /** アコーディオンタイトルのジャンルラベル prefix。例: "ジャンル" */
+  categoryLabel?: string;
+  /** アコーディオンタイトルのスプレッドラベル prefix。例: "スプレッド" */
+  spreadLabel?: string;
+  /** 未選択時のプレースホルダー。例: "選択してください" */
+  selectPlaceholder?: string;
+  /** ジャンル選択リストのタイトル */
+  categoryQuestion?: string;
+  /** スプレッド選択リストのタイトル */
+  spreadQuestion?: string;
+  /** スプレッド選択リストのサブタイトル */
+  spreadSubtitle?: string;
+  /** 占い開始ボタンのテキスト */
+  startReading?: string;
+  /** 利用回数上限時のテキスト */
+  limitReached?: string;
+  /** 残り回数テキスト (親が count を含む書式済み文字列を渡す) */
+  remainingText?: string;
+}
+
 interface CategorySpreadSelectorProps {
   categories: ReadingCategory[];
   spreads: Spread[];
@@ -23,6 +48,8 @@ interface CategorySpreadSelectorProps {
     category: ReadingCategory | null;
     spread: Spread;
   }) => void;
+  /** UI テキスト。プラットフォームごとに翻訳済み文字列を渡す */
+  labels?: CategorySpreadSelectorLabels;
 }
 
 /**
@@ -38,7 +65,22 @@ export const CategorySpreadSelector: React.FC<
   isPersonal = false,
   remainingCount,
   onStartReading,
+  labels = {},
 }) => {
+  const {
+    selectSpreadPrompt = "スプレッドを選んでください",
+    selectCategoryAndSpreadPrompt = "占うジャンルとスプレッドを選んでください",
+    categoryLabel = "ジャンル",
+    spreadLabel = "スプレッド",
+    selectPlaceholder = "選択してください",
+    categoryQuestion = "どのジャンルを占いますか?",
+    spreadQuestion = "どのスプレッドで占いますか？",
+    spreadSubtitle = "(カテゴリごとに選択肢が変わります)",
+    startReading = "✨ 占いを始める ✨",
+    limitReached = "本日の占い回数上限に達しました",
+    remainingText,
+  } = labels;
+
   const [selectedCategory, setSelectedCategory] =
     useState<ReadingCategory | null>(null);
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
@@ -114,12 +156,12 @@ export const CategorySpreadSelector: React.FC<
   const categoryItems: AccordionItem[] = [
     {
       id: "category",
-      title: `ジャンル: ${selectedCategory?.name ?? "選択してください"}`,
+      title: `${categoryLabel}: ${selectedCategory?.name ?? selectPlaceholder}`,
       subtitle: selectedCategory?.description,
       icon: "🎴",
       content: (
         <ScrollableRadioSelector
-          title="どのジャンルを占いますか?"
+          title={categoryQuestion}
           items={categories.map((c) => ({ ...c, bio: c.description }))}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
@@ -132,7 +174,7 @@ export const CategorySpreadSelector: React.FC<
   const spreadItems: AccordionItem[] = [
     {
       id: "spread",
-      title: `スプレッド: ${selectedSpread?.name ?? "選択してください"}`,
+      title: `${spreadLabel}: ${selectedSpread?.name ?? selectPlaceholder}`,
       subtitle: selectedSpread
         ? (selectedSpread.guide ??
           `使用するタロットカード枚数: ${selectedSpread.cells?.length ?? 0}枚`)
@@ -140,8 +182,8 @@ export const CategorySpreadSelector: React.FC<
       icon: "🎯",
       content: (
         <ScrollableRadioSelector
-          title="どのスプレッドで占いますか？"
-          subtitle="(カテゴリごとに選択肢が変わります)"
+          title={spreadQuestion}
+          subtitle={spreadSubtitle}
           items={availableSpreads}
           selected={selectedSpread}
           onSelect={(s) => setSelectedSpread(s as Spread)}
@@ -150,6 +192,10 @@ export const CategorySpreadSelector: React.FC<
       ),
     },
   ];
+
+  const bottomText = isLimitReached
+    ? limitReached
+    : (remainingText ?? "");
 
   return (
     <>
@@ -160,9 +206,7 @@ export const CategorySpreadSelector: React.FC<
         transition={{ repeat: Infinity, duration: 3 }}
       >
         <span className="text-gray-800 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-md text-sm">
-          {isPersonal
-            ? "スプレッドを選んでください"
-            : "占うジャンルとスプレッドを選んでください"}
+          {isPersonal ? selectSpreadPrompt : selectCategoryAndSpreadPrompt}
         </span>
       </motion.div>
 
@@ -186,15 +230,13 @@ export const CategorySpreadSelector: React.FC<
           disabled={isDisabled}
           className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg shadow-2xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
         >
-          ✨ 占いを始める ✨
+          {startReading}
         </button>
-        <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
-          {isLimitReached
-            ? "本日の占い回数上限に達しました"
-            : remainingCount !== undefined
-              ? `今日はあと${remainingCount}回`
-              : ""}
-        </div>
+        {bottomText && (
+          <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
+            {bottomText}
+          </div>
+        )}
       </div>
     </>
   );
