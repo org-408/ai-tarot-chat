@@ -49,6 +49,7 @@ async function loadJapaneseFont(): Promise<ArrayBuffer | undefined> {
 export async function GET() {
   const images = TAROTISTS.map(getImageDataUrl);
   const cardBackUrl = getCardImageDataUrl("back");
+  const cardFaceUrl = getCardImageDataUrl("0_fool");
   const fontData = await loadJapaneseFont();
 
   type FontOption = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 };
@@ -84,7 +85,21 @@ export async function GET() {
             marginBottom: 16,
           }}
         >
-          <img src={cardBackUrl} width={36} height={56} style={{ borderRadius: 5, objectFit: "cover", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }} />
+          {/* 3枚扇形カード（小）: 左右裏面・中央表面（DOM最後=最前面） */}
+          <div style={{ position: "relative", display: "flex", width: 112, height: 76, flexShrink: 0 }}>
+            {/* 左: 裏面 */}
+            <img src={cardBackUrl} width={36} height={56}
+              style={{ position: "absolute", left: 0, bottom: 0, borderRadius: 5, objectFit: "cover",
+                       transform: "rotate(-12deg)", boxShadow: "0 3px 8px rgba(0,0,0,0.6)" }} />
+            {/* 右: 裏面 */}
+            <img src={cardBackUrl} width={36} height={56}
+              style={{ position: "absolute", left: 72, bottom: 0, borderRadius: 5, objectFit: "cover",
+                       transform: "rotate(12deg)", boxShadow: "0 3px 8px rgba(0,0,0,0.6)" }} />
+            {/* 中央: 表面（最後に描画→最前面） */}
+            <img src={cardFaceUrl} width={44} height={68}
+              style={{ position: "absolute", left: 34, bottom: 0, borderRadius: 6, objectFit: "cover",
+                       boxShadow: "0 5px 14px rgba(0,0,0,0.7)" }} />
+          </div>
           <span
             style={{
               fontSize: 52,
