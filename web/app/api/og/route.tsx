@@ -80,7 +80,7 @@ export async function GET() {
         >
           {/* タイトル */}
           <div style={{ fontSize: 52, fontWeight: 700, color: "white", lineHeight: 1.1, marginBottom: 22 }}>
-            AI タロット占い
+            Ariadne - AIタロット占い
           </div>
 
           {/* 3枚扇形カード: 左右裏面・中央表面（DOM最後=最前面） */}
