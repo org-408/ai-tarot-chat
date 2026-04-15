@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { WebSessionInitializer } from "@/components/auth/web-session-initializer";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import {
   SidebarInset,
@@ -25,6 +26,8 @@ export default async function AppLayout({ children, params }: Props) {
   return (
     <TooltipProvider>
       <SidebarProvider>
+        {/* Web セッション初期化: access_token cookie をセットする */}
+        <WebSessionInitializer />
         <AppSidebar locale={locale} />
         <SidebarInset>
           <header className="flex h-14 items-center gap-2 border-b px-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">

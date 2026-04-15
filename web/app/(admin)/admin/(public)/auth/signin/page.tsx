@@ -1,4 +1,4 @@
-import { auth, signIn } from "@/auth";
+import { adminAuth, adminSignIn } from "@/admin-auth";
 import { redirect } from "next/navigation";
 
 interface SearchParams {
@@ -18,41 +18,13 @@ export default async function AdminSignInPage({
   searchParams: Promise<SearchParams>;
 }) {
   const [session, { error }] = await Promise.all([
-    auth(),
+    adminAuth(),
     searchParams,
   ]);
 
   // すでにサインイン済みの場合
   if (session) {
-    if (session.user.role === "ADMIN") {
-      redirect("/admin");
-    }
-    // サインイン済みだが ADMIN でない
-    return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center space-y-4">
-          <div className="text-5xl">🚫</div>
-          <h1 className="text-xl font-bold text-slate-800">アクセス権限がありません</h1>
-          <p className="text-sm text-slate-500">
-            <strong>{session.user.email}</strong> は管理者権限を持っていません。
-          </p>
-          <form
-            action={async () => {
-              "use server";
-              const { signOut } = await import("@/auth");
-              await signOut({ redirectTo: "/admin/auth/signin" });
-            }}
-          >
-            <button
-              type="submit"
-              className="w-full py-2 rounded-lg border border-slate-300 text-sm text-slate-600 hover:bg-slate-50 transition"
-            >
-              別のアカウントでサインイン
-            </button>
-          </form>
-        </div>
-      </div>
-    );
+    redirect("/admin");
   }
 
   const errorMessage = error
@@ -77,7 +49,7 @@ export default async function AdminSignInPage({
         <form
           action={async () => {
             "use server";
-            await signIn("google", { redirectTo: "/admin" });
+            await adminSignIn("google", { redirectTo: "/admin" });
           }}
         >
           <button

@@ -631,6 +631,58 @@ model NotificationSent {
 }
 
 // ==========================================
+// Admin ユーザー（管理者専用 Auth テーブル）
+// ==========================================
+
+model AdminUser {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String?        @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  accounts      AdminAccount[]
+  sessions      AdminSession[]
+}
+
+model AdminAccount {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?    @db.Text
+  access_token      String?    @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?    @db.Text
+  session_state     String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  user              AdminUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model AdminSession {
+  sessionToken String    @unique
+  userId       String
+  expires      DateTime
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model AdminVerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ==========================================
 // X (Twitter) 投稿管理
 // ==========================================
 
