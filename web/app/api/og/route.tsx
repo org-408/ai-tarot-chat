@@ -49,6 +49,7 @@ async function loadJapaneseFont(): Promise<ArrayBuffer | undefined> {
 export async function GET() {
   const images = TAROTISTS.map(getImageDataUrl);
   const cardBackUrl = getCardImageDataUrl("back");
+  const cardFaceUrl = getCardImageDataUrl("0_fool");
   const fontData = await loadJapaneseFont();
 
   type FontOption = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 };
@@ -78,25 +79,24 @@ export async function GET() {
           }}
         >
           {/* タイトル */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              marginBottom: 28,
-            }}
-          >
-            <img src={cardBackUrl} width={40} height={64} style={{ borderRadius: 6, objectFit: "cover", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }} />
-            <span
-              style={{
-                fontSize: 52,
-                fontWeight: 700,
-                color: "white",
-                lineHeight: 1.1,
-              }}
-            >
-              AI タロット占い
-            </span>
+          <div style={{ fontSize: 52, fontWeight: 700, color: "white", lineHeight: 1.1, marginBottom: 22 }}>
+            AI タロット占い
+          </div>
+
+          {/* 3枚扇形カード: 左右裏面・中央表面（DOM最後=最前面） */}
+          <div style={{ position: "relative", display: "flex", width: 182, height: 130, marginBottom: 24 }}>
+            {/* 左: 裏面 */}
+            <img src={cardBackUrl} width={60} height={94}
+              style={{ position: "absolute", left: 0, bottom: 0, borderRadius: 8, objectFit: "cover",
+                       transform: "rotate(-12deg)", boxShadow: "0 4px 12px rgba(0,0,0,0.6)" }} />
+            {/* 右: 裏面 */}
+            <img src={cardBackUrl} width={60} height={94}
+              style={{ position: "absolute", left: 118, bottom: 0, borderRadius: 8, objectFit: "cover",
+                       transform: "rotate(12deg)", boxShadow: "0 4px 12px rgba(0,0,0,0.6)" }} />
+            {/* 中央: 表面（最後に描画→最前面） */}
+            <img src={cardFaceUrl} width={72} height={112}
+              style={{ position: "absolute", left: 55, bottom: 0, borderRadius: 9, objectFit: "cover",
+                       boxShadow: "0 6px 20px rgba(0,0,0,0.7)" }} />
           </div>
 
           {/* 説明 */}
