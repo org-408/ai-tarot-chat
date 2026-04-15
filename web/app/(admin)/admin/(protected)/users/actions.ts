@@ -1,21 +1,15 @@
 "use server";
 
-import { adminAuth } from "@/admin-auth";
+import { adminUserService } from "@/lib/server/services";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 
 /** 管理者を削除（AdminUser テーブルから除外） */
 export async function removeAdminAction(adminUserId: string) {
   try {
-    await assertAdminSession();
-    // 自分自身は削除不可
-    const session = await adminAuth();
-    if (session?.user?.id === adminUserId) {
-      return { ok: false as const, error: "自分自身の管理者権限は削除できません" };
-    }
-    await prisma.adminUser.delete({ where: { id: adminUserId } });
+    const session = await assertAdminSession();
+    await adminUserService.removeAdmin(adminUserId, session.user?.id ?? "");
     revalidatePath("/admin/users");
     return { ok: true as const };
   } catch (error) {
@@ -33,11 +27,7 @@ export async function sendInviteEmailAction(email: string) {
     const baseUrl = process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? "https://ariadne-ai.app";
 
     // AdminUser テーブルに upsert（既存なら何もしない、新規なら作成）
-    await prisma.adminUser.upsert({
-      where: { email },
-      update: {},
-      create: { email },
-    });
+    await adminUserService.registerAdmin(email);
     revalidatePath("/admin/users");
 
     const resend = new Resend(apiKey);

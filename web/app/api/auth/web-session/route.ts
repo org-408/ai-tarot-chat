@@ -12,10 +12,7 @@
 
 import { auth } from "@/auth";
 import { logWithContext } from "@/lib/server/logger/logger";
-import {
-  clientRepository,
-  planRepository,
-} from "@/lib/server/repositories";
+import { clientService } from "@/lib/server/services";
 import { generateJWT } from "@/lib/utils/jwt";
 import type { AppJWTPayload } from "@/../shared/lib/types";
 import { NextResponse } from "next/server";
@@ -43,32 +40,14 @@ export async function POST() {
     const provider = (session as { provider?: string }).provider ?? "google";
 
     // Client を find or create
-    let client = await clientRepository.getClientByUserId(userId);
-
-    if (!client) {
-      logWithContext("info", "[web-session] Client not found, creating new one", { userId });
-
-      const freePlan = await planRepository.getPlanByCode("FREE");
-      if (!freePlan) {
-        logWithContext("error", "[web-session] FREE plan not found");
-        return NextResponse.json({ error: "プラン情報の取得に失敗しました" }, { status: 500 });
-      }
-
-      client = await clientRepository.createClient({
-        user: { connect: { id: userId } },
-        email: userEmail,
-        name: userName,
-        image: userImage,
-        provider,
-        plan: { connect: { id: freePlan.id } },
-        isRegistered: true,
-        lastLoginAt: new Date(),
-      });
-
-      logWithContext("info", "[web-session] New client created", { clientId: client.id, userId });
-    } else {
-      logWithContext("info", "[web-session] Existing client found", { clientId: client.id, userId });
-    }
+    const client = await clientService.getOrCreateForWebUser({
+      userId,
+      email: userEmail,
+      name: userName,
+      image: userImage,
+      provider,
+    });
+    logWithContext("info", "[web-session] Client ready", { clientId: client.id, userId });
 
     // Web ユーザーは deviceId を "web:{userId}" 形式で扱う
     const deviceId = `web:${userId}`;
