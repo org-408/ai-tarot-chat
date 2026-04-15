@@ -181,21 +181,22 @@ export async function POST(req: NextRequest) {
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
-        });
+          // streamText.onFinish はモデルの生成完了時点で発火する（クライアント切断に左右されない）。
+          // toUIMessageStreamResponse.onFinish はクライアントがストリームを全て読み終えた後に発火するため、
+          // モバイルが SSE 読み取り完了後に接続を閉じると isAborted=true になり回数が加算されなかった。
+          onFinish: async ({ text, finishReason }) => {
+            logWithContext("info", "クイック占い streamText.onFinish 発火", {
+              clientId,
+              textLength: text.length,
+              finishReason,
+            });
 
-        // テキストストリームのレスポンス（v5公式の推し）
-        return result.toUIMessageStreamResponse({
-          headers: {
-            "Cache-Control": "no-cache, no-transform",
-            Connection: "keep-alive",
-            "X-Accel-Buffering": "no",
-          },
-          onFinish: async ({ isAborted, responseMessage }) => {
-            const hasVisibleText = responseMessage.parts.some(
-              (part) => part.type === "text" && part.text.trim().length > 0,
-            );
-
-            if (isAborted || !hasVisibleText) {
+            if (!text.trim() || finishReason === "error") {
+              logWithContext("warn", "クイック占い: テキスト空またはエラー終了のためスキップ", {
+                clientId,
+                textLength: text.length,
+                finishReason,
+              });
               return;
             }
 
@@ -212,6 +213,15 @@ export async function POST(req: NextRequest) {
                 clientId,
               });
             }
+          },
+        });
+
+        // テキストストリームのレスポンス（v5公式の推し）
+        return result.toUIMessageStreamResponse({
+          headers: {
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+            "X-Accel-Buffering": "no",
           },
         });
       } catch (error) {
