@@ -18,7 +18,7 @@
 - Stripe 統合 API ルート:
   - `POST /api/stripe/checkout` — チェックアウトセッション作成
   - `POST /api/stripe/webhook` — イベント受信・プラン状態更新
-  - `GET /api/stripe/portal` — 顧客ポータル（解約・請求管理）
+  - `POST /api/stripe/portal` — 顧客ポータル（解約・請求管理、returnUrl をボディで渡すため POST）
 
 ---
 
@@ -210,9 +210,9 @@ ChatPanel（web）   = useChatSession + Webアダプター + ChatView
 ### 翻訳キー命名規則
 
 - ネスト **2階層まで**: `namespace.key`
-- **namespace**: `common` / `chat` / `reading` / `salon` / `tarotist` / `history` / `auth` / `plans` / `settings`
+- **namespace**: `common` / `nav` / `chat` / `reading` / `salon` / `personal` / `tarotist` / `history` / `auth` / `plans` / `settings`
 - **camelCase**（命名規則セクション参照）
-- 変数は `{{variable}}` 形式（next-intl の ICU 記法）
+- 変数は `{variable}` 形式（`{{variable}}` は Turbopack で動作しない）
 
 ```json
 {
