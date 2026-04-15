@@ -166,18 +166,44 @@ if (isEdgeRuntime) {
 }
 
 // 共通インターフェース
+/**
+ * Error オブジェクトは JSON.stringify すると {} になるため、
+ * 手動でシリアライズしてからロガーに渡す。
+ */
+function serializeContext(context?: LogMetadata): LogMetadata | undefined {
+  if (!context) return context;
+  return Object.fromEntries(
+    Object.entries(context).map(([k, v]) => {
+      if (v instanceof Error) {
+        return [
+          k,
+          {
+            name: v.name,
+            message: v.message,
+            stack: v.stack,
+            // ReadingRouteError など独自フィールドも取れるよう spread
+            ...v,
+          },
+        ];
+      }
+      return [k, v];
+    }),
+  );
+}
+
 export const logWithContext = (
   level: "info" | "error" | "warn" | "debug",
   message: string,
   context?: LogMetadata,
   source: string = "web_server",
 ) => {
+  const serialized = serializeContext(context);
   if (isEdgeRuntime) {
     // Edge環境
-    (logger as EdgeLogger).log(level, message, { ...context, source });
+    (logger as EdgeLogger).log(level, message, { ...serialized, source });
   } else {
     // Node.js環境
-    (logger as winston.Logger).log(level, message, { ...context, source });
+    (logger as winston.Logger).log(level, message, { ...serialized, source });
   }
 };
 

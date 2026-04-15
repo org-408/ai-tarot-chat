@@ -207,6 +207,8 @@ export async function POST(req: NextRequest) {
             } catch (error) {
               logWithContext("error", "クイック占い回数消費に失敗", {
                 error,
+                errorName: error instanceof Error ? error.name : typeof error,
+                errorMessage: error instanceof Error ? error.message : String(error),
                 clientId,
               });
             }
