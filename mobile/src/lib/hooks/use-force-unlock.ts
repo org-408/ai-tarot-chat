@@ -20,12 +20,13 @@ interface UseForceLongPressReturn {
  * ロック中メニューの強制アンロック用ロングプレスフック。
  * `enabled=false` のときはすべて no-op で、通常の操作に一切干渉しない。
  * `delayMs` 間押し続けると `onTrigger` が一度だけ呼ばれる。
+ * delayMs はデフォルト 3000ms。
  */
 export function useForceLongPress(
   onTrigger: () => void,
-  options: UseForceLongPressOptions = {}
+  options: UseForceLongPressOptions = {},
 ): UseForceLongPressReturn {
-  const { delayMs = 500, enabled = true } = options;
+  const { delayMs = 3000, enabled = true } = options;
 
   const [progress, setProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
@@ -72,7 +73,7 @@ export function useForceLongPress(
 
       rafIdRef.current = requestAnimationFrame(tick);
     },
-    [enabled, delayMs, cancel, onTrigger]
+    [enabled, delayMs, cancel, onTrigger],
   );
 
   const noopHandlers = {
