@@ -7,6 +7,7 @@ export interface UsageStats {
     no: number;
     maxReadings: number;
     maxPersonal: number;
+    hasPersonal: boolean;
     hasHistory: boolean;
   };
   remainingReadings: number;
