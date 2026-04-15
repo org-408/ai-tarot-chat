@@ -18,6 +18,7 @@ export default function SalonPage({
   params: Promise<{ locale: string }>;
 }) {
   const t = useTranslations("salon");
+  const tTarotist = useTranslations("tarotist");
   const router = useRouter();
   const [locale, setLocale] = useState("ja");
   const [readingType, setReadingType] = useState<ReadingType>("quick");
@@ -52,12 +53,20 @@ export default function SalonPage({
   const remainingQuick = usage?.remainingReadings;
   const remainingPersonal = usage?.remainingPersonal;
 
+  const currentRemaining =
+    readingType === "personal" ? remainingPersonal : remainingQuick;
+  const isLimitReached = currentRemaining !== undefined && currentRemaining <= 0;
+  const remainingText =
+    !isLimitReached && currentRemaining !== undefined
+      ? t("remainingToday", { count: currentRemaining })
+      : undefined;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">🔮</div>
-          <p className="text-gray-500">読み込み中...</p>
+          <p className="text-gray-500">{t("loading")}</p>
         </div>
       </div>
     );
@@ -128,6 +137,11 @@ export default function SalonPage({
             premiumOnly={readingType === "personal"}
             currentPlan={usage?.plan as Parameters<typeof TarotistSelector>[0]["currentPlan"]}
             tarotistBasePath="/tarotists"
+            labels={{
+              premiumBadge: `✨ ${tTarotist("premiumOnly")}`,
+              planRequired: `🔒 ${tTarotist("locked")}`,
+              noTarotists: tTarotist("noTarotists"),
+            }}
           />
         </div>
 
@@ -138,8 +152,21 @@ export default function SalonPage({
             spreads={spreads}
             currentPlan={usage?.plan as Parameters<typeof CategorySpreadSelector>[0]["currentPlan"]}
             isPersonal={readingType === "personal"}
-            remainingCount={readingType === "personal" ? remainingPersonal : remainingQuick}
+            remainingCount={currentRemaining}
             onStartReading={handleStartReading}
+            labels={{
+              selectSpreadPrompt: t("selectSpread"),
+              selectCategoryAndSpreadPrompt: t("selectCategoryAndSpread"),
+              categoryLabel: t("categoryLabel"),
+              spreadLabel: t("spreadLabel"),
+              selectPlaceholder: t("selectPlaceholder"),
+              categoryQuestion: t("categoryQuestion"),
+              spreadQuestion: t("spreadQuestion"),
+              spreadSubtitle: t("spreadSubtitle"),
+              startReading: `✨ ${t("startReading")} ✨`,
+              limitReached: t("limitReached"),
+              remainingText,
+            }}
           />
         </div>
       </div>

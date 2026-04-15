@@ -1,6 +1,15 @@
 import { motion } from "framer-motion";
 import type { Plan, Tarotist } from "../../lib/types";
 
+interface TarotistSelectorLabels {
+  /** プレミアム占い師バッジテキスト。例: "✨ プレミアム占い師" */
+  premiumBadge?: string;
+  /** プラン不足オーバーレイテキスト。例: "🔒 プランが必要" */
+  planRequired?: string;
+  /** 占い師が見つからない場合のテキスト */
+  noTarotists?: string;
+}
+
 interface TarotistSelectorProps {
   tarotists: Tarotist[];
   selectedTarotist: Tarotist | null;
@@ -14,6 +23,8 @@ interface TarotistSelectorProps {
   currentPlan?: Plan | null;
   /** 占い師画像の base パス。デフォルト: "/tarotists" */
   tarotistBasePath?: string;
+  /** UI テキスト。プラットフォームごとに翻訳済み文字列を渡す */
+  labels?: TarotistSelectorLabels;
 }
 
 const renderStars = (quality: number | null | undefined): string =>
@@ -37,7 +48,14 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
   premiumOnly = false,
   currentPlan,
   tarotistBasePath = "/tarotists",
+  labels = {},
 }) => {
+  const {
+    premiumBadge = "✨ プレミアム占い師",
+    planRequired = "🔒 プランが必要",
+    noTarotists = "占い師が見つかりませんでした",
+  } = labels;
+
   const filtered = premiumOnly
     ? tarotists.filter((t) => t.plan?.code === "PREMIUM")
     : tarotists;
@@ -47,7 +65,7 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
       {premiumOnly && (
         <div className="text-center mb-3">
           <span className="inline-block bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
-            ✨ プレミアム占い師
+            {premiumBadge}
           </span>
         </div>
       )}
@@ -116,7 +134,7 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
                 {!canUse && (
                   <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center rounded-2xl">
                     <span className="text-white text-xs font-semibold bg-gray-800/70 px-2 py-1 rounded-full">
-                      🔒 プランが必要
+                      {planRequired}
                     </span>
                   </div>
                 )}
@@ -143,7 +161,7 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
 
       {filtered.length === 0 && (
         <div className="text-center py-8 text-gray-400 text-sm">
-          占い師が見つかりませんでした
+          {noTarotists}
         </div>
       )}
     </div>

@@ -42,7 +42,17 @@
     "limitReached": "本日の占い回数上限に達しました",
     "selectTarotist": "占い師を選んでください",
     "selectCategory": "ジャンルを選んでください",
-    "selectSpread": "スプレッドを選んでください"
+    "selectSpread": "スプレッドを選んでください",
+    "selectCategoryAndSpread": "占うジャンルとスプレッドを選んでください",
+    "categoryLabel": "ジャンル",
+    "spreadLabel": "スプレッド",
+    "selectPlaceholder": "選択してください",
+    "categoryQuestion": "どのジャンルを占いますか？",
+    "spreadQuestion": "どのスプレッドで占いますか？",
+    "spreadSubtitle": "（カテゴリごとに選択肢が変わります）",
+    "startReading": "占いを始める",
+    "remainingToday": "今日はあと{{count}}回",
+    "loading": "読み込み中..."
   },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",
@@ -132,7 +142,8 @@
     "premiumOnly": "プレミアム占い師",
     "locked": "プランが必要",
     "quality": "品質",
-    "selectForReading": "この占い師で占う"
+    "selectForReading": "この占い師で占う",
+    "noTarotists": "占い師が見つかりませんでした"
   },
   "auth": {
     "signInTitle": "AI タロット占い",
