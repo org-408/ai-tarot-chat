@@ -110,6 +110,14 @@ export class TarotistRepository extends BaseRepository {
       include: { plan: true },
     });
   }
+
+  async restoreTarotist(id: string): Promise<Tarotist> {
+    return await this.db.tarotist.update({
+      where: { id },
+      data: { deletedAt: null },
+      include: { plan: true },
+    });
+  }
 }
 
 export const tarotistRepository = new TarotistRepository();

@@ -1,5 +1,6 @@
+import { adminService } from "@/lib/server/services/admin";
+import { type AdminLogSortField } from "@/lib/server/repositories/admin";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { LogsPageClient } from "./logs-page-client";
 
 interface SearchParams {
@@ -13,6 +14,15 @@ interface SearchParams {
 }
 
 const LIMIT = 100;
+const VALID_SORT_FIELDS = [
+  "timestamp",
+  "createdAt",
+  "level",
+  "source",
+  "path",
+  "message",
+  "clientId",
+] as const;
 
 export default async function LogsPage({
   searchParams,
@@ -26,10 +36,12 @@ export default async function LogsPage({
   const levelFilter = level ?? "ALL";
   const keyword = q?.trim() ?? "";
   const clientIdFilter = cid?.trim() ?? "";
-  const sortDir = sort === "asc" ? "asc" : "desc";
-  const VALID_SORT_FIELDS = ["timestamp", "createdAt", "level", "source", "path", "message", "clientId"] as const;
-  type SortField = typeof VALID_SORT_FIELDS[number];
-  const sortField: SortField = VALID_SORT_FIELDS.includes(sortBy as SortField) ? (sortBy as SortField) : "timestamp";
+  const sortDir = sort === "asc" ? ("asc" as const) : ("desc" as const);
+  const sortField: AdminLogSortField = VALID_SORT_FIELDS.includes(
+    sortBy as AdminLogSortField
+  )
+    ? (sortBy as AdminLogSortField)
+    : "timestamp";
 
   let dateFrom: Date | undefined;
   const today = new Date();
@@ -44,44 +56,13 @@ export default async function LogsPage({
     dateFrom.setDate(today.getDate() - 6);
   }
 
-  const where = {
-    ...(levelFilter !== "ALL" ? { level: levelFilter } : {}),
-    ...(dateFrom ? { timestamp: { gte: dateFrom } } : {}),
-    ...(clientIdFilter ? { clientId: clientIdFilter } : {}),
-    ...(keyword
-      ? {
-          OR: [
-            { message: { contains: keyword, mode: "insensitive" as const } },
-            { path: { contains: keyword, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
-
-  const [logs, total, clients] = await Promise.all([
-    prisma.log.findMany({
-      where,
-      select: {
-        id: true,
-        level: true,
-        message: true,
-        metadata: true,
-        clientId: true,
-        path: true,
-        source: true,
-        timestamp: true,
-        createdAt: true,
-      },
-      orderBy: { [sortField]: sortDir },
-      skip: (currentPage - 1) * LIMIT,
-      take: LIMIT,
-    }),
-    prisma.log.count({ where }),
-    prisma.client.findMany({
-      where: { deletedAt: null },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" },
-    }),
+  const [{ logs, total }, clients] = await Promise.all([
+    adminService.listLogs(
+      { level: levelFilter, dateFrom, clientId: clientIdFilter, keyword },
+      { skip: (currentPage - 1) * LIMIT, take: LIMIT },
+      { field: sortField, dir: sortDir }
+    ),
+    adminService.listClientsForFilter(),
   ]);
 
   return (

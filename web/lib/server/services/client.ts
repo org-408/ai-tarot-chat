@@ -202,6 +202,16 @@ export class ClientService {
   }
 
   /**
+   * 管理者によるプランの直接変更（planId指定、制限チェックなし）
+   */
+  async adminChangeClientPlan(clientId: string, planId: string): Promise<void> {
+    await clientRepository.updateClient(clientId, {
+      plan: { connect: { id: planId } },
+    });
+    logWithContext("info", "Admin changed client plan", { clientId, planId });
+  }
+
+  /**
    * Stripe カスタマーIDを保存
    */
   async updateStripeCustomerId(clientId: string, stripeCustomerId: string): Promise<void> {

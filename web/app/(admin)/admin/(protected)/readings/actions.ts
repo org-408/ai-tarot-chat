@@ -1,19 +1,16 @@
 "use server";
 
+import { chatRepository } from "@/lib/server/repositories/chat";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 
 export async function fetchReadingMessages(readingId: string) {
   await assertAdminSession();
-  return prisma.chatMessage.findMany({
-    where: { readingId },
-    select: {
-      id: true,
-      role: true,
-      chatType: true,
-      message: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const messages = await chatRepository.getMessagesByReadingId(readingId);
+  return messages.map((m) => ({
+    id: m.id,
+    role: m.role,
+    chatType: m.chatType,
+    message: m.message,
+    createdAt: m.createdAt,
+  }));
 }

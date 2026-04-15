@@ -1,6 +1,6 @@
+import { adminService } from "@/lib/server/services/admin";
 import { planService } from "@/lib/server/services/plan";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { ClientsPageClient } from "./clients-page-client";
 
 interface SearchParams {
@@ -23,32 +23,11 @@ export default async function ClientsPage({
   const planFilter = plan ?? "ALL";
   const keyword = q?.trim() ?? "";
 
-  const where = {
-    deletedAt: null,
-    ...(planFilter !== "ALL" ? { plan: { code: planFilter } } : {}),
-    ...(keyword
-      ? {
-          OR: [
-            { name: { contains: keyword, mode: "insensitive" as const } },
-            { email: { contains: keyword, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
-
-  const [clients, total, plans] = await Promise.all([
-    prisma.client.findMany({
-      where,
-      include: {
-        plan: { select: { id: true, name: true, code: true } },
-        user: { select: { id: true, email: true } },
-        devices: { select: { id: true, platform: true, lastSeenAt: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (currentPage - 1) * LIMIT,
-      take: LIMIT,
-    }),
-    prisma.client.count({ where }),
+  const [{ clients, total }, plans] = await Promise.all([
+    adminService.listClients(
+      { planCode: planFilter, keyword },
+      { skip: (currentPage - 1) * LIMIT, take: LIMIT }
+    ),
     planService.getPlans(),
   ]);
 

@@ -1,5 +1,5 @@
+import { adminService } from "@/lib/server/services/admin";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { ReadingsPageClient } from "./readings-page-client";
 
 interface SearchParams {
@@ -27,9 +27,7 @@ export default async function ReadingsPage({
   const keyword = q?.trim() ?? "";
   const clientIdFilter = cid?.trim() ?? "";
 
-  // 日付フィルター
   let dateFrom: Date | undefined;
-  let dateTo: Date | undefined;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -43,65 +41,12 @@ export default async function ReadingsPage({
     dateFrom.setDate(1);
   }
 
-  const where = {
-    ...(dateFrom ? { createdAt: { gte: dateFrom, ...(dateTo ? { lte: dateTo } : {}) } } : {}),
-    ...(clientIdFilter ? { clientId: clientIdFilter } : {}),
-    ...(tarotistId ? { tarotistId } : {}),
-    ...(spreadId ? { spreadId } : {}),
-    ...(categoryId ? { categoryId } : {}),
-    ...(keyword
-      ? {
-          OR: [
-            { client: { name: { contains: keyword, mode: "insensitive" as const } } },
-            { client: { email: { contains: keyword, mode: "insensitive" as const } } },
-          ],
-        }
-      : {}),
-  };
-
-  const [readings, total, tarotists, spreads, categories, clients] = await Promise.all([
-    prisma.reading.findMany({
-      where,
-      include: {
-        client: { select: { id: true, name: true, email: true, isRegistered: true, plan: { select: { id: true, name: true, code: true } } } },
-        tarotist: { select: { id: true, name: true, icon: true, model: true } },
-        spread: { select: { id: true, name: true, _count: { select: { cells: true } } } },
-        category: { select: { id: true, name: true } },
-        cards: {
-          select: {
-            id: true,
-            order: true,
-            position: true,
-            isReversed: true,
-            keywords: true,
-            card: { select: { name: true, code: true } },
-          },
-          orderBy: { order: "asc" },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (currentPage - 1) * LIMIT,
-      take: LIMIT,
-    }),
-    prisma.reading.count({ where }),
-    prisma.tarotist.findMany({
-      where: { deletedAt: null },
-      select: { id: true, name: true, icon: true },
-      orderBy: { no: "asc" },
-    }),
-    prisma.spread.findMany({
-      select: { id: true, name: true },
-      orderBy: { no: "asc" },
-    }),
-    prisma.readingCategory.findMany({
-      select: { id: true, name: true },
-      orderBy: { no: "asc" },
-    }),
-    prisma.client.findMany({
-      where: { deletedAt: null },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" },
-    }),
+  const [{ readings, total }, filters] = await Promise.all([
+    adminService.listReadings(
+      { keyword, clientId: clientIdFilter, tarotistId, spreadId, categoryId, dateFrom },
+      { skip: (currentPage - 1) * LIMIT, take: LIMIT }
+    ),
+    adminService.getReadingFilters(),
   ]);
 
   return (
@@ -140,10 +85,10 @@ export default async function ReadingsPage({
         limit: LIMIT,
       }}
       filters={{
-        tarotists: tarotists.map((t) => ({ id: t.id, name: t.name, icon: t.icon })),
-        spreads: spreads.map((s) => ({ id: s.id, name: s.name })),
-        categories: categories.map((c) => ({ id: c.id, name: c.name })),
-        clients,
+        tarotists: filters.tarotists.map((t) => ({ id: t.id, name: t.name, icon: t.icon })),
+        spreads: filters.spreads.map((s) => ({ id: s.id, name: s.name })),
+        categories: filters.categories.map((c) => ({ id: c.id, name: c.name })),
+        clients: filters.clients,
       }}
       currentFilters={{
         keyword,

@@ -68,6 +68,13 @@ export class TarotistService {
   async deleteTarotist(id: string, soft: boolean = true): Promise<Tarotist> {
     return await tarotistRepository.deleteTarotist(id, soft);
   }
+
+  /**
+   * ソフトデリートされたタロット占い師を復元
+   */
+  async restoreTarotist(id: string): Promise<Tarotist> {
+    return await tarotistRepository.restoreTarotist(id);
+  }
 }
 
 export const tarotistService = new TarotistService();

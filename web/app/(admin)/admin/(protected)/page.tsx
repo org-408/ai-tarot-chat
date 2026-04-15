@@ -1,64 +1,5 @@
-import { prisma } from "@/prisma/prisma";
+import { adminService } from "@/lib/server/services/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-async function fetchStats() {
-  const [
-    totalClients,
-    clientsByPlan,
-    todayReadings,
-    totalTarotists,
-    recentErrors,
-  ] = await Promise.all([
-    prisma.client.count({ where: { deletedAt: null } }),
-    prisma.client.groupBy({
-      by: ["planId"],
-      where: { deletedAt: null },
-      _count: true,
-    }),
-    prisma.reading.count({
-      where: {
-        createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        },
-      },
-    }),
-    prisma.tarotist.count({ where: { deletedAt: null } }),
-    prisma.log.count({
-      where: {
-        level: "error",
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-    }),
-  ]);
-
-  // planId → plan name を解決
-  const plans = await prisma.plan.findMany({
-    select: { id: true, name: true, code: true },
-  });
-  const planMap = Object.fromEntries(plans.map((p) => [p.id, p]));
-
-  const planBreakdown = clientsByPlan.map((row) => ({
-    plan: planMap[row.planId]?.name ?? row.planId,
-    code: planMap[row.planId]?.code ?? row.planId,
-    count: row._count,
-  }));
-
-  // 7日間のアクティブクライアント（リーディングあり）
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const activeClients = await prisma.reading.groupBy({
-    by: ["clientId"],
-    where: { createdAt: { gte: sevenDaysAgo } },
-  });
-
-  return {
-    totalClients,
-    planBreakdown,
-    todayReadings,
-    totalTarotists,
-    recentErrors,
-    weeklyActiveClients: activeClients.length,
-  };
-}
 
 const PLAN_COLOR: Record<string, string> = {
   GUEST: "bg-gray-100 text-gray-700",
@@ -68,7 +9,14 @@ const PLAN_COLOR: Record<string, string> = {
 };
 
 export default async function AdminDashboard() {
-  const stats = await fetchStats();
+  const stats = await adminService.getDashboardStats();
+
+  const planMap = Object.fromEntries(stats.plans.map((p) => [p.id, p]));
+  const planBreakdown = stats.clientsByPlan.map((row) => ({
+    plan: planMap[row.planId]?.name ?? row.planId,
+    code: planMap[row.planId]?.code ?? row.planId,
+    count: row._count,
+  }));
 
   return (
     <div className="space-y-4 p-2">
@@ -131,7 +79,7 @@ export default async function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {stats.planBreakdown
+              {planBreakdown
                 .sort((a, b) => b.count - a.count)
                 .map((row) => (
                   <div key={row.code} className="flex items-center gap-3">
@@ -175,7 +123,7 @@ export default async function AdminDashboard() {
               <div className="flex justify-between">
                 <span className="text-slate-500">登録済みユーザー</span>
                 <span className="font-semibold">
-                  {stats.planBreakdown
+                  {planBreakdown
                     .filter((p) => p.code !== "GUEST")
                     .reduce((sum, p) => sum + p.count, 0)}{" "}
                   人
@@ -184,7 +132,7 @@ export default async function AdminDashboard() {
               <div className="flex justify-between">
                 <span className="text-slate-500">ゲストユーザー</span>
                 <span className="font-semibold">
-                  {stats.planBreakdown.find((p) => p.code === "GUEST")?.count ?? 0}{" "}
+                  {planBreakdown.find((p) => p.code === "GUEST")?.count ?? 0}{" "}
                   人
                 </span>
               </div>
