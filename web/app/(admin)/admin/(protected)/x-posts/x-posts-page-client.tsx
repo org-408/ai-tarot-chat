@@ -10,6 +10,7 @@ import {
   postNewNowAction,
   deletePostAction,
   loadPostsAction,
+  setAutoPostEnabledAction,
 } from "./actions";
 
 type XPostItem = {
@@ -68,10 +69,15 @@ type Props = {
   initialPosts: XPostItem[];
   totalCount: number;
   twitterConfigured: boolean;
+  initialAutoPostEnabled: boolean;
 };
 
-export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured }: Props) {
+export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, initialAutoPostEnabled }: Props) {
   const [tab, setTab] = useState<"compose" | "history">("compose");
+
+  // Auto post config state
+  const [autoPostEnabled, setAutoPostEnabled] = useState(initialAutoPostEnabled);
+  const [autoPostError, setAutoPostError] = useState<string | null>(null);
 
   // Compose state
   const [postType, setPostType] = useState<XPostType>(XPostType.DAILY_CARD);
@@ -86,6 +92,18 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured }
   const [historyError, setHistoryError] = useState<string | null>(null);
 
   const [isPending, startTransition] = useTransition();
+
+  async function handleAutoPostToggle(enabled: boolean) {
+    setAutoPostError(null);
+    startTransition(async () => {
+      const res = await setAutoPostEnabledAction(enabled);
+      if (res.ok) {
+        setAutoPostEnabled(res.autoPostEnabled);
+      } else {
+        setAutoPostError(res.error);
+      }
+    });
+  }
 
   const charCount = [...content].length; // Unicode 文字数カウント
   const isOverLimit = charCount > MAX_CHARS;
@@ -226,7 +244,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold">𝕏 投稿管理</h1>
           <p className="text-zinc-500 text-sm mt-1">X (Twitter) 投稿の作成・管理・自動投稿</p>
@@ -236,6 +254,43 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured }
             ⚠️ Twitter API 未設定（投稿には環境変数の設定が必要です）
           </div>
         )}
+      </div>
+
+      {/* 自動投稿トグル */}
+      <div className={`flex items-center justify-between rounded-xl border px-5 py-4 mb-6 transition-colors ${
+        autoPostEnabled ? "bg-green-50 border-green-200" : "bg-zinc-50 border-zinc-200"
+      }`}>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{autoPostEnabled ? "🤖" : "⏸️"}</span>
+            <span className="font-medium text-sm">
+              自動投稿モード
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+              autoPostEnabled ? "bg-green-100 text-green-700" : "bg-zinc-200 text-zinc-500"
+            }`}>
+              {autoPostEnabled ? "ON" : "OFF"}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 mt-1 ml-7">
+            {autoPostEnabled
+              ? "毎日 9:00・12:00・18:00 に今日のタロット・豆知識・アプリ宣伝を自動投稿します"
+              : "チェックすると GitHub Actions による定時自動投稿が有効になります"}
+          </p>
+          {autoPostError && (
+            <p className="text-xs text-red-500 mt-1 ml-7">{autoPostError}</p>
+          )}
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            className="sr-only peer"
+            checked={autoPostEnabled}
+            disabled={isPending}
+            onChange={(e) => handleAutoPostToggle(e.target.checked)}
+          />
+          <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all" />
+        </label>
       </div>
 
       {/* Tab */}
@@ -366,9 +421,9 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured }
           <div className="mt-8 p-4 bg-zinc-50 rounded-lg border text-sm text-zinc-600">
             <p className="font-medium mb-2">🤖 自動投稿について</p>
             <ul className="space-y-1 text-xs text-zinc-500 list-disc list-inside">
-              <li>GitHub Actions の定期実行（毎日 9:00 JST）で自動投稿されます</li>
-              <li>曜日ごとにローテーション: 日・火・木 = 今日のタロット / 月・金 = 豆知識 / 水・土 = アプリ宣伝</li>
-              <li>手動で今すぐ実行: <code className="bg-zinc-100 px-1 rounded">POST /api/cron/x-posts</code>（Authorization ヘッダー必要）</li>
+              <li>上のトグルを ON にすると GitHub Actions による定時自動投稿が有効になります</li>
+              <li>9:00 = 今日のタロット / 12:00 = タロット豆知識 / 18:00 = アプリ宣伝（いずれも JST）</li>
+              <li>毎回 AI が内容を自動生成するので同じ文章は繰り返しません</li>
               <li>GitHub Secrets に <code className="bg-zinc-100 px-1 rounded">APP_URL</code> と <code className="bg-zinc-100 px-1 rounded">CRON_SECRET</code> を設定してください</li>
             </ul>
           </div>

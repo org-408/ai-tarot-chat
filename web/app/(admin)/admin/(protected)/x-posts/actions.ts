@@ -2,7 +2,7 @@
 
 import { XPostStatus, XPostType } from "@prisma/client";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { xPostRepository } from "@/lib/server/repositories/x-post";
+import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositories/x-post";
 import * as xPostService from "@/lib/server/services/x-post";
 import { revalidatePath } from "next/cache";
 
@@ -171,6 +171,33 @@ export async function loadPostsAction(opts: {
     return {
       ok: false as const,
       error: error instanceof Error ? error.message : "読み込みに失敗しました",
+    };
+  }
+}
+
+export async function getAutoPostConfigAction() {
+  try {
+    await assertAdminSession();
+    const config = await xPostConfigRepository.get();
+    return { ok: true as const, autoPostEnabled: config.autoPostEnabled };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "設定取得に失敗しました",
+    };
+  }
+}
+
+export async function setAutoPostEnabledAction(enabled: boolean) {
+  try {
+    await assertAdminSession();
+    await xPostConfigRepository.setAutoPostEnabled(enabled);
+    revalidatePath("/admin/x-posts");
+    return { ok: true as const, autoPostEnabled: enabled };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "設定の保存に失敗しました",
     };
   }
 }
