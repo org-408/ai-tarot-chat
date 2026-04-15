@@ -78,6 +78,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Smoke test (TypeError チェック)
+        run: npx playwright test
+
       # prisma/migrations が存在する場合のみ、schema との差分チェック
       # （migration ファイルを作り忘れた場合に CI を落とす）
       - name: Prisma migration diff check
