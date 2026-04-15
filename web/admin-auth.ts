@@ -1,5 +1,6 @@
 import { AdminPrismaAdapter } from "@/lib/server/admin-prisma-adapter";
 import { logWithContext } from "@/lib/server/logger/logger";
+import { prisma } from "@/prisma/prisma";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
@@ -53,6 +54,20 @@ export const {
   callbacks: {
     async signIn({ user }) {
       logWithContext("info", "[AdminAuth] Sign-in attempt", { user });
+      if (!user.email) return false;
+
+      // AdminUser テーブルに登録済みのメールアドレスのみ許可
+      // 新規管理者の追加は sendInviteEmailAction 経由で AdminUser に upsert してから行う
+      const adminUser = await prisma.adminUser.findUnique({
+        where: { email: user.email },
+        select: { id: true },
+      });
+      if (!adminUser) {
+        logWithContext("warn", "[AdminAuth] Sign-in rejected: not registered as admin", {
+          email: user.email,
+        });
+        return false;
+      }
       return true;
     },
 

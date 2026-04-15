@@ -43,15 +43,8 @@ export function UsersPageClient({
     startTransition(async () => {
       const res = await sendInviteEmailAction(inviteEmail.trim());
       if (!res.ok) { setMsg({ type: "err", text: res.error }); return; }
-      const text = res.promoted
-        ? `${inviteEmail} を ADMIN に昇格し、招待メールを送信しました`
-        : `${inviteEmail} に招待メールを送信しました（アカウント未登録）`;
-      setMsg({ type: "ok", text });
+      setMsg({ type: "ok", text: `${inviteEmail} に管理者招待メールを送信しました` });
       setInviteEmail("");
-      // 昇格した場合はリストを更新
-      if (res.promoted) {
-        setRows((prev) => prev.map((r) => r.email === inviteEmail.trim() ? { ...r, role: "ADMIN" } : r));
-      }
     });
   }
 

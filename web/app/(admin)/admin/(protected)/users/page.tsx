@@ -1,10 +1,10 @@
-import { auth } from "@/auth";
+import { adminAuth } from "@/admin-auth";
 import { prisma } from "@/prisma/prisma";
 import { UsersPageClient } from "./users-page-client";
 
 export default async function UsersPage() {
   const [session, users] = await Promise.all([
-    auth(),
+    adminAuth(),
     prisma.user.findMany({
       select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
       orderBy: [{ role: "desc" }, { createdAt: "asc" }],
