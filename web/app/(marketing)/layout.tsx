@@ -48,7 +48,7 @@ export default function MarketingLayout({
               href="/"
               className="flex items-center gap-2 text-lg font-bold text-purple-900"
             >
-              <span className="text-2xl">🔮</span>
+              <img src="/cards/back.png" className="w-7 h-11 object-cover rounded-sm shadow-sm" alt="" />
               <span className="hidden sm:inline">AI タロット占い</span>
               <span className="sm:hidden">タロット</span>
             </Link>
@@ -91,7 +91,7 @@ export default function MarketingLayout({
             {/* ブランド */}
             <div>
               <div className="flex items-center gap-2 text-white font-bold text-lg mb-3">
-                <span className="text-2xl">🔮</span>
+                <img src="/cards/back.png" className="w-7 h-11 object-cover rounded-sm shadow-sm" alt="" />
                 <span>AI タロット占い</span>
               </div>
               <p className="text-sm leading-relaxed">

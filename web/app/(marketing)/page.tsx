@@ -5,6 +5,9 @@ import { tarotistService } from "@/lib/server/services";
 import type { Tarotist } from "@/../shared/lib/types";
 import { TarotistsSection } from "@/components/marketing/tarotists-section";
 import { NotifyForm } from "@/components/marketing/notify-form";
+import { HeroStars } from "@/components/marketing/hero-stars";
+import { HeroCards } from "@/components/marketing/hero-cards";
+import { CTACards } from "@/components/marketing/cta-cards";
 
 export const metadata: Metadata = {
   title: "AI タロット占い — AIが読み解くあなたの未来",
@@ -103,6 +106,7 @@ export default async function LandingPage() {
           <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-indigo-500/20 blur-3xl" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-purple-600/10 blur-3xl" />
+          <HeroStars />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
@@ -157,19 +161,7 @@ export default async function LandingPage() {
           </div>
 
           {/* タロットカードの装飾 */}
-          <div className="mt-16 flex justify-center gap-4 sm:gap-6">
-            {["🌙", "⭐", "🔮", "✨", "👸"].map((icon, i) => (
-              <div
-                key={i}
-                className="relative w-16 h-24 sm:w-20 sm:h-32 rounded-xl bg-gradient-to-br from-purple-600/40 to-indigo-700/40 border border-purple-400/30 flex items-center justify-center text-2xl sm:text-3xl shadow-xl backdrop-blur-sm"
-                style={{
-                  transform: `rotate(${(i - 2) * 5}deg) translateY(${Math.abs(i - 2) * 4}px)`,
-                }}
-              >
-                {icon}
-              </div>
-            ))}
-          </div>
+          <HeroCards />
         </div>
       </section>
 
@@ -319,7 +311,7 @@ export default async function LandingPage() {
       {/* ===== Download CTA Section ===== */}
       <section className="py-20 sm:py-28 bg-gradient-to-br from-purple-950 via-indigo-900 to-purple-800 text-white">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-5xl mb-6">🔮</div>
+          <CTACards />
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             もうすぐリリース
           </h2>
