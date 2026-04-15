@@ -15,6 +15,7 @@
     "db:master:staging": "tsx prisma/generate-master.ts",
     "db:master:production": "tsx prisma/generate-master.ts",
     "db:admin-set": "tsx prisma/set-admin.ts",
+    "migrate:admin-users": "tsx scripts/migrate-admin-users.ts",
     "ui:add": "npx shadcn@latest add ",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",

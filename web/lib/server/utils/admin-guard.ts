@@ -1,17 +1,15 @@
-import { auth } from "@/auth";
+import { adminAuth } from "@/admin-auth";
 import { NextResponse } from "next/server";
 
+/**
+ * API Route Handler 内で使う管理者チェック。
+ * AdminUser テーブルに基づくセッションを検証する（User.role は参照しない）。
+ */
 export async function requireAdminSession() {
-  const session = await auth();
+  const session = await adminAuth();
   if (!session) {
     return {
       response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-      session: null,
-    };
-  }
-  if (session.user.role !== "ADMIN") {
-    return {
-      response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
       session: null,
     };
   }
@@ -25,8 +23,8 @@ export async function requireAdminSession() {
  * ページレベルの保護は (protected)/layout.tsx が担う。
  */
 export async function assertAdminSession() {
-  const session = await auth();
-  if (!session || session.user.role !== "ADMIN") {
+  const session = await adminAuth();
+  if (!session) {
     throw new Error("管理者権限が必要です");
   }
   return session;

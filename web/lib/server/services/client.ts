@@ -135,6 +135,53 @@ export class ClientService {
     return clientRepository.getClientByUserId(userId);
   }
 
+  /**
+   * Web ユーザー向け: userId に紐づく Client を取得、なければ FREE プランで新規作成する。
+   */
+  async getOrCreateForWebUser(params: {
+    userId: string;
+    email?: string;
+    name?: string;
+    image?: string;
+    provider?: string;
+  }): Promise<NonNullable<Awaited<ReturnType<typeof clientRepository.getClientByUserId>>>> {
+    const { userId, email, name, image, provider = "google" } = params;
+
+    const existing = await clientRepository.getClientByUserId(userId);
+    if (existing) {
+      logWithContext("info", "[ClientService] getOrCreateForWebUser: existing client found", {
+        clientId: existing.id,
+        userId,
+      });
+      return existing;
+    }
+
+    logWithContext("info", "[ClientService] getOrCreateForWebUser: creating new client", { userId });
+
+    const freePlan = await planRepository.getPlanByCode("FREE");
+    if (!freePlan) {
+      throw new Error("FREE plan not found");
+    }
+
+    const created = await clientRepository.createClient({
+      user: { connect: { id: userId } },
+      email,
+      name,
+      image,
+      provider,
+      plan: { connect: { id: freePlan.id } },
+      isRegistered: true,
+      lastLoginAt: new Date(),
+    });
+
+    logWithContext("info", "[ClientService] getOrCreateForWebUser: new client created", {
+      clientId: created.id,
+      userId,
+    });
+
+    return created;
+  }
+
   async updateLoginDate(clientId: string): Promise<void> {
     await clientRepository.updateClient(clientId, {
       lastLoginAt: new Date(),
