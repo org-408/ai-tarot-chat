@@ -49,19 +49,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       logWithContext("info", "Sign-in attempt", { user });
-      // client と user が紐づいていたら、client.lastLoginAt を更新
       if (!user.id) return true;
       logWithContext("info", "User signed in", { user });
-      const client = await clientService.getClientByUserId(user.id);
-      if (client) {
-        logWithContext("info", "Associated client found", { client, clientId: client.id });
-        await clientService.updateLoginDate(client.id);
-        logWithContext("info", "Client lastLoginAt updated", {
-          clientId: client.id,
-        });
-      }
+      // Client が存在しなければ FREE プランで新規作成、存在すれば lastLoginAt を更新
+      const client = await clientService.getOrCreateForWebUser({
+        userId: user.id,
+        email: user.email ?? undefined,
+        name: user.name ?? undefined,
+        image: user.image ?? undefined,
+        provider: account?.provider ?? "google",
+      });
+      await clientService.updateLoginDate(client.id);
+      logWithContext("info", "Client ready", { clientId: client.id });
       return true;
     },
 
