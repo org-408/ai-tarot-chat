@@ -48,27 +48,8 @@ async function assertAdminPage(page: Page, path: string) {
 }
 
 // ─────────────────────────────────────────────────────────
-// 1. 認証チェック: 未承認セッションは /admin/auth/pending へ
-// ─────────────────────────────────────────────────────────
-
-test.describe("管理者認証チェック（未承認）", () => {
-  test("セッションなし → /admin/auth/signin にリダイレクト", async ({
-    browser,
-  }) => {
-    // storageState なしのコンテキストで検証
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    await page.goto("/admin");
-    await page.waitForLoadState("networkidle");
-
-    expect(page.url()).toContain("/admin/auth/signin");
-    await context.close();
-  });
-});
-
-// ─────────────────────────────────────────────────────────
-// 2. 管理画面ページ（管理者認証済み）
+// 1. 管理画面ページ（管理者認証済み）
+// 未認証リダイレクトは pages.spec.ts の unauthenticated プロジェクトでカバー
 // ─────────────────────────────────────────────────────────
 
 const ADMIN_PAGES = [
