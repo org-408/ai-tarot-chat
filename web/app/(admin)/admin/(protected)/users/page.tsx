@@ -1,14 +1,11 @@
 import { adminAuth } from "@/admin-auth";
-import { prisma } from "@/prisma/prisma";
+import { adminService } from "@/lib/server/services/admin";
 import { UsersPageClient } from "./users-page-client";
 
 export default async function UsersPage() {
   const [session, adminUsers] = await Promise.all([
     adminAuth(),
-    prisma.adminUser.findMany({
-      select: { id: true, name: true, email: true, image: true, createdAt: true },
-      orderBy: { createdAt: "asc" },
-    }),
+    adminService.listAdminUsers(),
   ]);
 
   return (

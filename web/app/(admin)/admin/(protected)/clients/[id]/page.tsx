@@ -1,6 +1,6 @@
-import { assertAdminSession } from "@/lib/server/utils/admin-guard";
+import { adminService } from "@/lib/server/services/admin";
 import { planService } from "@/lib/server/services/plan";
-import { prisma } from "@/prisma/prisma";
+import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { notFound } from "next/navigation";
 import { ClientDetailPage } from "./client-detail-page";
 
@@ -14,39 +14,7 @@ export default async function ClientDetailServerPage({
   const { id } = await params;
 
   const [client, plans] = await Promise.all([
-    prisma.client.findUnique({
-      where: { id },
-      include: {
-        plan: true,
-        user: { select: { id: true, email: true, role: true } },
-        devices: {
-          orderBy: { lastSeenAt: "desc" },
-        },
-        planChangeHistories: {
-          include: {
-            fromPlan: { select: { id: true, name: true, code: true } },
-            toPlan: { select: { id: true, name: true, code: true } },
-          },
-          orderBy: { changedAt: "desc" },
-        },
-        adminResetHistories: {
-          orderBy: { createdAt: "desc" },
-        },
-        readings: {
-          include: {
-            tarotist: { select: { id: true, name: true, icon: true } },
-            spread: { select: { id: true, name: true } },
-            category: { select: { id: true, name: true } },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 20,
-        },
-        logs: {
-          orderBy: { timestamp: "desc" },
-          take: 20,
-        },
-      },
-    }),
+    adminService.getClientDetail(id),
     planService.getPlans(),
   ]);
 

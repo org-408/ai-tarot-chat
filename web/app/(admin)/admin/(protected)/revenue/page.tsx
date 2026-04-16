@@ -1,4 +1,4 @@
-import { prisma } from "@/prisma/prisma";
+import { adminService } from "@/lib/server/services/admin";
 import { RevenuePageClient } from "./revenue-page-client";
 
 function monthKey(date: Date): string {
@@ -20,30 +20,10 @@ export default async function RevenuePage() {
   const MONTHS = 6;
   const since = new Date(new Date().getFullYear(), new Date().getMonth() - MONTHS + 1, 1);
 
-  const [plans, clientsByPlan, recentChanges] = await Promise.all([
-    prisma.plan.findMany({
-      select: { id: true, name: true, code: true, price: true },
-      orderBy: { no: "asc" },
-    }),
-    prisma.client.groupBy({
-      by: ["planId"],
-      where: { deletedAt: null },
-      _count: true,
-    }),
-    prisma.planChangeHistory.findMany({
-      where: { changedAt: { gte: since } },
-      include: {
-        client: { select: { name: true, email: true } },
-        fromPlan: { select: { name: true, code: true, price: true } },
-        toPlan: { select: { name: true, code: true, price: true } },
-      },
-      orderBy: { changedAt: "desc" },
-    }),
-  ]);
+  const { plans, clientsByPlan, recentChanges } = await adminService.getRevenueSummary(since);
 
   const planMap = new Map(plans.map((p) => [p.id, p]));
 
-  // プラン別収益
   const planRevenue = clientsByPlan.map((g) => {
     const plan = planMap.get(g.planId);
     return {
@@ -57,7 +37,6 @@ export default async function RevenuePage() {
 
   const totalMrr = planRevenue.reduce((s, p) => s + p.mrr, 0);
 
-  // 月別プラン変更数
   const months = buildMonths(MONTHS);
   const changesByMonth = new Map<string, { upgrades: number; downgrades: number }>();
   for (const m of months) changesByMonth.set(m, { upgrades: 0, downgrades: 0 });
@@ -76,7 +55,6 @@ export default async function RevenuePage() {
     ...changesByMonth.get(m)!,
   }));
 
-  // 最近の変更履歴（最新20件）
   const recentRows = recentChanges.slice(0, 20).map((c) => ({
     id: c.id,
     clientName: c.client.name,

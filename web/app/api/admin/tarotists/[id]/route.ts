@@ -1,7 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
 import { tarotistService } from "@/lib/server/services/tarotist";
 import { requireAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -45,11 +44,7 @@ export async function PATCH(_req: NextRequest, { params }: RouteParams) {
 
   const { id } = await params;
   try {
-    const tarotist = await prisma.tarotist.update({
-      where: { id },
-      data: { deletedAt: null },
-      include: { plan: true },
-    });
+    const tarotist = await tarotistService.restoreTarotist(id);
     return NextResponse.json(tarotist);
   } catch (error) {
     logWithContext("error", `タロティスト(${id})復元エラー`, { error });

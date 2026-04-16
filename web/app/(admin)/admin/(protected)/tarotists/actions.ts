@@ -3,7 +3,6 @@
 import type { TarotistInput } from "@/../shared/lib/types";
 import { tarotistService } from "@/lib/server/services/tarotist";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
 type TarotistActionInput = Omit<Partial<TarotistInput>, "provider"> & {
@@ -81,10 +80,7 @@ export async function deleteTarotistAction(id: string) {
 export async function restoreTarotistAction(id: string) {
   try {
     await assertAdminSession();
-    await prisma.tarotist.update({
-      where: { id },
-      data: { deletedAt: null },
-    });
+    await tarotistService.restoreTarotist(id);
     revalidateTarotistPages();
     return { ok: true as const };
   } catch (error) {

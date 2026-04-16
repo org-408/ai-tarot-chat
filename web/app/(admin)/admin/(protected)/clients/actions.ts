@@ -2,7 +2,6 @@
 
 import { clientService } from "@/lib/server/services/client";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function changeClientPlanAction(input: {
@@ -11,10 +10,7 @@ export async function changeClientPlanAction(input: {
 }) {
   try {
     await assertAdminSession();
-    await prisma.client.update({
-      where: { id: input.clientId },
-      data: { planId: input.planId },
-    });
+    await clientService.adminChangeClientPlan(input.clientId, input.planId);
     revalidatePath("/admin/clients");
     revalidatePath("/admin");
     return { ok: true as const };

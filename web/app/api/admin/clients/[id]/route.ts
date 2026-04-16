@@ -1,6 +1,6 @@
 import { logWithContext } from "@/lib/server/logger/logger";
+import { clientService } from "@/lib/server/services/client";
 import { requireAdminSession } from "@/lib/server/utils/admin-guard";
-import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
@@ -15,12 +15,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
   try {
     const { planId } = await req.json();
-    const client = await prisma.client.update({
-      where: { id },
-      data: { planId },
-      include: { plan: { select: { id: true, name: true, code: true } } },
-    });
-    return NextResponse.json(client);
+    await clientService.adminChangeClientPlan(id, planId);
+    return NextResponse.json({ success: true });
   } catch (error) {
     logWithContext("error", `クライアント(${id})プラン変更エラー`, { error });
     return NextResponse.json({ error: "更新に失敗しました" }, { status: 500 });
@@ -34,10 +30,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
 
   const { id } = await params;
   try {
-    await prisma.client.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+    await clientService.deleteAccount(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     logWithContext("error", `クライアント(${id})削除エラー`, { error });
