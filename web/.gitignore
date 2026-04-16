@@ -47,3 +47,6 @@ yarn-error.log*
 # key files
 ai-*.json
 expanded-*.json
+
+# Playwright 認証済みテスト生成ファイル
+tests/.auth/

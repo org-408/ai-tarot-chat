@@ -78,10 +78,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      # E2E テスト用 DB セットアップ（認証済みテストで Plan/User が必要）
+      - name: E2E DB setup (migrate + seed)
+        run: |
+          npx prisma migrate deploy
+          npm run db:seed
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Smoke test (TypeError チェック)
+      - name: E2E テスト（全ページ・認証済みページ）
         run: npx playwright test
 
       # prisma/migrations が存在する場合のみ、schema との差分チェック
