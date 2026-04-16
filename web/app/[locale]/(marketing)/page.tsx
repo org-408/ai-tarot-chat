@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import Link from "next/link";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import { tarotistService } from "@/lib/server/services";
 import type { Tarotist } from "@/../shared/lib/types";
 import { TarotistsSection } from "@/components/marketing/tarotists-section";
@@ -92,8 +94,17 @@ const planHighlights = [
   },
 ];
 
+interface Props {
+  params: Promise<{ locale: string }>;
+}
 
-export default async function LandingPage() {
+export default async function LandingPage({ params }: Props) {
+  // ログイン済みならアプリへ直行
+  const session = await auth();
+  if (session) redirect("/salon");
+
+  const { locale } = await params;
+
   // DBから占い師一覧を取得。接続できない場合は空配列にフォールバック
   const tarotists = await tarotistService.getAllTarotists().catch(() => [] as Tarotist[]);
 
@@ -136,22 +147,25 @@ export default async function LandingPage() {
             {/* CTAボタン */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <TrackedLink
-                href="/download"
+                href="/auth/signin"
+                pageName="landing"
+                placement="hero"
+                ctaName="start_web"
+                className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
+              >
+                <span>✨</span>
+                今すぐ無料で始める
+              </TrackedLink>
+              <TrackedLink
+                href={`/${locale}/download`}
                 pageName="landing"
                 placement="hero"
                 ctaName="download_app"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full border border-purple-400/50 text-white px-8 py-3.5 text-base font-semibold hover:bg-purple-500/20 transition-all"
               >
                 <span>📱</span>
                 アプリをダウンロード
               </TrackedLink>
-              <Link
-                href="/#features"
-                className="inline-flex items-center gap-2 rounded-full border border-purple-400/50 text-white px-8 py-3.5 text-base font-semibold hover:bg-purple-500/20 transition-all"
-              >
-                詳しく見る
-                <span>↓</span>
-              </Link>
             </div>
 
             {/* 無料バッジ */}
@@ -298,7 +312,7 @@ export default async function LandingPage() {
 
           <div className="text-center mt-10">
             <Link
-              href="/pricing"
+              href={`/${locale}/pricing`}
               className="inline-flex items-center gap-2 rounded-full border-2 border-purple-700 text-purple-700 px-8 py-3 text-base font-semibold hover:bg-purple-700 hover:text-white transition-all"
             >
               料金の詳細を見る
@@ -312,9 +326,7 @@ export default async function LandingPage() {
       <section className="py-20 sm:py-28 bg-gradient-to-br from-purple-950 via-indigo-900 to-purple-800 text-white">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <CTACards />
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            もうすぐリリース
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">もうすぐリリース</h2>
           <p className="text-purple-200 text-lg max-w-xl mx-auto mb-10">
             iOS・Androidアプリを準備中です。
             <br />

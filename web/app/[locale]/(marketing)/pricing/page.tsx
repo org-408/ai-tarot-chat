@@ -251,7 +251,7 @@ export default function PricingPage() {
 
                 {/* CTA */}
                 <TrackedLink
-                  href="/download"
+                  href="/auth/signin"
                   pageName="pricing"
                   placement="plan_card"
                   ctaName="select_plan"
@@ -371,14 +371,14 @@ export default function PricingPage() {
             クレジットカード不要。登録なしでもすぐに始められます。
           </p>
           <TrackedLink
-            href="/download"
+            href="/auth/signin"
             pageName="pricing"
             placement="final_cta"
-            ctaName="download_app"
+            ctaName="start_web"
             className="inline-flex items-center gap-2 rounded-full bg-white text-purple-900 px-8 py-3.5 text-base font-semibold shadow-lg hover:bg-purple-50 transition-all hover:scale-105"
           >
-            <span>📱</span>
-            アプリをダウンロード
+            <span>✨</span>
+            今すぐ無料で始める
           </TrackedLink>
         </div>
       </section>

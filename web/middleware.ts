@@ -7,17 +7,16 @@ const intlMiddleware = createMiddleware(routing);
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // API / auth / admin / 静的アセット / マーケティングページは intl ルーティングをスキップ
+  // API / auth / admin / 静的アセット / アプリページは intl ルーティングをスキップ
+  // マーケティングページ (/ja/* /en/*) は next-intl が処理
   const skipIntl =
-    pathname === "/" ||                        // マーケティング LP (root)
+    pathname === "/" ||                        // スマートエントリ (session チェック後 /ja or /salon へ)
     pathname.startsWith("/api/") ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/terms") ||
     pathname.startsWith("/delete-account") ||
-    pathname.startsWith("/download") ||
-    pathname.startsWith("/pricing") ||
     pathname.startsWith("/admin") ||           // 管理画面
     pathname.startsWith("/signin");            // 管理者サインイン
 
