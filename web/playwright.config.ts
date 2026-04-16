@@ -10,6 +10,10 @@ export default defineConfig({
   // 認証済みテスト用のセットアップ
   globalSetup: "./tests/global-setup.ts",
 
+  use: {
+    baseURL: "http://localhost:3000",
+  },
+
   projects: [
     // ── 未認証テスト（公開ページ・リダイレクト確認）──
     {
