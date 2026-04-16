@@ -26,10 +26,11 @@ function resolvePlanCode(
 }
 
 export async function POST(request: NextRequest) {
-  // 静的ベアラートークンで認証（RC は HMAC ではなく固定トークン方式）
+  // 静的トークンで認証（RC は HMAC ではなく固定文字列をそのまま Authorization ヘッダーで送信）
+  // RC ダッシュボードの "Authorization Header" フィールドに入力した値がそのまま届く
   const auth = request.headers.get("authorization");
-  const expected = `Bearer ${process.env.REVENUECAT_WEBHOOK_AUTH_HEADER ?? ""}`;
-  if (!auth || auth !== expected) {
+  const expected = process.env.REVENUECAT_WEBHOOK_AUTH_HEADER ?? "";
+  if (!auth || !expected || auth !== expected) {
     logWithContext("warn", "RC webhook: unauthorized request");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
