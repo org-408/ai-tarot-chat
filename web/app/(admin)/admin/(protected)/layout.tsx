@@ -1,4 +1,4 @@
-import { adminAuth } from "@/admin-auth";
+import { adminAuth, adminRawAuth } from "@/admin-auth";
 import { Header } from "@/components/admin/header";
 import { Sidebar } from "@/components/admin/sidebar";
 import { SidebarProvider } from "@/components/admin/sidebar-context";
@@ -9,7 +9,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const session = await adminAuth();
 
   if (!session) {
-    redirect("/admin/auth/signin");
+    // 未サインイン or 未承認の場合を区別
+    const rawSession = await adminRawAuth();
+    if (rawSession?.user?.email) {
+      // サインイン済みだが未承認 → pending ページへ
+      redirect("/admin/auth/pending");
+    } else {
+      // 未サインイン → signin ページへ
+      redirect("/admin/auth/signin");
+    }
   }
 
   return (
