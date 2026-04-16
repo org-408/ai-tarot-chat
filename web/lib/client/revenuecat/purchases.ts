@@ -1,0 +1,54 @@
+"use client";
+
+import { Purchases, PurchasesError, ErrorCode } from "@revenuecat/purchases-js";
+
+// Module-level singleton: configure() は一度だけ、user が変わったら re-configure
+let configuredUserId: string | null = null;
+
+export function configureRC(appUserId: string): void {
+  if (typeof window === "undefined") return;
+  if (configuredUserId === appUserId) return;
+
+  Purchases.configure({
+    apiKey: process.env.NEXT_PUBLIC_REVENUECAT_WEB_KEY!,
+    appUserId,
+  });
+  configuredUserId = appUserId;
+}
+
+// mobile の getPackageIdentifier() と同じ識別子を使用
+function packageIdentifier(planCode: "STANDARD" | "PREMIUM"): string {
+  return planCode === "PREMIUM" ? "premium_monthly" : "$rc_monthly";
+}
+
+export async function purchasePlan(planCode: "STANDARD" | "PREMIUM") {
+  const offerings = await Purchases.getSharedInstance().getOfferings();
+  const current = offerings.current;
+  if (!current) throw new Error("RC offerings unavailable");
+
+  const targetId = packageIdentifier(planCode);
+  const pkg = current.availablePackages.find((p) => p.identifier === targetId);
+  if (!pkg) throw new Error(`RC package not found: ${targetId}`);
+
+  return Purchases.getSharedInstance().purchase({ rcPackage: pkg });
+}
+
+export async function getCustomerInfo() {
+  return Purchases.getSharedInstance().getCustomerInfo();
+}
+
+export async function getManagementURL(): Promise<string | null> {
+  const info = await getCustomerInfo();
+  return info.managementURL ?? null;
+}
+
+// mobile の getEntitlementIdentifier() と対称
+export function planCodeFromEntitlements(
+  active: Record<string, unknown>
+): "STANDARD" | "PREMIUM" | null {
+  if ("premium" in active) return "PREMIUM";
+  if ("standard" in active) return "STANDARD";
+  return null;
+}
+
+export { PurchasesError, ErrorCode };

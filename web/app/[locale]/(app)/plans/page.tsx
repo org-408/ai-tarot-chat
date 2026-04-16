@@ -3,15 +3,15 @@
 import type { Plan } from "@shared/lib/types";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
+import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import { useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function PlansPage() {
   const t = useTranslations("plans");
-  const pathname = usePathname();
   const { init: initMaster, plans, isLoading } = useMasterStore();
   const { usage, refreshUsage } = useClientStore();
+  const { purchase, isUserCancelled } = useRevenuecat();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,30 +25,20 @@ export default function PlansPage() {
   const handleSubscribe = async (plan: Plan) => {
     if (plan.code === currentPlanCode) return;
     if (plan.code === "GUEST" || plan.code === "FREE") {
-      // 無料プランへの変更は直接 API 呼び出し (Stripe 不要)
-      // 将来実装: プランダウングレード確認
+      // 無料プランへのダウングレードは設定ページのサブスク管理から
       return;
     }
+    if (plan.code !== "STANDARD" && plan.code !== "PREMIUM") return;
 
     setCheckoutLoading(plan.code);
     setError(null);
     try {
-      const origin = window.location.origin;
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          planCode: plan.code,
-          successUrl: `${origin}${pathname}?success=true`,
-          cancelUrl: `${origin}${pathname}`,
-        }),
-      });
-      if (!res.ok) throw new Error("Checkout failed");
-      const { url } = (await res.json()) as { url: string };
-      if (url) window.location.href = url;
-    } catch {
-      setError(t("checkoutError"));
+      await purchase(plan.code);
+      await refreshUsage();
+    } catch (e) {
+      if (!isUserCancelled(e)) {
+        setError(t("checkoutError"));
+      }
     } finally {
       setCheckoutLoading(null);
     }
