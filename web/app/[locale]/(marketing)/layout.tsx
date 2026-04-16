@@ -2,29 +2,52 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | AI タロット占い",
-    default: "AI タロット占い — AIが読み解くあなたの未来",
-  },
-  description:
-    "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
-  openGraph: {
-    title: "AI タロット占い — AIが読み解くあなたの未来",
+const OG_LOCALE: Record<string, string> = {
+  ja: "ja_JP",
+  en: "en_US",
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
+  const ogLocale = OG_LOCALE[locale] ?? "ja_JP";
+
+  return {
+    title: {
+      template: "%s | AI タロット占い",
+      default: "AI タロット占い — AIが読み解くあなたの未来",
+    },
     description:
       "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
-    type: "website",
-    locale: "ja_JP",
-    images: [{ url: "/api/og", width: 1200, height: 630, alt: "AI タロット占い" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI タロット占い",
-    description:
-      "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう",
-    images: ["/api/og"],
-  },
-};
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      languages: {
+        ja: `${baseUrl}/ja`,
+        en: `${baseUrl}/en`,
+        "x-default": `${baseUrl}/ja`,
+      },
+    },
+    openGraph: {
+      title: "AI タロット占い — AIが読み解くあなたの未来",
+      description:
+        "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
+      type: "website",
+      locale: ogLocale,
+      images: [{ url: "/api/og", width: 1200, height: 630, alt: "AI タロット占い" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "AI タロット占い",
+      description:
+        "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう",
+      images: ["/api/og"],
+    },
+  };
+}
 
 interface Props {
   children: React.ReactNode;
