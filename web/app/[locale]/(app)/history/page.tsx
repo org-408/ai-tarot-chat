@@ -2,9 +2,10 @@
 
 import type { Reading } from "@shared/lib/types";
 import { useClientStore } from "@/lib/client/stores/client-store";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 
 type FilterTab = "all" | "quick" | "personal";
 
@@ -35,14 +36,15 @@ function groupByYearMonth(readings: Reading[]) {
   return groups;
 }
 
-function ReadingCard({ reading }: { reading: Reading }) {
+function ReadingCard({ reading, locale }: { reading: Reading; locale: string }) {
   const drawnCards = reading.cards ?? [];
 
   return (
+    <Link href={`/${locale}/history/${reading.id}`}>
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow"
+      className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow cursor-pointer"
     >
       <div className="flex items-start gap-3">
         {/* タロティストアバター */}
@@ -120,11 +122,13 @@ function ReadingCard({ reading }: { reading: Reading }) {
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 }
 
 export default function HistoryPage() {
   const t = useTranslations("history");
+  const locale = useLocale();
   const { readings, readingsTotal, isLoadingReadings, fetchReadings } =
     useClientStore();
   const [tab, setTab] = useState<FilterTab>("all");
@@ -219,7 +223,7 @@ export default function HistoryPage() {
                             </p>
                             <div className="space-y-2">
                               {monthReadings.map((r) => (
-                                <ReadingCard key={r.id} reading={r} />
+                                <ReadingCard key={r.id} reading={r} locale={locale} />
                               ))}
                             </div>
                           </div>

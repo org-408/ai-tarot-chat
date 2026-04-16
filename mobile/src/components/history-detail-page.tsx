@@ -94,6 +94,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
             category={reading.category ?? null}
             spread={reading.spread ?? null}
             customQuestion={reading.customQuestion ?? null}
+            createdAt={reading.createdAt}
             onClose={onClose}
           />
         </div>
