@@ -10,6 +10,7 @@ export const {
   signIn: adminSignIn,
   signOut: adminSignOut,
 } = NextAuth({
+  basePath: "/api/admin-auth",
   adapter: AdminPrismaAdapter(),
   providers: [
     Google({
