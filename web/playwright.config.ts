@@ -16,5 +16,9 @@ export default defineConfig({
     url: "http://localhost:3000",
     timeout: 60_000,
     reuseExistingServer: !process.env.CI,
+    // AUTH_URL がないと Auth.js が UntrustedHost エラーを投げ、認証リダイレクトが機能しない
+    env: {
+      AUTH_URL: "http://localhost:3000",
+    },
   },
 });

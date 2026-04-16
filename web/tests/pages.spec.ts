@@ -189,10 +189,11 @@ test.describe("旧 URL 301 リダイレクト", () => {
         maxRedirects: 0,
       });
 
+      // Next.js の permanent: true は 308 (Permanent Redirect) を返す
       expect(
         response.status(),
-        `${from} が 301 を返さなかった (実際: ${response.status()})`
-      ).toBe(301);
+        `${from} が 308 を返さなかった (実際: ${response.status()})`
+      ).toBe(308);
 
       const location = response.headers()["location"] ?? "";
       expect(
