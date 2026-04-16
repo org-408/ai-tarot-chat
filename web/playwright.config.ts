@@ -30,6 +30,15 @@ export default defineConfig({
         storageState: "./tests/.auth/app.json",
       },
     },
+    // ── 管理者認証済みテスト（管理画面内容確認）──
+    {
+      name: "admin-authenticated",
+      testMatch: "**/admin-authenticated.spec.ts",
+      use: {
+        browserName: "chromium",
+        storageState: "./tests/.auth/admin.json",
+      },
+    },
   ],
 
   // CI では next build 済みの前提で next start を起動

@@ -377,7 +377,7 @@ export class AdminRepository extends BaseRepository {
 
   async listAdminUsers() {
     return this.db.adminUser.findMany({
-      select: { id: true, name: true, email: true, image: true, createdAt: true },
+      select: { id: true, name: true, email: true, image: true, createdAt: true, activatedAt: true },
       orderBy: { createdAt: "asc" },
     });
   }

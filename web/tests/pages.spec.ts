@@ -140,9 +140,13 @@ const ADMIN_PAGES = [
   "/admin/clients",
   "/admin/readings",
   "/admin/tarotists",
+  "/admin/spreads",
   "/admin/users",
   "/admin/stats",
   "/admin/revenue",
+  "/admin/notifications",
+  "/admin/x-posts",
+  "/admin/log-viewer",
 ] as const;
 
 test.describe("管理画面（未認証リダイレクト）", () => {

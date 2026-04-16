@@ -16,6 +16,7 @@ export default async function UsersPage() {
         email: u.email,
         image: u.image,
         createdAt: u.createdAt.toISOString(),
+        activatedAt: u.activatedAt?.toISOString() ?? null,
       }))}
       currentUserId={session?.user?.id ?? ""}
     />

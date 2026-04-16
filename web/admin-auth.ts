@@ -1,12 +1,12 @@
 import { AdminPrismaAdapter } from "@/lib/server/admin-prisma-adapter";
 import { logWithContext } from "@/lib/server/logger/logger";
-import { adminUserService } from "@/lib/server/services";
+import { adminUserRepository } from "@/lib/server/repositories/admin-user";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
-export const {
+const {
   handlers: adminHandlers,
-  auth: adminAuth,
+  auth: _rawAuth,
   signIn: adminSignIn,
   signOut: adminSignOut,
 } = NextAuth({
@@ -56,21 +56,15 @@ export const {
     async signIn({ user }) {
       logWithContext("info", "[AdminAuth] Sign-in attempt", { user });
       if (!user.email) return false;
-
-      // AdminUser テーブルに登録済みのメールアドレスのみ許可
-      // 新規管理者の追加は sendInviteEmailAction 経由で AdminUser に upsert してから行う
-      const isRegistered = await adminUserService.isRegistered(user.email);
-      if (!isRegistered) {
-        logWithContext("warn", "[AdminAuth] Sign-in rejected: not registered as admin", {
-          email: user.email,
-        });
-        return false;
-      }
+      // メールアドレスがあれば全員サインイン許可
+      // activatedAt チェックは adminAuth() で行う
+      logWithContext("info", "[AdminAuth] Sign-in allowed (activation check deferred)", {
+        email: user.email,
+      });
       return true;
     },
 
     async jwt({ token, user }) {
-      // 管理者ユーザーIDを保存（初回ログイン時のみ）
       if (user?.id) {
         token.adminUserId = user.id;
       }
@@ -78,7 +72,6 @@ export const {
     },
 
     async session({ session, token }) {
-      // 管理者ユーザーIDをセッションに追加
       if (token.adminUserId && session.user) {
         session.user.id = token.adminUserId as string;
       }
@@ -104,6 +97,28 @@ export const {
 
   session: {
     strategy: "jwt",
-    maxAge: 8 * 60 * 60, // 8時間（管理者セッションは短め）
+    maxAge: 8 * 60 * 60, // 8時間
   },
 });
+
+export { adminHandlers, adminSignIn, adminSignOut };
+
+/**
+ * 生の NextAuth セッション（activatedAt チェックなし）。
+ * /admin/auth/pending ページでメールアドレスを取得するために使用。
+ */
+export { _rawAuth as adminRawAuth };
+
+/**
+ * activatedAt チェック付きの管理者セッション取得。
+ * activatedAt が null（未承認）の場合は null を返す。
+ */
+export async function adminAuth() {
+  const session = await _rawAuth();
+  if (!session?.user?.email) return null;
+
+  const adminUser = await adminUserRepository.findByEmail(session.user.email);
+  if (!adminUser?.activatedAt) return null;
+
+  return session;
+}
