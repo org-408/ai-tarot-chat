@@ -254,7 +254,7 @@ export default function SettingsPage({
   return (
     <>
       <div className="max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">{t("title")}</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1">{t("title")}</h1>
 
         {/* アカウント */}
         <SettingsGroup title={t("account")}>
@@ -265,7 +265,7 @@ export default function SettingsPage({
           <SettingsRow
             label={t("plan")}
             value={
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${planBadgeClass}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${planBadgeClass}`}>
                 {planName}
               </span>
             }

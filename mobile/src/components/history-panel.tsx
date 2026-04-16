@@ -9,7 +9,19 @@ interface HistoryPanelProps {
   category?: ReadingCategory | null;
   spread?: Spread | null;
   customQuestion?: string | null;
+  createdAt?: string | Date | null;
   onClose: () => void;
+}
+
+function formatReadingDate(date: string | Date): string {
+  const d = date instanceof Date ? date : new Date(date);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  const s = String(d.getSeconds()).padStart(2, "0");
+  return `${y}/${mo}/${day} ${h}:${mi}:${s}`;
 }
 
 export const HistoryPanel: React.FC<HistoryPanelProps> = ({
@@ -17,6 +29,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   category,
   spread,
   customQuestion,
+  createdAt,
   onClose,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -25,6 +38,15 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
     <div className="w-full h-full flex flex-col relative">
       {/* メッセージエリア */}
       <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-4 space-y-6 pb-24">
+        {/* 日時スタンプ */}
+        {createdAt && (
+          <div className="flex justify-center">
+            <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+              {formatReadingDate(createdAt)}
+            </span>
+          </div>
+        )}
+
         {/* 占い情報バッジ */}
         {(category || spread || customQuestion) && (
           <div className="space-y-2">

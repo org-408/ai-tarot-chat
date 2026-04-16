@@ -87,7 +87,14 @@
     "yesterday": "昨日",
     "daysAgo": "{count}日前",
     "noHistory": "このプランでは履歴は保存されません",
-    "detail": "詳細"
+    "detail": "詳細",
+    "notFound": "この占い履歴は見つかりませんでした",
+    "backToHistory": "履歴一覧に戻る",
+    "readingDate": "占い日時",
+    "questionLabel": "ご質問",
+    "spreadLabel": "スプレッド",
+    "categoryLabel": "占い内容",
+    "personalBadge": "パーソナル"
   },
   "plans": {
     "title": "プラン",

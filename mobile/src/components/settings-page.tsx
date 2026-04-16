@@ -24,8 +24,8 @@ const TERMS_URL =
 
 // ─── 共通UIパーツ ─────────────────────────────────────────────
 
-const SectionHeader: React.FC<{ label: string }> = ({ label }) => (
-  <div className="px-4 pt-6 pb-1">
+const SectionHeader: React.FC<{ label: string; compact?: boolean }> = ({ label, compact }) => (
+  <div className={`px-4 ${compact ? "pt-1" : "pt-6"} pb-1`}>
     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
       {label}
     </p>
@@ -180,7 +180,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       )}
 
       {/* ── アカウント ─────────────────── */}
-      <SectionHeader label="アカウント" />
+      <SectionHeader label="アカウント" compact />
       <RowGroup>
         {isAuthenticated && userEmail ? (
           <>
@@ -189,7 +189,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               label={userEmail}
               description={planLabel()}
               right={
-                <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
                   {currentPlan.name}
                 </span>
               }
@@ -215,7 +215,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               label="未サインイン"
               description={planLabel()}
               right={
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
                   ゲスト
                 </span>
               }
