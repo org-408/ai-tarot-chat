@@ -15,18 +15,17 @@ const platforms = [
     description: "iOS 16以降対応。iPhone・iPadでご利用いただけます。",
     badge: "近日公開",
     badgeStyle: "bg-slate-100 text-slate-500",
-    buttonStyle:
-      "bg-black text-white cursor-not-allowed opacity-70",
+    buttonStyle: "bg-black text-white cursor-not-allowed opacity-70",
   },
   {
     icon: "🤖",
     name: "Android",
     store: "Google Play",
-    description: "Android 8.0以降対応。スマートフォン・タブレットでご利用いただけます。",
+    description:
+      "Android 8.0以降対応。スマートフォン・タブレットでご利用いただけます。",
     badge: "準備中",
     badgeStyle: "bg-amber-100 text-amber-700",
-    buttonStyle:
-      "bg-amber-500 text-white cursor-not-allowed opacity-80",
+    buttonStyle: "bg-amber-500 text-white cursor-not-allowed opacity-80",
   },
 ];
 
@@ -44,12 +43,14 @@ const steps = [
   {
     step: "3",
     title: "占い師を選ぶ",
-    description: "8人の個性豊かなAI占い師の中から、今日の気分に合った一人を選んで。",
+    description:
+      "8人の個性豊かなAI占い師の中から、今日の気分に合った一人を選んで。",
   },
   {
     step: "4",
     title: "カードを引く",
-    description: "心を落ち着けてカードをタップ。AIがあなたの状況を深く読み解きます。",
+    description:
+      "心を落ち着けてカードをタップ。AIがあなたの状況を深く読み解きます。",
   },
 ];
 
@@ -97,7 +98,9 @@ export default function DownloadPage() {
                 className="rounded-2xl border border-slate-100 bg-slate-50 p-8 flex flex-col items-center text-center"
               >
                 <div className="text-5xl mb-4">{p.icon}</div>
-                <span className={`text-xs font-semibold rounded-full px-3 py-1 mb-4 ${p.badgeStyle}`}>
+                <span
+                  className={`text-xs font-semibold rounded-full px-3 py-1 mb-4 ${p.badgeStyle}`}
+                >
                   {p.badge}
                 </span>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">{p.name}</h3>
@@ -131,7 +134,9 @@ export default function DownloadPage() {
                   {s.step}
                 </div>
                 <h3 className="font-bold text-slate-900 text-base mb-2">{s.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{s.description}</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {s.description}
+                </p>
               </div>
             ))}
           </div>
@@ -149,8 +154,12 @@ export default function DownloadPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left p-4 text-slate-500 font-medium">プラットフォーム</th>
-                  <th className="text-left p-4 text-slate-500 font-medium">必要環境</th>
+                  <th className="text-left p-4 text-slate-500 font-medium">
+                    プラットフォーム
+                  </th>
+                  <th className="text-left p-4 text-slate-500 font-medium">
+                    必要環境
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -159,7 +168,9 @@ export default function DownloadPage() {
                     key={r.platform}
                     className={`border-b border-slate-50 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}`}
                   >
-                    <td className="p-4 font-semibold text-slate-800">{r.platform}</td>
+                    <td className="p-4 font-semibold text-slate-800">
+                      {r.platform}
+                    </td>
                     <td className="p-4 text-slate-600">{r.requirement}</td>
                   </tr>
                 ))}

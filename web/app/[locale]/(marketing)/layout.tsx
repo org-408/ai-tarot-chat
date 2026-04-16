@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { TrackedLink } from "@/components/analytics/tracked-link";
 import Link from "next/link";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 
 export const metadata: Metadata = {
   title: {
@@ -26,17 +26,20 @@ export const metadata: Metadata = {
   },
 };
 
-const navLinks = [
-  { href: "/#features", label: "機能" },
-  { href: "/pricing", label: "料金" },
-  { href: "/download", label: "ダウンロード" },
-];
-
-export default function MarketingLayout({
-  children,
-}: {
+interface Props {
   children: React.ReactNode;
-}) {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function MarketingLayout({ children, params }: Props) {
+  const { locale } = await params;
+
+  const navLinks = [
+    { href: `/${locale}#features`, label: "機能" },
+    { href: `/${locale}/pricing`, label: "料金" },
+    { href: `/${locale}/download`, label: "ダウンロード" },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* ナビゲーションヘッダー */}
@@ -48,7 +51,11 @@ export default function MarketingLayout({
               href="/"
               className="flex items-center gap-2 text-lg font-bold text-purple-900"
             >
-              <img src="/cards/back.png" className="w-7 h-11 object-cover rounded-sm shadow-sm" alt="" />
+              <img
+                src="/cards/back.png"
+                className="w-7 h-11 object-cover rounded-sm shadow-sm"
+                alt=""
+              />
               <span className="hidden sm:inline">AI タロット占い</span>
               <span className="sm:hidden">タロット</span>
             </Link>
@@ -68,7 +75,7 @@ export default function MarketingLayout({
 
             {/* CTA */}
             <TrackedLink
-              href="/download"
+              href="/auth/signin"
               pageName="marketing_layout"
               placement="header"
               ctaName="start_now"
@@ -91,7 +98,11 @@ export default function MarketingLayout({
             {/* ブランド */}
             <div>
               <div className="flex items-center gap-2 text-white font-bold text-lg mb-3">
-                <img src="/cards/back.png" className="w-7 h-11 object-cover rounded-sm shadow-sm" alt="" />
+                <img
+                  src="/cards/back.png"
+                  className="w-7 h-11 object-cover rounded-sm shadow-sm"
+                  alt=""
+                />
                 <span>AI タロット占い</span>
               </div>
               <p className="text-sm leading-relaxed">
@@ -106,17 +117,26 @@ export default function MarketingLayout({
               <h3 className="text-white font-semibold mb-3">リンク</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">
+                  <Link
+                    href={`/${locale}#features`}
+                    className="hover:text-white transition-colors"
+                  >
                     機能紹介
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pricing" className="hover:text-white transition-colors">
+                  <Link
+                    href={`/${locale}/pricing`}
+                    className="hover:text-white transition-colors"
+                  >
                     料金プラン
                   </Link>
                 </li>
                 <li>
-                  <Link href="/download" className="hover:text-white transition-colors">
+                  <Link
+                    href={`/${locale}/download`}
+                    className="hover:text-white transition-colors"
+                  >
                     ダウンロード
                   </Link>
                 </li>

@@ -4,6 +4,21 @@ import type { NextConfig } from "next";
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      // PR1: 旧マーケティングページ URL → [locale] 付きに 301 リダイレクト
+      {
+        source: "/pricing",
+        destination: "/ja/pricing",
+        permanent: true,
+      },
+      {
+        source: "/download",
+        destination: "/ja/download",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     domains: [
       "lh3.googleusercontent.com",
