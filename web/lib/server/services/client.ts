@@ -55,13 +55,20 @@ export class ClientService {
         // ✅ 修正: null は「未実施」として除外し、過去日付のものがあればリセット
         //    旧ロジックは null を isSameDayJST(undefined) で評価し「当日でない」と
         //    誤判定していたため、未実施の状態でも即リセットが走っていた
-        const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
-          .some((date) => date !== null && !isSameDayJST(date));
+        // ✅ クイック・パーソナルのリセット要否を独立して判定（片方が今日でも消さない）
+        const quickNeedsReset =
+          client.lastReadingDate !== null && !isSameDayJST(client.lastReadingDate);
+        const personalNeedsReset =
+          client.lastPersonalReadingDate !== null &&
+          !isSameDayJST(client.lastPersonalReadingDate);
+        const needsReset = quickNeedsReset || personalNeedsReset;
 
         // 日付が変わっていればリセット
         if (needsReset) {
           logWithContext("info", "Resetting daily counts for client", {
             clientId: client.id,
+            quickNeedsReset,
+            personalNeedsReset,
           });
           // beforeリセット用に保存
           const beforeReadingsCount = client.dailyReadingsCount;
@@ -75,8 +82,11 @@ export class ClientService {
             beforePersonalCount,
           });
 
-          // clientのカウントリセット
-          client = await clientRepo.resetDailyCounts(client.id);
+          // clientのカウントリセット（stale な日付のカウンターのみ）
+          client = await clientRepo.resetDailyCounts(client.id, {
+            resetReadings: quickNeedsReset,
+            resetPersonal: personalNeedsReset,
+          });
           // reset履歴追加
           await clientRepo.createDailyResetHistory({
             client: { connect: { id: client.id } },
@@ -84,8 +94,8 @@ export class ClientService {
             resetType,
             beforeReadingsCount,
             beforePersonalCount,
-            afterPersonalCount: 0,
-            afterReadingsCount: 0,
+            afterReadingsCount: quickNeedsReset ? 0 : beforeReadingsCount,
+            afterPersonalCount: personalNeedsReset ? 0 : beforePersonalCount,
           });
           logWithContext("info", "Daily counts reset completed for client", {
             clientId: client.id,
@@ -365,22 +375,31 @@ export class ClientService {
           throw new Error("Plan not found");
         }
 
-        const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
-          .some((date) => date !== null && !isSameDayJST(date));
+        // クイック・パーソナルのリセット要否を独立して判定
+        // 両方まとめてリセットすると、片方のカウンターが今日の分なのに誤って消えてしまう
+        const quickNeedsReset =
+          client.lastReadingDate !== null && !isSameDayJST(client.lastReadingDate);
+        const personalNeedsReset =
+          client.lastPersonalReadingDate !== null &&
+          !isSameDayJST(client.lastPersonalReadingDate);
+        const needsReset = quickNeedsReset || personalNeedsReset;
 
         if (needsReset) {
           const beforeReadingsCount = client.dailyReadingsCount;
           const beforePersonalCount = client.dailyPersonalCount;
 
-          await clientRepo.resetDailyCounts(client.id);
+          await clientRepo.resetDailyCounts(client.id, {
+            resetReadings: quickNeedsReset,
+            resetPersonal: personalNeedsReset,
+          });
           await clientRepo.createDailyResetHistory({
             client: { connect: { id: client.id } },
             date: new Date(),
             resetType: "CONSUME_READING_QUOTA",
             beforeReadingsCount,
             beforePersonalCount,
-            afterPersonalCount: 0,
-            afterReadingsCount: 0,
+            afterReadingsCount: quickNeedsReset ? 0 : beforeReadingsCount,
+            afterPersonalCount: personalNeedsReset ? 0 : beforePersonalCount,
           });
         }
 
@@ -562,8 +581,15 @@ export class ClientService {
         }
         const isPersonalReading =
           !!customQuestion && customQuestion.trim().length > 0;
-        const needsReset = [client.lastReadingDate, client.lastPersonalReadingDate]
-          .some((date) => date !== null && !isSameDayJST(date));
+
+        // クイック・パーソナルのリセット要否を独立して判定
+        // 例: lastPersonalReadingDate が昨日でも、今日のクイック占いカウントは消してはいけない
+        const quickNeedsReset =
+          client.lastReadingDate !== null && !isSameDayJST(client.lastReadingDate);
+        const personalNeedsReset =
+          client.lastPersonalReadingDate !== null &&
+          !isSameDayJST(client.lastPersonalReadingDate);
+        const needsReset = quickNeedsReset || personalNeedsReset;
 
         const plan = client.plan;
         if (!plan) {
@@ -574,15 +600,18 @@ export class ClientService {
           const beforeReadingsCount = client.dailyReadingsCount;
           const beforePersonalCount = client.dailyPersonalCount;
 
-          await clientRepo.resetDailyCounts(client.id);
+          await clientRepo.resetDailyCounts(client.id, {
+            resetReadings: quickNeedsReset,
+            resetPersonal: personalNeedsReset,
+          });
           await clientRepo.createDailyResetHistory({
             client: { connect: { id: client.id } },
             date: new Date(),
             resetType: "SAVE_READING",
             beforeReadingsCount,
             beforePersonalCount,
-            afterPersonalCount: 0,
-            afterReadingsCount: 0,
+            afterReadingsCount: quickNeedsReset ? 0 : beforeReadingsCount,
+            afterPersonalCount: personalNeedsReset ? 0 : beforePersonalCount,
           });
         }
 
