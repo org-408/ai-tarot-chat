@@ -99,12 +99,17 @@ export class ClientRepository extends BaseRepository {
     }
   }
 
-  async resetDailyCounts(clientId: string) {
+  async resetDailyCounts(
+    clientId: string,
+    options?: { resetReadings?: boolean; resetPersonal?: boolean }
+  ) {
+    const { resetReadings = true, resetPersonal = true } = options ?? {};
+
     return this.db.client.update({
       where: { id: clientId },
       data: {
-        dailyReadingsCount: 0,
-        dailyPersonalCount: 0,
+        ...(resetReadings ? { dailyReadingsCount: 0 } : {}),
+        ...(resetPersonal ? { dailyPersonalCount: 0 } : {}),
       },
     });
   }
