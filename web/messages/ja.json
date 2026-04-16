@@ -13,7 +13,8 @@
     "signOut": "サインアウト",
     "signInWithGoogle": "Google でサインイン",
     "continueAsGuest": "ゲストとして続ける",
-    "or": "または"
+    "or": "または",
+    "backToSalon": "サロンに戻る"
   },
   "chat": {
     "placeholder": "メッセージを入力...",
@@ -51,7 +52,8 @@
     "spreadQuestion": "どのスプレッドで占いますか？",
     "spreadSubtitle": "（カテゴリごとに選択肢が変わります）",
     "remainingToday": "今日はあと{count}回",
-    "loading": "読み込み中..."
+    "loading": "読み込み中...",
+    "personalPremiumRequired": "パーソナル占いはプレミアムプランでご利用いただけます"
   },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",
@@ -71,7 +73,8 @@
     "phase2Title": "カードが答えます",
     "phase1Desc": "占い師があなたの状況を深く理解するために質問します",
     "premiumOnly": "パーソナル占いはプレミアム占い師のみ対応しています",
-    "startCards": "カードを引く"
+    "startCards": "カードを引く",
+    "selectTarotistAndSpread": "占い師とスプレッドを選択してください"
   },
   "history": {
     "title": "占い履歴",
@@ -99,7 +102,8 @@
     "cancelAnytime": "いつでもキャンセル可能",
     "features": "特典",
     "requiresAuth": "サインインが必要です",
-    "checkoutError": "決済の開始に失敗しました"
+    "checkoutError": "決済の開始に失敗しました",
+    "processing": "処理中..."
   },
   "settings": {
     "title": "設定",
