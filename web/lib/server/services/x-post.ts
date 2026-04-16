@@ -14,11 +14,15 @@ function getGenerationModel() {
   return anthropic("claude-haiku-4-5");
 }
 
-export async function generateContent(type: XPostType): Promise<string> {
+export async function generateContent(type: XPostType, customPrompt?: string): Promise<string> {
   let systemPrompt: string;
   let userPrompt: string;
 
-  if (type === XPostType.DAILY_CARD) {
+  if (customPrompt) {
+    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のX(Twitter)投稿担当です。
+投稿は必ず140文字以内（ハッシュタグ含む）にしてください。絵文字を適切に使ってください。`;
+    userPrompt = customPrompt;
+  } else if (type === XPostType.DAILY_CARD) {
     const cards = await tarotRepository.getAllCards(false, "ja");
     if (cards.length === 0) {
       throw new Error("タロットカードが見つかりません");

@@ -81,6 +81,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
 
   // Compose state
   const [postType, setPostType] = useState<XPostType>(XPostType.DAILY_CARD);
+  const [customPrompt, setCustomPrompt] = useState("");
   const [content, setContent] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [composeError, setComposeError] = useState<string | null>(null);
@@ -109,6 +110,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
   const isOverLimit = charCount > MAX_CHARS;
 
   function clearCompose() {
+    setCustomPrompt("");
     setContent("");
     setScheduledAt("");
     setComposeError(null);
@@ -116,14 +118,14 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
   }
 
   async function handleGenerate() {
-    if (postType === XPostType.MANUAL) {
+    if (postType === XPostType.MANUAL && !customPrompt.trim()) {
       setComposeError("手動モードでは AI 生成は使用できません");
       return;
     }
     setComposeError(null);
     setComposeSuccess(null);
     startTransition(async () => {
-      const res = await generateContentAction(postType);
+      const res = await generateContentAction(postType, customPrompt.trim() || undefined);
       if (res.ok) {
         setContent(res.content);
       } else {
@@ -332,14 +334,29 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
             </select>
           </div>
 
+          {/* Custom prompt */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1">
+              カスタムプロンプト
+              <span className="ml-2 text-xs text-zinc-400 font-normal">入力するとタイプ設定より優先されます</span>
+            </label>
+            <textarea
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              rows={3}
+              placeholder="例: 新月の夜にタロットを引く意味について、神秘的な雰囲気で投稿してください。末尾に #タロット をつけて。"
+              className="w-full border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"
+            />
+          </div>
+
           {/* AI generate button */}
-          {postType !== XPostType.MANUAL && (
+          {(postType !== XPostType.MANUAL || customPrompt.trim()) && (
             <button
               onClick={handleGenerate}
               disabled={isPending}
               className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 transition"
             >
-              {isPending ? "生成中…" : "✨ AI で生成"}
+              {isPending ? "生成中…" : customPrompt.trim() ? "✨ カスタムプロンプトで生成" : "✨ AI で生成"}
             </button>
           )}
 
