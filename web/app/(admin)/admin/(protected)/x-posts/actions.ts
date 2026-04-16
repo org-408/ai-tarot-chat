@@ -6,10 +6,10 @@ import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositorie
 import * as xPostService from "@/lib/server/services/x-post";
 import { revalidatePath } from "next/cache";
 
-export async function generateContentAction(type: XPostType) {
+export async function generateContentAction(type: XPostType, customPrompt?: string) {
   try {
     await assertAdminSession();
-    const content = await xPostService.generateContent(type);
+    const content = await xPostService.generateContent(type, customPrompt || undefined);
     return { ok: true as const, content };
   } catch (error) {
     return {
