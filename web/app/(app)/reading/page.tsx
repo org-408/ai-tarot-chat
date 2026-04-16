@@ -35,15 +35,10 @@ function useKeyboardHeight() {
   return height;
 }
 
-export default function ReadingPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function ReadingPage() {
   const t = useTranslations("reading");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [locale, setLocale] = useState("ja");
   const { data: session } = useSession();
 
   const { data: masterData } = useMasterStore();
@@ -61,10 +56,6 @@ export default function ReadingPage({
   const [shuffleOpen, setShuffleOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const readingIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    params.then(({ locale: l }) => setLocale(l));
-  }, [params]);
 
   // カードを引く
   useEffect(() => {
@@ -130,7 +121,7 @@ export default function ReadingPage({
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500">{t("loadError")}</p>
         <button
-          onClick={() => router.push(`/${locale}/salon`)}
+          onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
           {tCommon("backToSalon")}

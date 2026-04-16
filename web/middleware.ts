@@ -18,7 +18,14 @@ export default function middleware(req: NextRequest) {
     pathname.startsWith("/terms") ||
     pathname.startsWith("/delete-account") ||
     pathname.startsWith("/admin") ||           // 管理画面
-    pathname.startsWith("/signin");            // 管理者サインイン
+    pathname.startsWith("/signin") ||          // 管理者サインイン
+    pathname.startsWith("/salon") ||           // アプリページ (locale なし)
+    pathname.startsWith("/reading") ||
+    pathname.startsWith("/personal") ||
+    pathname.startsWith("/history") ||
+    pathname.startsWith("/tarotists") ||
+    pathname.startsWith("/plans") ||
+    pathname.startsWith("/settings");
 
   // ✅ リクエストヘッダーを明示的に転送 (Next.js 16 対応)
   const requestHeaders = new Headers(req.headers);

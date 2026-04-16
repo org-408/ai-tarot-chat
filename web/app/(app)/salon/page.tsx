@@ -12,15 +12,10 @@ import { useEffect, useState } from "react";
 
 type ReadingType = "quick" | "personal";
 
-export default function SalonPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function SalonPage() {
   const t = useTranslations("salon");
   const tTarotist = useTranslations("tarotist");
   const router = useRouter();
-  const [locale, setLocale] = useState("ja");
   const [readingType, setReadingType] = useState<ReadingType>("quick");
 
   const { init: initMaster, tarotists, categories, spreads, isLoading } = useMasterStore();
@@ -28,10 +23,9 @@ export default function SalonPage({
   const { selectedTarotist, setSelectedTarotist, setIsPersonal } = useSalonStore();
 
   useEffect(() => {
-    params.then(({ locale: l }) => setLocale(l));
     initMaster();
     refreshUsage();
-  }, [initMaster, refreshUsage, params]);
+  }, [initMaster, refreshUsage]);
 
   const handleStartReading = ({
     category,
@@ -43,7 +37,7 @@ export default function SalonPage({
     useSalonStore.getState().setSelectedSpread(spread);
     useSalonStore.getState().setSelectedCategory(category);
     useSalonStore.getState().setIsPersonal(readingType === "personal");
-    router.push(`/${locale}/${readingType === "personal" ? "personal" : "reading"}`);
+    router.push(readingType === "personal" ? "/personal" : "/reading");
   };
 
   const handleSelectTarotist = (tarotist: Tarotist) => {

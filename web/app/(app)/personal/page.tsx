@@ -37,15 +37,10 @@ function useKeyboardHeight() {
   return height;
 }
 
-export default function PersonalPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function PersonalPage() {
   const t = useTranslations("personal");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [locale, setLocale] = useState("ja");
   const { data: session } = useSession();
 
   const { data: masterData } = useMasterStore();
@@ -63,10 +58,6 @@ export default function PersonalPage({
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
   const [shuffleOpen, setShuffleOpen] = useState(false);
   const keyboardHeight = useKeyboardHeight();
-
-  useEffect(() => {
-    params.then(({ locale: l }) => setLocale(l));
-  }, [params]);
 
   const token = (session as { accessToken?: string })?.accessToken ?? "";
 
@@ -151,7 +142,7 @@ export default function PersonalPage({
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500">{t("selectTarotistAndSpread")}</p>
         <button
-          onClick={() => router.push(`/${locale}/salon`)}
+          onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
           {tCommon("backToSalon")}
@@ -165,7 +156,7 @@ export default function PersonalPage({
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500">{t("premiumOnly")}</p>
         <button
-          onClick={() => router.push(`/${locale}/salon`)}
+          onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
           {tCommon("backToSalon")}
