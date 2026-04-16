@@ -3,7 +3,7 @@
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { MessageContent } from "@shared/components/chat/message-content";
 import type { DrawnCard } from "@shared/lib/types";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
@@ -22,7 +22,6 @@ function formatReadingDate(date: string | Date): string {
 export default function HistoryDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const locale = useLocale();
   const router = useRouter();
   const t = useTranslations("history");
   const { readings, isLoadingReadings, fetchReadings } = useClientStore();
@@ -48,7 +47,7 @@ export default function HistoryDetailPage() {
       <div className="max-w-2xl mx-auto py-16 text-center">
         <p className="text-muted-foreground mb-4">{t("notFound")}</p>
         <button
-          onClick={() => router.push(`/${locale}/history`)}
+          onClick={() => router.push("/history")}
           className="text-sm text-primary hover:underline"
         >
           {t("backToHistory")}
@@ -65,7 +64,7 @@ export default function HistoryDetailPage() {
       {/* ヘッダー */}
       <div className="flex items-center gap-3 mb-4 flex-shrink-0">
         <button
-          onClick={() => router.push(`/${locale}/history`)}
+          onClick={() => router.push("/history")}
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft size={22} />

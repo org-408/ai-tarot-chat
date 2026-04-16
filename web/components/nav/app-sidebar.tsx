@@ -31,14 +31,14 @@ const PLAN_BADGE_CLASS: Record<string, string> = {
   GUEST: "bg-muted text-muted-foreground",
 };
 
-export function AppSidebar({ locale }: { locale: string }) {
+export function AppSidebar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
   const { usage } = useClientStore();
 
-  const navigate = (path: string) => router.push(`/${locale}/${path}`);
+  const navigate = (path: string) => router.push(`/${path}`);
 
   const planCode = usage?.plan?.code ?? "GUEST";
   const planBadgeClass = PLAN_BADGE_CLASS[planCode] ?? PLAN_BADGE_CLASS.GUEST;

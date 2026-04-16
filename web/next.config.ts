@@ -17,6 +17,47 @@ const nextConfig: NextConfig = {
         destination: "/ja/download",
         permanent: true,
       },
+      // PR2: 旧アプリページ URL (locale 付き) → locale なしに 301 リダイレクト
+      {
+        source: "/:locale(ja|en)/salon",
+        destination: "/salon",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/reading",
+        destination: "/reading",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/personal",
+        destination: "/personal",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/history",
+        destination: "/history",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/history/:id",
+        destination: "/history/:id",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/tarotists",
+        destination: "/tarotists",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/plans",
+        destination: "/plans",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ja|en)/settings",
+        destination: "/settings",
+        permanent: true,
+      },
     ];
   },
   images: {

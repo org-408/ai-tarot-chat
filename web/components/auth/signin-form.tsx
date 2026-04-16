@@ -189,7 +189,7 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
     setActiveProvider(provider);
 
     try {
-      const callbackUrl = isMobileApp ? `/auth/mobile/callback` : "/dashboard";
+      const callbackUrl = isMobileApp ? `/auth/mobile/callback` : "/salon";
 
       console.log("🔐 サインイン開始", {
         provider,

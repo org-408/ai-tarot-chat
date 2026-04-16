@@ -117,7 +117,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (url.startsWith(baseUrl)) {
         return url;
       }
-      return `${baseUrl}/ja/salon`;
+      return `${baseUrl}/salon`;
     },
   },
 

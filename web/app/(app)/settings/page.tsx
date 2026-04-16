@@ -171,11 +171,7 @@ function DeleteAccountDialog({
 // メインページ
 // ────────────────────────────────────────────
 
-export default function SettingsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function SettingsPage() {
   const t = useTranslations("settings");
   const router = useRouter();
   const locale = useLocale();
@@ -187,9 +183,6 @@ export default function SettingsPage({
   const [portalLoading, setPortalLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  // params は使わないが型を満たすため
-  void params;
 
   useEffect(() => {
     refreshUsage();
@@ -214,7 +207,7 @@ export default function SettingsPage({
       await openManagement();
     } catch {
       // management URL が取れない場合はプランページへ
-      router.push(`/${locale}/plans`);
+      router.push("/plans");
     } finally {
       setPortalLoading(false);
     }
@@ -269,7 +262,7 @@ export default function SettingsPage({
                 {planName}
               </span>
             }
-            onClick={() => router.push(`/${locale}/plans`)}
+            onClick={() => router.push("/plans")}
           />
           {session?.user ? (
             <SettingsRow
@@ -327,7 +320,7 @@ export default function SettingsPage({
               {LANGUAGES.map((lang) => (
                 <button
                   key={lang.code}
-                  onClick={() => router.push(`/${lang.code}/settings`)}
+                  onClick={() => router.push(`/${lang.code}`)}
                   className={[
                     "px-3 py-1 rounded-lg text-xs font-medium transition-colors",
                     locale === lang.code

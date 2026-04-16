@@ -11,11 +11,9 @@ import { motion, AnimatePresence } from "framer-motion";
 function TarotistModal({
   tarotist,
   onClose,
-  locale,
 }: {
   tarotist: Tarotist;
   onClose: () => void;
-  locale: string;
 }) {
   const t = useTranslations("tarotist");
   const router = useRouter();
@@ -84,7 +82,7 @@ function TarotistModal({
             <button
               onClick={() => {
                 onClose();
-                router.push(`/${locale}/salon`);
+                router.push("/salon");
               }}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"
               style={{
@@ -100,22 +98,16 @@ function TarotistModal({
   );
 }
 
-export default function TarotistsPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default function TarotistsPage() {
   const t = useTranslations("tarotist");
-  const [locale, setLocale] = useState("ja");
   const [selected, setSelected] = useState<Tarotist | null>(null);
   const { init: initMaster, tarotists, isLoading } = useMasterStore();
   const { usage, refreshUsage } = useClientStore();
 
   useEffect(() => {
-    params.then(({ locale: l }) => setLocale(l));
     initMaster();
     refreshUsage();
-  }, [initMaster, refreshUsage, params]);
+  }, [initMaster, refreshUsage]);
 
   if (isLoading) {
     return (
@@ -199,7 +191,6 @@ export default function TarotistsPage({
           <TarotistModal
             tarotist={selected}
             onClose={() => setSelected(null)}
-            locale={locale}
           />
         )}
       </AnimatePresence>
