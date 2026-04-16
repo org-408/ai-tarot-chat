@@ -20,7 +20,6 @@ const SESSION_COOKIE_NAME = "__Secure-authjs.session-token";
 const STORAGE_STATE_PATH = path.join(__dirname, ".auth/app.json");
 
 const TEST_USER_EMAIL = "e2e-test@ariadne-ai.app";
-const TEST_DEVICE_ID = "e2e-test-device-00000000";
 
 export default async function globalSetup() {
   const prisma = new PrismaClient();
@@ -53,7 +52,6 @@ export default async function globalSetup() {
           user: { connect: { id: user.id } },
           email: TEST_USER_EMAIL,
           name: "E2E Test User",
-          deviceId: TEST_DEVICE_ID,
           plan: { connect: { id: freePlan.id } },
           isRegistered: true,
         },
