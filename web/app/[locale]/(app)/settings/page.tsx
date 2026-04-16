@@ -1,7 +1,8 @@
 "use client";
 
 import { useClientStore } from "@/lib/client/stores/client-store";
-import { deleteAccount, openStripePortal } from "@/lib/client/services/client-service";
+import { deleteAccount } from "@/lib/client/services/client-service";
+import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -182,6 +183,7 @@ export default function SettingsPage({
   const { usage, refreshUsage } = useClientStore();
   const { theme, setTheme } = useThemePreference();
 
+  const { openManagement } = useRevenuecat();
   const [portalLoading, setPortalLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -205,14 +207,13 @@ export default function SettingsPage({
   };
   const planBadgeClass = planColors[planCode] ?? planColors.FREE;
 
-  // ── Stripe ポータル ──
+  // ── RC サブスク管理 ──
   const handlePortal = async () => {
     setPortalLoading(true);
     try {
-      const url = await openStripePortal(window.location.href);
-      window.location.href = url;
+      await openManagement();
     } catch {
-      // ポータルが使えない場合はプランページへ
+      // management URL が取れない場合はプランページへ
       router.push(`/${locale}/plans`);
     } finally {
       setPortalLoading(false);
