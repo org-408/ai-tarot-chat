@@ -9,9 +9,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AI タロット占い",
   metadataBase: new URL(
-    process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000"
+    process.env.AUTH_URL ?? "https://ariadne-ai.app"
   ),
 };
 
