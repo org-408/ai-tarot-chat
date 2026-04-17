@@ -192,7 +192,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
               <h2
                 className="text-2xl font-bold drop-shadow-lg"
                 style={{
-                  fontFamily: "'Brush Script MT', cursive",
+                  fontFamily: "'MonteCarlo', cursive",
                   color: colors.accent,
                   textShadow:
                     "2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)",
@@ -361,7 +361,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                             <h3
                               className="text-3xl font-bold drop-shadow-lg"
                               style={{
-                                fontFamily: "'Brush Script MT', cursive",
+                                fontFamily: "'MonteCarlo', cursive",
                                 color: colors.accent,
                                 textShadow:
                                   "2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)",

@@ -130,7 +130,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     <div
                       className="font-bold text-2xl mb-1"
                       style={{
-                        fontFamily: "'Brush Script MT', cursive",
+                        fontFamily: "'MonteCarlo', cursive",
                         color: colors.accent,
                       }}
                     >

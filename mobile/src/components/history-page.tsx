@@ -115,7 +115,7 @@ const TarotistProfileModal: React.FC<{
             <div
               className="text-2xl font-bold mb-1"
               style={{
-                fontFamily: "'Brush Script MT', cursive",
+                fontFamily: "'MonteCarlo', cursive",
                 color: tarotist.accentColor ?? "#7c3aed",
               }}
             >

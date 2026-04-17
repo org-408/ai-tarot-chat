@@ -83,7 +83,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
             <h3
               className="text-3xl font-bold text-center mb-1"
               style={{
-                fontFamily: "'Brush Script MT', cursive",
+                fontFamily: "'MonteCarlo', cursive",
                 color: selectedTarotist.accentColor,
               }}
             >
@@ -179,7 +179,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
             <div className="absolute top-32 left-4 right-16 text-white z-10">
               <div
                 className="text-2xl font-bold mb-1"
-                style={{ fontFamily: "'Brush Script MT', cursive" }}
+                style={{ fontFamily: "'MonteCarlo', cursive" }}
               >
                 {selectedTarotist.icon} {selectedTarotist.name}
               </div>

@@ -356,7 +356,7 @@ const TinderCard: React.FC<{
               <h3
                 className="text-xl md:text-2xl font-bold truncate"
                 style={{
-                  fontFamily: "'Brush Script MT', cursive",
+                  fontFamily: "'MonteCarlo', cursive",
                   color: colors.accent,
                 }}
               >

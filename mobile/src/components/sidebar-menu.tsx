@@ -283,7 +283,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 <div className="flex justify-center items-center gap-4">
                   <span
                     className="text-purple-600 font-bold text-xl"
-                    style={{ fontFamily: "'Brush Script MT', cursive" }}
+                    style={{ fontFamily: "'MonteCarlo', cursive" }}
                   >
                     Ariadne
                   </span>

@@ -204,7 +204,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
             <div className="mb-4">
               <div
                 className="text-5xl bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent"
-                style={{ fontFamily: "'Brush Script MT', cursive" }}
+                style={{ fontFamily: "'MonteCarlo', cursive" }}
               >
                 Ariadne
               </div>
