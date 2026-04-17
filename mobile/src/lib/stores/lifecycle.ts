@@ -925,18 +925,6 @@ export const useLifecycleStore = create<LifecycleState>()(
           logWithContext("info", "[Lifecycle] Subscription login");
           const info = await useSubscriptionStore.getState().login(userId!);
 
-          // ========================================
-          // 2. onResume() を呼んで全体をリフレッシュ
-          // ✅ subscription同期
-          // ✅ client.refreshUsage() → ログイン後のプラン利用状況取得
-          // ✅ master確認
-          // ========================================
-          logWithContext(
-            "info",
-            "[Lifecycle] Calling onResume to refresh all stores"
-          );
-          await get().onResume();
-
           logWithContext("info", "[Lifecycle] Login completed successfully", {
             payload,
             entitlements: Object.keys(info.entitlements.active),
@@ -946,6 +934,11 @@ export const useLifecycleStore = create<LifecycleState>()(
           get().errorProcessing("login", error as Error, new Date());
         } finally {
           set({ isLoggingIn: false });
+          // isLoggingIn=false の後に onResume を呼ぶ
+          // （isLoggingIn=true 中に呼ぶと onResume 内のガードでスキップされるため）
+          get().onResume().catch((e) =>
+            logWithContext("error", "[Lifecycle] Post-login onResume failed", { e })
+          );
         }
       },
 
