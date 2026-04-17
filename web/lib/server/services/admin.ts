@@ -1,6 +1,7 @@
 import {
   adminRepository,
   type AdminClientFilters,
+  type AdminDailyResetFilters,
   type AdminLogFilters,
   type AdminLogSortField,
   type AdminReadingFilters,
@@ -47,6 +48,13 @@ export class AdminService {
 
   async getRevenueSummary(since: Date) {
     return adminRepository.getRevenueSummary(since);
+  }
+
+  async listDailyResetHistories(
+    filters: AdminDailyResetFilters,
+    pagination: { skip: number; take: number }
+  ) {
+    return adminRepository.listDailyResetHistories(filters, pagination);
   }
 
   async getStats(since: Date) {

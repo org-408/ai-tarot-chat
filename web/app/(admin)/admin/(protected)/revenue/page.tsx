@@ -55,8 +55,9 @@ export default async function RevenuePage() {
     ...changesByMonth.get(m)!,
   }));
 
-  const recentRows = recentChanges.slice(0, 20).map((c) => ({
+  const recentRows = recentChanges.map((c) => ({
     id: c.id,
+    clientId: c.client.id,
     clientName: c.client.name,
     clientEmail: c.client.email,
     fromPlan: c.fromPlan.name,
