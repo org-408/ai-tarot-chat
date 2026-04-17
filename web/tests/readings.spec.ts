@@ -98,7 +98,19 @@ test.beforeEach(async () => {
     `UPDATE "Client" SET "dailyPersonalCount" = 0, "lastPersonalReadingDate" = NULL WHERE id = $1`,
     [fixtures.premiumClientId]
   );
-  // リーディングをクリア（ChatMessage・DrawnCard は Reading 削除で CASCADE）
+  // リーディングをクリア（FK 制約のため ChatMessage・DrawnCard を先に削除）
+  await pool.query(
+    `DELETE FROM "ChatMessage" WHERE "readingId" IN (
+      SELECT id FROM "Reading" WHERE "clientId" = ANY($1::text[])
+    )`,
+    [[fixtures.normalClientId, fixtures.premiumClientId]]
+  );
+  await pool.query(
+    `DELETE FROM "DrawnCard" WHERE "readingId" IN (
+      SELECT id FROM "Reading" WHERE "clientId" = ANY($1::text[])
+    )`,
+    [[fixtures.normalClientId, fixtures.premiumClientId]]
+  );
   await pool.query(
     `DELETE FROM "Reading" WHERE "clientId" = ANY($1::text[])`,
     [[fixtures.normalClientId, fixtures.premiumClientId]]

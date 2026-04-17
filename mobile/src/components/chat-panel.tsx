@@ -3,7 +3,7 @@ import { Keyboard } from "@capacitor/keyboard";
 import type { PluginListenerHandle } from "@capacitor/core";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type {
@@ -65,7 +65,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     drawnCards,
     isRevealingCompleted,
     isPersonal,
-    customQuestion,
     setCustomQuestion,
     setSelectedSpread,
   } = useSalon();
