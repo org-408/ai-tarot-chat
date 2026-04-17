@@ -56,9 +56,17 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
           <div className="text-center mb-8">
             <div className="text-8xl mb-6 filter drop-shadow-lg">🔮</div>
 
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-4">
-              Ai Tarot Chat
-            </h1>
+            <div className="mb-4">
+              <div
+                className="text-5xl bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent"
+                style={{ fontFamily: "'Brush Script MT', cursive" }}
+              >
+                Ariadne
+              </div>
+              <div className="text-xl font-medium text-white/80">
+                AI Tarot Chat
+              </div>
+            </div>
 
             <p className="text-white/80 text-xl font-medium">
               AIと対話するタロット占い
