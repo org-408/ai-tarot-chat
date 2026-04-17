@@ -89,17 +89,15 @@ function WebSignInLayout({ error }: { error?: string }) {
   return (
     <div className="min-h-screen bg-[#0f0a1e] flex">
       {/* 左カラム: OG 画像そのまま */}
-      <div className="hidden lg:flex lg:flex-1 items-center justify-center overflow-hidden">
+      <div className="hidden lg:flex lg:flex-1 relative items-center justify-center bg-[#0f0a1e] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/api/og"
           alt="Ai Tarot Chat"
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-contain"
         />
-        {/* 右端だけ右パネルとなじませるグラデーション */}
-        <div className="absolute inset-y-0 left-0 w-[60%] pointer-events-none">
-          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-r from-transparent to-[#0f0a1e]" />
-        </div>
+        {/* 右端グラデーション（左カラム内でのみ有効） */}
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-r from-transparent to-[#0f0a1e] pointer-events-none" />
       </div>
 
       {/* 右カラム: サインインカード */}
