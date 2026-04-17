@@ -102,12 +102,14 @@ function WebSignInLayout({ error }: { error?: string }) {
 
       {/* 右カラム: サインインカード */}
       <div className="w-full lg:w-[420px] lg:flex-none flex flex-col items-center justify-center p-8">
-        {/* モバイルブラウザ向けロゴ（lg以下で表示） */}
-        <div className="lg:hidden mb-10 text-center">
-          <span className="text-5xl block mb-3">🔮</span>
-          <span className="text-2xl font-bold bg-gradient-to-r from-violet-200 to-purple-200 bg-clip-text text-transparent">
-            Ai Tarot Chat
-          </span>
+        {/* アプリ名（常に表示） + トップページへのリンク */}
+        <div className="mb-8 text-center">
+          <a href="/ja" className="inline-flex flex-col items-center gap-2 group">
+            <span className="text-4xl">🔮</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-violet-200 to-purple-200 bg-clip-text text-transparent group-hover:from-white group-hover:to-violet-200 transition-all">
+              Ai Tarot Chat
+            </span>
+          </a>
         </div>
 
         <div className="w-full max-w-sm">
@@ -126,7 +128,13 @@ function WebSignInLayout({ error }: { error?: string }) {
             </Suspense>
           </div>
 
-          <p className="text-center text-violet-300/50 text-xs mt-6">
+          <div className="text-center mt-4">
+            <a href="/ja/pricing" className="text-sm text-violet-200 hover:text-white transition-colors">
+              料金プランを見る →
+            </a>
+          </div>
+
+          <p className="text-center text-violet-300/50 text-xs mt-4">
             <a href="/terms" className="hover:text-violet-200 transition-colors" target="_blank" rel="noopener noreferrer">利用規約</a>
             {" · "}
             <a href="/privacy" className="hover:text-violet-200 transition-colors" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>
