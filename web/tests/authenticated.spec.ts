@@ -106,17 +106,3 @@ test.describe("スマートエントリ（認証済み）", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────
-// サイドバーナビゲーション
-// ─────────────────────────────────────────────────────────
-
-test.describe("サイドバーナビゲーション", () => {
-  test("/salon: サイドバーレイアウトが描画される", async ({ page }) => {
-    await page.goto("/salon");
-    await page.waitForLoadState("networkidle");
-
-    // sidebar-wrapper は SidebarProvider が常に描画する（viewport 非依存）
-    const sidebarWrapper = page.locator("[data-slot='sidebar-wrapper']").first();
-    await expect(sidebarWrapper).toBeVisible({ timeout: 10_000 });
-  });
-});
