@@ -18,7 +18,8 @@
  */
 
 import { encode } from "@auth/core/jwt";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import fs from "fs";
 import path from "path";
 
@@ -34,7 +35,9 @@ const TEST_USER_EMAIL = "e2e-test@ariadne-ai.app";
 const TEST_ADMIN_EMAIL = "e2e-admin@ariadne-ai.app";
 
 export default async function globalSetup() {
-  const prisma = new PrismaClient();
+  const prisma = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+  });
 
   try {
     const secret = process.env.AUTH_SECRET;

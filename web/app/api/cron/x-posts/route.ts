@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { XPostType } from "@prisma/client";
+import { XPostType } from "@/lib/generated/prisma/client";
 import * as xPostService from "@/lib/server/services/x-post";
 import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositories/x-post";
 import logger from "@/lib/server/logger/logger";

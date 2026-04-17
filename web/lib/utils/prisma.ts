@@ -1,4 +1,4 @@
-import { ProviderKey as PrismaProviderKey } from "@prisma/client";
+import { ProviderKey as PrismaProviderKey } from "@/lib/generated/prisma/client";
 import { ProviderKey } from "../../../shared/lib/types";
 
 export const convertFromPrismaProviderKey = (

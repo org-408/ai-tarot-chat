@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@/lib/generated/prisma/client";
 import { prisma } from "./database";
 
 // Prismaの$transactionコールバックの型を直接抽出

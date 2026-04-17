@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 // ==================== 型定義 ====================

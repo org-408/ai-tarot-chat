@@ -1,5 +1,5 @@
 import type { Plan, PlanChangeHistory } from "@/../shared/lib/types";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export class PlanRepository extends BaseRepository {
