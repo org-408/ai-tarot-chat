@@ -2,6 +2,7 @@ import { SignInViewTracker } from "@/components/analytics/signin-view-tracker";
 import { SignInForm } from "@/components/auth/signin-form";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Suspense } from "react";
 
 interface SearchParams {
@@ -99,13 +100,13 @@ function SignInHeroPanel() {
       />
 
       {/* 下部: マーケティングページリンク */}
-      <a
+      <Link
         href="/ja"
         className="flex flex-col items-center gap-1 pb-8 text-violet-200 hover:text-white transition-colors"
       >
         <span className="text-sm font-medium tracking-wide">サービスの詳細・料金を見る</span>
         <ChevronDown className="w-5 h-5 animate-bounce" />
-      </a>
+      </Link>
     </div>
   );
 }
@@ -195,12 +196,12 @@ function WebSignInLayout({ error }: { error?: string }) {
             </Suspense>
           </div>
 
-          <a
+          <Link
             href="/ja/pricing"
             className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-violet-400/50 bg-violet-500/20 text-violet-100 hover:bg-violet-400/30 hover:text-white transition-all text-sm font-medium"
           >
             料金プランを見る <span aria-hidden>→</span>
-          </a>
+          </Link>
         </div>
       </div>
     </div>
