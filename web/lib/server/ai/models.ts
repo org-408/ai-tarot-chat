@@ -6,6 +6,7 @@ import { createVertex } from "@ai-sdk/google-vertex";
 import { groq } from "@ai-sdk/groq";
 import { mistral } from "@ai-sdk/mistral";
 import { openai } from "@ai-sdk/openai";
+import { wrapLanguageModel, type LanguageModel, type LanguageModelMiddleware } from "ai";
 import { createOllama } from "ollama-ai-provider-v2";
 
 export const dynamic = "force-dynamic";
@@ -41,9 +42,73 @@ export const homeFreeProviders = {
   google: mistral("mistral-small-latest"),
 };
 
+// プロバイダリストを順に試すフォールバックモデルを作成する
+// wrapStream は doStream() レベル（HTTP リクエスト直前）で介入するため、
+// streamText が return する前にプロバイダ切り替えが完了し、既存の try/catch とは別に動作する
+function createFallbackModel(
+  providerList: LanguageModel[],
+  label: string,
+): LanguageModel {
+  const [primary, ...fallbacks] = providerList;
+  if (fallbacks.length === 0) return primary;
+
+  const middleware: LanguageModelMiddleware = {
+    specificationVersion: "v3",
+    wrapStream: async ({ doStream, params }) => {
+      let lastError: unknown;
+      try {
+        return await doStream();
+      } catch (error) {
+        lastError = error;
+        console.warn(`[${label}] primary stream failed:`, error instanceof Error ? error.message : error);
+      }
+      for (let i = 0; i < fallbacks.length; i++) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return await (fallbacks[i] as any).doStream(params);
+        } catch (error) {
+          lastError = error;
+          console.warn(`[${label}] fallback[${i + 1}] stream failed:`, error instanceof Error ? error.message : error);
+        }
+      }
+      throw lastError;
+    },
+    wrapGenerate: async ({ doGenerate, params }) => {
+      let lastError: unknown;
+      try {
+        return await doGenerate();
+      } catch (error) {
+        lastError = error;
+        console.warn(`[${label}] primary generate failed:`, error instanceof Error ? error.message : error);
+      }
+      for (let i = 0; i < fallbacks.length; i++) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return await (fallbacks[i] as any).doGenerate(params);
+        } catch (error) {
+          lastError = error;
+          console.warn(`[${label}] fallback[${i + 1}] generate failed:`, error instanceof Error ? error.message : error);
+        }
+      }
+      throw lastError;
+    },
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return wrapLanguageModel({ model: primary as any, middleware });
+}
+
 // 実験的になるが、しばらくは無料プロバイダを中心にしつつ、claude, gpt を含めるリトライ構成とする
+// primary はフォールバック対応モデル: 2506(安価) → 2603 → claude-haiku の順に試みる
 export const experimentalProviders = {
-  primary: mistral("mistral-small-2603"),
+  primary: createFallbackModel(
+    [
+      mistral("mistral-small-2506"), // 最安値、一番最初に試す
+      mistral("mistral-small-2603"), // バックアップ
+      anthropic("claude-haiku-4-5"), // 最終手段
+    ],
+    "experimental",
+  ),
   secondary: mistral("mistral-small-2506"),
   tertiary: anthropic("claude-haiku-4-5"),
   quaternary: openai("gpt-5.4-nano"),
