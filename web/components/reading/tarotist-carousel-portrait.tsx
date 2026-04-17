@@ -4,13 +4,88 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import type { Plan, Tarotist } from "@shared/lib/types";
+import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
+import { useClientStore } from "@/lib/client/stores/client-store";
 
 interface TarotistCarouselPortraitProps {
   tarotists: Tarotist[];
   selectedTarotist: Tarotist | null;
   onSelect: (tarotist: Tarotist) => void;
   currentPlan?: Plan | null;
-  onUpgrade: (planCode: string) => void;
+}
+
+function PurchaseLoadingOverlay() {
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.8, opacity: 0, y: 20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center border border-purple-100/50 relative overflow-hidden"
+          style={{ minWidth: "340px", maxWidth: "90vw" }}
+        >
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"
+          />
+          <div className="relative mb-5">
+            <motion.div
+              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full blur-md"
+            />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="relative w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg"
+            >
+              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v1a7 7 0 00-7 7h1z" />
+              </svg>
+            </motion.div>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="relative z-10"
+          >
+            <div className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              プラン変更中
+            </div>
+            <div className="text-sm text-gray-600 text-center leading-relaxed">
+              プランの切り替えを行っています
+              <br />
+              <span className="text-purple-500 font-medium">このままお待ちください</span>
+            </div>
+          </motion.div>
+          <div className="w-full h-1 bg-gray-200 rounded-full mt-6 overflow-hidden relative z-10">
+            <motion.div
+              animate={{ x: ["-100%", "300%"] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 rounded-full"
+              style={{ width: "40%" }}
+            />
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 const canUse = (tarotist: Tarotist, currentPlan: Plan | null | undefined): boolean => {
@@ -28,8 +103,10 @@ export function TarotistCarouselPortrait({
   selectedTarotist,
   onSelect,
   currentPlan,
-  onUpgrade,
 }: TarotistCarouselPortraitProps) {
+  const { purchase, isUserCancelled } = useRevenuecat();
+  const { refreshUsage } = useClientStore();
+  const [upgrading, setUpgrading] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("carousel");
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -80,6 +157,20 @@ export function TarotistCarouselPortrait({
     setMode("portrait");
   };
 
+  const handleUpgrade = async (tarotist: Tarotist) => {
+    const planCode = tarotist.plan?.code;
+    if (planCode !== "STANDARD" && planCode !== "PREMIUM") return;
+    setUpgrading(tarotist.id);
+    try {
+      await purchase(planCode);
+      await refreshUsage();
+    } catch (e) {
+      if (!isUserCancelled(e)) console.error(e);
+    } finally {
+      setUpgrading(null);
+    }
+  };
+
   if (tarotists.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400 text-sm">
@@ -87,6 +178,8 @@ export function TarotistCarouselPortrait({
       </div>
     );
   }
+
+  const purchaseOverlay = upgrading !== null ? <PurchaseLoadingOverlay /> : null;
 
   // ── ポートレートモード ──
   if (mode === "portrait" && selectedTarotist) {
@@ -171,6 +264,8 @@ export function TarotistCarouselPortrait({
 
   // ── カルーセルモード ──
   return (
+    <>
+    {purchaseOverlay}
     <AnimatePresence mode="wait">
       <motion.div
         key="carousel"
@@ -300,13 +395,16 @@ export function TarotistCarouselPortrait({
                         ) : (
                           <motion.button
                             type="button"
-                            onClick={() => onUpgrade(tarotist.plan?.code ?? "")}
-                            className="w-full py-2.5 rounded-xl text-white font-bold text-sm shadow-lg"
+                            onClick={() => handleUpgrade(tarotist)}
+                            disabled={upgrading === tarotist.id}
+                            className="w-full py-2.5 rounded-xl text-white font-bold text-sm shadow-lg disabled:opacity-60"
                             style={{ backgroundColor: accent }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.97 }}
                           >
-                            {tarotist.plan?.name ?? "PREMIUM"}にアップグレード
+                            {upgrading === tarotist.id
+                              ? "処理中..."
+                              : `${tarotist.plan?.name ?? "PREMIUM"}にアップグレード`}
                           </motion.button>
                         )}
                       </div>
@@ -356,5 +454,6 @@ export function TarotistCarouselPortrait({
         </div>
       </motion.div>
     </AnimatePresence>
+    </>
   );
 }

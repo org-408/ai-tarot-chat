@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { WebSessionInitializer } from "@/components/auth/web-session-initializer";
 import { AppSidebar } from "@/components/nav/app-sidebar";
+import { UsagePoller } from "@/components/providers/usage-poller";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { routing } from "@/i18n/routing";
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <SidebarProvider>
           {/* Web セッション初期化: access_token cookie をセットする */}
           <WebSessionInitializer />
+          <UsagePoller />
           <AppSidebar />
           <SidebarInset>
             <main className="flex-1 p-4 md:p-6">{children}</main>

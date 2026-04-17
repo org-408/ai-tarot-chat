@@ -48,10 +48,6 @@ export default function SalonPage() {
     }
   };
 
-  const handleUpgrade = (_planCode: string) => {
-    router.push("/plans");
-  };
-
   // プランにパーソナル占い権限があるか
   const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
 
@@ -147,7 +143,6 @@ export default function SalonPage() {
             selectedTarotist={selectedTarotist}
             onSelect={handleSelectTarotist}
             currentPlan={usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"]}
-            onUpgrade={handleUpgrade}
           />
         </div>
 
