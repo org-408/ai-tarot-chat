@@ -184,16 +184,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       <RowGroup>
         {isAuthenticated && userEmail ? (
           <>
-            <Row
-              icon={<span className="text-base">👤</span>}
-              label={userEmail}
-              description={planLabel()}
-              right={
-                <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+            {/* アカウント情報: バッジ(1行目左) → メルアド(2行目) → プラン名(3行目) */}
+            <div className="flex items-start gap-3 px-4 py-3.5 bg-white border-b border-gray-100">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-base">👤</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="inline-block text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-medium mb-1">
                   {currentPlan.name}
                 </span>
-              }
-            />
+                <p className="text-sm text-gray-900 truncate">{userEmail}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{planLabel()}</p>
+              </div>
+            </div>
             <Row
               icon={<LogOut size={16} />}
               label="サインアウト"
@@ -210,16 +213,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           </>
         ) : (
           <>
-            <Row
-              icon={<span className="text-base">👤</span>}
-              label="未サインイン"
-              description={planLabel()}
-              right={
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+            {/* アカウント情報: バッジ(1行目左) → 未サインイン(2行目) → プラン名(3行目) */}
+            <div className="flex items-start gap-3 px-4 py-3.5 bg-white border-b border-gray-100">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-base">👤</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="inline-block text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium mb-1">
                   ゲスト
                 </span>
-              }
-            />
+                <p className="text-sm text-gray-900">未サインイン</p>
+                <p className="text-xs text-gray-400 mt-0.5">{planLabel()}</p>
+              </div>
+            </div>
             <Row
               icon={<LogIn size={16} />}
               label="サインイン"
