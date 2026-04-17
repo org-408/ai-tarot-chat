@@ -151,6 +151,22 @@ export class ReadingRepository extends BaseRepository {
     })) as unknown as Reading | null; // 型アサーションを追加
   }
 
+  async getLatestPersonalReadingForClient(clientId: string): Promise<Reading | null> {
+    return (await this.db.reading.findFirst({
+      where: { clientId, customQuestion: { not: null } },
+      orderBy: { createdAt: "desc" },
+      include: {
+        client: true,
+        device: true,
+        tarotist: true,
+        spread: true,
+        category: true,
+        cards: { include: { card: true } },
+        chatMessages: true,
+      },
+    })) as unknown as Reading | null;
+  }
+
   async getReadingsByClientId(
     clientId: string,
     take = 20,

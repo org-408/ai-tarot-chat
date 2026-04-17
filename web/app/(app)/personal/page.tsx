@@ -10,7 +10,6 @@ import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
-import { saveReading } from "@/lib/client/services/client-service";
 import type { UIMessage } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -81,7 +80,6 @@ export default function PersonalPage() {
       isRevealingCompleted: false,
     },
     {
-      onSave: async () => ({ reading: { id: "" } }),
       onRefreshUsage: refreshUsage,
       onRefreshToken: async () => token,
       onUnlock: () => {
@@ -109,15 +107,6 @@ export default function PersonalPage() {
       initialMessages: phase1Messages,
     },
     {
-      onSave: async (data) => {
-        try {
-          const result = await saveReading(data);
-          await refreshUsage();
-          return { reading: { id: result.id } };
-        } catch {
-          return { reading: { id: "" } };
-        }
-      },
       onRefreshUsage: refreshUsage,
       onRefreshToken: async () => token,
       onUnlock: () => {},

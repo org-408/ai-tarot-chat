@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
-    if (!clientId) {
+    const deviceId = payload.payload.deviceId;
+    if (!clientId || !deviceId) {
       logWithContext("warn", "clientId不正", { payload });
       return createReadingErrorResponse({
         code: "UNAUTHORIZED",
@@ -201,12 +202,43 @@ export async function POST(req: NextRequest) {
             }
 
             try {
-              await clientService.consumeReadingQuota({
+              const msgText = (m: UIMessage) =>
+                m.parts
+                  .filter((p) => p.type === "text")
+                  .map((p) => (p as { text: string }).text)
+                  .join("");
+              const chatMessages = [
+                ...clientMessages.map((msg) => ({
+                  tarotistId: tarotist.id,
+                  tarotist,
+                  chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("FINAL_READING" as const),
+                  role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                  message: msgText(msg),
+                })),
+                {
+                  tarotistId: tarotist.id,
+                  tarotist,
+                  chatType: "FINAL_READING" as const,
+                  role: "TAROTIST" as const,
+                  message: text,
+                },
+              ];
+              await clientService.saveReading({
                 clientId,
-                isPersonalReading: false,
+                deviceId,
+                tarotistId: tarotist.id,
+                tarotist,
+                spreadId: spread.id,
+                spread,
+                categoryId: category?.id ?? null,
+                category: category ?? undefined,
+                cards: drawnCards,
+                chatMessages,
+                incrementUsage: true,
               });
+              logWithContext("info", "クイック占い保存完了", { clientId });
             } catch (error) {
-              logWithContext("error", "クイック占い回数消費に失敗", {
+              logWithContext("error", "クイック占い保存に失敗", {
                 error,
                 errorName: error instanceof Error ? error.name : typeof error,
                 errorMessage: error instanceof Error ? error.message : String(error),

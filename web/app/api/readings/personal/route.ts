@@ -3,6 +3,7 @@
 import { DrawnCard, Spread, Tarotist } from "@/../shared/lib/types";
 import { experimentalProviders } from "@/lib/server/ai/models";
 import { logWithContext } from "@/lib/server/logger/logger";
+import { readingRepository } from "@/lib/server/repositories";
 import { clientService, spreadService } from "@/lib/server/services";
 import { authService } from "@/lib/server/services/auth";
 import { moderatePersonalQuestion } from "@/lib/server/services/moderation";
@@ -48,7 +49,8 @@ export async function POST(req: NextRequest) {
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
-    if (!clientId) {
+    const deviceId = payload.payload.deviceId;
+    if (!clientId || !deviceId) {
       logWithContext("warn", "clientId不正", { payload });
       return createReadingErrorResponse({
         code: "UNAUTHORIZED",
@@ -67,6 +69,7 @@ export async function POST(req: NextRequest) {
       spread,
       drawnCards,
       isEndingEarly,
+      initialLen,
     }: {
       messages: UIMessage[];
       tarotist: Tarotist;
@@ -74,6 +77,7 @@ export async function POST(req: NextRequest) {
       customQuestion: string;
       drawnCards: DrawnCard[];
       isEndingEarly?: boolean;
+      initialLen?: number;
     } = await req.json();
     const customQuestion =
       clientMessages.length >= 2
@@ -380,6 +384,120 @@ export async function POST(req: NextRequest) {
             messages.length > 0 ? messages : [{ role: "user", content: "" }],
           system,
           maxOutputTokens,
+          onFinish: async ({ text, finishReason }) => {
+            logWithContext("info", "パーソナル占い streamText.onFinish 発火", {
+              clientId,
+              textLength: text.length,
+              finishReason,
+              messagesCount: clientMessages.length,
+            });
+
+            if (!text.trim() || finishReason === "error") {
+              logWithContext("warn", "パーソナル占い: テキスト空またはエラー終了のためスキップ", {
+                clientId,
+                textLength: text.length,
+                finishReason,
+              });
+              return;
+            }
+
+            // Phase1 (長さ<=3) は保存しない
+            if (clientMessages.length <= 3) return;
+
+            const msgText = (m: UIMessage) =>
+              m.parts
+                .filter((p) => p.type === "text")
+                .map((p) => (p as { text: string }).text)
+                .join("");
+
+            try {
+              if (clientMessages.length <= 6) {
+                // Phase2 初回鑑定: 新規作成 + 利用回数消費
+                const chatMessages = [
+                  ...clientMessages.map((msg) => ({
+                    tarotistId: tarotist.id,
+                    tarotist,
+                    chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("TAROTIST_ANSWER" as const),
+                    role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                    message: msgText(msg),
+                  })),
+                  {
+                    tarotistId: tarotist.id,
+                    tarotist,
+                    chatType: "FINAL_READING" as const,
+                    role: "TAROTIST" as const,
+                    message: text,
+                  },
+                ];
+                await clientService.saveReading({
+                  clientId,
+                  deviceId,
+                  tarotistId: tarotist.id,
+                  tarotist,
+                  spreadId: spread.id,
+                  spread,
+                  customQuestion: customQuestion ?? "",
+                  cards: drawnCards,
+                  chatMessages,
+                  incrementUsage: true,
+                });
+                logWithContext("info", "パーソナル占い Phase2 初回鑑定保存完了", { clientId });
+              } else {
+                // Q&A ターン: 既存リーディングを更新
+                const existingReading = await readingRepository.getLatestPersonalReadingForClient(clientId);
+                if (!existingReading) {
+                  logWithContext("warn", "パーソナル占い Q&A: 既存リーディングが見つかりません", { clientId });
+                  return;
+                }
+
+                const firstPhase2AiIdx = clientMessages.findIndex(
+                  (m, i) => m.role === "assistant" && i >= (initialLen ?? 0),
+                );
+                const chatMessages = [
+                  ...clientMessages.map((msg, i) => ({
+                    tarotistId: tarotist.id,
+                    tarotist,
+                    chatType:
+                      msg.role === "user"
+                        ? ("USER_QUESTION" as const)
+                        : i === firstPhase2AiIdx
+                          ? ("FINAL_READING" as const)
+                          : ("TAROTIST_ANSWER" as const),
+                    role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                    message: msgText(msg),
+                  })),
+                  {
+                    tarotistId: tarotist.id,
+                    tarotist,
+                    chatType: "TAROTIST_ANSWER" as const,
+                    role: "TAROTIST" as const,
+                    message: text,
+                  },
+                ];
+                await clientService.saveReading({
+                  readingId: existingReading.id,
+                  clientId,
+                  deviceId,
+                  tarotistId: tarotist.id,
+                  tarotist,
+                  spreadId: spread.id,
+                  spread,
+                  customQuestion: customQuestion ?? "",
+                  cards: drawnCards,
+                  chatMessages,
+                  incrementUsage: false,
+                });
+                logWithContext("info", "パーソナル占い Q&A 保存完了", { clientId, readingId: existingReading.id });
+              }
+            } catch (error) {
+              logWithContext("error", "パーソナル占い保存に失敗", {
+                error,
+                errorName: error instanceof Error ? error.name : typeof error,
+                errorMessage: error instanceof Error ? error.message : String(error),
+                clientId,
+              });
+            }
+          },
         });
 
         // テキストストリームのレスポンス（v5公式の推し）

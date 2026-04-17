@@ -1,7 +1,5 @@
 import type {
   Reading,
-  SaveReadingInput,
-  SaveReadingResponse,
   UsageStats,
 } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
@@ -117,34 +115,6 @@ export class ClientService {
   // ============================================
   // Reading 関連
   // ============================================
-
-  /**
-   * 占い結果を保存する
-   */
-  async saveReading(newReading: SaveReadingInput): Promise<SaveReadingResponse> {
-    logWithContext("info", "[ClientService] Saving new reading", {
-      newReading,
-    });
-
-    try {
-      // clientId, deviceId は token から自動付与される前提
-      const result = await apiClient.post<SaveReadingResponse>(
-        "/api/clients/readings",
-        newReading
-      );
-
-      logWithContext("info", "[ClientService] Reading saved", {
-        usage: result.usage,
-        reading: result.reading,
-      });
-      return result;
-    } catch (error) {
-      logWithContext("error", "[ClientService] Failed to save reading", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
-  }
 
   /**
    * 占い履歴を取得する

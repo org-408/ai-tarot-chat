@@ -1,15 +1,13 @@
 import { useChat } from "@ai-sdk/react";
-import { App as CapacitorApp } from "@capacitor/app";
-import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
+import type { PluginListenerHandle } from "@capacitor/core";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
-import React, { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type {
   ReadingErrorCode,
-  SaveReadingInput,
 } from "../../../shared/lib/types";
 import { useAuth } from "../lib/hooks/use-auth";
 import { useAuthStore } from "../lib/stores/auth";
@@ -56,8 +54,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { saveReading, refreshUsage } = useClient();
-  const [isSavingReading, setIsSavingReading] = useState(false);
+  const { refreshUsage } = useClient();
   const [isSyncingUsage, setIsSyncingUsage] = useState(false);
 
   const {
@@ -90,7 +87,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const [inputDisabled, setInputDisabled] = useState(false);
   const [chatError, setChatError] = useState<ReadingChatError | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const transportFetch: typeof fetch = async (input, init) => {
     let response: Response;
@@ -152,6 +148,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         spread,
         category,
         drawnCards,
+        ...(isPhase2 && { initialLen }),
       },
       fetch: transportFetch,
     }),
@@ -224,12 +221,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       if (isEndingEarlyRef.current) {
         isEndingEarlyRef.current = false;
-        // ref を先に同期更新（.finally() など非同期コンテキストから参照するため）
-        isClosingCompleteRef.current = true;
-        // state も更新（リアクティブなトリガーとして専用 effect が使用する）
-        setIsClosingComplete(true);
-        // UI 用ステートも更新（入力エリア非表示・バナー表示のトリガー）
-        setPhase2Stage("saving");
+        hasUnlockedRef.current = true;
+        setPhase2Stage("done");
+        onUnlockRef.current?.();
       } else if (isPhase2) {
         // 3問すべて使い切った後の最終回答が完了 → 自動でクロージングメッセージを送信
         // inputDisabled は React state のため hydration 等で誤 true になり得る。
@@ -242,7 +236,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         }
       }
 
-      if (!isPersonal) {
+      if (!isPersonal || isPhase2) {
         setIsSyncingUsage(true);
         try {
           await refreshUsage();
@@ -279,17 +273,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     handleSessionCloseRef.current = handleSessionClose;
   }, [handleSessionClose]);
 
-  // クロージング AI 応答完了フラグ（ref + state の二重管理）:
-  //   ref  → .finally() など非同期コンテキストから同期的に参照するため
-  //   state → onFinish 完了をリアクティブに検知し、専用 effect から
-  //           persistReading を確実にトリガーするため
-  // AI SDK v6 では status→"ready" が onFinish より先に発火するケースがあり、
-  // status dep だけでは effect 発火時に ref がまだ false のまま "done" チェックが
-  // スキップされる。isClosingComplete state をトリガーにすることで、
-  // onFinish 完了後に確実に persistReading が呼ばれるようにする。
-  const isClosingCompleteRef = useRef(false);
-  const [isClosingComplete, setIsClosingComplete] = useState(false);
-
   const [inputValue, setInputValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [, setIsFocused] = useState(false);
@@ -302,21 +285,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const [showSelector, setShowSelector] = useState(false);
   // Phase2 セッション進行状態:
   //   "chatting" → Q1/Q2/Q3 応答中
-  //   "saving"   → クロージング AI 完了、DB 保存中
-  //   "done"     → DB 保存完了、ナビゲーション解除済み
-  type Phase2Stage = "chatting" | "saving" | "done";
+  //   "done"     → クロージング AI 完了、ナビゲーション解除済み
+  type Phase2Stage = "chatting" | "done";
   const [phase2Stage, setPhase2Stage] = useState<Phase2Stage>("chatting");
-  const saveStartedRef = useRef(false);
-  const pendingSaveRef = useRef(false);
-  const lastPersistedSignatureRef = useRef<string | null>(null);
-  const savedReadingIdRef = useRef<string | null>(null);
-  const [savedReadingId, setSavedReadingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!saveError) return;
-    const t = setTimeout(() => setSaveError(null), 4000);
-    return () => clearTimeout(t);
-  }, [saveError]);
 
   const isInputFixableError =
     chatError !== null &&
@@ -324,18 +295,17 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const hasBlockingError = chatError !== null && !isInputFixableError;
   const canRetry = !!chatError?.retryable && !isInputFixableError;
   // shouldShowBackButton:
-  //   Phase2  → phase2Stage === "done"（保存完了後のみ）
-  //   非Phase2 → AI 応答完了 & 保存・同期完了
+  //   Phase2  → phase2Stage === "done"（クロージング完了後のみ）
+  //   非Phase2 → AI 応答完了 & 同期完了
   //   エラー   → 常に表示（脱出手段を確保）
   const shouldShowBackButton =
     !!chatError ||
     (isPhase2
       ? phase2Stage === "done"
-      : isMessageComplete && !isSavingReading && !isSyncingUsage);
+      : isMessageComplete && !isSyncingUsage);
   const isProcessing =
     status === "submitted" ||
     status === "streaming" ||
-    isSavingReading ||
     isSyncingUsage;
 
   // デバッグ用: messagesの変更を監視
@@ -405,11 +375,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
     wasPersonalRef.current = isPersonal;
   }, [isPersonal, status, stop]);
-
-  // 新しいメッセージが追加されたら自動スクロール -> コメントアウトしてスクロールさせないように変更
-  // useEffect(() => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // }, [messages]);
 
   // Phase2 開始時に一番下まで一度だけスクロール
   useEffect(() => {
@@ -519,14 +484,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const handleFocus = () => {
     setIsFocused(true);
     setInputValue(inputValue.trim());
-
-    // キーボードの準備ができている場合は即座にスクロール
-    // そうでない場合は少し待つ
-    // const scrollDelay = isKeyboardReady ? 100 : 300;
-
-    // setTimeout(() => {
-    //   textareaRef.current?.scrollIntoView({ behavior: "smooth" });
-    // }, scrollDelay);
   };
 
   const handleBlur = () => {
@@ -561,172 +518,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     }
   }, [status]);
 
-  const shouldPersistReading = () => {
-    if (status !== "ready") return false;
-
-    if (isPhase2) {
-      if (drawnCards.length === 0 || messages.length <= initialLen) return false;
-      // Phase2 では必ず AI 応答（assistant メッセージ）が末尾にある状態で保存する。
-      // sendMessage(closingUserMsg) を React event handler から呼ぶと
-      // useSyncExternalStore の tearing により status="ready" かつ messages の
-      // 末尾が user（closingUser のみ）のレンダーが発生する。
-      // このタイミングで保存すると closingAI 抜きで保存されてしまうため、
-      // 末尾が assistant のときだけ保存を許可する。
-      return messages[messages.length - 1]?.role === "assistant";
-    }
-
-    return (isRevealingCompleted || isPersonal) &&
-      drawnCards.length > 0 &&
-      messages.length > 0;
-  };
-
-  const getTargetMessages = () => messages;
-
-  const buildPersistSignature = (
-    readingIdOverride = savedReadingIdRef.current ?? savedReadingId,
-  ) =>
-    `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${getTargetMessages()
-      .map((msg) => {
-        const text = msg.parts
-          .filter((part) => part.type === "text")
-          .map((part) => (part as { text: string }).text)
-          .join("");
-        return `${msg.role}:${text}`;
-      })
-      .join("\u0001")}`;
-
-  const buildReadingPayload = (): SaveReadingInput => {
-    const targetMessages = getTargetMessages();
-    // Phase2 では initialLen 以降の最初の assistant メッセージが初回鑑定（FINAL_READING）
-    const firstPhase2TarotistIdx = isPhase2
-      ? targetMessages.findIndex(
-          (m, i) => m.role === "assistant" && i >= initialLen,
-        )
-      : -1;
-
-    return {
-      readingId: savedReadingIdRef.current ?? savedReadingId ?? undefined,
-      incrementUsage: isPersonal
-        ? (savedReadingIdRef.current ?? savedReadingId) === null
-        : false,
-      tarotistId: tarotist.id,
-      tarotist,
-      spreadId: spread.id,
-      spread,
-      category: isPersonal ? undefined : category,
-      customQuestion: isPersonal ? customQuestion : undefined,
-      cards: drawnCards,
-      chatMessages: targetMessages.map((msg, i) => {
-        let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
-        if (msg.role === "user") {
-          chatType = "USER_QUESTION";
-        } else if (isPhase2 && i === firstPhase2TarotistIdx) {
-          chatType = "FINAL_READING";
-        } else if (isPhase2) {
-          chatType = "TAROTIST_ANSWER";
-        } else {
-          chatType = "FINAL_READING";
-        }
-
-        return {
-          tarotistId: tarotist.id,
-          tarotist,
-          chatType,
-          role: msg.role === "user" ? "USER" : "TAROTIST",
-          message: msg.parts
-            .filter((part) => part.type === "text")
-            .map((part) => (part as { text: string }).text)
-            .join(""),
-        };
-      }),
-    };
-  };
-
-  const persistReading = useEffectEvent((withSavingIndicator: boolean) => {
-    if (saveStartedRef.current) {
-      // 保存中に新しいデータ（クロージングメッセージ等）が来た場合、
-      // 保存完了後に再試行するフラグを立てる
-      if (shouldPersistReading()) {
-        pendingSaveRef.current = true;
-      }
-      return;
-    }
-
-    if (!shouldPersistReading()) {
-      // 保存条件を満たさなくても、クロージングが完了していれば "done" に遷移する。
-      // （例: 既に全データ保存済みで status が再び "ready" になったケース）
-      if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
-        hasUnlockedRef.current = true;
-        setPhase2Stage("done");
-        onUnlockRef.current?.();
-      }
-      return;
-    }
-
-    const nextSignature = buildPersistSignature();
-    if (lastPersistedSignatureRef.current === nextSignature) {
-      // シグネチャ一致 = 既に保存済み。クロージングが完了していれば "done" に遷移する。
-      if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
-        hasUnlockedRef.current = true;
-        setPhase2Stage("done");
-        onUnlockRef.current?.();
-      }
-      return;
-    }
-
-    saveStartedRef.current = true;
-    pendingSaveRef.current = false;
-
-    if (withSavingIndicator) {
-      setIsSavingReading(true);
-    }
-
-    void saveReading(buildReadingPayload())
-      .then((result) => {
-        savedReadingIdRef.current = result.reading.id;
-        setSavedReadingId(result.reading.id);
-        // 保存した時点の内容をベースに readingId だけ差し替える。
-        // .then() 実行時の最新 state で buildPersistSignature() を再計算すると、
-        // 保存完了を待つ間に追加されたメッセージ（クロージング等）まで "保存済み" と
-        // 誤認識し、pendingSaveRef によるリトライがスキップされてしまう。
-        const [, ...rest] = nextSignature.split("::");
-        lastPersistedSignatureRef.current = [result.reading.id, ...rest].join(
-          "::",
-        );
-      })
-      .catch(() => {
-        if (withSavingIndicator) {
-          setSaveError("占い結果の保存に失敗しました。通信環境をご確認ください。");
-        }
-      })
-      .finally(() => {
-        saveStartedRef.current = false;
-        if (withSavingIndicator) {
-          setIsSavingReading(false);
-        }
-        // 保存中にスキップされたデータがあれば再試行
-        if (pendingSaveRef.current) {
-          pendingSaveRef.current = false;
-          persistReading(false);
-          // リトライが no-op（シグネチャ一致 or shouldPersistReading=false）だった場合、
-          // saveStartedRef は false のまま。その場合も "done" チェックを行う。
-          // ※リトライが実際に保存を開始した場合は saveStartedRef=true になるため
-          //   そのリトライの .finally() に処理を委ねる。
-          if (!saveStartedRef.current) {
-            if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
-              hasUnlockedRef.current = true;
-              setPhase2Stage("done");
-              onUnlockRef.current?.();
-            }
-          }
-        } else if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
-          // isClosingCompleteRef は onFinish 内で同期的に true になる ref。
-          hasUnlockedRef.current = true;
-          setPhase2Stage("done");
-          onUnlockRef.current?.();
-        }
-      });
-  });
   useEffect(() => {
     if (isMessageComplete) return; // 既にフラグ立て済みなら何もしない
 
@@ -766,11 +557,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   ]);
 
   // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
-  // Phase2 の場合は保存完了後に persistReading.finally() から呼び出すため、
+  // Phase2 の場合は onFinish から直接 onUnlock を呼ぶため、
   // この effect では非 Phase2 またはエラー時のみ解除する。
-  // （Phase2 で useEffect から呼ぶと、保存開始前に解除されてしまうため）
   const hasUnlockedRef = React.useRef(false);
-  // persistReading の finally（非同期コンテキスト）から最新の onUnlock を参照するための ref
   const onUnlockRef = React.useRef(onUnlock);
   useEffect(() => {
     onUnlockRef.current = onUnlock;
@@ -781,82 +570,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       onUnlock?.();
     }
   }, [shouldShowBackButton, isPhase2, chatError, onUnlock]);
-
-  useEffect(() => {
-    // ─────────────────────────────────────────────────────────────
-    // DB 保存:
-    //   Phase2  → Q&A セッション完了時（inputDisabled=true）に保存
-    //   非Phase2 → 鑑定完了後すぐ保存
-    //   エラー時は保存しない
-    //
-    // phase2Stage を deps に含める理由:
-    //   AI SDK v6 では status → "ready" が onFinish より先に発火するケースがある。
-    //   その場合、status 変化で effect が発火した時点では isClosingCompleteRef が
-    //   まだ false のため、シグネチャ一致パスで "done" チェックがスキップされる。
-    //   直後に onFinish が isClosingCompleteRef=true + setPhase2Stage("saving") を
-    //   実行するが、phase2Stage が deps にないと effect が再発火せず "done" に
-    //   遷移できない。phase2Stage を deps に加えることで "saving" への遷移時に
-    //   effect が確実に再発火し、isClosingCompleteRef=true の状態で "done" を設定できる。
-    // ─────────────────────────────────────────────────────────────
-    persistReading(true);
-  }, [
-    category,
-    customQuestion,
-    drawnCards,
-    initialLen,
-    inputDisabled,
-    isPersonal,
-    isPhase2,
-    isRevealingCompleted,
-    messages,
-    persistReading,
-    phase2Stage,
-    saveReading,
-    spread,
-    status,
-    tarotist,
-  ]);
-
-  // クロージング完了時に persistReading を確実にトリガーする専用 effect。
-  // AI SDK v6 では status→"ready" が onFinish より先に発火するケースがあり、
-  // メインの persist effect が isClosingCompleteRef=false の状態で実行されてしまう
-  // ことがある（シグネチャ一致パスで "done" チェックがスキップされ、その後
-  // onFinish が ref を true に更新しても他の deps 変化がなければ effect が
-  // 再発火しない）。isClosingComplete state は onFinish 内で同期的に
-  // true にセットされるため、この effect は onFinish 完了後に確実に発火する。
-  useEffect(() => {
-    if (!isClosingComplete || !isPhase2) return;
-    persistReading(true);
-  }, [isClosingComplete, isPhase2, persistReading]);
-
-  useEffect(() => {
-    let appStateListener: PluginListenerHandle | undefined;
-
-    const setupAppStateListener = async () => {
-      try {
-        appStateListener = await CapacitorApp.addListener(
-          "appStateChange",
-          (state) => {
-            if (!state.isActive) {
-              persistReading(false);
-            }
-          },
-        );
-      } catch (error) {
-        console.warn("Failed to attach appStateChange listener", error);
-      }
-    };
-
-    setupAppStateListener();
-
-    return () => {
-      // アンマウント時のみ保存（deps変化時には発火させない）
-      // useEffectEvent により persistReading は常に最新状態を参照するため空 deps で正しく動作する
-      persistReading(false);
-      void appStateListener?.remove();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="w-full h-full flex flex-col relative">
@@ -886,13 +599,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
         {(status === "submitted" ||
           status === "streaming" ||
-          isSavingReading ||
-          isSyncingUsage ||
-          // Phase2 の "saving" フェーズ全体でカーソルを表示し続ける。
-          // 1回目の保存完了後にリトライ保存が走る場合、リトライは
-          // withSavingIndicator=false のため isSavingReading が立たず、
-          // カーソルが消えて "done" が来るまで空白になってしまう。
-          (isPhase2 && phase2Stage === "saving")) && (
+          isSyncingUsage) && (
           <div className="text-base text-gray-900">
             <div className="flex gap-1">
               <div
@@ -961,9 +668,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
       )}
 
-      {/* Back Button - Phase1: 保存後すぐ / Phase2: 全質問終了後のみ */}
+      {/* Back Button - Phase1: 完了後すぐ / Phase2: クロージング完了後のみ */}
       {shouldShowBackButton &&
-        !isSavingReading &&
         !chatError &&
         (() => {
           const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
@@ -996,7 +702,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         })()}
 
       {/* Phase2: セッション終了バナー */}
-      {/* phase2Stage === "done" = 保存完了後のみ表示（早期表示を防ぐ） */}
+      {/* phase2Stage === "done" = クロージング完了後のみ表示（早期表示を防ぐ） */}
       {isPhase2 &&
         phase2Stage === "done" &&
         !chatError && (
@@ -1136,21 +842,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             </>
           );
         })()}
-
-      {/* 保存失敗トースト */}
-      <AnimatePresence>
-        {saveError && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-gray-800 text-white px-4 py-2.5 rounded-2xl shadow-lg text-xs font-medium whitespace-nowrap"
-          >
-            <span>⚠️</span>
-            <span>{saveError}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

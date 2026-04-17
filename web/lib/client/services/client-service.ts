@@ -1,4 +1,4 @@
-import type { Reading, SaveReadingInput } from "@shared/lib/types";
+import type { Reading } from "@shared/lib/types";
 
 export interface UsageStats {
   plan: {
@@ -35,17 +35,6 @@ export async function fetchReadings(
     credentials: "include",
   });
   if (!res.ok) throw new Error("占い履歴の取得に失敗しました");
-  return res.json();
-}
-
-export async function saveReading(data: SaveReadingInput): Promise<Reading> {
-  const res = await fetch("/api/clients/readings", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("占い結果の保存に失敗しました");
   return res.json();
 }
 
