@@ -115,8 +115,8 @@ test.describe("サイドバーナビゲーション", () => {
     await page.goto("/salon");
     await page.waitForLoadState("networkidle");
 
-    // サイドバーのナビゲーション要素（Wand2 アイコンボタン等）が存在する
-    const sidebar = page.locator("[data-slot='sidebar']").first();
-    await expect(sidebar).toBeVisible();
+    // サイドバーの実コンテンツコンテナ（fixed配置の可視要素）が存在する
+    const sidebarContainer = page.locator("[data-slot='sidebar-container']").first();
+    await expect(sidebarContainer).toBeVisible();
   });
 });
