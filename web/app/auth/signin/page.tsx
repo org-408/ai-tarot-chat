@@ -74,55 +74,59 @@ function SignInHeroPanel() {
           "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)",
       }}
     >
-      {/* メインコンテンツ */}
-      <div className="flex flex-1 items-center px-12 gap-10">
-        {/* 左: テキスト */}
-        <div className="flex flex-col justify-center flex-1">
-          <div className="flex items-end gap-5 mb-6">
-            <CardFan size="md" />
-            <div>
-              <h1 className="text-3xl font-bold text-white leading-tight">
-                Ariadne
-              </h1>
-              <p className="text-2xl font-bold text-violet-200">
-                AIタロット占い
-              </p>
+      {/* メインコンテンツ: 左半分にテキスト・右半分に画像、各中央寄せ */}
+      <div className="flex flex-1 items-center">
+        {/* 左半分: テキストグループ（中央寄せ） */}
+        <div className="w-1/2 flex justify-center items-center">
+          <div className="flex flex-col">
+            <div className="flex items-end gap-5 mb-6">
+              <CardFan size="md" />
+              <div>
+                <h1 className="text-3xl font-bold text-white leading-tight">
+                  Ariadne
+                </h1>
+                <p className="text-2xl font-bold text-violet-200">
+                  AIタロット占い
+                </p>
+              </div>
             </div>
-          </div>
-          <p className="text-violet-200 text-lg mb-1">
-            8人のAI占い師と22種のスプレッドで
-          </p>
-          <p className="text-white/80 text-base mb-8">
-            本格的なタロットリーディングを体験しよう
-          </p>
-          <div className="flex gap-3">
-            {["iOS", "Android"].map((p) => (
-              <span
-                key={p}
-                className="px-4 py-1.5 rounded-full text-sm text-violet-200 border border-violet-400/50 bg-violet-500/20"
-              >
-                {p}
-              </span>
-            ))}
+            <p className="text-violet-200 text-lg mb-1">
+              8人のAI占い師と22種のスプレッドで
+            </p>
+            <p className="text-white/80 text-base mb-8">
+              本格的なタロットリーディングを体験しよう
+            </p>
+            <div className="flex gap-3">
+              {["iOS", "Android"].map((p) => (
+                <span
+                  key={p}
+                  className="px-4 py-1.5 rounded-full text-sm text-violet-200 border border-violet-400/50 bg-violet-500/20"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* 右: タロティスト 2×2（2倍サイズ: 128×160 → 256×320） */}
-        <div className="grid grid-cols-2 gap-4 flex-shrink-0">
-          {HERO_TAROTISTS.map((name) => (
-            <div
-              key={name}
-              className="w-64 h-80 rounded-xl overflow-hidden border-2 border-violet-400/40"
-            >
-              <Image
-                src={`/tarotists/${name}.png`}
-                width={256}
-                height={320}
-                alt={name}
-                className="w-full h-full object-cover object-top"
-              />
-            </div>
-          ))}
+        {/* 右半分: 画像グループ（中央寄せ） */}
+        <div className="w-1/2 flex justify-center items-center">
+          <div className="grid grid-cols-2 gap-4">
+            {HERO_TAROTISTS.map((name) => (
+              <div
+                key={name}
+                className="w-64 h-80 rounded-xl overflow-hidden border-2 border-violet-400/40"
+              >
+                <Image
+                  src={`/tarotists/${name}.png`}
+                  width={256}
+                  height={320}
+                  alt={name}
+                  className="w-full h-full object-cover object-top"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
