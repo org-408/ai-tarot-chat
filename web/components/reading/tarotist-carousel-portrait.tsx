@@ -241,10 +241,16 @@ export function TarotistCarouselPortrait({
                 {selectedTarotist.title}
               </p>
               <p
-                className="text-xs"
+                className="text-xs mb-1"
                 style={{ color: accent, textShadow: "1px 1px 3px rgba(0,0,0,0.9)" }}
               >
                 {selectedTarotist.trait}
+              </p>
+              <p
+                className="text-xs text-white/70 line-clamp-2 leading-relaxed"
+                style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.9)" }}
+              >
+                {selectedTarotist.bio}
               </p>
             </div>
 
@@ -369,10 +375,14 @@ export function TarotistCarouselPortrait({
                         </div>
 
                         <p
-                          className="text-center text-xs mb-2 line-clamp-2"
+                          className="text-center text-xs mb-2"
                           style={{ color: accent, textShadow: "1px 1px 3px rgba(0,0,0,0.7)" }}
                         >
                           {tarotist.trait}
+                        </p>
+
+                        <p className="text-center text-xs text-white/80 line-clamp-2 mb-2 leading-relaxed">
+                          {tarotist.bio}
                         </p>
 
                         {tarotist.quality != null && (
