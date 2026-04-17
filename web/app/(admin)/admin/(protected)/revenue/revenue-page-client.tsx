@@ -1,5 +1,8 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+
 const PLAN_COLOR: Record<string, string> = {
   GUEST: "bg-slate-400",
   FREE: "bg-green-500",
@@ -18,6 +21,7 @@ type PlanRevenue = { plan: string; name: string; price: number; count: number; m
 type MonthlyChange = { month: string; upgrades: number; downgrades: number };
 type ChangeRow = {
   id: string;
+  clientId: string;
   clientName: string | null;
   clientEmail: string | null;
   fromPlan: string;
@@ -29,6 +33,8 @@ type ChangeRow = {
   reason: string | null;
   changedAt: string;
 };
+
+const PAGE_SIZE = 20;
 
 function fmt(yen: number) {
   return `¥${yen.toLocaleString()}`;
@@ -45,6 +51,27 @@ export function RevenuePageClient({
   monthlyChanges: MonthlyChange[];
   recentChanges: ChangeRow[];
 }) {
+  const [changeKeyword, setChangeKeyword] = useState("");
+  const [changeDirectionFilter, setChangeDirectionFilter] = useState<"ALL" | "UP" | "DOWN">("ALL");
+  const [changePage, setChangePage] = useState(0);
+
+  const filteredChanges = recentChanges.filter((c) => {
+    if (changeDirectionFilter === "UP" && c.toPrice <= c.fromPrice) return false;
+    if (changeDirectionFilter === "DOWN" && c.toPrice >= c.fromPrice) return false;
+    if (changeKeyword) {
+      const kw = changeKeyword.toLowerCase();
+      if (
+        !(c.clientName ?? "").toLowerCase().includes(kw) &&
+        !(c.clientEmail ?? "").toLowerCase().includes(kw)
+      )
+        return false;
+    }
+    return true;
+  });
+
+  const changePageCount = Math.ceil(filteredChanges.length / PAGE_SIZE);
+  const pagedChanges = filteredChanges.slice(changePage * PAGE_SIZE, (changePage + 1) * PAGE_SIZE);
+
   const maxMrr = Math.max(...planRevenue.map((p) => p.mrr), 1);
   const maxChange = Math.max(...monthlyChanges.map((m) => m.upgrades + m.downgrades), 1);
 
@@ -127,53 +154,106 @@ export function RevenuePageClient({
         </div>
       </div>
 
-      {/* 最近のプラン変更履歴 */}
+      {/* プラン変更履歴 */}
       <div className="rounded-xl border border-slate-200 overflow-hidden">
-        <div className="bg-slate-50 border-b border-slate-200 px-4 py-2">
-          <span className="text-sm font-medium text-slate-700">最近のプラン変更（最新20件）</span>
+        <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-slate-700">プラン変更履歴（{recentChanges.length}件取得）</span>
+          <div className="ml-auto flex flex-wrap gap-2 items-center">
+            <Input
+              placeholder="名前・メールで検索"
+              value={changeKeyword}
+              onChange={(e) => { setChangeKeyword(e.target.value); setChangePage(0); }}
+              className="h-7 text-xs w-44"
+            />
+            {(["ALL", "UP", "DOWN"] as const).map((d) => (
+              <button
+                key={d}
+                onClick={() => { setChangeDirectionFilter(d); setChangePage(0); }}
+                className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+                  changeDirectionFilter === d
+                    ? d === "UP"
+                      ? "bg-green-600 text-white border-green-600"
+                      : d === "DOWN"
+                      ? "bg-red-600 text-white border-red-600"
+                      : "bg-slate-700 text-white border-slate-700"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {d === "ALL" ? "全て" : d === "UP" ? "▲ アップ" : "▼ ダウン"}
+              </button>
+            ))}
+            <span className="text-xs text-slate-400">{filteredChanges.length}件</span>
+          </div>
         </div>
-        {recentChanges.length === 0 ? (
-          <p className="text-sm text-slate-400 px-4 py-3">変更履歴がありません</p>
+        {filteredChanges.length === 0 ? (
+          <p className="text-sm text-slate-400 px-4 py-3">該当する変更履歴がありません</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left px-4 py-2 font-medium text-slate-500">ユーザー</th>
-                <th className="text-left px-4 py-2 font-medium text-slate-500">変更</th>
-                <th className="text-left px-4 py-2 font-medium text-slate-500">理由</th>
-                <th className="text-left px-4 py-2 font-medium text-slate-500">日時</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {recentChanges.map((c) => {
-                const isUpgrade = c.toPrice > c.fromPrice;
-                return (
-                  <tr key={c.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-2">
-                      <div className="font-medium text-slate-800">{c.clientName ?? "—"}</div>
-                      <div className="text-xs text-slate-400">{c.clientEmail}</div>
-                    </td>
-                    <td className="px-4 py-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${PLAN_BADGE[c.fromCode] ?? "bg-slate-100 text-slate-600"}`}>{c.fromPlan}</span>
-                        <span className={`text-xs font-bold ${isUpgrade ? "text-green-600" : "text-red-500"}`}>→</span>
-                        <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${PLAN_BADGE[c.toCode] ?? "bg-slate-100 text-slate-600"}`}>{c.toPlan}</span>
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        {isUpgrade
-                          ? <span className="text-green-600">+{fmt(c.toPrice - c.fromPrice)}/月</span>
-                          : <span className="text-red-500">{fmt(c.toPrice - c.fromPrice)}/月</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 text-slate-500">{c.reason ?? "—"}</td>
-                    <td className="px-4 py-2 text-slate-400">
-                      {new Date(c.changedAt).toLocaleDateString("ja-JP")}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <>
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium text-slate-500">ユーザー</th>
+                  <th className="text-left px-4 py-2 font-medium text-slate-500">変更</th>
+                  <th className="text-left px-4 py-2 font-medium text-slate-500">理由</th>
+                  <th className="text-left px-4 py-2 font-medium text-slate-500">日時</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagedChanges.map((c) => {
+                  const isUpgrade = c.toPrice > c.fromPrice;
+                  return (
+                    <tr key={c.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-2">
+                        <a href={`/admin/clients/${c.clientId}`} className="font-medium text-sky-600 hover:underline">
+                          {c.clientName ?? "—"}
+                        </a>
+                        <div className="text-xs text-slate-400">{c.clientEmail}</div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${PLAN_BADGE[c.fromCode] ?? "bg-slate-100 text-slate-600"}`}>{c.fromPlan}</span>
+                          <span className={`text-xs font-bold ${isUpgrade ? "text-green-600" : "text-red-500"}`}>→</span>
+                          <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${PLAN_BADGE[c.toCode] ?? "bg-slate-100 text-slate-600"}`}>{c.toPlan}</span>
+                        </div>
+                        <div className="text-xs text-slate-400 mt-0.5">
+                          {isUpgrade
+                            ? <span className="text-green-600">+{fmt(c.toPrice - c.fromPrice)}/月</span>
+                            : <span className="text-red-500">{fmt(c.toPrice - c.fromPrice)}/月</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-slate-500">{c.reason ?? "—"}</td>
+                      <td className="px-4 py-2 text-slate-400 whitespace-nowrap">
+                        {new Date(c.changedAt).toLocaleDateString("ja-JP")}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {changePageCount > 1 && (
+              <div className="flex items-center justify-between px-4 py-2 border-t bg-slate-50 text-xs text-slate-500">
+                <span>
+                  {changePage * PAGE_SIZE + 1}〜{Math.min((changePage + 1) * PAGE_SIZE, filteredChanges.length)} / {filteredChanges.length}件
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    disabled={changePage === 0}
+                    onClick={() => setChangePage((p) => p - 1)}
+                    className="px-2 py-1 rounded border text-xs disabled:opacity-40 hover:bg-slate-100"
+                  >
+                    前へ
+                  </button>
+                  <button
+                    disabled={changePage >= changePageCount - 1}
+                    onClick={() => setChangePage((p) => p + 1)}
+                    className="px-2 py-1 rounded border text-xs disabled:opacity-40 hover:bg-slate-100"
+                  >
+                    次へ
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -69,6 +69,16 @@ type ClientDetail = {
     afterPersonalCount: number;
     createdAt: string;
   }[];
+  dailyResetHistories: {
+    id: string;
+    date: string;
+    resetType: string;
+    beforeReadingsCount: number;
+    afterReadingsCount: number;
+    beforePersonalCount: number;
+    afterPersonalCount: number;
+    createdAt: string;
+  }[];
   recentLogs: {
     id: string;
     level: string;
@@ -410,6 +420,50 @@ export function ClientDetailPage({
                       <td className="py-2 px-2 text-xs text-slate-500">{h.beforePersonalCount} → {h.afterPersonalCount}</td>
                       <td className="py-2 px-2 text-xs text-slate-500">{h.adminEmail}</td>
                       <td className="py-2 px-2 text-xs text-slate-500">{h.reason ?? "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 日次自動リセット履歴 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            日次自動リセット履歴（最新30件）
+            <span className="ml-3 text-xs text-slate-400 font-normal">プラン変更・日付切替による自動リセット</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {client.dailyResetHistories.length === 0 ? (
+            <p className="text-sm text-slate-400">リセット履歴なし</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-slate-500 text-left">
+                    <th className="py-2 px-2">日時</th>
+                    <th className="py-2 px-2">対象日</th>
+                    <th className="py-2 px-2">種別</th>
+                    <th className="py-2 px-2">クイック前→後</th>
+                    <th className="py-2 px-2">パーソナル前→後</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {client.dailyResetHistories.map((h) => (
+                    <tr key={h.id} className="border-b hover:bg-slate-50">
+                      <td className="py-2 px-2 text-xs text-slate-500 whitespace-nowrap">{fmt(h.createdAt)}</td>
+                      <td className="py-2 px-2 text-xs text-slate-500 whitespace-nowrap">{fmtDate(h.date)}</td>
+                      <td className="py-2 px-2">
+                        <span className="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700">
+                          {h.resetType}
+                        </span>
+                      </td>
+                      <td className="py-2 px-2 text-xs text-slate-500">{h.beforeReadingsCount} → {h.afterReadingsCount}</td>
+                      <td className="py-2 px-2 text-xs text-slate-500">{h.beforePersonalCount} → {h.afterPersonalCount}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -83,6 +83,16 @@ export default async function ClientDetailServerPage({
           afterPersonalCount: h.afterPersonalCount,
           createdAt: h.createdAt.toISOString(),
         })),
+        dailyResetHistories: client.dailyResetHistories.map((h) => ({
+          id: h.id,
+          date: h.date.toISOString(),
+          resetType: h.resetType,
+          beforeReadingsCount: h.beforeReadingsCount,
+          afterReadingsCount: h.afterReadingsCount,
+          beforePersonalCount: h.beforePersonalCount,
+          afterPersonalCount: h.afterPersonalCount,
+          createdAt: h.createdAt.toISOString(),
+        })),
         recentLogs: client.logs.map((l) => ({
           id: l.id,
           level: l.level,

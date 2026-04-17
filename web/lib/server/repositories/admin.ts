@@ -24,6 +24,13 @@ export interface AdminLogFilters {
   keyword?: string;
 }
 
+export interface AdminDailyResetFilters {
+  clientId?: string;
+  resetType?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
 export type AdminLogSortField =
   | "timestamp"
   | "createdAt"
@@ -139,6 +146,7 @@ export class AdminRepository extends BaseRepository {
           orderBy: { changedAt: "desc" },
         },
         adminResetHistories: { orderBy: { createdAt: "desc" } },
+        dailyResetHistories: { orderBy: { createdAt: "desc" }, take: 30 },
         readings: {
           include: {
             tarotist: { select: { id: true, name: true, icon: true } },
@@ -307,14 +315,48 @@ export class AdminRepository extends BaseRepository {
       this.db.planChangeHistory.findMany({
         where: { changedAt: { gte: since } },
         include: {
-          client: { select: { name: true, email: true } },
+          client: { select: { id: true, name: true, email: true } },
           fromPlan: { select: { name: true, code: true, price: true } },
           toPlan: { select: { name: true, code: true, price: true } },
         },
         orderBy: { changedAt: "desc" },
+        take: 200,
       }),
     ]);
     return { plans, clientsByPlan, recentChanges };
+  }
+
+  // -------- Daily Reset History --------
+
+  async listDailyResetHistories(
+    filters: AdminDailyResetFilters,
+    pagination: { skip: number; take: number }
+  ) {
+    const where: Prisma.DailyResetHistoryWhereInput = {
+      ...(filters.clientId ? { clientId: filters.clientId } : {}),
+      ...(filters.resetType ? { resetType: filters.resetType } : {}),
+      ...((filters.dateFrom || filters.dateTo)
+        ? {
+            createdAt: {
+              ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
+              ...(filters.dateTo ? { lte: filters.dateTo } : {}),
+            },
+          }
+        : {}),
+    };
+    const [histories, total] = await Promise.all([
+      this.db.dailyResetHistory.findMany({
+        where,
+        include: {
+          client: { select: { id: true, name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: pagination.skip,
+        take: pagination.take,
+      }),
+      this.db.dailyResetHistory.count({ where }),
+    ]);
+    return { histories, total };
   }
 
   // -------- Stats --------
