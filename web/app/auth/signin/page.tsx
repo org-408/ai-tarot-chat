@@ -52,7 +52,7 @@ const HERO_TAROTISTS = ["Ariadne", "Sophia", "Clara", "Luna"] as const;
 function SignInHeroPanel() {
   return (
     <div
-      className="hidden lg:flex lg:flex-1 relative flex-col overflow-hidden"
+      className="hidden lg:flex lg:w-1/2 relative flex-col overflow-hidden"
       style={{ background: "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)" }}
     >
       {/* メインコンテンツ */}
@@ -179,7 +179,7 @@ function WebSignInLayout({ error }: { error?: string }) {
       <SignInHeroPanel />
 
       {/* 右カラム: サインインカード */}
-      <div className="w-full lg:w-[420px] lg:flex-none flex flex-col items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 lg:flex-none flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="bg-violet-200/20 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-violet-300/30">
             <Suspense fallback={null}>
