@@ -17,6 +17,30 @@ import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
+function mockSseResponse(text: string): Response {
+  const msgId = "msg_e2e";
+  const txtId = "txt_1";
+  const events = [
+    `data: ${JSON.stringify({ type: "start", messageId: msgId })}\n\n`,
+    `data: ${JSON.stringify({ type: "start-step", stepType: "initial" })}\n\n`,
+    `data: ${JSON.stringify({ type: "text-start", id: txtId })}\n\n`,
+    `data: ${JSON.stringify({ type: "text-delta", id: txtId, delta: text })}\n\n`,
+    `data: ${JSON.stringify({ type: "text-end", id: txtId })}\n\n`,
+    `data: ${JSON.stringify({ type: "finish-step", finishReason: "stop", usage: { inputTokens: 5, outputTokens: 5, totalTokens: 10 }, isContinued: false })}\n\n`,
+    `data: ${JSON.stringify({ type: "finish", finishReason: "stop", usage: { inputTokens: 5, outputTokens: 5, totalTokens: 10 } })}\n\n`,
+    "data: [DONE]\n\n",
+  ];
+  return new Response(events.join(""), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/event-stream",
+      "x-vercel-ai-ui-message-stream": "v1",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
+}
+
 const maxOutputTokens = 65536; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
 
 export const dynamic = "force-dynamic";
@@ -72,6 +96,52 @@ export async function POST(req: NextRequest) {
       category: ReadingCategory;
       drawnCards: DrawnCard[];
     } = await req.json();
+
+    // ── E2E モックモード ──────────────────────────────────────
+    // E2E_MOCK_AI=true のとき AI を呼ばず保存ロジックだけ実行してモック SSE を返す
+    if (process.env.E2E_MOCK_AI === "true") {
+      const mockText = "E2Eテスト用モックレスポンスです。";
+      const msgTextFn = (m: UIMessage) =>
+        m.parts
+          .filter((p) => p.type === "text")
+          .map((p) => (p as { text: string }).text)
+          .join("");
+      const chatMessages = [
+        ...clientMessages.map((msg) => ({
+          tarotistId: tarotist.id,
+          tarotist,
+          chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("FINAL_READING" as const),
+          role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+          message: msgTextFn(msg),
+        })),
+        {
+          tarotistId: tarotist.id,
+          tarotist,
+          chatType: "FINAL_READING" as const,
+          role: "TAROTIST" as const,
+          message: mockText,
+        },
+      ];
+      try {
+        await clientService.saveReading({
+          clientId,
+          deviceId,
+          tarotistId: tarotist.id,
+          tarotist,
+          spreadId: spread.id,
+          spread,
+          categoryId: category?.id ?? null,
+          category: category ?? undefined,
+          cards: drawnCards,
+          chatMessages,
+          incrementUsage: true,
+        });
+        logWithContext("info", "E2E モック: クイック占い保存完了", { clientId });
+      } catch (error) {
+        logWithContext("error", "E2E モック: クイック占い保存に失敗", { error, clientId });
+      }
+      return mockSseResponse(mockText);
+    }
 
     // ✅ 最初のメッセージ（占い開始時）のみ残回数チェック
     //    以降のターンは saveReading でカウントするためここでは初回のみ制限

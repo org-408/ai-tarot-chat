@@ -40,6 +40,16 @@ export default defineConfig({
         storageState: "./tests/.auth/admin.json",
       },
     },
+    // ── リーディング API テスト（保存・利用回数確認）──
+    // E2E_MOCK_AI=true が必要。CI では webServer 起動時に自動設定される。
+    // ローカルで再利用サーバーを使う場合は `E2E_MOCK_AI=true npm run start` で起動すること。
+    {
+      name: "readings",
+      testMatch: "**/readings.spec.ts",
+      use: {
+        browserName: "chromium",
+      },
+    },
   ],
 
   // CI では next build 済みの前提で next start を起動
@@ -52,6 +62,7 @@ export default defineConfig({
     // 認証リダイレクトが機能しない
     env: {
       AUTH_URL: "http://localhost:3000",
+      E2E_MOCK_AI: "true",
     },
   },
 });

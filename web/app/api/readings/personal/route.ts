@@ -17,6 +17,30 @@ import { NextRequest } from "next/server";
 
 const debugMode = process.env.AI_DEBUG_MODE === "true";
 
+function mockSseResponse(text: string): Response {
+  const msgId = "msg_e2e";
+  const txtId = "txt_1";
+  const events = [
+    `data: ${JSON.stringify({ type: "start", messageId: msgId })}\n\n`,
+    `data: ${JSON.stringify({ type: "start-step", stepType: "initial" })}\n\n`,
+    `data: ${JSON.stringify({ type: "text-start", id: txtId })}\n\n`,
+    `data: ${JSON.stringify({ type: "text-delta", id: txtId, delta: text })}\n\n`,
+    `data: ${JSON.stringify({ type: "text-end", id: txtId })}\n\n`,
+    `data: ${JSON.stringify({ type: "finish-step", finishReason: "stop", usage: { inputTokens: 5, outputTokens: 5, totalTokens: 10 }, isContinued: false })}\n\n`,
+    `data: ${JSON.stringify({ type: "finish", finishReason: "stop", usage: { inputTokens: 5, outputTokens: 5, totalTokens: 10 } })}\n\n`,
+    "data: [DONE]\n\n",
+  ];
+  return new Response(events.join(""), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/event-stream",
+      "x-vercel-ai-ui-message-stream": "v1",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
+}
+
 const maxOutputTokens = 65536; // これ以上は占い結果が長くなりすぎる可能性があるため制限(8192/12288/16384/65536)
 
 export const dynamic = "force-dynamic";
@@ -168,6 +192,118 @@ export async function POST(req: NextRequest) {
           phase,
         });
       }
+    }
+
+    // ── E2E モックモード ──────────────────────────────────────
+    // E2E_MOCK_AI=true のとき AI を呼ばず保存ロジックだけ実行してモック SSE を返す
+    if (process.env.E2E_MOCK_AI === "true") {
+      const mockText = "E2Eテスト用モックレスポンスです。";
+
+      if (clientMessages.length > 3) {
+        // Phase2: 利用回数チェック（Phase2 初回のみ）
+        if (!debugMode && clientMessages.length <= 6) {
+          const usage = await clientService.getUsageAndReset(clientId);
+          if (usage.remainingPersonal <= 0) {
+            return createReadingErrorResponse({
+              code: "LIMIT_REACHED",
+              message: "本日のパーソナル占いの回数上限に達しました。",
+              status: 429,
+              phase,
+            });
+          }
+        }
+
+        const msgTextFn = (m: UIMessage) =>
+          m.parts
+            .filter((p) => p.type === "text")
+            .map((p) => (p as { text: string }).text)
+            .join("");
+
+        try {
+          if (clientMessages.length <= 6) {
+            // Phase2 初回鑑定: 新規作成 + 利用回数消費
+            const chatMessages = [
+              ...clientMessages.map((msg) => ({
+                tarotistId: tarotist.id,
+                tarotist,
+                chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("TAROTIST_ANSWER" as const),
+                role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                message: msgTextFn(msg),
+              })),
+              {
+                tarotistId: tarotist.id,
+                tarotist,
+                chatType: "FINAL_READING" as const,
+                role: "TAROTIST" as const,
+                message: mockText,
+              },
+            ];
+            await clientService.saveReading({
+              clientId,
+              deviceId,
+              tarotistId: tarotist.id,
+              tarotist,
+              spreadId: spread.id,
+              spread,
+              customQuestion: customQuestion ?? "",
+              cards: drawnCards,
+              chatMessages,
+              incrementUsage: true,
+            });
+            logWithContext("info", "E2E モック: パーソナル Phase2 初回保存完了", { clientId });
+          } else {
+            // Q&A ターン: 既存リーディングを更新
+            const existingReading = await readingRepository.getLatestPersonalReadingForClient(clientId);
+            if (existingReading) {
+              const firstPhase2AiIdx = clientMessages.findIndex(
+                (m, i) => m.role === "assistant" && i >= (initialLen ?? 0),
+              );
+              const chatMessages = [
+                ...clientMessages.map((msg, i) => ({
+                  tarotistId: tarotist.id,
+                  tarotist,
+                  chatType:
+                    msg.role === "user"
+                      ? ("USER_QUESTION" as const)
+                      : i === firstPhase2AiIdx
+                        ? ("FINAL_READING" as const)
+                        : ("TAROTIST_ANSWER" as const),
+                  role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                  message: msgTextFn(msg),
+                })),
+                {
+                  tarotistId: tarotist.id,
+                  tarotist,
+                  chatType: "TAROTIST_ANSWER" as const,
+                  role: "TAROTIST" as const,
+                  message: mockText,
+                },
+              ];
+              await clientService.saveReading({
+                readingId: existingReading.id,
+                clientId,
+                deviceId,
+                tarotistId: tarotist.id,
+                tarotist,
+                spreadId: spread.id,
+                spread,
+                customQuestion: customQuestion ?? "",
+                cards: drawnCards,
+                chatMessages,
+                incrementUsage: false,
+              });
+              logWithContext("info", "E2E モック: パーソナル Q&A 保存完了", {
+                clientId,
+                readingId: existingReading.id,
+              });
+            }
+          }
+        } catch (error) {
+          logWithContext("error", "E2E モック: パーソナル占い保存に失敗", { error, clientId });
+        }
+      }
+
+      return mockSseResponse(mockText);
     }
 
     const spreads = await spreadService.getAllSpreads();

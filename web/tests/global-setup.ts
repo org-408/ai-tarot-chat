@@ -21,6 +21,7 @@
  */
 
 import { encode } from "@auth/core/jwt";
+import { SignJWT } from "jose";
 import { Pool } from "pg";
 import fs from "fs";
 import path from "path";
@@ -32,8 +33,10 @@ const ADMIN_SESSION_COOKIE_NAME = "__Secure-admin-authjs.session-token";
 
 const STORAGE_STATE_PATH = path.join(__dirname, ".auth/app.json");
 const ADMIN_STORAGE_STATE_PATH = path.join(__dirname, ".auth/admin.json");
+const FIXTURES_PATH = path.join(__dirname, ".auth/fixtures.json");
 
 const TEST_USER_EMAIL = "e2e-test@ariadne-ai.app";
+const TEST_PREMIUM_USER_EMAIL = "e2e-premium@ariadne-ai.app";
 const TEST_ADMIN_EMAIL = "e2e-admin@ariadne-ai.app";
 
 export default async function globalSetup() {
@@ -108,7 +111,135 @@ export default async function globalSetup() {
       })
     );
 
+    // normalClientId を取得
+    const normalClientResult = await pool.query<{ id: string }>(
+      `SELECT id FROM "Client" WHERE "userId" = $1 LIMIT 1`,
+      [userId]
+    );
+    const normalClientId = normalClientResult.rows[0].id;
+
     console.log(`✅ E2E test user ready: ${userId} (${TEST_USER_EMAIL})`);
+
+    // ── プレミアムユーザーセットアップ ─────────────────────
+
+    // PREMIUM プランを取得
+    const premiumPlanResult = await pool.query<{ id: string }>(
+      `SELECT id FROM "Plan" WHERE code = 'PREMIUM' LIMIT 1`
+    );
+    if (premiumPlanResult.rows.length === 0) {
+      throw new Error("PREMIUM plan not found in DB. Run db:seed first.");
+    }
+    const premiumPlanId = premiumPlanResult.rows[0].id;
+
+    // プレミアム User を upsert
+    const premiumUserResult = await pool.query<{ id: string }>(
+      `INSERT INTO "User" (id, name, email, email_verified, "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, NOW(), NOW(), NOW())
+       ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, "updatedAt" = NOW()
+       RETURNING id`,
+      ["E2E Premium User", TEST_PREMIUM_USER_EMAIL]
+    );
+    const premiumUserId = premiumUserResult.rows[0].id;
+
+    // プレミアム Client を upsert
+    await pool.query(
+      `INSERT INTO "Client" (id, "userId", name, email, "planId", "isRegistered", "dailyReadingsCount", "dailyPersonalCount", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, $3, $4, true, 0, 0, NOW(), NOW())
+       ON CONFLICT ("userId") DO NOTHING`,
+      [premiumUserId, "E2E Premium User", TEST_PREMIUM_USER_EMAIL, premiumPlanId]
+    );
+
+    const premiumClientResult = await pool.query<{ id: string }>(
+      `SELECT id FROM "Client" WHERE "userId" = $1 LIMIT 1`,
+      [premiumUserId]
+    );
+    const premiumClientId = premiumClientResult.rows[0].id;
+
+    console.log(`✅ E2E premium user ready: ${premiumUserId} (${TEST_PREMIUM_USER_EMAIL})`);
+
+    // ── Device レコード作成（API 認証用）────────────────────
+
+    const normalDeviceId = "e2e-device-normal";
+    const premiumDeviceId = "e2e-device-premium";
+
+    await pool.query(
+      `INSERT INTO "Device" (id, "deviceId", "clientId", platform, "lastSeenAt", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, 'web', NOW(), NOW(), NOW())
+       ON CONFLICT ("deviceId") DO UPDATE SET "clientId" = EXCLUDED."clientId", "updatedAt" = NOW()`,
+      [normalDeviceId, normalClientId]
+    );
+    await pool.query(
+      `INSERT INTO "Device" (id, "deviceId", "clientId", platform, "lastSeenAt", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, 'web', NOW(), NOW(), NOW())
+       ON CONFLICT ("deviceId") DO UPDATE SET "clientId" = EXCLUDED."clientId", "updatedAt" = NOW()`,
+      [premiumDeviceId, premiumClientId]
+    );
+
+    // ── API JWT 生成（readings API 用 Bearer トークン）────────
+
+    const jwtSecret = new TextEncoder().encode(secret);
+
+    const normalApiToken = await new SignJWT({
+      t: "app",
+      clientId: normalClientId,
+      deviceId: normalDeviceId,
+      provider: "google",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("12h")
+      .sign(jwtSecret);
+
+    const premiumApiToken = await new SignJWT({
+      t: "app",
+      clientId: premiumClientId,
+      deviceId: premiumDeviceId,
+      provider: "google",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("12h")
+      .sign(jwtSecret);
+
+    // ── テスト用マスターデータを取得 ─────────────────────────
+
+    const tarotistResult = await pool.query<{
+      id: string; name: string; title: string; trait: string; bio: string; provider: string; model: string;
+    }>(`SELECT id, name, title, trait, bio, provider, model FROM "Tarotist" LIMIT 1`);
+    if (tarotistResult.rows.length === 0) {
+      throw new Error("No Tarotist found. Run db:seed first.");
+    }
+
+    const spreadResult = await pool.query<{
+      id: string; code: string; name: string; no: number; guide: string;
+    }>(`SELECT id, code, name, no, guide FROM "Spread" LIMIT 1`);
+    if (spreadResult.rows.length === 0) {
+      throw new Error("No Spread found. Run db:seed first.");
+    }
+
+    const categoryResult = await pool.query<{
+      id: string; name: string; no: number;
+    }>(`SELECT id, name, no FROM "ReadingCategory" LIMIT 1`);
+    if (categoryResult.rows.length === 0) {
+      throw new Error("No ReadingCategory found. Run db:seed first.");
+    }
+
+    // ── フィクスチャ保存 ──────────────────────────────────────
+
+    fs.writeFileSync(
+      FIXTURES_PATH,
+      JSON.stringify({
+        normalApiToken,
+        normalClientId,
+        premiumApiToken,
+        premiumClientId,
+        tarotist: tarotistResult.rows[0],
+        spread: spreadResult.rows[0],
+        category: categoryResult.rows[0],
+      }, null, 2)
+    );
+
+    console.log(`✅ E2E readings fixtures saved`);
 
     // ── 管理者ユーザーセットアップ ───────────────────────
 
