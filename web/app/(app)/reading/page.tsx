@@ -53,7 +53,6 @@ export default function ReadingPage() {
   } = useSalonStore();
   const { refreshUsage } = useClientStore();
 
-  const [shuffleOpen, setShuffleOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const readingIdRef = useRef<string | null>(null);
 
@@ -62,17 +61,16 @@ export default function ReadingPage() {
     initMaster();
   }, [initMaster]);
 
-  // カードを引く
+  // カードを即座に引く（シャッフルアニメーションと並行）
+  // isOpen={drawnCards.length === 0} で制御するため、カードが決定したタイミングで
+  // アニメーションの現サイクル終了後に自動終了する（モバイルと同じ仕様）
   useEffect(() => {
-    if (!masterData || !selectedSpread || isReady) return;
-    setShuffleOpen(true);
-  }, [masterData, selectedSpread, isReady]);
-
-  const handleShuffleComplete = () => {
-    if (!masterData || !selectedSpread) return;
+    if (!masterData || !selectedSpread || drawnCards.length > 0) return;
     const cards = drawRandomCards(masterData, selectedSpread);
     setDrawnCards(cards);
-    setShuffleOpen(false);
+  }, [masterData, selectedSpread, drawnCards.length, setDrawnCards]);
+
+  const handleShuffleComplete = () => {
     setIsReady(true);
   };
 
@@ -160,7 +158,7 @@ export default function ReadingPage() {
   return (
     <>
       <ShuffleDialog
-        isOpen={shuffleOpen}
+        isOpen={drawnCards.length === 0}
         onComplete={handleShuffleComplete}
         cardBackPath="/cards/back.png"
       />

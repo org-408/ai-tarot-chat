@@ -85,11 +85,9 @@ export default function PersonalPage() {
       onRefreshUsage: refreshUsage,
       onRefreshToken: async () => token,
       onUnlock: () => {
-        // Phase1 完了時: メッセージを保存して Phase2 に移行
+        // Phase1 完了時: メッセージを保存してシャッフル開始
         setPhase1Messages(phase1Session.messages);
-        if (masterData && selectedSpread) {
-          setShuffleOpen(true);
-        }
+        setShuffleOpen(true);
       },
       onMessagesChange: () => {},
     }
@@ -126,11 +124,16 @@ export default function PersonalPage() {
     }
   );
 
-  const handleShuffleComplete = () => {
-    if (!masterData || !selectedSpread) return;
+  // shuffleOpen=true になった直後にカードを引き、isOpen=false を送信
+  // → ShuffleDialog は現サイクル終了後に自動終了する（モバイルと同仕様）
+  useEffect(() => {
+    if (!shuffleOpen || drawnCards.length > 0 || !masterData || !selectedSpread) return;
     const cards = drawRandomCards(masterData, selectedSpread);
     setDrawnCards(cards);
     setShuffleOpen(false);
+  }, [shuffleOpen, drawnCards.length, masterData, selectedSpread, setDrawnCards]);
+
+  const handleShuffleComplete = () => {
     setTimeout(() => setIsRevealingCompleted(true), 500);
     setPhase("reading");
   };
