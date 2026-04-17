@@ -11,10 +11,9 @@ import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { saveReading } from "@/lib/client/services/client-service";
 
 function useKeyboardHeight() {
   const [height, setHeight] = useState(0);
@@ -54,7 +53,6 @@ export default function ReadingPage() {
   const { refreshUsage } = useClientStore();
 
   const [isReady, setIsReady] = useState(false);
-  const readingIdRef = useRef<string | null>(null);
 
   // masterData が未初期化の場合に初期化（直接URLアクセス対策）
   useEffect(() => {
@@ -103,16 +101,6 @@ export default function ReadingPage() {
       isRevealingCompleted,
     },
     {
-      onSave: async (data) => {
-        try {
-          const result = await saveReading(data);
-          readingIdRef.current = result.id;
-          await refreshUsage();
-          return { reading: { id: result.id } };
-        } catch {
-          return { reading: { id: "" } };
-        }
-      },
       onRefreshUsage: refreshUsage,
       onRefreshToken: async () => token,
       onUnlock: () => {},

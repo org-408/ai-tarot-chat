@@ -4,7 +4,6 @@ import { DefaultChatTransport } from "ai";
 import React, {
   useCallback,
   useEffect,
-  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -12,7 +11,6 @@ import type {
   DrawnCard,
   ReadingCategory,
   ReadingErrorCode,
-  SaveReadingInput,
   Spread,
   Tarotist,
 } from "../lib/types";
@@ -51,11 +49,6 @@ export interface UseChatSessionConfig {
 }
 
 export interface UseChatSessionCallbacks {
-  /**
-   * リーディング保存。モバイルなら useClient().saveReading、
-   * Web なら fetch ベースの実装を渡す。
-   */
-  onSave: (input: SaveReadingInput) => Promise<{ reading: { id: string } }>;
   /** 利用回数を最新状態に更新 */
   onRefreshUsage?: () => Promise<void>;
   /**
@@ -79,14 +72,13 @@ export interface UseChatSessionCallbacks {
 export interface UseChatSessionReturn {
   messages: UIMessage[];
   status: "idle" | "submitted" | "streaming" | "error";
-  phase2Stage: "chatting" | "saving" | "done";
+  phase2Stage: "chatting" | "done";
   /** Phase2 残り質問数 */
   questionsRemaining: number;
   inputValue: string;
   isFocused: boolean;
   inputDisabled: boolean;
   isMessageComplete: boolean;
-  isSaving: boolean;
   shouldShowBackButton: boolean;
   error: ChatError | null;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -100,7 +92,7 @@ export interface UseChatSessionReturn {
   /**
    * アプリがバックグラウンドに移行したときに呼ぶ。
    * プラットフォーム固有のイベントリスナー (CapacitorApp / visibilitychange)
-   * から呼び出すこと。
+   * から呼び出すこと。サーバー側で保存するためクライアント側は no-op。
    */
   handleBackground: () => void;
 }
@@ -173,10 +165,9 @@ export function useChatSession(
     category,
     drawnCards,
     isRevealingCompleted,
-    customQuestion,
   } = config;
 
-  const { onSave, onRefreshUsage, onRefreshToken, onUnlock, onMessagesChange } =
+  const { onRefreshUsage, onRefreshToken, onUnlock, onMessagesChange } =
     callbacks;
 
   const initialLen = initialMessages?.length ?? 0;
@@ -187,20 +178,13 @@ export function useChatSession(
   const [inputDisabled, setInputDisabled] = useState(false);
   const [chatError, setChatError] = useState<ChatError | null>(null);
   const [isMessageComplete, setIsMessageComplete] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  type Phase2Stage = "chatting" | "saving" | "done";
+  type Phase2Stage = "chatting" | "done";
   const [phase2Stage, setPhase2Stage] = useState<Phase2Stage>("chatting");
-  const [isClosingComplete, setIsClosingComplete] = useState(false);
 
   // ─── Refs ────────────────────────────────────────────────────
   const hasSentInitialMessage = useRef(false);
   const isEndingEarlyRef = useRef(false);
   const handleSessionCloseRef = useRef<() => void>(() => {});
-  const isClosingCompleteRef = useRef(false);
-  const saveStartedRef = useRef(false);
-  const pendingSaveRef = useRef(false);
-  const lastPersistedSignatureRef = useRef<string | null>(null);
-  const savedReadingIdRef = useRef<string | null>(null);
   const hasUnlockedRef = useRef(false);
   const onUnlockRef = useRef(onUnlock);
   const currentTokenRef = useRef(token);
@@ -281,6 +265,7 @@ export function useChatSession(
         spread,
         category,
         drawnCards,
+        ...(isPhase2 && { initialLen }),
       },
       fetch: transportFetch,
     }),
@@ -347,10 +332,13 @@ export function useChatSession(
       setChatError(null);
 
       if (isEndingEarlyRef.current) {
+        // クロージング応答完了: サーバー側で保存済みなので直接 done へ
         isEndingEarlyRef.current = false;
-        isClosingCompleteRef.current = true;
-        setIsClosingComplete(true);
-        setPhase2Stage("saving");
+        if (!hasUnlockedRef.current) {
+          hasUnlockedRef.current = true;
+          setPhase2Stage("done");
+          onUnlockRef.current?.();
+        }
       } else if (isPhase2) {
         const phase2UserCount = messages.filter(
           (m, i) => m.role === "user" && i > initialLen,
@@ -360,7 +348,8 @@ export function useChatSession(
         }
       }
 
-      if (!isPersonal && onRefreshUsage) {
+      // 利用回数の UI 更新: simple 占いと Phase2 は サーバーで消費済みのため refresh
+      if ((!isPersonal || isPhase2) && onRefreshUsage) {
         try {
           await onRefreshUsage();
         } catch {
@@ -393,7 +382,7 @@ export function useChatSession(
     !!chatError ||
     (isPhase2
       ? phase2Stage === "done"
-      : isMessageComplete && !isSaving);
+      : isMessageComplete);
 
   const phase2UserCount = messages.filter(
     (m, i) => m.role === "user" && i > initialLen,
@@ -476,206 +465,6 @@ export function useChatSession(
     }
   }, [shouldShowBackButton, isPhase2, hasBlockingError]);
 
-  // ─── 保存ロジック ────────────────────────────────────────────
-
-  const shouldPersistReading = useCallback((): boolean => {
-    if (status !== "ready") return false;
-    if (isPhase2) {
-      if (drawnCards.length === 0 || messages.length <= initialLen) return false;
-      return messages[messages.length - 1]?.role === "assistant";
-    }
-    return (
-      (isRevealingCompleted || isPersonal) &&
-      drawnCards.length > 0 &&
-      messages.length > 0
-    );
-  }, [
-    drawnCards.length,
-    initialLen,
-    isPersonal,
-    isPhase2,
-    isRevealingCompleted,
-    messages,
-    status,
-  ]);
-
-  const buildPersistSignature = useCallback(
-    (readingIdOverride = savedReadingIdRef.current): string => {
-      const msgHash = messages
-        .map((msg) => {
-          const text = msg.parts
-            .filter((p) => p.type === "text")
-            .map((p) => (p as { text: string }).text)
-            .join("");
-          return `${msg.role}:${text}`;
-        })
-        .join("\u0001");
-      return `${readingIdOverride ?? "new"}::${inputDisabled ? "1" : "0"}::${msgHash}`;
-    },
-    [inputDisabled, messages],
-  );
-
-  const buildReadingPayload = useCallback((): SaveReadingInput => {
-    const firstPhase2TarotistIdx = isPhase2
-      ? messages.findIndex((m, i) => m.role === "assistant" && i >= initialLen)
-      : -1;
-
-    return {
-      readingId: savedReadingIdRef.current ?? undefined,
-      incrementUsage: isPersonal ? savedReadingIdRef.current === null : false,
-      tarotistId: tarotist.id,
-      tarotist,
-      spreadId: spread.id,
-      spread,
-      categoryId: isPersonal ? undefined : (category?.id ?? null),
-      category: isPersonal ? undefined : (category ?? undefined),
-      customQuestion: isPersonal ? customQuestion : undefined,
-      cards: drawnCards,
-      chatMessages: messages.map((msg, i) => {
-        let chatType: "USER_QUESTION" | "FINAL_READING" | "TAROTIST_ANSWER";
-        if (msg.role === "user") {
-          chatType = "USER_QUESTION";
-        } else if (isPhase2 && i === firstPhase2TarotistIdx) {
-          chatType = "FINAL_READING";
-        } else if (isPhase2) {
-          chatType = "TAROTIST_ANSWER";
-        } else {
-          chatType = "FINAL_READING";
-        }
-        return {
-          tarotistId: tarotist.id,
-          tarotist,
-          chatType,
-          role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
-          message: msg.parts
-            .filter((p) => p.type === "text")
-            .map((p) => (p as { text: string }).text)
-            .join(""),
-        };
-      }),
-    };
-  }, [
-    category,
-    customQuestion,
-    drawnCards,
-    initialLen,
-    isPersonal,
-    isPhase2,
-    messages,
-    spread,
-    tarotist,
-  ]);
-
-  const persistReading = useEffectEvent((withSavingIndicator: boolean) => {
-    if (saveStartedRef.current) {
-      if (shouldPersistReading()) {
-        pendingSaveRef.current = true;
-      }
-      return;
-    }
-
-    if (!shouldPersistReading()) {
-      if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
-        hasUnlockedRef.current = true;
-        setPhase2Stage("done");
-        onUnlockRef.current?.();
-      }
-      return;
-    }
-
-    const nextSignature = buildPersistSignature();
-    if (lastPersistedSignatureRef.current === nextSignature) {
-      if (isPhase2 && isClosingCompleteRef.current && !hasUnlockedRef.current) {
-        hasUnlockedRef.current = true;
-        setPhase2Stage("done");
-        onUnlockRef.current?.();
-      }
-      return;
-    }
-
-    saveStartedRef.current = true;
-    pendingSaveRef.current = false;
-
-    if (withSavingIndicator) {
-      setIsSaving(true);
-    }
-
-    void onSave(buildReadingPayload())
-      .then((result) => {
-        savedReadingIdRef.current = result.reading.id;
-        const [, ...rest] = nextSignature.split("::");
-        lastPersistedSignatureRef.current = [result.reading.id, ...rest].join(
-          "::",
-        );
-      })
-      .catch(() => {
-        // 保存失敗: 呼び出し元でエラー表示が必要な場合は callbacks に追加する
-      })
-      .finally(() => {
-        saveStartedRef.current = false;
-        if (withSavingIndicator) {
-          setIsSaving(false);
-        }
-        if (pendingSaveRef.current) {
-          pendingSaveRef.current = false;
-          persistReading(false);
-          if (!saveStartedRef.current) {
-            if (
-              isPhase2 &&
-              isClosingCompleteRef.current &&
-              !hasUnlockedRef.current
-            ) {
-              hasUnlockedRef.current = true;
-              setPhase2Stage("done");
-              onUnlockRef.current?.();
-            }
-          }
-        } else if (
-          isPhase2 &&
-          isClosingCompleteRef.current &&
-          !hasUnlockedRef.current
-        ) {
-          hasUnlockedRef.current = true;
-          setPhase2Stage("done");
-          onUnlockRef.current?.();
-        }
-      });
-  });
-
-  // メインの保存 effect
-  useEffect(() => {
-    persistReading(true);
-  }, [
-    category,
-    customQuestion,
-    drawnCards,
-    initialLen,
-    inputDisabled,
-    isPersonal,
-    isPhase2,
-    isRevealingCompleted,
-    messages,
-    persistReading,
-    phase2Stage,
-    spread,
-    status,
-    tarotist,
-  ]);
-
-  // クロージング完了後の保存トリガー
-  useEffect(() => {
-    if (!isClosingComplete || !isPhase2) return;
-    persistReading(true);
-  }, [isClosingComplete, isPhase2, persistReading]);
-
-  // アンマウント時の保存
-  useEffect(() => {
-    return () => {
-      persistReading(false);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // ─── 入力ハンドラー ──────────────────────────────────────────
 
   const handleSend = useCallback(() => {
@@ -722,9 +511,11 @@ export function useChatSession(
     setChatError(null);
   }, [clearError]);
 
-  const handleBackground = useEffectEvent(() => {
-    persistReading(false);
-  });
+  // サーバー側で保存するため、バックグラウンド移行時のクライアント保存は不要
+  const handleBackground = useCallback(() => {}, []);
+
+  // stop を使った処理
+  void stop;
 
   // ─── 戻り値 ──────────────────────────────────────────────────
 
@@ -737,7 +528,6 @@ export function useChatSession(
     isFocused,
     inputDisabled,
     isMessageComplete,
-    isSaving,
     shouldShowBackButton,
     error: chatError,
     handleInputChange,

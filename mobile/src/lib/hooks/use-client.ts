@@ -20,7 +20,6 @@ export function useClient() {
     debugSetPlan,
     refreshUsage,
     checkAndResetIfNeeded,
-    saveReading,
     fetchReadings,
   } = useClientStore();
 
@@ -45,7 +44,6 @@ export function useClient() {
     debugSetPlan,
     refreshUsage,
     checkAndResetIfNeeded,
-    saveReading,
     fetchReadings,
   };
 }

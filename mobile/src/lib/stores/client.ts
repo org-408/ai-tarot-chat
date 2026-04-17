@@ -3,8 +3,6 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type {
   Plan,
   Reading,
-  SaveReadingInput,
-  SaveReadingResponse,
   UsageStats,
 } from "../../../../shared/lib/types";
 import { logWithContext } from "../logger/logger";
@@ -54,7 +52,6 @@ interface ClientState {
   changePlan: (newPlan: Plan) => Promise<void>;
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
-  saveReading: (data: SaveReadingInput) => Promise<SaveReadingResponse>;
   fetchReadings: (params: PaginationParams) => Promise<void>;
   setParams: (params: PaginationParams) => { take: number; skip: number };
   setTake: (take: number) => void;
@@ -313,42 +310,6 @@ export const useClientStore = create<ClientState>()(
             error: error instanceof Error ? error : new Error(String(error)),
           });
           return false;
-        }
-      },
-
-      // ============================================
-      // 占い結果の保存
-      // ============================================
-      saveReading: async (data: SaveReadingInput) => {
-        set({ error: null });
-
-        logWithContext("info", "[ClientStore] Saving reading", { data });
-
-        try {
-          // サーバーに保存をリクエスト、返却値は Reading + UsageStats
-          const result = await clientService.saveReading(data);
-          logWithContext("info", "[ClientStore] Reading saved", { result });
-
-          // 履歴に追加・usage を最新化
-          const { reading, usage } = result;
-          const { readings } = get();
-          const nextReadings = readings.some((item) => item.id === reading.id)
-            ? readings.map((item) => (item.id === reading.id ? reading : item))
-            : [reading, ...readings];
-          if (data.incrementUsage === false) {
-            set({ readings: nextReadings });
-          } else {
-            set({ usage, readings: nextReadings });
-          }
-          return result;
-        } catch (error) {
-          logWithContext("error", "[ClientStore] Failed to save reading", {
-            error: error instanceof Error ? error.message : String(error),
-          });
-          set({
-            error: error instanceof Error ? error : new Error(String(error)),
-          });
-          throw error;
         }
       },
 
