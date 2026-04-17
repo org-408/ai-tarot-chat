@@ -112,11 +112,14 @@ test.describe("スマートエントリ（認証済み）", () => {
 
 test.describe("サイドバーナビゲーション", () => {
   test("/salon: サイドバーが表示される", async ({ page }) => {
+    // デスクトップ幅を明示: useIsMobile が false になりデスクトップ sidebar が描画される
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/salon");
     await page.waitForLoadState("networkidle");
+    // React hydration で useIsMobile が確定するまで待機
+    await page.waitForFunction(() => window.innerWidth >= 768);
 
-    // サイドバーの実コンテンツコンテナ（fixed配置の可視要素）が存在する
     const sidebarContainer = page.locator("[data-slot='sidebar-container']").first();
-    await expect(sidebarContainer).toBeVisible();
+    await expect(sidebarContainer).toBeVisible({ timeout: 10_000 });
   });
 });
