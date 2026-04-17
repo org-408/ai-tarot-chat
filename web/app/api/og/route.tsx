@@ -57,13 +57,18 @@ export async function GET() {
     ? [{ name: "NotoSansJP", data: fontData, weight: 700 }]
     : [];
 
+  // キャンバス: 1200×900 に拡大して画像を約1.5倍（縦横比維持）
+  // 左450px / 右750px / 画像337×420px (元224×279の約1.5倍)
+  const IMG_W = 337;
+  const IMG_H = 420;
+
   return new ImageResponse(
     (
       <div
         style={{
           display: "flex",
           width: 1200,
-          height: 630,
+          height: 900,
           background: "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)",
           fontFamily: fonts.length ? "NotoSansJP, sans-serif" : "sans-serif",
         }}
@@ -74,50 +79,33 @@ export async function GET() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            padding: "60px 50px",
-            width: 700,
+            padding: "60px 40px",
+            width: 450,
           }}
         >
           {/* タイトル */}
-          <div style={{ fontSize: 52, fontWeight: 700, color: "white", lineHeight: 1.1, marginBottom: 22 }}>
+          <div style={{ fontSize: 46, fontWeight: 700, color: "white", lineHeight: 1.1, marginBottom: 22 }}>
             Ariadne - AIタロット占い
           </div>
 
           {/* 3枚扇形カード: 左右裏面・中央表面（DOM最後=最前面） */}
           <div style={{ position: "relative", display: "flex", width: 182, height: 130, marginBottom: 24 }}>
-            {/* 左: 裏面 */}
             <img src={cardBackUrl} width={60} height={94}
               style={{ position: "absolute", left: 0, bottom: 0, borderRadius: 8, objectFit: "cover",
                        transform: "rotate(-12deg)", boxShadow: "0 4px 12px rgba(0,0,0,0.6)" }} />
-            {/* 右: 裏面 */}
             <img src={cardBackUrl} width={60} height={94}
               style={{ position: "absolute", left: 118, bottom: 0, borderRadius: 8, objectFit: "cover",
                        transform: "rotate(12deg)", boxShadow: "0 4px 12px rgba(0,0,0,0.6)" }} />
-            {/* 中央: 表面（最後に描画→最前面） */}
             <img src={cardFaceUrl} width={72} height={112}
               style={{ position: "absolute", left: 55, bottom: 0, borderRadius: 9, objectFit: "cover",
                        boxShadow: "0 6px 20px rgba(0,0,0,0.7)" }} />
           </div>
 
           {/* 説明 */}
-          <div
-            style={{
-              fontSize: 26,
-              color: "#c4b5fd",
-              lineHeight: 1.5,
-              marginBottom: 12,
-            }}
-          >
+          <div style={{ fontSize: 24, color: "#c4b5fd", lineHeight: 1.5, marginBottom: 12 }}>
             8人のAI占い師と22種のスプレッドで
           </div>
-          <div
-            style={{
-              fontSize: 24,
-              color: "#e2e8f0",
-              lineHeight: 1.5,
-              marginBottom: 40,
-            }}
-          >
+          <div style={{ fontSize: 22, color: "#e2e8f0", lineHeight: 1.5, marginBottom: 40 }}>
             本格的なタロットリーディングを体験しよう
           </div>
 
@@ -141,50 +129,34 @@ export async function GET() {
           </div>
         </div>
 
-        {/* 右: タロティスト画像 2x2 */}
+        {/* 右: タロティスト画像 2x2 (約1.5倍サイズ) */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 12,
-            padding: "30px 30px 30px 10px",
-            width: 500,
+            gap: 16,
+            padding: "30px 30px 30px 20px",
+            width: 750,
           }}
         >
-          <div style={{ display: "flex", gap: 12 }}>
-            <img
-              src={images[0]}
-              width={224}
-              height={279}
-              style={{ borderRadius: 16, objectFit: "cover", objectPosition: "top center" }}
-            />
-            <img
-              src={images[1]}
-              width={224}
-              height={279}
-              style={{ borderRadius: 16, objectFit: "cover", objectPosition: "top center" }}
-            />
+          <div style={{ display: "flex", gap: 16 }}>
+            <img src={images[0]} width={IMG_W} height={IMG_H}
+              style={{ borderRadius: 20, objectFit: "cover", objectPosition: "top center" }} />
+            <img src={images[1]} width={IMG_W} height={IMG_H}
+              style={{ borderRadius: 20, objectFit: "cover", objectPosition: "top center" }} />
           </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <img
-              src={images[2]}
-              width={224}
-              height={279}
-              style={{ borderRadius: 16, objectFit: "cover", objectPosition: "top center" }}
-            />
-            <img
-              src={images[3]}
-              width={224}
-              height={279}
-              style={{ borderRadius: 16, objectFit: "cover", objectPosition: "top center" }}
-            />
+          <div style={{ display: "flex", gap: 16 }}>
+            <img src={images[2]} width={IMG_W} height={IMG_H}
+              style={{ borderRadius: 20, objectFit: "cover", objectPosition: "top center" }} />
+            <img src={images[3]} width={IMG_W} height={IMG_H}
+              style={{ borderRadius: 20, objectFit: "cover", objectPosition: "top center" }} />
           </div>
         </div>
       </div>
     ),
     {
       width: 1200,
-      height: 630,
+      height: 900,
       fonts,
     }
   );
