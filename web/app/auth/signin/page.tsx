@@ -85,7 +85,7 @@ function SignInHeroPanel() {
             <div className="flex items-end gap-5 mb-6">
               <CardFan size="md" />
               <div>
-                <h1 className={`text-3xl text-white leading-tight ${monteCarlo.className}`}>
+                <h1 className={`text-3xl font-bold text-white leading-tight ${monteCarlo.className}`}>
                   Ariadne
                 </h1>
                 <p className="text-2xl font-bold text-violet-200">
