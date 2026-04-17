@@ -1,10 +1,19 @@
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
-function createPrismaClient(): PrismaClient {
-  const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL!,
-  });
+// dev hot-reload: preserve pool + client across module reloads to avoid pool exhaustion
+const globalForPrisma = global as unknown as {
+  pgPool: Pool | undefined;
+  prismaClient: PrismaClient | undefined;
+};
+
+function createPool(): Pool {
+  return new Pool({ connectionString: process.env.DATABASE_URL! });
+}
+
+function createPrismaClient(pool: Pool): PrismaClient {
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({
     adapter,
     log:
@@ -14,27 +23,22 @@ function createPrismaClient(): PrismaClient {
   });
 }
 
-class DatabaseManager {
-  private static instance: PrismaClient | null = null;
+const pool = globalForPrisma.pgPool ?? createPool();
+const client = globalForPrisma.prismaClient ?? createPrismaClient(pool);
 
-  static getInstance(): PrismaClient {
-    if (!this.instance) {
-      this.instance = createPrismaClient();
-    }
-    return this.instance;
-  }
-
-  static async disconnect(): Promise<void> {
-    if (this.instance) {
-      await this.instance.$disconnect();
-      this.instance = null;
-    }
-  }
-
-  static get prisma(): PrismaClient {
-    return this.getInstance();
-  }
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.pgPool = pool;
+  globalForPrisma.prismaClient = client;
 }
 
-export const prisma = DatabaseManager.prisma;
-export { DatabaseManager };
+export const prisma = client;
+
+export const DatabaseManager = {
+  get prisma() {
+    return client;
+  },
+  async disconnect() {
+    await client.$disconnect();
+    await pool.end();
+  },
+};
