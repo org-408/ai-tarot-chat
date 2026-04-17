@@ -11,6 +11,12 @@ function createPrismaClient(): PrismaClient {
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
+    // Prisma v7 + driver adapter: per-transaction { timeout, maxWait } options are
+    // silently ignored. Set global defaults here so they actually take effect.
+    transactionOptions: {
+      timeout: 3 * 60 * 1000, // 3 minutes (matches previous base.ts default)
+      maxWait: 30 * 1000,     // 30 seconds (matches previous base.ts default)
+    },
   });
 }
 
