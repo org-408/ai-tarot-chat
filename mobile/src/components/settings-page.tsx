@@ -1,6 +1,14 @@
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
-import { BarChart2, ChevronRight, ExternalLink, LogIn, LogOut, Star, Trash2 } from "lucide-react";
+import {
+  BarChart2,
+  ChevronRight,
+  ExternalLink,
+  LogIn,
+  LogOut,
+  Star,
+  Trash2,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import type { Plan } from "../../../shared/lib/types";
 import UsagePage from "./usage-page";
@@ -19,13 +27,15 @@ const BFF_URL =
   import.meta.env.VITE_BFF_URL || "https://ai-tarot-chat.onrender.com";
 const PRIVACY_POLICY_URL =
   import.meta.env.VITE_PRIVACY_POLICY_URL || `${BFF_URL}/privacy`;
-const TERMS_URL =
-  import.meta.env.VITE_TERMS_URL || `${BFF_URL}/terms`;
+const TERMS_URL = import.meta.env.VITE_TERMS_URL || `${BFF_URL}/terms`;
 
 // ─── 共通UIパーツ ─────────────────────────────────────────────
 
-const SectionHeader: React.FC<{ label: string; compact?: boolean }> = ({ label, compact }) => (
-  <div className={`px-4 ${compact ? "pt-1" : "pt-6"} pb-1`}>
+const SectionHeader: React.FC<{ label: string; compact?: boolean }> = ({
+  label,
+  compact,
+}) => (
+  <div className={`px-4 ${compact ? "pt-1" : "pt-3"} pb-1`}>
     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
       {label}
     </p>
@@ -75,7 +85,8 @@ const Row: React.FC<RowProps> = ({
         <p className="text-xs text-gray-400 mt-0.5">{description}</p>
       )}
     </div>
-    {right ?? (onClick ? <ChevronRight size={16} className="text-gray-300" /> : null)}
+    {right ??
+      (onClick ? <ChevronRight size={16} className="text-gray-300" /> : null)}
   </button>
 );
 
@@ -147,7 +158,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
   return (
     <div className="main-container pb-10">
-      <div className="page-title pt-3">⚙️ 設定</div>
+      <div className="page-title pt-3 !mb-1">⚙️ 設定</div>
 
       {/* ── アカウント削除確認ダイアログ ─── */}
       {showDeleteConfirm && (
@@ -194,7 +205,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   {currentPlan.name}
                 </span>
                 <p className="text-sm text-gray-900 truncate">{userEmail}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{planLabel()}</p>
               </div>
             </div>
             <Row
@@ -280,9 +290,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           icon={<span className="text-base">🔮</span>}
           label="AI タロット占い"
           description={`バージョン ${appVersion}`}
-          right={
-            <span className="text-xs text-gray-400">{appVersion}</span>
-          }
+          right={<span className="text-xs text-gray-400">{appVersion}</span>}
         />
       </RowGroup>
     </div>

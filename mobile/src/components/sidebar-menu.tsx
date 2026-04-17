@@ -163,11 +163,26 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
           >
             {/* 🔥 ヘッダー部分 */}
             <div
-              className="px-6 pb-6 bg-gradient-to-br from-purple-600 to-indigo-600 text-white"
+              className="flex justify-between px-3 pb-3 bg-gradient-to-br from-purple-600 to-indigo-600 text-white"
               style={{ paddingTop: "calc(var(--safe-top) + 1.5rem)" }}
             >
+              <div className="flex-col items-center justify-between mb-4">
+                {/* 🔥 ユーザー情報 */}
+                {userEmail && (
+                  <div className="text-sm opacity-90 mb-3 truncate">
+                    {userEmail}
+                  </div>
+                )}
+
+                {/* 🔥 プランバッジ */}
+                <div
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${planBadge.color} text-white`}
+                >
+                  {planBadge.label}プラン
+                </div>
+              </div>
+
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">メニュー</h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -186,20 +201,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     />
                   </svg>
                 </button>
-              </div>
-
-              {/* 🔥 ユーザー情報 */}
-              {userEmail && (
-                <div className="text-sm opacity-90 mb-3 truncate">
-                  {userEmail}
-                </div>
-              )}
-
-              {/* 🔥 プランバッジ */}
-              <div
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${planBadge.color} text-white`}
-              >
-                {planBadge.label}プラン
               </div>
             </div>
 
@@ -279,9 +280,17 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
               <div className="text-xs text-gray-500 text-center">
                 タロット占いアプリ
                 <br />
-                <span className="text-purple-600 font-semibold">
-                  AI Tarot Chat
-                </span>
+                <div className="flex justify-center items-center gap-4">
+                  <span
+                    className="text-purple-600 font-bold text-xl"
+                    style={{ fontFamily: "'Brush Script MT', cursive" }}
+                  >
+                    Ariadne
+                  </span>
+                  <span className="text-purple-600 font-semibold">
+                    AI Tarot Chat
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>
