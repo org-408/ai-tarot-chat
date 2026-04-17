@@ -68,7 +68,7 @@ const HERO_TAROTISTS = ["Ariadne", "Sophia", "Clara", "Luna"] as const;
 function SignInHeroPanel() {
   return (
     <div
-      className="hidden lg:flex lg:w-1/2 relative flex-col overflow-hidden"
+      className="hidden lg:flex lg:w-2/3 relative flex-col overflow-hidden"
       style={{
         background:
           "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)",
