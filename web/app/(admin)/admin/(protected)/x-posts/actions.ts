@@ -1,6 +1,6 @@
 "use server";
 
-import { XPostStatus, XPostType } from "@prisma/client";
+import { XPostStatus, XPostType } from "@/lib/generated/prisma/client";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositories/x-post";
 import * as xPostService from "@/lib/server/services/x-post";

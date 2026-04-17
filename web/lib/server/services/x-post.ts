@@ -1,4 +1,4 @@
-import { XPostStatus, XPostType } from "@prisma/client";
+import { XPostStatus, XPostType } from "@/lib/generated/prisma/client";
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { xPostRepository, type XPostRow } from "@/lib/server/repositories/x-post";

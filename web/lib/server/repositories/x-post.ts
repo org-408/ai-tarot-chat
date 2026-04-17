@@ -1,4 +1,4 @@
-import { XPostStatus, XPostType } from "@prisma/client";
+import { XPostStatus, XPostType } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export type XPostRow = {

@@ -1,5 +1,5 @@
 import type { Log } from "@/../shared/lib/types";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export class LogRepository extends BaseRepository {

@@ -6,7 +6,7 @@ import {
   type TicketData,
 } from "@/../shared/lib/types";
 import { auth, signOut } from "@/auth";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { logWithContext } from "@/lib/server/logger/logger";
 import {
   authRepository,

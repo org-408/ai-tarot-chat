@@ -1,5 +1,5 @@
 import type { Client, DailyResetHistory, Device } from "@/../shared/lib/types";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export class ClientRepository extends BaseRepository {

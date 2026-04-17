@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { XPostStatus, XPostType } from "@prisma/client";
+import { XPostStatus, XPostType } from "@/lib/generated/prisma/enums";
 import {
   generateContentAction,
   createDraftAction,
