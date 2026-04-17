@@ -84,51 +84,26 @@ function MobileSignInLayout({
   );
 }
 
-// Web ブラウザ向けレイアウト（2カラム）
+// Web ブラウザ向けレイアウト（OG画像左・サインインカード右）
 function WebSignInLayout({ error }: { error?: string }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 flex">
-      {/* 左カラム: OG ビジュアル */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
-        {/* OG 画像を全面表示 */}
+    <div className="min-h-screen bg-[#0f0a1e] flex">
+      {/* 左カラム: OG 画像そのまま */}
+      <div className="hidden lg:flex lg:flex-1 items-center justify-center overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/api/og"
           alt="Ai Tarot Chat"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
-        {/* グラデーションオーバーレイ */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/40" />
-        {/* テキストオーバーレイ */}
-        <div className="absolute inset-0 flex flex-col justify-between p-12">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">🔮</span>
-            <span className="text-2xl font-bold text-white drop-shadow-lg">
-              Ai Tarot Chat
-            </span>
-          </div>
-          <div>
-            <h2 className="text-4xl font-bold text-white leading-tight mb-4 drop-shadow-lg">
-              数千年の叡智と
-              <br />
-              最新 AI が出会う
-              <br />
-              タロット体験
-            </h2>
-            <p className="text-white/80 text-lg drop-shadow">
-              あなたの悩みに寄り添い、カードが示す道を
-              <br />
-              AI 占い師が丁寧に読み解きます。
-            </p>
-            <p className="text-white/40 text-xs mt-8">
-              © {new Date().getFullYear()} Ai Tarot Chat
-            </p>
-          </div>
+        {/* 右端だけ右パネルとなじませるグラデーション */}
+        <div className="absolute inset-y-0 left-0 w-[60%] pointer-events-none">
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-r from-transparent to-[#0f0a1e]" />
         </div>
       </div>
 
-      {/* 右カラム: サインイン */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8">
+      {/* 右カラム: サインインカード */}
+      <div className="w-full lg:w-[420px] lg:flex-none flex flex-col items-center justify-center p-8 bg-[#0f0a1e]">
         {/* モバイルブラウザ向けロゴ（lg以下で表示） */}
         <div className="lg:hidden mb-10 text-center">
           <span className="text-5xl block mb-3">🔮</span>
@@ -138,23 +113,25 @@ function WebSignInLayout({ error }: { error?: string }) {
         </div>
 
         <div className="w-full max-w-sm">
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
+          <div className="bg-white/[0.06] backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/10">
             <Suspense fallback={null}>
               <SignInViewTracker />
             </Suspense>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">サインイン</h2>
-            <p className="text-sm text-gray-500 mb-8">
-              Google または Apple アカウントで続けてください
-            </p>
-            <Suspense fallback={<div className="space-y-3"><div className="w-full h-12 bg-gray-100 rounded-lg animate-pulse" /><div className="w-full h-12 bg-gray-100 rounded-lg animate-pulse" /></div>}>
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white mb-2">サインイン</h2>
+              <p className="text-sm text-white/50">
+                Google または Apple アカウントで続けてください
+              </p>
+            </div>
+            <Suspense fallback={<div className="space-y-3"><div className="w-full h-12 bg-white/10 rounded-lg animate-pulse" /><div className="w-full h-12 bg-white/10 rounded-lg animate-pulse" /></div>}>
               <SignInForm error={error} isMobileApp={false} />
             </Suspense>
           </div>
 
-          <p className="text-center text-white/30 text-xs mt-6">
-            <a href="/terms" className="hover:text-white/60 transition-colors" target="_blank" rel="noopener noreferrer">利用規約</a>
+          <p className="text-center text-white/25 text-xs mt-6">
+            <a href="/terms" className="hover:text-white/50 transition-colors" target="_blank" rel="noopener noreferrer">利用規約</a>
             {" · "}
-            <a href="/privacy" className="hover:text-white/60 transition-colors" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>
+            <a href="/privacy" className="hover:text-white/50 transition-colors" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>
           </p>
         </div>
       </div>
