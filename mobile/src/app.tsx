@@ -191,6 +191,7 @@ function App() {
     isReady: clientIsReady,
     usage: usageStats,
     currentPlan,
+    refreshUsage,
   } = useClient();
 
   const { openManage } = useSubscription();
@@ -451,6 +452,13 @@ function App() {
     payload,
     isChangingPlan,
   ]);
+
+  // 60秒ごとに usage / プランを更新（RC リスナーの補完）
+  useEffect(() => {
+    if (!clientIsReady) return;
+    const id = setInterval(refreshUsage, 60_000);
+    return () => clearInterval(id);
+  }, [clientIsReady, refreshUsage]);
 
   // 占い師プロフィールダイアログ管理
   const [showProfile, setShowProfile] = useState(false);

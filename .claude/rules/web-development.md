@@ -11,14 +11,38 @@
 
 ## 課金方針
 
-**Stripe 直接**（RevenueCat Web SDK は使わない）
+**RevenueCat Web Billing**（`@revenuecat/purchases-js`）— Stripe 直接連携は廃止済み（PR #107）
 
-- 手数料: Stripe ~3.2% vs App Store/Google Play 30%
-- RevenueCat との差も ~1% 程度なので直接の方がシンプル
-- Stripe 統合 API ルート:
-  - `POST /api/stripe/checkout` — チェックアウトセッション作成
-  - `POST /api/stripe/webhook` — イベント受信・プラン状態更新
-  - `POST /api/stripe/portal` — 顧客ポータル（解約・請求管理、returnUrl をボディで渡すため POST）
+- モバイルと同じ RevenueCat を使うことで、ユーザー ID・サブスクリプション状態が自動同期される
+- Web の RevenueCat user ID は `session.user.id`（モバイルと同一識別子）
+
+### 関連ファイル
+
+| ファイル | 役割 |
+|---|---|
+| `web/lib/client/revenuecat/purchases.ts` | RC SDK ラッパー（configure / purchasePlan / getManagementURL） |
+| `web/lib/client/revenuecat/hooks/use-revenuecat.ts` | React フック — `purchase()` で購入モーダル表示、`getManagementURL()` でサブスク管理 URL 取得 |
+| `web/app/api/revenuecat/webhook/route.ts` | Webhook ハンドラー（`INITIAL_PURCHASE`/`RENEWAL` → changePlan、`EXPIRATION` → FREE） |
+
+### 環境変数
+
+```
+NEXT_PUBLIC_REVENUECAT_WEB_KEY=rcb_pub_...   # Web 公開キー
+REVENUECAT_WEBHOOK_AUTH_HEADER="Bearer ..."  # Webhook 認証ヘッダー
+```
+
+### 使い方（plans/page.tsx、settings/page.tsx）
+
+```typescript
+const { purchase, getManagementURL } = useRevenuecat();
+
+// 購入（埋め込みモーダル）
+await purchase(planCode);
+
+// サブスク管理（新規タブで開く）
+const url = await getManagementURL();
+window.open(url, "_blank");
+```
 
 ---
 

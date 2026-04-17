@@ -41,7 +41,7 @@ export default function ReadingPage() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const { data: masterData } = useMasterStore();
+  const { data: masterData, init: initMaster } = useMasterStore();
   const {
     selectedTarotist,
     selectedSpread,
@@ -56,6 +56,11 @@ export default function ReadingPage() {
   const [shuffleOpen, setShuffleOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const readingIdRef = useRef<string | null>(null);
+
+  // masterData が未初期化の場合に初期化（直接URLアクセス対策）
+  useEffect(() => {
+    initMaster();
+  }, [initMaster]);
 
   // カードを引く
   useEffect(() => {
@@ -160,7 +165,7 @@ export default function ReadingPage() {
         cardBackPath="/cards/back.png"
       />
 
-      <div className="flex flex-col h-[calc(100vh-3.5rem)] -m-4 md:-m-6">
+      <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         {/* 上部: カードビューア */}
         <div className="flex-shrink-0" style={{ height: "45vh" }}>
           {isReady && (

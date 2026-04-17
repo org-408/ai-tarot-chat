@@ -43,7 +43,7 @@ export default function PersonalPage() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const { data: masterData } = useMasterStore();
+  const { data: masterData, init: initMaster } = useMasterStore();
   const {
     selectedTarotist,
     selectedSpread,
@@ -53,6 +53,11 @@ export default function PersonalPage() {
     setIsRevealingCompleted,
   } = useSalonStore();
   const { refreshUsage } = useClientStore();
+
+  // masterData が未初期化の場合に初期化（直接URLアクセス対策）
+  useEffect(() => {
+    initMaster();
+  }, [initMaster]);
 
   const [phase, setPhase] = useState<Phase>("chat");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
@@ -167,7 +172,7 @@ export default function PersonalPage() {
 
   if (phase === "chat") {
     return (
-      <div className="flex flex-col h-[calc(100vh-3.5rem)] -m-4 md:-m-6">
+      <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         <div className="flex-shrink-0 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-b">
           <div className="flex items-center gap-3">
             <img
@@ -233,7 +238,7 @@ export default function PersonalPage() {
         onComplete={handleShuffleComplete}
         cardBackPath="/cards/back.png"
       />
-      <div className="flex flex-col h-[calc(100vh-3.5rem)] -m-4 md:-m-6">
+      <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         <div className="flex-shrink-0" style={{ height: "45vh" }}>
           <UpperViewer
             spread={selectedSpread}

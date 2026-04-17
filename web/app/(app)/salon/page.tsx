@@ -1,7 +1,7 @@
 "use client";
 
 import { CategorySpreadSelector } from "@shared/components/reading/category-spread-selector";
-import { TarotistSelector } from "@shared/components/reading/tarotist-selector";
+import { TarotistCarouselPortrait } from "@/components/reading/tarotist-carousel-portrait";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
@@ -20,7 +20,7 @@ export default function SalonPage() {
 
   const { init: initMaster, tarotists, categories, spreads, isLoading } = useMasterStore();
   const { refreshUsage, usage } = useClientStore();
-  const { selectedTarotist, setSelectedTarotist, setIsPersonal } = useSalonStore();
+  const { selectedTarotist, setSelectedTarotist } = useSalonStore();
 
   useEffect(() => {
     initMaster();
@@ -42,26 +42,34 @@ export default function SalonPage() {
 
   const handleSelectTarotist = (tarotist: Tarotist) => {
     setSelectedTarotist(tarotist);
+    // パーソナル占いで PREMIUM でない占い師を選択したら quick に戻す
+    if (readingType === "personal" && tarotist.plan?.code !== "PREMIUM") {
+      setReadingType("quick");
+    }
   };
 
-  // プランにパーソナル占い権限があるか（usage未取得中は制限しない）
+  // プランにパーソナル占い権限があるか
   const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
 
-  // canPersonal が false になった場合は quick に戻す
   useEffect(() => {
     if (!canPersonal && readingType === "personal") {
       setReadingType("quick");
     }
   }, [canPersonal, readingType]);
 
+  // パーソナル占いモードのとき PREMIUM 占い師のみ表示
+  const visibleTarotists =
+    readingType === "personal"
+      ? tarotists.filter((t) => t.plan?.code === "PREMIUM")
+      : tarotists;
+
   const remainingQuick = usage?.remainingReadings;
   const remainingPersonal = usage?.remainingPersonal;
-
   const currentRemaining =
     readingType === "personal" ? remainingPersonal : remainingQuick;
-  const isLimitReached = currentRemaining !== undefined && currentRemaining <= 0;
+
   const remainingText =
-    !isLimitReached && currentRemaining !== undefined
+    currentRemaining !== undefined && currentRemaining > 0
       ? t("remainingToday", { count: currentRemaining })
       : undefined;
 
@@ -77,107 +85,77 @@ export default function SalonPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* タイトル */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+    <div className="max-w-5xl mx-auto">
+      {/* タイトル＋タブ */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           {t("title")}
         </h1>
-        <p className="text-gray-600">{t("selectType")}</p>
+
+        <div className="flex gap-2">
+          {(["quick", "personal"] as ReadingType[]).map((type) => {
+            const isDisabled = type === "personal" && !canPersonal;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => !isDisabled && setReadingType(type)}
+                disabled={isDisabled}
+                title={isDisabled ? t("personalPremiumRequired") : undefined}
+                className={`px-5 py-2 rounded-xl font-semibold text-sm transition-all ${
+                  readingType === type
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md scale-105"
+                    : isDisabled
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white border border-gray-200 text-gray-600 hover:border-purple-300"
+                }`}
+              >
+                {type === "quick" ? t("quickReading") : t("personalReading")}
+                {isDisabled && " 🔒"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* 占い種別タブ */}
-      <div className="flex gap-3 mb-6 justify-center">
-        {(["quick", "personal"] as ReadingType[]).map((type) => {
-          const isDisabled = type === "personal" && !canPersonal;
-          return (
-            <button
-              key={type}
-              onClick={() => !isDisabled && setReadingType(type)}
-              disabled={isDisabled}
-              title={isDisabled ? t("personalPremiumRequired") : undefined}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                readingType === type
-                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105"
-                  : isDisabled
-                  ? "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-purple-300"
-              }`}
-            >
-              {type === "quick" ? (
-                t("quickReading")
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  {t("personalReading")}
-                  {isDisabled && <span aria-hidden="true">🔒</span>}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* プレミアム未加入の場合の案内 */}
-      {!canPersonal && usage && (
-        <p className="text-center text-xs text-amber-600 mb-4">
-          🔒 {t("personalPremiumRequired")}
-        </p>
-      )}
-
-      {/* 種別説明 */}
-      <p className="text-center text-sm text-gray-500 mb-6">
-        {readingType === "quick" ? t("quickDesc") : t("personalDesc")}
-      </p>
-
-      {/* 利用残回数 */}
+      {/* 残回数 */}
       {usage && (
-        <div className="flex gap-4 justify-center mb-6 text-sm text-gray-500">
+        <div className="flex gap-3 justify-end mb-4 text-xs">
           {readingType === "quick" && remainingQuick !== undefined && (
             <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full">
-              {remainingQuick <= 0
-                ? t("limitReached")
-                : t("remainingQuick", { count: remainingQuick })}
+              {remainingQuick <= 0 ? t("limitReached") : t("remainingQuick", { count: remainingQuick })}
             </span>
           )}
           {readingType === "personal" && remainingPersonal !== undefined && (
             <span className="bg-pink-50 text-pink-700 px-3 py-1 rounded-full">
-              {remainingPersonal <= 0
-                ? t("limitReached")
-                : t("remainingPersonal", { count: remainingPersonal })}
+              {remainingPersonal <= 0 ? t("limitReached") : t("remainingPersonal", { count: remainingPersonal })}
             </span>
           )}
         </div>
       )}
 
+      {/* メインコンテンツ: 占い師カルーセル（左） + ジャンル/スプレッド選択（右） */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 占い師選択 */}
-        <div className="bg-white rounded-2xl shadow-sm border p-4">
-          <h2 className="font-semibold text-gray-700 mb-4">
-            {t("selectTarotist")}
-          </h2>
-          <TarotistSelector
-            tarotists={tarotists}
+        {/* 占い師カルーセル */}
+        <div className="bg-white/50 rounded-2xl border shadow-sm overflow-hidden" style={{ height: "560px" }}>
+          <TarotistCarouselPortrait
+            tarotists={visibleTarotists}
             selectedTarotist={selectedTarotist}
             onSelect={handleSelectTarotist}
-            premiumOnly={readingType === "personal"}
-            currentPlan={usage?.plan as Parameters<typeof TarotistSelector>[0]["currentPlan"]}
-            tarotistBasePath="/tarotists"
-            labels={{
-              premiumBadge: `✨ ${tTarotist("premiumOnly")}`,
-              planRequired: `🔒 ${tTarotist("locked")}`,
-              noTarotists: tTarotist("noTarotists"),
-            }}
+            currentPlan={usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"]}
           />
         </div>
 
-        {/* カテゴリ・スプレッド選択 */}
+        {/* ジャンル・スプレッド選択 */}
         <div className="bg-white rounded-2xl shadow-sm border p-4">
+          <h2 className="font-semibold text-gray-700 mb-4">{t("selectCategoryAndSpread")}</h2>
           <CategorySpreadSelector
             categories={categories}
             spreads={spreads}
             currentPlan={usage?.plan as Parameters<typeof CategorySpreadSelector>[0]["currentPlan"]}
             isPersonal={readingType === "personal"}
             remainingCount={currentRemaining}
+            disabled={!selectedTarotist}
             onStartReading={handleStartReading}
             labels={{
               selectSpreadPrompt: t("selectSpread"),
@@ -191,6 +169,7 @@ export default function SalonPage() {
               startReading: `✨ ${t("startReading")} ✨`,
               limitReached: t("limitReached"),
               remainingText,
+              disabledMessage: t("selectTarotistFirst"),
             }}
           />
         </div>

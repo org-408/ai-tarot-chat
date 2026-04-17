@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import type { Plan, Tarotist } from "../../lib/types";
 
 interface TarotistSelectorLabels {
@@ -25,6 +26,8 @@ interface TarotistSelectorProps {
   tarotistBasePath?: string;
   /** UI テキスト。プラットフォームごとに翻訳済み文字列を渡す */
   labels?: TarotistSelectorLabels;
+  /** true の場合、カード内に占い師の bio（紹介文）を表示する。Web 大画面向け */
+  showBio?: boolean;
 }
 
 const renderStars = (quality: number | null | undefined): string =>
@@ -49,7 +52,9 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
   currentPlan,
   tarotistBasePath = "/tarotists",
   labels = {},
+  showBio = false,
 }) => {
+  const [imgErrors, setImgErrors] = useState<Set<string>>(new Set());
   const {
     premiumBadge = "✨ プレミアム占い師",
     planRequired = "🔒 プランが必要",
@@ -109,18 +114,20 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
                   alt={tarotist.name}
                   className="w-full h-full object-cover"
                   style={{ objectPosition: "center 15%" }}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  onError={() => {
+                    setImgErrors((prev) => new Set(prev).add(tarotist.id));
                   }}
                 />
 
-                {/* アイコンフォールバック */}
-                <div
-                  className="absolute inset-0 flex items-center justify-center text-4xl pointer-events-none"
-                  aria-hidden="true"
-                >
-                  {tarotist.icon}
-                </div>
+                {/* 画像読み込み失敗時のみ絵文字フォールバックを表示 */}
+                {imgErrors.has(tarotist.id) && (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center text-4xl pointer-events-none"
+                    aria-hidden="true"
+                  >
+                    {tarotist.icon}
+                  </div>
+                )}
 
                 {/* 選択済みオーバーレイ */}
                 {isSelected && (
@@ -151,6 +158,11 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
                 {tarotist.quality != null && (
                   <div className="text-[10px] mt-0.5">
                     {renderStars(tarotist.quality)}
+                  </div>
+                )}
+                {showBio && tarotist.bio && (
+                  <div className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                    {tarotist.bio}
                   </div>
                 )}
               </div>

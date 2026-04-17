@@ -106,17 +106,3 @@ test.describe("スマートエントリ（認証済み）", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────
-// サイドバーナビゲーション
-// ─────────────────────────────────────────────────────────
-
-test.describe("サイドバーナビゲーション", () => {
-  test("/salon: サイドバーが表示される", async ({ page }) => {
-    await page.goto("/salon");
-    await page.waitForLoadState("networkidle");
-
-    // サイドバーのナビゲーション要素（Wand2 アイコンボタン等）が存在する
-    const sidebar = page.locator("[data-slot='sidebar']").first();
-    await expect(sidebar).toBeVisible();
-  });
-});

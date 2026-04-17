@@ -33,6 +33,8 @@ interface CategorySpreadSelectorLabels {
   limitReached?: string;
   /** 残り回数テキスト (親が count を含む書式済み文字列を渡す) */
   remainingText?: string;
+  /** disabled=true 時に表示する理由テキスト */
+  disabledMessage?: string;
 }
 
 interface CategorySpreadSelectorProps {
@@ -43,6 +45,8 @@ interface CategorySpreadSelectorProps {
   isPersonal?: boolean;
   /** 残り利用回数。0 以下の場合はボタンを無効化 */
   remainingCount?: number;
+  /** 外部から追加で無効化する条件（例: 占い師未選択）。内部の無効化条件と OR で評価 */
+  disabled?: boolean;
   /** 占い開始ボタンのコールバック */
   onStartReading: (params: {
     category: ReadingCategory | null;
@@ -64,6 +68,7 @@ export const CategorySpreadSelector: React.FC<
   currentPlan,
   isPersonal = false,
   remainingCount,
+  disabled: externalDisabled = false,
   onStartReading,
   labels = {},
 }) => {
@@ -79,6 +84,7 @@ export const CategorySpreadSelector: React.FC<
     startReading = "✨ 占いを始める ✨",
     limitReached = "本日の占い回数上限に達しました",
     remainingText,
+    disabledMessage,
   } = labels;
 
   const [selectedCategory, setSelectedCategory] =
@@ -140,6 +146,7 @@ export const CategorySpreadSelector: React.FC<
     remainingCount !== undefined && remainingCount <= 0;
 
   const isDisabled =
+    externalDisabled ||
     isLimitReached ||
     !selectedSpread ||
     (!isPersonal && !selectedCategory);
@@ -193,7 +200,9 @@ export const CategorySpreadSelector: React.FC<
     },
   ];
 
-  const bottomText = isLimitReached
+  const bottomText = externalDisabled && disabledMessage
+    ? disabledMessage
+    : isLimitReached
     ? limitReached
     : (remainingText ?? "");
 

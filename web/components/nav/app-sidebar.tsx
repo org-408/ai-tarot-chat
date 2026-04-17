@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useTranslations } from "next-intl";
@@ -47,18 +48,21 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-3">
         <div className="flex items-center gap-2">
-          <img
-            src="/tarotists/Ariadne.png"
-            alt="Ariadne"
-            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-          />
-          <div className="group-data-[collapsible=icon]:hidden leading-tight">
-            <p className="font-bold text-sm bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Ariadne
-            </p>
-            <p className="text-[10px] text-muted-foreground">AI Tarot Chat</p>
+          <SidebarTrigger className="flex-shrink-0" />
+          <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2 min-w-0">
+            <img
+              src="/tarotists/Ariadne.png"
+              alt="Ariadne"
+              className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+            />
+            <div className="leading-tight min-w-0">
+              <p className="font-bold text-sm bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Ariadne
+              </p>
+              <p className="text-[10px] text-muted-foreground">AI Tarot Chat</p>
+            </div>
           </div>
         </div>
       </SidebarHeader>
