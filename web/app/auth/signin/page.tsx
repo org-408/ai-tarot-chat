@@ -87,9 +87,9 @@ function MobileSignInLayout({
 // Web ブラウザ向けレイアウト（OG画像左・サインインカード右）
 function WebSignInLayout({ error }: { error?: string }) {
   return (
-    <div className="min-h-screen bg-[#0f0a1e] flex">
+    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)" }}>
       {/* 左カラム: OG 画像そのまま */}
-      <div className="hidden lg:flex lg:flex-1 relative items-center justify-center bg-[#0f0a1e] overflow-hidden">
+      <div className="hidden lg:flex lg:flex-1 relative items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/api/og"
@@ -97,39 +97,39 @@ function WebSignInLayout({ error }: { error?: string }) {
           className="w-full h-full object-contain"
         />
         {/* 右端グラデーション（左カラム内でのみ有効） */}
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-r from-transparent to-[#0f0a1e] pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 pointer-events-none" style={{ background: "linear-gradient(to right, transparent, #6040a8)" }} />
       </div>
 
       {/* 右カラム: サインインカード */}
-      <div className="w-full lg:w-[420px] lg:flex-none flex flex-col items-center justify-center p-8 bg-[#0f0a1e]">
+      <div className="w-full lg:w-[420px] lg:flex-none flex flex-col items-center justify-center p-8">
         {/* モバイルブラウザ向けロゴ（lg以下で表示） */}
         <div className="lg:hidden mb-10 text-center">
           <span className="text-5xl block mb-3">🔮</span>
-          <span className="text-2xl font-bold bg-gradient-to-r from-sky-300 to-purple-300 bg-clip-text text-transparent">
+          <span className="text-2xl font-bold bg-gradient-to-r from-violet-200 to-purple-200 bg-clip-text text-transparent">
             Ai Tarot Chat
           </span>
         </div>
 
         <div className="w-full max-w-sm">
-          <div className="bg-white/[0.06] backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/10">
+          <div className="bg-violet-200/20 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-violet-300/30">
             <Suspense fallback={null}>
               <SignInViewTracker />
             </Suspense>
             <div className="mb-8">
               <h2 className="text-xl font-bold text-white mb-2">サインイン</h2>
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-violet-200">
                 Google または Apple アカウントで続けてください
               </p>
             </div>
-            <Suspense fallback={<div className="space-y-3"><div className="w-full h-12 bg-white/10 rounded-lg animate-pulse" /><div className="w-full h-12 bg-white/10 rounded-lg animate-pulse" /></div>}>
+            <Suspense fallback={<div className="space-y-3"><div className="w-full h-12 bg-violet-300/20 rounded-lg animate-pulse" /><div className="w-full h-12 bg-violet-300/20 rounded-lg animate-pulse" /></div>}>
               <SignInForm error={error} isMobileApp={false} />
             </Suspense>
           </div>
 
-          <p className="text-center text-white/25 text-xs mt-6">
-            <a href="/terms" className="hover:text-white/50 transition-colors" target="_blank" rel="noopener noreferrer">利用規約</a>
+          <p className="text-center text-violet-300/50 text-xs mt-6">
+            <a href="/terms" className="hover:text-violet-200 transition-colors" target="_blank" rel="noopener noreferrer">利用規約</a>
             {" · "}
-            <a href="/privacy" className="hover:text-white/50 transition-colors" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>
+            <a href="/privacy" className="hover:text-violet-200 transition-colors" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>
           </p>
         </div>
       </div>

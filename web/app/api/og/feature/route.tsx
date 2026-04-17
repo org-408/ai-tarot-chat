@@ -71,7 +71,7 @@ export async function GET() {
           justifyContent: "center",
           width: 1024,
           height: 500,
-          background: "linear-gradient(135deg, #0f0a1e 0%, #1e1b4b 55%, #2d1b69 100%)",
+          background: "linear-gradient(135deg, #3d2472 0%, #6040a8 55%, #8b58d0 100%)",
           fontFamily: fonts.length ? "NotoSansJP, sans-serif" : "sans-serif",
           gap: 0,
         }}

@@ -64,7 +64,7 @@ export async function GET() {
           display: "flex",
           width: 1200,
           height: 630,
-          background: "linear-gradient(135deg, #0f0a1e 0%, #1e1b4b 50%, #2d1b69 100%)",
+          background: "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)",
           fontFamily: fonts.length ? "NotoSansJP, sans-serif" : "sans-serif",
         }}
       >
