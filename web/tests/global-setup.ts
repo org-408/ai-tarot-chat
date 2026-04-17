@@ -47,7 +47,7 @@ export default async function globalSetup() {
 
     // 1. テスト用 User を upsert
     const userResult = await pool.query<{ id: string }>(
-      `INSERT INTO "User" (id, name, email, "emailVerified", "createdAt", "updatedAt")
+      `INSERT INTO "User" (id, name, email, email_verified, "createdAt", "updatedAt")
        VALUES (gen_random_uuid()::text, $1, $2, NOW(), NOW(), NOW())
        ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, "updatedAt" = NOW()
        RETURNING id`,
