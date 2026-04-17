@@ -15,11 +15,13 @@
  *
  * 実行タイミング: playwright.config.ts の globalSetup に指定
  * 依存: DATABASE_URL / AUTH_SECRET 環境変数
+ *
+ * Note: PrismaClient は Prisma v7 の ESM 生成物を Playwright の CJS ランナーが
+ * 読み込めないため、pg を使って直接 SQL を発行する。
  */
 
 import { encode } from "@auth/core/jwt";
-import { PrismaClient } from "@/lib/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import fs from "fs";
 import path from "path";
 
@@ -35,9 +37,7 @@ const TEST_USER_EMAIL = "e2e-test@ariadne-ai.app";
 const TEST_ADMIN_EMAIL = "e2e-admin@ariadne-ai.app";
 
 export default async function globalSetup() {
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
-  });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 
   try {
     const secret = process.env.AUTH_SECRET;
@@ -46,43 +46,37 @@ export default async function globalSetup() {
     // ── 通常ユーザーセットアップ ──────────────────────────
 
     // 1. テスト用 User を upsert
-    const user = await prisma.user.upsert({
-      where: { email: TEST_USER_EMAIL },
-      update: { name: "E2E Test User" },
-      create: {
-        email: TEST_USER_EMAIL,
-        name: "E2E Test User",
-        emailVerified: new Date(),
-      },
-    });
+    const userResult = await pool.query<{ id: string }>(
+      `INSERT INTO "User" (id, name, email, "emailVerified", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, NOW(), NOW(), NOW())
+       ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, "updatedAt" = NOW()
+       RETURNING id`,
+      ["E2E Test User", TEST_USER_EMAIL]
+    );
+    const userId = userResult.rows[0].id;
 
     // 2. FREE プランを取得
-    const freePlan = await prisma.plan.findUnique({
-      where: { code: "FREE" },
-    });
-    if (!freePlan) throw new Error("FREE plan not found in DB. Run db:seed first.");
+    const planResult = await pool.query<{ id: string }>(
+      `SELECT id FROM "Plan" WHERE code = 'FREE' LIMIT 1`
+    );
+    if (planResult.rows.length === 0) {
+      throw new Error("FREE plan not found in DB. Run db:seed first.");
+    }
+    const planId = planResult.rows[0].id;
 
     // 3. Client を upsert
-    const existingClient = await prisma.client.findUnique({
-      where: { userId: user.id },
-    });
-    if (!existingClient) {
-      await prisma.client.create({
-        data: {
-          user: { connect: { id: user.id } },
-          email: TEST_USER_EMAIL,
-          name: "E2E Test User",
-          plan: { connect: { id: freePlan.id } },
-          isRegistered: true,
-        },
-      });
-    }
+    await pool.query(
+      `INSERT INTO "Client" (id, "userId", name, email, "planId", "isRegistered", "dailyReadingsCount", "dailyPersonalCount", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, $3, $4, true, 0, 0, NOW(), NOW())
+       ON CONFLICT ("userId") DO NOTHING`,
+      [userId, "E2E Test User", TEST_USER_EMAIL, planId]
+    );
 
     // 4. Auth.js JWT を生成
     const token = await encode({
       token: {
-        sub: user.id,
-        id: user.id,
+        sub: userId,
+        id: userId,
         name: "E2E Test User",
         email: TEST_USER_EMAIL,
         role: "USER",
@@ -114,30 +108,25 @@ export default async function globalSetup() {
       })
     );
 
-    console.log(`✅ E2E test user ready: ${user.id} (${TEST_USER_EMAIL})`);
+    console.log(`✅ E2E test user ready: ${userId} (${TEST_USER_EMAIL})`);
 
     // ── 管理者ユーザーセットアップ ───────────────────────
 
     // 6. テスト用 AdminUser を upsert（activatedAt をセットして有効な管理者にする）
-    const adminUser = await prisma.adminUser.upsert({
-      where: { email: TEST_ADMIN_EMAIL },
-      update: {
-        name: "E2E Admin User",
-        activatedAt: new Date(),
-      },
-      create: {
-        email: TEST_ADMIN_EMAIL,
-        name: "E2E Admin User",
-        emailVerified: new Date(),
-        activatedAt: new Date(),
-      },
-    });
+    const adminResult = await pool.query<{ id: string }>(
+      `INSERT INTO "AdminUser" (id, name, email, "emailVerified", "activatedAt", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, NOW(), NOW(), NOW(), NOW())
+       ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, "activatedAt" = NOW(), "updatedAt" = NOW()
+       RETURNING id`,
+      ["E2E Admin User", TEST_ADMIN_EMAIL]
+    );
+    const adminUserId = adminResult.rows[0].id;
 
     // 7. 管理者用 JWT を生成（admin-auth.ts の JWT/session コールバックに合わせる）
     const adminToken = await encode({
       token: {
-        sub: adminUser.id,
-        adminUserId: adminUser.id,
+        sub: adminUserId,
+        adminUserId: adminUserId,
         name: "E2E Admin User",
         email: TEST_ADMIN_EMAIL,
       },
@@ -166,8 +155,8 @@ export default async function globalSetup() {
       })
     );
 
-    console.log(`✅ E2E admin user ready: ${adminUser.id} (${TEST_ADMIN_EMAIL})`);
+    console.log(`✅ E2E admin user ready: ${adminUserId} (${TEST_ADMIN_EMAIL})`);
   } finally {
-    await prisma.$disconnect();
+    await pool.end();
   }
 }
