@@ -26,11 +26,10 @@ export function Sidebar() {
     <aside
       className={cn(
         "flex-none border-r overflow-y-auto overflow-x-hidden transition-all duration-200",
-        open ? "w-56" : "w-0"
+        open ? "w-56" : "w-0",
       )}
     >
       <div className="w-56 p-4">
-        <div className="text-xs text-zinc-500 mb-2">メニュー</div>
         <nav className="grid gap-1">
           {NAV.map((item) => {
             const active = item.exact
@@ -44,7 +43,7 @@ export function Sidebar() {
                   "px-3 py-2 rounded-md text-sm hover:bg-sky-100 transition whitespace-nowrap",
                   active
                     ? "bg-sky-600 text-white hover:bg-sky-600"
-                    : "text-slate-700"
+                    : "text-slate-700",
                 )}
               >
                 {item.label}
