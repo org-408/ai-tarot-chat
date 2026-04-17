@@ -1,9 +1,12 @@
 import { SignInViewTracker } from "@/components/analytics/signin-view-tracker";
 import { SignInForm } from "@/components/auth/signin-form";
+import { MonteCarlo } from "next/font/google";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+
+const monteCarlo = MonteCarlo({ subsets: ["latin"], weight: "400" });
 
 interface SearchParams {
   callbackUrl?: string;
@@ -82,10 +85,7 @@ function SignInHeroPanel() {
             <div className="flex items-end gap-5 mb-6">
               <CardFan size="md" />
               <div>
-                <h1
-                  className="text-3xl text-white leading-tight"
-                  style={{ fontFamily: "'Brush Script MT', cursive" }}
-                >
+                <h1 className={`text-3xl text-white leading-tight ${monteCarlo.className}`}>
                   Ariadne
                 </h1>
                 <p className="text-2xl font-bold text-violet-200">
