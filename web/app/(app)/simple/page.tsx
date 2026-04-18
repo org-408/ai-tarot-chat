@@ -146,7 +146,7 @@ export default function SimplePage() {
                 tarotists={tarotists}
                 selectedTarotist={selectedTarotist}
                 onSelect={setQuickTarotist}
-                currentPlan={usage?.plan ?? null}
+                currentPlan={usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"] ?? null}
               />
             </div>
 
@@ -223,12 +223,10 @@ export default function SimplePage() {
                   : "bg-purple-600 text-white ml-auto"
               }`}
             >
-              {typeof msg.content === "string"
-                ? msg.content
-                : (msg.content as Array<{ type: string; text?: string }>)
-                    .filter((p) => p.type === "text")
-                    .map((p) => p.text ?? "")
-                    .join("")}
+              {msg.parts
+                .filter((p) => p.type === "text")
+                .map((p) => (p as { type: "text"; text: string }).text)
+                .join("")}
             </div>
           </div>
         ))}

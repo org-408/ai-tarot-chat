@@ -196,7 +196,7 @@ export default function PersonalPage() {
                 tarotists={premiumTarotists}
                 selectedTarotist={selectedTarotist}
                 onSelect={setPersonalTarotist}
-                currentPlan={usage?.plan ?? null}
+                currentPlan={usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"] ?? null}
               />
             </div>
 
