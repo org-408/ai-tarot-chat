@@ -6,7 +6,7 @@ import type { Reading } from "@shared/lib/types";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect } from "react";
-import { Zap, Sparkles, Lock, History } from "lucide-react";
+import { Zap, Sparkles, History } from "lucide-react";
 
 export default function HomeClient() {
   const t = useTranslations("home");
@@ -75,38 +75,34 @@ export default function HomeClient() {
         </Link>
 
         {/* パーソナル占い */}
-        <Link
-          href="/personal"
-          className="group relative bg-white rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3"
-        >
-          <div className="flex items-center gap-2 w-10 h-10">
-            <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-pink-600" />
-            </div>
+        <div className="relative bg-white rounded-2xl shadow-sm border p-5 flex flex-col gap-3">
+          <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-pink-600" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-bold text-gray-900">{t("personalTitle")}</h2>
-              {!canPersonal && (
-                <Lock className="w-3.5 h-3.5 text-gray-400" />
-              )}
-            </div>
+            <h2 className="font-bold text-gray-900">{t("personalTitle")}</h2>
             <p className="text-xs text-gray-500 mt-0.5">{t("personalDesc")}</p>
           </div>
           {canPersonal ? (
             remainingPersonal !== undefined && remainingPersonal === 0 ? (
               <span className="text-xs text-gray-400">{tSalon("limitReached")}</span>
             ) : (
-              <span className="text-sm font-semibold text-pink-600 group-hover:underline">
+              <Link
+                href="/personal"
+                className="text-sm font-semibold text-pink-600 hover:underline"
+              >
                 {t("startPersonal")} →
-              </span>
+              </Link>
             )
           ) : (
-            <span className="text-sm font-semibold text-gray-400">
-              {tSalon("personalPremiumRequired")}
-            </span>
+            <Link
+              href="/plans"
+              className="text-sm font-semibold text-purple-600 hover:underline"
+            >
+              {t("upgradeToStart")} →
+            </Link>
           )}
-        </Link>
+        </div>
       </div>
 
       {/* 最近の占い履歴 */}
