@@ -580,24 +580,43 @@ export class AuthService {
 
   /**
    * NextAuth セッション Cookie から AppJWTPayload を生成 (Web クライアント専用)
-   * セッションが有効で clientId が取得できる場合のみ返す
+   * セッションが有効で clientId が取得できる場合のみ返す。
+   *
+   * Client が未作成の場合は `getOrCreateForWebUser` で作成または既存ゲスト
+   * Client にリンクする (サインイン直後のレース条件: WebSessionInitializer
+   * の POST /api/auth/web-session が完走する前に /api/clients/usage が
+   * 飛ぶケースへの防御)。
    */
   private async verifyNextAuthSession(
-    request: NextRequest
+    _request: NextRequest
   ): Promise<AppJWTPayload | null> {
     try {
       const session = await auth();
       if (!session?.user?.id) return null;
 
       const userId = session.user.id;
-      const client = await clientRepository.getClientByUserId(userId);
-      if (!client) return null;
+      const provider =
+        (session as { provider?: string }).provider ?? "google";
+
+      let client = await clientRepository.getClientByUserId(userId);
+      if (!client) {
+        logWithContext("info", "[verifyNextAuthSession] Client not linked — creating/linking", {
+          userId,
+        });
+        client = await clientService.getOrCreateForWebUser({
+          userId,
+          email: session.user.email ?? undefined,
+          name: session.user.name ?? undefined,
+          image: session.user.image ?? undefined,
+          provider,
+        });
+      }
 
       return {
         t: "app",
         clientId: client.id,
         deviceId: `web:${userId}`,
-        provider: (session as { provider?: string }).provider ?? "google",
+        provider,
         user: {
           id: userId,
           email: session.user.email ?? undefined,

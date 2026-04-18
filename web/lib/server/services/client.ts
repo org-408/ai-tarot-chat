@@ -146,7 +146,21 @@ export class ClientService {
   }
 
   /**
-   * Web ユーザー向け: userId に紐づく Client を取得、なければ FREE プランで新規作成する。
+   * Web ユーザー向け: userId に紐づく Client を取得、なければ既存のゲスト Client を
+   * リンクまたは新規作成する。
+   *
+   * 優先順序:
+   *   1. userId で既存 Client を検索 → あればそのまま返す
+   *   2. email で Client を検索 → userId 未紐付けのゲスト Client があれば
+   *      リンクする（GUEST プランなら FREE に昇格）
+   *   3. 上記どれもなければ FREE プランで新規作成
+   *
+   * 背景: 従来 (1) → (3) のみだったため、
+   * 既存ゲスト Client (例: モバイルから作成・email 未設定 / 旧サインインで
+   * email 付きだが userId 未連携) が残っていると Client.email の @unique
+   * 制約で createClient がサイレント失敗し、Client なしのままサインイン状態
+   * になっていた。mobile 側の exchangeTicket と同じリンクロジックを Web にも
+   * 入れて解消する。
    */
   async getOrCreateForWebUser(params: {
     userId: string;
@@ -157,6 +171,7 @@ export class ClientService {
   }): Promise<NonNullable<Awaited<ReturnType<typeof clientRepository.getClientByUserId>>>> {
     const { userId, email, name, image, provider = "google" } = params;
 
+    // (1) userId で検索
     const existing = await clientRepository.getClientByUserId(userId);
     if (existing) {
       logWithContext("info", "[ClientService] getOrCreateForWebUser: existing client found", {
@@ -166,6 +181,35 @@ export class ClientService {
       return existing;
     }
 
+    // (2) email で未リンクのゲスト Client を検索してリンク
+    if (email) {
+      const byEmail = await clientRepository.getClientByEmail(email);
+      if (byEmail && !byEmail.userId) {
+        const upgradedPlanCode =
+          byEmail.plan?.code === "GUEST" ? "FREE" : byEmail.plan?.code;
+        logWithContext("info", "[ClientService] getOrCreateForWebUser: linking guest client by email", {
+          clientId: byEmail.id,
+          userId,
+          email,
+          fromPlan: byEmail.plan?.code,
+          toPlan: upgradedPlanCode,
+        });
+        const linked = await clientRepository.updateClient(byEmail.id, {
+          user: { connect: { id: userId } },
+          name: name ?? byEmail.name,
+          image: image ?? byEmail.image,
+          provider,
+          isRegistered: true,
+          lastLoginAt: new Date(),
+          ...(upgradedPlanCode && upgradedPlanCode !== byEmail.plan?.code
+            ? { plan: { connect: { code: upgradedPlanCode } } }
+            : {}),
+        });
+        return linked;
+      }
+    }
+
+    // (3) 新規作成
     logWithContext("info", "[ClientService] getOrCreateForWebUser: creating new client", { userId });
 
     const freePlan = await planRepository.getPlanByCode("FREE");
