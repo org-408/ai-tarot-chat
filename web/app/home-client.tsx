@@ -2,11 +2,12 @@
 
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
+import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import type { Reading } from "@shared/lib/types";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect } from "react";
-import { Zap, Sparkles, BookOpen, History } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Zap, Sparkles, History } from "lucide-react";
 
 export default function HomeClient() {
   const t = useTranslations("home");
@@ -14,12 +15,29 @@ export default function HomeClient() {
 
   const { init: initMaster } = useMasterStore();
   const { refreshUsage, usage, readings, fetchReadings } = useClientStore();
+  const { purchase, isUserCancelled } = useRevenuecat();
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   useEffect(() => {
     initMaster();
     refreshUsage();
     fetchReadings();
   }, [initMaster, refreshUsage, fetchReadings]);
+
+  const handleUpgrade = async () => {
+    setIsUpgrading(true);
+    try {
+      await purchase("PREMIUM");
+      await refreshUsage();
+    } catch (e) {
+      if (!isUserCancelled(e)) {
+        // キャンセル以外のエラーは plans ページへフォールバック
+        window.location.href = "/plans";
+      }
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
   const remainingQuick = usage?.remainingReadings;
@@ -42,7 +60,7 @@ export default function HomeClient() {
                 {tSalon("remainingQuick", { count: remainingQuick })}
               </span>
             )}
-            {remainingPersonal !== undefined && canPersonal && (
+            {remainingPersonal !== undefined && (
               <span className="bg-pink-50 text-pink-700 px-3 py-1 rounded-full border border-pink-100">
                 {tSalon("remainingPersonal", { count: remainingPersonal })}
               </span>
@@ -51,8 +69,8 @@ export default function HomeClient() {
         )}
       </div>
 
-      {/* 3つのCTA */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 2つのCTA */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* クイック占い */}
         <Link
           href="/simple"
@@ -75,67 +93,36 @@ export default function HomeClient() {
         </Link>
 
         {/* パーソナル占い */}
-        <Link
-          href={canPersonal ? "/personal" : "/plans"}
-          className={`group relative rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3 ${
-            canPersonal ? "bg-white" : "bg-gray-50"
-          }`}
-        >
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              canPersonal ? "bg-pink-100" : "bg-gray-200"
-            }`}
-          >
-            <Sparkles
-              className={`w-5 h-5 ${canPersonal ? "text-pink-600" : "text-gray-400"}`}
-            />
+        <div className="relative bg-white rounded-2xl shadow-sm border p-5 flex flex-col gap-3">
+          <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-pink-600" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2
-                className={`font-bold ${canPersonal ? "text-gray-900" : "text-gray-400"}`}
-              >
-                {t("personalTitle")}
-              </h2>
-              {!canPersonal && (
-                <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
-                  {tSalon("personalPremiumRequired")}
-                </span>
-              )}
-            </div>
+            <h2 className="font-bold text-gray-900">{t("personalTitle")}</h2>
             <p className="text-xs text-gray-500 mt-0.5">{t("personalDesc")}</p>
           </div>
           {canPersonal ? (
             remainingPersonal !== undefined && remainingPersonal === 0 ? (
               <span className="text-xs text-gray-400">{tSalon("limitReached")}</span>
             ) : (
-              <span className="text-sm font-semibold text-pink-600 group-hover:underline">
+              <Link
+                href="/personal"
+                className="text-sm font-semibold text-pink-600 hover:underline"
+              >
                 {t("startPersonal")} →
-              </span>
+              </Link>
             )
           ) : (
-            <span className="text-sm font-semibold text-purple-500 group-hover:underline">
-              {tSalon("upgradeAction")} →
-            </span>
+            <button
+              type="button"
+              onClick={handleUpgrade}
+              disabled={isUpgrading}
+              className="text-sm font-semibold text-purple-600 hover:underline disabled:opacity-50 text-left"
+            >
+              {isUpgrading ? t("upgrading") : `${t("upgradeToStart")} →`}
+            </button>
           )}
-        </Link>
-
-        {/* いつでも占い (Clara) */}
-        <Link
-          href="/clara"
-          className="group relative bg-white rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3"
-        >
-          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-indigo-600" />
-          </div>
-          <div>
-            <h2 className="font-bold text-gray-900">{t("claraTitle")}</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{t("claraDesc")}</p>
-          </div>
-          <span className="text-sm font-semibold text-indigo-600 group-hover:underline">
-            {t("startClara")} →
-          </span>
-        </Link>
+        </div>
       </div>
 
       {/* 最近の占い履歴 */}
