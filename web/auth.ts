@@ -16,8 +16,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           prompt: "select_account",
         },
       },
+      // Google は email を検証済みで返すため、既存 User (別プロバイダ or
+      // 同プロバイダの再サインイン) との自動リンクを許可。
+      // これがないと getUserByAccount が null かつ getUserByEmail が
+      // User を返したときに OAuthAccountNotLinked で固まる。
+      allowDangerousEmailAccountLinking: true,
     }),
-    Apple,
+    Apple({
+      allowDangerousEmailAccountLinking: true,
+    }),
     // E2E テスト専用 Credentials プロバイダー
     // OAuth フローなしでサインインフロー（jwt コールバック → Client 作成）を検証できる
     ...(process.env.E2E_MOCK_AUTH === "true"
@@ -133,54 +140,60 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       try {
-        const dbUser = await prisma.user.upsert({
-          where: { email: user.email },
-          create: {
-            email: user.email,
-            name: user.name ?? (profile?.name as string | undefined) ?? null,
-            image: user.image ?? (profile?.picture as string | undefined) ?? null,
-            emailVerified: new Date(),
-          },
-          update: {
-            name: user.name ?? undefined,
-            image: user.image ?? undefined,
-          },
+        // User と Account を 1 トランザクションで upsert
+        // (片方だけ成功する中途半端な状態を防ぐ)
+        const dbUserId = await prisma.$transaction(async (tx) => {
+          const dbUser = await tx.user.upsert({
+            where: { email: user.email! },
+            create: {
+              email: user.email!,
+              name: user.name ?? (profile?.name as string | undefined) ?? null,
+              image: user.image ?? (profile?.picture as string | undefined) ?? null,
+              emailVerified: new Date(),
+            },
+            update: {
+              name: user.name ?? undefined,
+              image: user.image ?? undefined,
+            },
+          });
+
+          await tx.account.upsert({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+            create: {
+              userId: dbUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              access_token: account.access_token as string | null,
+              refresh_token: account.refresh_token as string | null,
+              expires_at: account.expires_at as number | null,
+              token_type: account.token_type as string | null,
+              scope: account.scope as string | null,
+              id_token: account.id_token as string | null,
+              session_state: account.session_state as string | null,
+            },
+            update: {
+              access_token: account.access_token as string | null,
+              refresh_token: account.refresh_token as string | null,
+              expires_at: account.expires_at as number | null,
+              id_token: account.id_token as string | null,
+            },
+          });
+
+          return dbUser.id;
         });
 
         // Adapter が User を作っていない場合に備え、DB の User.id を
         // user オブジェクトに書き戻す (jwt callback の user.id に伝播する)
-        user.id = dbUser.id;
+        user.id = dbUserId;
 
-        await prisma.account.upsert({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          },
-          create: {
-            userId: dbUser.id,
-            type: account.type,
-            provider: account.provider,
-            providerAccountId: account.providerAccountId,
-            access_token: account.access_token as string | null,
-            refresh_token: account.refresh_token as string | null,
-            expires_at: account.expires_at as number | null,
-            token_type: account.token_type as string | null,
-            scope: account.scope as string | null,
-            id_token: account.id_token as string | null,
-            session_state: account.session_state as string | null,
-          },
-          update: {
-            access_token: account.access_token as string | null,
-            refresh_token: account.refresh_token as string | null,
-            expires_at: account.expires_at as number | null,
-            id_token: account.id_token as string | null,
-          },
-        });
-
-        logWithContext("info", "[signIn] User + Account upserted", {
-          userId: dbUser.id,
+        logWithContext("info", "[signIn] User + Account upserted (tx)", {
+          userId: dbUserId,
           provider: account.provider,
         });
 
