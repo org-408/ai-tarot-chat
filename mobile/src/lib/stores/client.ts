@@ -337,8 +337,7 @@ export const useClientStore = create<ClientState>()(
           });
 
           const { readings } = get();
-          // 既存の履歴に追加
-          set({ readings: [...readings, ...fetchedReadings] });
+          set({ readings: skip === 0 ? fetchedReadings : [...readings, ...fetchedReadings] });
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to fetch readings", {
             error: error instanceof Error ? error.message : String(error),
