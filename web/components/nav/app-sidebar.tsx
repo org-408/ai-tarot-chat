@@ -39,17 +39,10 @@ export function AppSidebar() {
   const displayName =
     session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "";
 
-  const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
-
   const NAV_ITEMS = [
     { key: "home" as const, icon: Home, path: "" },
     { key: "quick" as const, icon: Zap, path: "simple" },
-    {
-      key: "personal" as const,
-      icon: Sparkles,
-      path: "personal",
-      locked: !canPersonal,
-    },
+    { key: "personal" as const, icon: Sparkles, path: "personal" },
     { key: "clara" as const, icon: BookOpen, path: "clara" },
     { key: "tarotists" as const, icon: Star, path: "tarotists" },
     { key: "history" as const, icon: History, path: "history" },
@@ -93,19 +86,9 @@ export function AppSidebar() {
                       onClick={() => navigate(item.path)}
                       isActive={isActive}
                       tooltip={t(item.key)}
-                      className={
-                        "locked" in item && item.locked
-                          ? "opacity-60"
-                          : undefined
-                      }
                     >
                       <item.icon />
                       <span>{t(item.key)}</span>
-                      {"locked" in item && item.locked && (
-                        <span className="ml-auto text-[9px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
-                          PRO
-                        </span>
-                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
