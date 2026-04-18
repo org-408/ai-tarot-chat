@@ -28,8 +28,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             credentials: {
               email: { type: "email" },
             },
-            async authorize(credentials: Partial<Record<string, string>>) {
-              const email = credentials?.email;
+            async authorize(credentials) {
+              const email = credentials?.email as string | undefined;
               if (!email?.endsWith("@e2e.test")) return null;
               // DB に User を upsert（OAuth の createUser 相当）
               const user = await prisma.user.upsert({
