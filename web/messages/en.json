@@ -51,7 +51,8 @@
     "spreadQuestion": "Which spread would you like?",
     "spreadSubtitle": "(Options vary by category)",
     "remainingToday": "{count} readings left today",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "selectTarotistFirst": "Please select a tarotist first"
   },
   "reading": {
     "shufflePrompt": "Shuffle the cards",
@@ -99,7 +100,11 @@
     "cancelAnytime": "Cancel anytime",
     "features": "Features",
     "requiresAuth": "Sign in required",
-    "checkoutError": "Failed to start checkout"
+    "checkoutError": "Failed to start checkout",
+    "processing": "Processing...",
+    "changingPlanTitle": "Changing plan",
+    "changingPlanLine1": "Switching your plan",
+    "changingPlanLine2": "Please wait a moment"
   },
   "settings": {
     "title": "Settings",
@@ -142,7 +147,11 @@
     "locked": "Plan required",
     "quality": "Quality",
     "selectForReading": "Read with this tarotist",
-    "noTarotists": "No tarotists found"
+    "noTarotists": "No tarotists found",
+    "alwaysAvailable": "Anytime",
+    "getReading": "Get a reading",
+    "processing": "Processing...",
+    "upgradeToPlan": "Upgrade to {plan}"
   },
   "auth": {
     "signInTitle": "AI Tarot Chat",
