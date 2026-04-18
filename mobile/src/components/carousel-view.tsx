@@ -1,10 +1,9 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
+import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard } from "../../../shared/lib/types";
 import { getCardImagePath } from "../lib/utils/salon";
-
-const CARD_ASPECT = 300 / 527;
 
 const VIEW_HEIGHT_MAX = 300;
 

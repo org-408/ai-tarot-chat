@@ -1,4 +1,5 @@
 "use client";
+import { CARD_ASPECT } from "@/../shared/lib/constants";
 import type { SpreadCell } from "@/../shared/lib/types";
 import {
   Tooltip,
@@ -67,13 +68,13 @@ export function SpreadGrid({
                     isSel ? "border-sky-400" : "border-dashed"
                   )}
                 >
-                  {/* 縦カード */}
+                  {/* 縦カード: w=CELL_H*CARD_ASPECT≈58px, centered in 120px cell */}
                   {hasV ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "absolute p-1 top-[10px] left-[30px] w-[60px] h-[100px] rounded-md border-2 text-[10px] flex items-start justify-center",
+                            "absolute p-1 top-[10px] left-[31px] w-[58px] h-[100px] rounded-md border-2 text-[10px] flex items-start justify-center",
                             "bg-blue-500/80 border-blue-600 text-white shadow z-30"
                           )}
                         >
@@ -94,7 +95,7 @@ export function SpreadGrid({
                   ) : (
                     <div
                       className={cn(
-                        "absolute p-1 top-[10px] left-[30px] w-[60px] h-[100px] rounded-md border-2 text-[10px] flex items-start justify-center",
+                        "absolute p-1 top-[10px] left-[31px] w-[58px] h-[100px] rounded-md border-2 text-[10px] flex items-start justify-center",
                         "bg-transparent border-blue-300/60"
                       )}
                     >
@@ -102,13 +103,13 @@ export function SpreadGrid({
                     </div>
                   )}
 
-                  {/* 横カード */}
+                  {/* 横カード: h=CELL_H*CARD_ASPECT≈58px, centered in 120px cell */}
                   {hasH ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "absolute p-1 top-[30px] left-[10px] w-[100px] h-[60px] rounded-md border-2 text-[10px] flex items-center justify-start",
+                            "absolute p-1 top-[31px] left-[10px] w-[100px] h-[58px] rounded-md border-2 text-[10px] flex items-center justify-start",
                             "bg-pink-500/80 border-pink-600 text-white shadow z-40"
                           )}
                         >
@@ -129,7 +130,7 @@ export function SpreadGrid({
                   ) : (
                     <div
                       className={cn(
-                        "absolute p-1 top-[30px] left-[10px] w-[100px] h-[60px] rounded-md border-2 text-[10px] flex items-center justify-start",
+                        "absolute p-1 top-[31px] left-[10px] w-[100px] h-[58px] rounded-md border-2 text-[10px] flex items-center justify-start",
                         "bg-transparent border-pink-300/40"
                       )}
                     >

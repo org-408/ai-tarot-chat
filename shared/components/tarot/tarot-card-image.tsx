@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CARD_ASPECT } from "../../lib/constants";
 import type { DrawnCard } from "../../lib/types";
 
 interface TarotCardImageProps {
@@ -9,8 +10,6 @@ interface TarotCardImageProps {
   /** カード画像の base パス。デフォルト: "/cards" */
   cardBasePath?: string;
 }
-
-const CARD_ASPECT = 300 / 527;
 
 /**
  * タロットカード画像コンポーネント。

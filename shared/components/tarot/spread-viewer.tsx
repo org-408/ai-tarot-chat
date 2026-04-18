@@ -9,7 +9,7 @@ interface SpreadViewerProps {
 }
 
 const GRID_CARD_HEIGHT = 60;
-const GRID_CARD_WIDTH = Math.round(GRID_CARD_HEIGHT * (300 / 527) * 100) / 100;
+const GRID_CARD_WIDTH = Math.round(GRID_CARD_HEIGHT * CARD_ASPECT * 100) / 100;
 const DIALOG_CARD_WIDTH = 160;
 const DIALOG_CARD_HEIGHT = Math.round((DIALOG_CARD_WIDTH / CARD_ASPECT) * 100) / 100;
 

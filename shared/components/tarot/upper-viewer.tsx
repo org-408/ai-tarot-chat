@@ -285,7 +285,7 @@ export const UpperViewer: React.FC<UpperViewerProps> = ({
               isFlipped={flippedCards.has(currentCard.id)}
               onFlip={() => handleFlip(currentCard.id)}
               width={120}
-              height={Math.round(120 / (300 / 527))}
+              height={Math.round(120 / CARD_ASPECT)}
               cardBasePath={cardBasePath}
             />
             <div className="text-sm font-semibold text-purple-900 text-center">
