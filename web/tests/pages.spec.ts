@@ -120,13 +120,12 @@ test.describe("アプリページ（未認証リダイレクト）", () => {
     });
   }
 
-  test("/: 未認証なら LP (/ja) にリダイレクトされる", async ({ page }) => {
+  test("/: 未認証なら /auth/signin にリダイレクトされる", async ({ page }) => {
     const getErrors = collectTypeErrors(page);
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    // スマートエントリ: 未認証 → /ja (LP)
-    expect(page.url()).toMatch(/\/(ja|en)(\/|$)/);
+    expect(page.url()).toContain("/auth/signin");
     expect(getErrors()).toHaveLength(0);
   });
 });
