@@ -1,7 +1,7 @@
 ---
 paths:
   - "web/auth.ts"
-  - "web/middleware.ts"
+  - "web/proxy.ts"
   - "web/app/api/auth/**"
   - "web/app/api/oauth/**"
   - "web/app/api/device/**"

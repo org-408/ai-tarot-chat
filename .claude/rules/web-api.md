@@ -5,7 +5,7 @@ paths:
   - "web/lib/server/repositories/**"
   - "web/lib/server/validators/**"
   - "web/auth.ts"
-  - "web/middleware.ts"
+  - "web/proxy.ts"
 ---
 
 # Web API 開発ルール
@@ -56,7 +56,7 @@ const token = authHeader?.replace("Bearer ", "");
 
 ## CORS について
 
-`middleware.ts` で一括処理済み。個別の Route Handler に CORS ヘッダーを追加しない。
+`proxy.ts` で一括処理済み。個別の Route Handler に CORS ヘッダーを追加しない。
 
 ## ゲストユーザーへの対応
 

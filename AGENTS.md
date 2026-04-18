@@ -80,7 +80,7 @@ web/
 │   └── generate-master.ts# マスターデータ生成
 ├── types/                # TypeScript 型定義 (Web 専用)
 ├── auth.ts               # NextAuth.js 設定
-└── middleware.ts         # CORS + 認証ミドルウェア
+└── proxy.ts              # CORS + 認証ミドルウェア (Next.js 16 で middleware.ts からリネーム)
 ```
 
 ### npm スクリプト (web/)
@@ -179,7 +179,7 @@ UsedTicket           # ワンタイム認証チケット
    └─ POST /api/device/register → Device レコード作成・更新
 ```
 
-### ミドルウェア (`middleware.ts`)
+### ミドルウェア (`proxy.ts`)
 
 - CORS ヘッダー設定 (モバイルアプリ対応)
 - OPTIONS メソッドのプリフライト対応
@@ -324,7 +324,7 @@ MISTRAL_API_KEY               # Mistral
 ## 開発時の注意点
 
 1. **`GOOGLE_PRIVATE_KEY` の改行**: `.env` 内の `\n` が文字列として入ることがあるため `models.ts` で `.replace(/\\n/g, "\n")` している
-2. **Next.js 16 ヘッダー転送**: `middleware.ts` で明示的にリクエストヘッダーを転送しないと Route Handler に届かないケースがある
+2. **Next.js 16 ヘッダー転送**: `proxy.ts` で明示的にリクエストヘッダーを転送しないと Route Handler に届かないケースがある
 3. **SSE ストリーミング**: モバイルでは `CapacitorHttp.enabled: false` を維持、ネイティブ HTTP に置き換えると壊れる
 4. **ゲストユーザー**: `Client.userId` が null のため、認証前提のクエリには注意
 5. **プラン制限**: スプレッドにも `planId` があり、プランに応じてアクセス可否が変わる

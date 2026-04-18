@@ -101,7 +101,7 @@ interface Props {
 export default async function LandingPage({ params }: Props) {
   // ログイン済みならアプリへ直行
   const session = await auth();
-  if (session) redirect("/salon");
+  if (session) redirect("/");
 
   const { locale } = await params;
 

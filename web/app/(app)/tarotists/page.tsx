@@ -82,7 +82,7 @@ function TarotistModal({
             <button
               onClick={() => {
                 onClose();
-                router.push("/salon");
+                router.push("/");
               }}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"
               style={{
