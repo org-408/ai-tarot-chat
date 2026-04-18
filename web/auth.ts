@@ -77,10 +77,122 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 
+  // ────────────────────────────────────────────────────────────
+  // events — 診断用ログ
+  // Prisma Adapter の createUser/linkAccount が発火したか可視化する。
+  // staging / production のログを見れば、Adapter が動いていない場合に
+  // 即検知できる。
+  // ────────────────────────────────────────────────────────────
+  events: {
+    async createUser({ user }) {
+      logWithContext("info", "[NextAuth.events.createUser]", {
+        userId: user.id,
+        email: user.email,
+      });
+    },
+    async linkAccount({ account, user }) {
+      logWithContext("info", "[NextAuth.events.linkAccount]", {
+        userId: user.id,
+        provider: account.provider,
+      });
+    },
+    async signIn({ user, account, isNewUser }) {
+      logWithContext("info", "[NextAuth.events.signIn]", {
+        userId: user.id,
+        provider: account?.provider,
+        isNewUser,
+      });
+    },
+  },
+
   callbacks: {
-    async signIn({ user }) {
-      logWithContext("info", "Sign-in attempt", { user });
-      return true;
+    // ──────────────────────────────────────────────────────────
+    // signIn — OAuth フロー成功時に User + Account を明示的に upsert
+    //
+    // Auth.js v5 beta + JWT strategy + PrismaAdapter の組み合わせでは
+    // OAuth プロバイダー経由でも `adapter.createUser` / `linkAccount` が
+    // 無音で skip されるケースが確認されている（Prisma 7 driver adapter
+    // との相性 / beta バージョン間の不整合）。
+    //
+    // この callback で明示的に `user.upsert` / `account.upsert` して
+    // DB に確実に書き込み、後続の jwt callback で `user.id` が DB の
+    // User.id を指すように保証する。
+    // ──────────────────────────────────────────────────────────
+    async signIn({ user, account, profile }) {
+      logWithContext("info", "[signIn callback] received", {
+        email: user?.email,
+        provider: account?.provider,
+        hasUserId: !!user?.id,
+      });
+
+      // credentials (E2E) は authorize 内で upsert 済みなのでスキップ
+      if (!account || account.provider === "credentials") return true;
+      if (!user?.email) {
+        logWithContext("warn", "[signIn] OAuth user has no email — cannot upsert");
+        return true;
+      }
+
+      try {
+        const dbUser = await prisma.user.upsert({
+          where: { email: user.email },
+          create: {
+            email: user.email,
+            name: user.name ?? (profile?.name as string | undefined) ?? null,
+            image: user.image ?? (profile?.picture as string | undefined) ?? null,
+            emailVerified: new Date(),
+          },
+          update: {
+            name: user.name ?? undefined,
+            image: user.image ?? undefined,
+          },
+        });
+
+        // Adapter が User を作っていない場合に備え、DB の User.id を
+        // user オブジェクトに書き戻す (jwt callback の user.id に伝播する)
+        user.id = dbUser.id;
+
+        await prisma.account.upsert({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+          create: {
+            userId: dbUser.id,
+            type: account.type,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            access_token: account.access_token as string | null,
+            refresh_token: account.refresh_token as string | null,
+            expires_at: account.expires_at as number | null,
+            token_type: account.token_type as string | null,
+            scope: account.scope as string | null,
+            id_token: account.id_token as string | null,
+            session_state: account.session_state as string | null,
+          },
+          update: {
+            access_token: account.access_token as string | null,
+            refresh_token: account.refresh_token as string | null,
+            expires_at: account.expires_at as number | null,
+            id_token: account.id_token as string | null,
+          },
+        });
+
+        logWithContext("info", "[signIn] User + Account upserted", {
+          userId: dbUser.id,
+          provider: account.provider,
+        });
+
+        return true;
+      } catch (error) {
+        logWithContext("error", "[signIn] Failed to upsert User/Account", {
+          error: error instanceof Error ? error.message : String(error),
+          email: user.email,
+          provider: account.provider,
+        });
+        return false;
+      }
     },
 
     async jwt({ token, account, user }) {
@@ -95,11 +207,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // 初回ログイン時（user が渡される = サインイン直後）に Client を作成・更新
-      // signIn コールバックではなくここで行う理由:
-      // Auth.js v5 では signIn コールバックが createUser (Prisma Adapter) より前に
-      // 呼ばれる場合があり、その時点では User レコードが存在しない
-      // jwt コールバックは createUser の後に呼ばれることが保証されている
-      // user は初回ログイン時のみ渡される（セッション更新時は undefined）
+      // signIn callback で User + Account は upsert 済みなので、ここで
+      // `getOrCreateForWebUser` を呼ぶと必ず Client が作られる。
       if (user?.id) {
         try {
           logWithContext("info", "User signed in", { userId: user.id });
