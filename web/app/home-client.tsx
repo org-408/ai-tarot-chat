@@ -2,10 +2,11 @@
 
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
+import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import type { Reading } from "@shared/lib/types";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Zap, Sparkles, History } from "lucide-react";
 
 export default function HomeClient() {
@@ -14,12 +15,29 @@ export default function HomeClient() {
 
   const { init: initMaster } = useMasterStore();
   const { refreshUsage, usage, readings, fetchReadings } = useClientStore();
+  const { purchase, isUserCancelled } = useRevenuecat();
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   useEffect(() => {
     initMaster();
     refreshUsage();
     fetchReadings();
   }, [initMaster, refreshUsage, fetchReadings]);
+
+  const handleUpgrade = async () => {
+    setIsUpgrading(true);
+    try {
+      await purchase("PREMIUM");
+      await refreshUsage();
+    } catch (e) {
+      if (!isUserCancelled(e)) {
+        // キャンセル以外のエラーは plans ページへフォールバック
+        window.location.href = "/plans";
+      }
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
   const remainingQuick = usage?.remainingReadings;
@@ -95,12 +113,14 @@ export default function HomeClient() {
               </Link>
             )
           ) : (
-            <Link
-              href="/plans"
-              className="text-sm font-semibold text-purple-600 hover:underline"
+            <button
+              type="button"
+              onClick={handleUpgrade}
+              disabled={isUpgrading}
+              className="text-sm font-semibold text-purple-600 hover:underline disabled:opacity-50 text-left"
             >
-              {t("upgradeToStart")} →
-            </Link>
+              {isUpgrading ? t("upgrading") : `${t("upgradeToStart")} →`}
+            </button>
           )}
         </div>
       </div>
