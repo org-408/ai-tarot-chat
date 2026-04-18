@@ -20,8 +20,10 @@ export default function middleware(req: NextRequest) {
     pathname.startsWith("/admin") ||           // 管理画面
     pathname.startsWith("/signin") ||          // 管理者サインイン
     pathname.startsWith("/salon") ||           // アプリページ (locale なし)
+    pathname.startsWith("/simple") ||
     pathname.startsWith("/reading") ||
     pathname.startsWith("/personal") ||
+    pathname.startsWith("/clara") ||
     pathname.startsWith("/history") ||
     pathname.startsWith("/tarotists") ||
     pathname.startsWith("/plans") ||

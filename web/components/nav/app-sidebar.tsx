@@ -15,15 +15,8 @@ import {
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { History, Home, Sparkles, Star, User } from "lucide-react";
+import { BookOpen, History, Home, Sparkles, Star, Zap } from "lucide-react";
 import { useSession } from "next-auth/react";
-
-const NAV_ITEMS = [
-  { key: "home" as const, icon: Home, path: "salon" },
-  { key: "history" as const, icon: History, path: "history" },
-  { key: "tarotists" as const, icon: Star, path: "tarotists" },
-  { key: "plans" as const, icon: Sparkles, path: "plans" },
-] as const;
 
 const PLAN_BADGE_CLASS: Record<string, string> = {
   PREMIUM: "bg-amber-100 text-amber-700",
@@ -39,12 +32,28 @@ export function AppSidebar() {
   const { data: session } = useSession();
   const { usage } = useClientStore();
 
-  const navigate = (path: string) => router.push(`/${path}`);
+  const navigate = (path: string) => router.push(path ? `/${path}` : "/");
 
   const planCode = usage?.plan?.code ?? "GUEST";
   const planBadgeClass = PLAN_BADGE_CLASS[planCode] ?? PLAN_BADGE_CLASS.GUEST;
   const displayName =
     session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "";
+
+  const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
+
+  const NAV_ITEMS = [
+    { key: "home" as const, icon: Home, path: "" },
+    { key: "quick" as const, icon: Zap, path: "simple" },
+    {
+      key: "personal" as const,
+      icon: Sparkles,
+      path: "personal",
+      locked: !canPersonal,
+    },
+    { key: "clara" as const, icon: BookOpen, path: "clara" },
+    { key: "tarotists" as const, icon: Star, path: "tarotists" },
+    { key: "history" as const, icon: History, path: "history" },
+  ] as const;
 
   return (
     <Sidebar collapsible="icon">
@@ -72,16 +81,31 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => {
-                const isActive = pathname.includes(`/${item.path}`);
+                const targetPath = item.path ? `/${item.path}` : "/";
+                const isActive =
+                  item.path === ""
+                    ? pathname === "/"
+                    : pathname.startsWith(`/${item.path}`);
+
                 return (
                   <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton
                       onClick={() => navigate(item.path)}
                       isActive={isActive}
                       tooltip={t(item.key)}
+                      className={
+                        "locked" in item && item.locked
+                          ? "opacity-60"
+                          : undefined
+                      }
                     >
                       <item.icon />
                       <span>{t(item.key)}</span>
+                      {"locked" in item && item.locked && (
+                        <span className="ml-auto text-[9px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                          PRO
+                        </span>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -106,7 +130,9 @@ export function AppSidebar() {
                 className="w-8 h-8 rounded-full"
               />
             ) : (
-              <User className="w-4 h-4 text-purple-600" />
+              <span className="text-purple-600 text-sm font-bold">
+                {displayName.charAt(0).toUpperCase() || "U"}
+              </span>
             )}
           </div>
           <div className="group-data-[collapsible=icon]:hidden flex-1 min-w-0 text-left">

@@ -96,9 +96,10 @@ test.describe("認証ページ", () => {
 // ─────────────────────────────────────────────────────────
 
 const APP_PAGES = [
-  "/salon",
+  "/simple",
   "/reading",
   "/personal",
+  "/clara",
   "/history",
   "/tarotists",
   "/plans",
