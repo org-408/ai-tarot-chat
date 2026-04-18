@@ -18,14 +18,15 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // PR2: 旧アプリページ URL (locale 付き) → locale なしに 301 リダイレクト
+      //      issue #149 で廃止された /salon, /reading はホーム / に流す
       {
         source: "/:locale(ja|en)/salon",
-        destination: "/salon",
+        destination: "/",
         permanent: true,
       },
       {
         source: "/:locale(ja|en)/reading",
-        destination: "/reading",
+        destination: "/",
         permanent: true,
       },
       {

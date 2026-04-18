@@ -4,13 +4,13 @@ import { routing } from "./i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
 
-export default function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // API / auth / admin / 静的アセット / アプリページは intl ルーティングをスキップ
   // マーケティングページ (/ja/* /en/*) は next-intl が処理
   const skipIntl =
-    pathname === "/" ||                        // スマートエントリ (session チェック後 /ja or /salon へ)
+    pathname === "/" ||                        // ホームダッシュボード (認証チェックは (app) layout / app/page.tsx)
     pathname.startsWith("/api/") ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/_next/") ||

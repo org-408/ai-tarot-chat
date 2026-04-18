@@ -152,7 +152,7 @@ Render.com のタイムアウト対策で 60 秒に設定。
   - `provider`: "google" / "apple"
 - Cookie: `sameSite: "none"`, `secure: true` (モバイルアプリからのリクエスト対応)
 
-## ミドルウェア (`middleware.ts`)
+## ミドルウェア (`proxy.ts`)
 
 - **CORS 設定**: オリジン反射型 (`Access-Control-Allow-Origin: <request-origin>`)
 - **ヘッダー転送**: Next.js 16 バグ回避のため明示的にコピー
