@@ -162,24 +162,33 @@ export default function PersonalPage() {
     );
   }
 
+  const tarotistImageUrl = `/tarotists/${selectedTarotist.name}.png`;
+
   if (phase === "chat") {
     return (
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
-        <div className="flex-shrink-0 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-b">
-          <div className="flex items-center gap-3">
-            <img
-              src={`/tarotists/${selectedTarotist.name}.png`}
-              alt={selectedTarotist.name}
-              className="w-12 h-12 rounded-full object-cover"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-            />
+        <div className="flex-shrink-0 px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-shrink-0 w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200 shadow-md">
+              <img
+                src={tarotistImageUrl}
+                alt={selectedTarotist.name}
+                className="w-full h-full object-cover"
+                style={{ objectPosition: "center 20%" }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-700 to-indigo-800 flex items-center justify-center text-xl text-white -z-10">
+                {selectedTarotist.icon}
+              </div>
+            </div>
             <div>
-              <h2 className="font-bold text-gray-900">
-                {selectedTarotist.icon} {selectedTarotist.name}
+              <h2 className="font-bold text-gray-900 text-base">
+                {selectedTarotist.name}
               </h2>
-              <p className="text-sm text-gray-500">{t("phase1Title")}</p>
+              <p className="text-sm text-purple-600 font-medium">{t("phase1Title")}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{t("phase1Desc")}</p>
             </div>
           </div>
         </div>
@@ -194,6 +203,8 @@ export default function PersonalPage() {
             questionsRemaining={phase1Session.questionsRemaining}
             isMessageComplete={false}
             keyboardOffset={keyboardHeight}
+            tarotistImageUrl={tarotistImageUrl}
+            tarotistIcon={selectedTarotist.icon}
           />
         </div>
       </div>
@@ -220,6 +231,8 @@ export default function PersonalPage() {
       questionsRemaining={phase2Session.questionsRemaining}
       isMessageComplete={phase2Session.isMessageComplete}
       keyboardOffset={keyboardHeight}
+      tarotistImageUrl={tarotistImageUrl}
+      tarotistIcon={selectedTarotist.icon}
     />
   );
 

@@ -172,7 +172,7 @@ function dedup(readings: Reading[]): Reading[] {
   });
 }
 
-type FilterTab = "all" | "normal" | "personal";
+type FilterTab = "all" | "quick" | "personal";
 
 // ──────────────────────────────────────────
 // HistoryPage
@@ -182,7 +182,7 @@ const TAKE = 20;
 
 const TABS: { id: FilterTab; label: string }[] = [
   { id: "all", label: "すべて" },
-  { id: "normal", label: "通常占い" },
+  { id: "quick", label: "クイック占い" },
   { id: "personal", label: "パーソナル" },
 ];
 
@@ -325,7 +325,7 @@ const HistoryPage: React.FC = () => {
               ? "まだ占い履歴がありません"
               : tab === "personal"
                 ? "パーソナル占いの履歴がありません"
-                : "通常占いの履歴がありません"}
+                : "クイック占いの履歴がありません"}
           </p>
         </div>
       )}

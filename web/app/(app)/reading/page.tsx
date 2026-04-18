@@ -140,6 +140,8 @@ export default function ReadingPage() {
       questionsRemaining={questionsRemaining}
       isMessageComplete={isMessageComplete}
       keyboardOffset={keyboardHeight}
+      tarotistImageUrl={`/tarotists/${selectedTarotist.name}.png`}
+      tarotistIcon={selectedTarotist.icon}
     />
   );
 

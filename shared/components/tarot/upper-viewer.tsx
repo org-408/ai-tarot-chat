@@ -49,9 +49,11 @@ const TarotFlipCard: React.FC<TarotFlipCardProps> = ({
           className="absolute inset-0 rounded-xl border-2 border-purple-400 shadow-md overflow-hidden"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div className="w-full h-full bg-gradient-to-br from-purple-800 to-indigo-900 flex items-center justify-center">
-            <span className="text-2xl">🔮</span>
-          </div>
+          <img
+            src={`${cardBasePath}/back.png`}
+            alt="card back"
+            className="w-full h-full object-cover"
+          />
         </div>
 
         {/* 表面 */}
