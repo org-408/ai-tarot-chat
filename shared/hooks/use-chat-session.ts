@@ -63,6 +63,18 @@ export interface UseChatSessionCallbacks {
   onUnlock?: () => void;
   /** messages が変わるたびに呼ばれる (Phase1 → Phase2 引き継ぎ用) */
   onMessagesChange?: (messages: UIMessage[]) => void;
+  /**
+   * パーソナル占い Phase1 で 4 メッセージ目（AI スプレッド推薦）を受信した時に呼ばれる。
+   * AI 応答から抽出したスプレッド推薦情報を渡す。
+   */
+  onPhase1SpreadSuggested?: (suggestion: SpreadSuggestion) => void;
+}
+
+export interface SpreadSuggestion {
+  /** 推薦スプレッド no (number) — AI 応答のパース結果 */
+  spreadNo?: number;
+  /** 推薦スプレッド名 — AI 応答のパース結果 */
+  spreadName?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -73,6 +85,14 @@ export interface UseChatSessionReturn {
   messages: UIMessage[];
   status: "idle" | "submitted" | "streaming" | "error";
   phase2Stage: "chatting" | "done";
+  /**
+   * パーソナル占い Phase1 のステージ:
+   * - "chatting" ... AI と対話中（または未開始）
+   * - "spread-selection" ... AI スプレッド推薦後、ユーザーが CategorySpreadSelector で確定待ち
+   */
+  phase1Stage: "chatting" | "spread-selection";
+  /** Phase1 でパースしたスプレッド推薦情報 */
+  phase1SpreadSuggestion: SpreadSuggestion | null;
   /** Phase2 残り質問数 */
   questionsRemaining: number;
   inputValue: string;
@@ -167,8 +187,13 @@ export function useChatSession(
     isRevealingCompleted,
   } = config;
 
-  const { onRefreshUsage, onRefreshToken, onUnlock, onMessagesChange } =
-    callbacks;
+  const {
+    onRefreshUsage,
+    onRefreshToken,
+    onUnlock,
+    onMessagesChange,
+    onPhase1SpreadSuggested,
+  } = callbacks;
 
   const initialLen = initialMessages?.length ?? 0;
 
@@ -180,6 +205,11 @@ export function useChatSession(
   const [isMessageComplete, setIsMessageComplete] = useState(false);
   type Phase2Stage = "chatting" | "done";
   const [phase2Stage, setPhase2Stage] = useState<Phase2Stage>("chatting");
+  type Phase1Stage = "chatting" | "spread-selection";
+  const [phase1Stage, setPhase1Stage] = useState<Phase1Stage>("chatting");
+  const [phase1SpreadSuggestion, setPhase1SpreadSuggestion] =
+    useState<SpreadSuggestion | null>(null);
+  const hasDispatchedSpreadSuggestionRef = useRef(false);
 
   // ─── Refs ────────────────────────────────────────────────────
   const hasSentInitialMessage = useRef(false);
@@ -405,6 +435,38 @@ export function useChatSession(
     }
   }, [isPhase2, initialLen, messages, status]);
 
+  // ─── パーソナル占い Phase1 のスプレッド推薦パース ─────────────
+  // 4 メッセージ目 (user→AI→user→AI) が揃った時点で AI のスプレッド推薦をパース。
+  // mobile/src/components/chat-panel.tsx:326-358 に準拠。
+  useEffect(() => {
+    if (isPhase2 || !isPersonal) return;
+    if (status !== "ready") return;
+    if (hasDispatchedSpreadSuggestionRef.current) return;
+    if (messages.length < 4) return;
+
+    const fourthMsg = messages[3];
+    if (!fourthMsg || fourthMsg.role !== "assistant") return;
+    const text = fourthMsg.parts
+      .filter((p) => p.type === "text")
+      .map((p) => (p as { text: string }).text)
+      .join("");
+    if (!text.trim()) return;
+
+    // 「【特におすすめのスプレッド】」ヘッダー以降のみを対象にパース
+    const headerIdx = text.indexOf("【特におすすめのスプレッド】");
+    const target = headerIdx >= 0 ? text.slice(headerIdx) : text;
+    const match = target.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
+    const suggestion: SpreadSuggestion = {
+      spreadNo: match ? parseInt(match[1], 10) : undefined,
+      spreadName: match ? match[2] : undefined,
+    };
+
+    hasDispatchedSpreadSuggestionRef.current = true;
+    setPhase1SpreadSuggestion(suggestion);
+    setPhase1Stage("spread-selection");
+    onPhase1SpreadSuggested?.(suggestion);
+  }, [isPhase2, isPersonal, status, messages, onPhase1SpreadSuggested]);
+
   // status 変化でエラークリア
   useEffect(() => {
     if (status === "submitted" || status === "streaming") {
@@ -523,6 +585,8 @@ export function useChatSession(
     messages,
     status: status as "idle" | "submitted" | "streaming" | "error",
     phase2Stage,
+    phase1Stage,
+    phase1SpreadSuggestion,
     questionsRemaining,
     inputValue,
     isFocused,
