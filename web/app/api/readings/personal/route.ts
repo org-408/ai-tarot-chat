@@ -581,10 +581,6 @@ export async function POST(req: NextRequest) {
               } else {
                 // Q&A ターン: 既存リーディングを更新
                 const existingReading = await readingRepository.getLatestPersonalReadingForClient(clientId);
-                if (!existingReading) {
-                  logWithContext("warn", "パーソナル占い Q&A: 既存リーディングが見つかりません", { clientId });
-                  return;
-                }
 
                 const firstPhase2AiIdx = clientMessages.findIndex(
                   (m, i) => m.role === "assistant" && i >= (initialLen ?? 0),
@@ -610,20 +606,39 @@ export async function POST(req: NextRequest) {
                     message: text,
                   },
                 ];
-                await clientService.saveReading({
-                  readingId: existingReading.id,
-                  clientId,
-                  deviceId,
-                  tarotistId: tarotist.id,
-                  tarotist,
-                  spreadId: spread.id,
-                  spread,
-                  customQuestion: customQuestion ?? "",
-                  cards: drawnCards,
-                  chatMessages,
-                  incrementUsage: false,
-                });
-                logWithContext("info", "パーソナル占い Q&A 保存完了", { clientId, readingId: existingReading.id });
+
+                if (!existingReading) {
+                  // フォールバック: 利用回数は Phase2 初回保存で消費済みのため incrementUsage=false
+                  logWithContext("warn", "パーソナル占い Q&A: 既存リーディングが見つからないため新規作成", { clientId });
+                  await clientService.saveReading({
+                    clientId,
+                    deviceId,
+                    tarotistId: tarotist.id,
+                    tarotist,
+                    spreadId: spread.id,
+                    spread,
+                    customQuestion: customQuestion ?? "",
+                    cards: drawnCards,
+                    chatMessages,
+                    incrementUsage: false,
+                  });
+                  logWithContext("info", "パーソナル占い Q&A フォールバック保存完了", { clientId });
+                } else {
+                  await clientService.saveReading({
+                    readingId: existingReading.id,
+                    clientId,
+                    deviceId,
+                    tarotistId: tarotist.id,
+                    tarotist,
+                    spreadId: spread.id,
+                    spread,
+                    customQuestion: customQuestion ?? "",
+                    cards: drawnCards,
+                    chatMessages,
+                    incrementUsage: false,
+                  });
+                  logWithContext("info", "パーソナル占い Q&A 保存完了", { clientId, readingId: existingReading.id });
+                }
               }
             } catch (error) {
               logWithContext("error", "パーソナル占い保存に失敗", {
