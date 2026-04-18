@@ -4,6 +4,7 @@ import { prisma } from "@/prisma/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
+import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -17,6 +18,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
     Apple,
+    // E2E テスト専用 Credentials プロバイダー
+    // OAuth フローなしでサインインフロー（jwt コールバック → Client 作成）を検証できる
+    ...(process.env.E2E_MOCK_AUTH === "true"
+      ? [
+          Credentials({
+            id: "e2e-credentials",
+            name: "E2E Test Credentials",
+            credentials: {
+              email: { type: "email" },
+            },
+            async authorize(credentials: Partial<Record<string, string>>) {
+              const email = credentials?.email;
+              if (!email?.endsWith("@e2e.test")) return null;
+              // DB に User を upsert（OAuth の createUser 相当）
+              const user = await prisma.user.upsert({
+                where: { email },
+                create: {
+                  name: "E2E Test",
+                  email,
+                  emailVerified: new Date(),
+                },
+                update: {},
+              });
+              return { id: user.id, name: user.name, email: user.email };
+            },
+          }),
+        ]
+      : []),
   ],
   cookies: {
     sessionToken: {
@@ -65,11 +94,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
       }
 
-      // 初回ログイン時（account がある = OAuth callback 直後）に Client を作成・更新
+      // 初回ログイン時（user が渡される = サインイン直後）に Client を作成・更新
       // signIn コールバックではなくここで行う理由:
       // Auth.js v5 では signIn コールバックが createUser (Prisma Adapter) より前に
       // 呼ばれる場合があり、その時点では User レコードが存在しない
-      if (account && user?.id) {
+      // jwt コールバックは createUser の後に呼ばれることが保証されている
+      // user は初回ログイン時のみ渡される（セッション更新時は undefined）
+      if (user?.id) {
         try {
           logWithContext("info", "User signed in", { userId: user.id });
           const client = await clientService.getOrCreateForWebUser({
@@ -77,7 +108,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email ?? undefined,
             name: user.name ?? undefined,
             image: user.image ?? undefined,
-            provider: account.provider,
+            provider: account?.provider ?? "google",
           });
           await clientService.updateLoginDate(client.id);
           logWithContext("info", "Client ready", { clientId: client.id });

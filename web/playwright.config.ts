@@ -50,6 +50,15 @@ export default defineConfig({
         browserName: "chromium",
       },
     },
+    // ── サインインフローテスト（Credentials プロバイダー経由）──
+    // 初回サインイン → jwt コールバック → Client 自動作成の流れを検証する
+    {
+      name: "signin",
+      testMatch: "**/signin.spec.ts",
+      use: {
+        browserName: "chromium",
+      },
+    },
   ],
 
   // CI では next build 済みの前提で next start を起動
@@ -63,6 +72,7 @@ export default defineConfig({
     env: {
       AUTH_URL: "http://localhost:3000",
       E2E_MOCK_AI: "true",
+      E2E_MOCK_AUTH: "true",
     },
   },
 });
