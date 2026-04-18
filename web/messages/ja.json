@@ -68,6 +68,11 @@
   "home": {
     "title": "AI タロット占い",
     "subtitle": "今日のお告げを聞いてみましょう",
+    "todayUsage": "今日の残り回数",
+    "countUnit": "回",
+    "resetNote": "日本時間 0:00 にリセット",
+    "premiumOnly": "プレミアム限定",
+    "upgradeHint": "プレミアムで毎日1回利用可能",
     "quickTitle": "クイック占い",
     "quickDesc": "カードを引いてAIが即座に解釈します",
     "personalTitle": "パーソナル占い",
@@ -81,7 +86,11 @@
     "claraDesc": "カードの意味を参照しながらオフラインで占えます",
     "startClara": "始める",
     "recentHistory": "最近の占い",
-    "viewAll": "すべて見る"
+    "viewAll": "すべて見る",
+    "personalBadge": "パーソナル",
+    "historyEmpty": "まだ占い履歴がありません。占いを始めてみましょう",
+    "historyPlanRequired": "占い履歴はFREEプラン以上で保存できます",
+    "viewPlans": "プランを見る"
   },
   "simple": {
     "title": "クイック占い",
