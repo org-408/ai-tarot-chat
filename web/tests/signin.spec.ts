@@ -7,7 +7,7 @@
  * 保証する内容:
  * - 新規ユーザーがサインインしても Access Denied にならない
  * - サインイン後に Client レコードが DB に存在する
- * - /salon にリダイレクトされる（認証成功）
+ * - / にリダイレクトされる（認証成功）
  *
  * 保証しない内容（Auth.js の仕様として保証されている）:
  * - OAuth の createUser と jwt コールバックの呼び出し順序
@@ -47,7 +47,7 @@ test.describe("初回サインインフロー", () => {
         form: {
           email: TEST_EMAIL,
           csrfToken,
-          callbackUrl: "/salon",
+          callbackUrl: "/",
           json: "true",
         },
       }
@@ -74,7 +74,7 @@ test.describe("初回サインインフロー", () => {
     ).toBe(1);
 
     // ── ブラウザでのサインイン確認（リダイレクト先が /auth/signin でないこと）──
-    await page.goto(`/auth/signin?callbackUrl=/salon`);
+    await page.goto(`/auth/signin?callbackUrl=/`);
     await page.waitForLoadState("networkidle");
 
     // Access Denied ページが表示されていないこと
@@ -95,7 +95,7 @@ test.describe("初回サインインフロー", () => {
       form: {
         email: EXISTING_EMAIL,
         csrfToken,
-        callbackUrl: "/salon",
+        callbackUrl: "/",
         json: "true",
       },
     });
@@ -107,7 +107,7 @@ test.describe("初回サインインフロー", () => {
       form: {
         email: EXISTING_EMAIL,
         csrfToken: csrfToken2,
-        callbackUrl: "/salon",
+        callbackUrl: "/",
         json: "true",
       },
     });
