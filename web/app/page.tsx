@@ -12,7 +12,7 @@ import HomeClient from "./home-client";
 
 export default async function RootPage() {
   const session = await auth();
-  if (!session) redirect("/ja");
+  if (!session) redirect("/auth/signin");
 
   const cookieStore = await cookies();
   const cookieLocale = cookieStore.get("NEXT_LOCALE")?.value;

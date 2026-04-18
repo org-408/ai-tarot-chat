@@ -1,7 +1,10 @@
 "use client";
 
 import { CategorySpreadSelector } from "@shared/components/reading/category-spread-selector";
+import { RevealPromptPanel } from "@shared/components/reading/reveal-prompt-panel";
 import { ShuffleDialog } from "@shared/components/reading/shuffle-dialog";
+import { UpperViewer } from "@shared/components/tarot/upper-viewer";
+import { LowerViewer } from "@shared/components/tarot/lower-viewer";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
@@ -17,6 +20,7 @@ export default function ClaraPage() {
   const t = useTranslations("clara");
   const tSalon = useTranslations("salon");
   const tCommon = useTranslations("common");
+  const tReading = useTranslations("reading");
 
   const { data: masterData, init: initMaster, categories, spreads, isLoading } =
     useMasterStore();
@@ -26,7 +30,7 @@ export default function ClaraPage() {
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
   const [drawnCards, setDrawnCards] = useState<DrawnCard[]>([]);
   const [isShuffling, setIsShuffling] = useState(false);
-  const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set());
+  const [isRevealingCompleted, setIsRevealingCompleted] = useState(false);
 
   useEffect(() => {
     initMaster();
@@ -38,7 +42,7 @@ export default function ClaraPage() {
   }: { category: ReadingCategory | null; spread: Spread }) => {
     setSelectedSpread(spread);
     setDrawnCards([]);
-    setRevealedCards(new Set());
+    setIsRevealingCompleted(false);
     setIsShuffling(true);
   };
 
@@ -54,19 +58,7 @@ export default function ClaraPage() {
     setPhase("selection");
     setSelectedSpread(null);
     setDrawnCards([]);
-    setRevealedCards(new Set());
-  };
-
-  const toggleReveal = (cardId: string) => {
-    setRevealedCards((prev) => {
-      const next = new Set(prev);
-      if (next.has(cardId)) {
-        next.delete(cardId);
-      } else {
-        next.add(cardId);
-      }
-      return next;
-    });
+    setIsRevealingCompleted(false);
   };
 
   const currentPlan = usage?.plan as Parameters<typeof CategorySpreadSelector>[0]["currentPlan"];
@@ -75,7 +67,6 @@ export default function ClaraPage() {
   if (phase === "selection") {
     return (
       <div className="max-w-2xl mx-auto space-y-4">
-        {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <Link
             href="/"
@@ -126,7 +117,61 @@ export default function ClaraPage() {
     );
   }
 
-  // ── Phase 2: カード表示 ──
+  // ── Phase 2: カード表示（UpperViewer + キーワード）──
+  const selectorContent = (
+    <RevealPromptPanel
+      isAllRevealed={isRevealingCompleted}
+      onRevealAll={() => setIsRevealingCompleted(true)}
+    />
+  );
+
+  const keywordsContent = (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {drawnCards.map((drawnCard) => {
+          const cardName = drawnCard.card?.name ?? drawnCard.position;
+          const keywords = drawnCard.isReversed
+            ? (drawnCard.card?.reversedKeywords ?? [])
+            : (drawnCard.card?.uprightKeywords ?? []);
+
+          return (
+            <div
+              key={drawnCard.card?.id ?? drawnCard.cardId}
+              className="bg-white rounded-xl border p-3 shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-semibold text-gray-800">{cardName}</span>
+                <span className="text-xs text-gray-400">{drawnCard.position}</span>
+                {drawnCard.isReversed && (
+                  <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
+                    {t("reversed")}
+                  </span>
+                )}
+              </div>
+              {keywords.length > 0 && (
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {keywords.join("・")}
+                </p>
+              )}
+            </div>
+          );
+        })}
+
+        {/* もう一度占うボタン */}
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={handleReadAgain}
+            className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+          >
+            <RefreshCw size={14} />
+            {t("readAgain")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <ShuffleDialog
@@ -135,111 +180,44 @@ export default function ClaraPage() {
         cardBackPath="/cards/back.png"
       />
 
-      <div className="max-w-3xl mx-auto space-y-4">
+      <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         {/* ヘッダー */}
-        <div className="flex items-center justify-between">
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-indigo-100">
           <button
             type="button"
             onClick={handleReadAgain}
             className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 transition-colors"
           >
             <ArrowLeft size={16} />
-            {tCommon("back")}
+            {tCommon("backToHome")}
           </button>
-          <h2 className="text-sm font-medium text-gray-600">{t("phase2Title")}</h2>
-          <button
-            type="button"
-            onClick={handleReadAgain}
-            className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 transition-colors"
-          >
-            <RefreshCw size={12} />
-            {t("readAgain")}
-          </button>
+          <span className="text-xs text-indigo-600 font-medium">{t("phase2Title")}</span>
         </div>
 
-        {selectedSpread && (
-          <p className="text-xs text-gray-500 text-center">
-            {selectedSpread.name}
-            {selectedSpread.guide && (
-              <> — {selectedSpread.guide}</>
-            )}
-          </p>
-        )}
+        {/* UpperViewer */}
+        <div className="flex-shrink-0" style={{ height: "40vh" }}>
+          {selectedSpread && (
+            <UpperViewer
+              spread={selectedSpread}
+              drawnCards={drawnCards}
+              isRevealingCompleted={isRevealingCompleted}
+              onRevealingCompleted={() => setIsRevealingCompleted(true)}
+              tarotistImageUrl="/tarotists/Ariadne.png"
+              tarotistName="Clara"
+              cardBasePath="/cards"
+            />
+          )}
+        </div>
 
-        {/* カードグリッド */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {drawnCards.map((drawnCard, idx) => {
-            const cardId = drawnCard.card?.id ?? drawnCard.cardId;
-            const isRevealed = revealedCards.has(cardId);
-            const cell = selectedSpread?.cells?.[idx];
-            const cardNo = drawnCard.card?.no ?? 0;
-            const cardCode = drawnCard.card?.code ?? "";
-            const cardName = drawnCard.card?.name ?? drawnCard.position;
-            const keywords = drawnCard.isReversed
-              ? (drawnCard.card?.reversedKeywords ?? [])
-              : (drawnCard.card?.uprightKeywords ?? []);
-
-            return (
-              <div key={cardId} className="space-y-2">
-                {/* ポジション名 */}
-                {cell && (
-                  <p className="text-xs text-center text-gray-500 font-medium">
-                    {cell.position}
-                  </p>
-                )}
-
-                {/* カード */}
-                <button
-                  type="button"
-                  onClick={() => toggleReveal(cardId)}
-                  className="w-full aspect-[2/3] rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="w-full h-full relative">
-                    {isRevealed ? (
-                      <img
-                        src={`/cards/${cardNo}_${cardCode}.png`}
-                        alt={cardName}
-                        className={`w-full h-full object-cover ${
-                          drawnCard.isReversed ? "rotate-180" : ""
-                        }`}
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = "/cards/back.png";
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src="/cards/back.png"
-                        alt="カード裏面"
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                </button>
-
-                {/* カード情報 */}
-                <div className="text-center space-y-1">
-                  <p className="text-xs font-semibold text-gray-700">
-                    {isRevealed ? cardName : "?"}
-                  </p>
-                  {isRevealed && drawnCard.isReversed && (
-                    <span className="inline-block text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-                      {t("reversed")}
-                    </span>
-                  )}
-
-                  {isRevealed && keywords.length > 0 && (
-                    <p className="text-[11px] text-gray-500 leading-relaxed mt-1">
-                      {keywords.join("・")}
-                    </p>
-                  )}
-
-                  {!isRevealed && (
-                    <p className="text-[10px] text-gray-400 italic">{t("tapToReveal")}</p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        {/* LowerViewer: カード操作 / キーワード */}
+        <div className="flex-1 overflow-hidden">
+          <LowerViewer
+            selectorContent={selectorContent}
+            personalContent={keywordsContent}
+            defaultMode="selector"
+            selectorLabel={tReading("tabCards")}
+            personalLabel={t("keywords")}
+          />
         </div>
       </div>
     </>

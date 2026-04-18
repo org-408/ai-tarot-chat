@@ -95,7 +95,8 @@
     "readAgain": "もう一度占う",
     "tapToReveal": "タップしてカードを開く",
     "upright": "正位置",
-    "reversed": "逆位置"
+    "reversed": "逆位置",
+    "keywords": "キーワード"
   },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",

@@ -15,7 +15,7 @@ import {
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, History, Home, Sparkles, Star, Zap } from "lucide-react";
+import { BookOpen, History, Home, Sparkles, Star, Zap, Crown } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 const PLAN_BADGE_CLASS: Record<string, string> = {
@@ -39,14 +39,17 @@ export function AppSidebar() {
   const displayName =
     session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "";
 
+  const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
+
   const NAV_ITEMS = [
-    { key: "home" as const, icon: Home, path: "" },
-    { key: "quick" as const, icon: Zap, path: "simple" },
-    { key: "personal" as const, icon: Sparkles, path: "personal" },
-    { key: "clara" as const, icon: BookOpen, path: "clara" },
-    { key: "tarotists" as const, icon: Star, path: "tarotists" },
-    { key: "history" as const, icon: History, path: "history" },
-  ] as const;
+    { key: "home" as const, icon: Home, path: "", disabled: false },
+    { key: "quick" as const, icon: Zap, path: "simple", disabled: false },
+    { key: "personal" as const, icon: Sparkles, path: "personal", disabled: !canPersonal },
+    { key: "clara" as const, icon: BookOpen, path: "clara", disabled: false },
+    { key: "tarotists" as const, icon: Star, path: "tarotists", disabled: false },
+    { key: "plans" as const, icon: Crown, path: "plans", disabled: false },
+    { key: "history" as const, icon: History, path: "history", disabled: false },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -74,7 +77,6 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => {
-                const targetPath = item.path ? `/${item.path}` : "/";
                 const isActive =
                   item.path === ""
                     ? pathname === "/"
@@ -83,9 +85,11 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton
-                      onClick={() => navigate(item.path)}
+                      onClick={item.disabled ? undefined : () => navigate(item.path)}
                       isActive={isActive}
                       tooltip={t(item.key)}
+                      disabled={item.disabled}
+                      className={item.disabled ? "opacity-40 cursor-not-allowed" : undefined}
                     >
                       <item.icon />
                       <span>{t(item.key)}</span>
