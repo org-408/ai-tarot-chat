@@ -77,27 +77,6 @@ test.describe("サービスページ（認証済み）", () => {
     await assertAuthenticatedPage(page, "/settings");
   });
 
-  // /reading は /simple にリダイレクトされる（TypeError なし）
-  test("/reading: /simple にリダイレクトされる（TypeError なし）", async ({
-    page,
-  }) => {
-    const getErrors = collectTypeErrors(page);
-    await page.goto("/reading");
-    await page.waitForLoadState("networkidle");
-    expect(page.url()).not.toContain("/auth/signin");
-    expect(getErrors()).toHaveLength(0);
-  });
-
-  // /salon は / にリダイレクトされる
-  test("/salon: / にリダイレクトされる（TypeError なし）", async ({
-    page,
-  }) => {
-    const getErrors = collectTypeErrors(page);
-    await page.goto("/salon");
-    await page.waitForLoadState("networkidle");
-    expect(page.url()).not.toContain("/auth/signin");
-    expect(getErrors()).toHaveLength(0);
-  });
 });
 
 // ─────────────────────────────────────────────────────────

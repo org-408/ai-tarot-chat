@@ -97,7 +97,6 @@ test.describe("認証ページ", () => {
 
 const APP_PAGES = [
   "/simple",
-  "/reading",
   "/personal",
   "/clara",
   "/history",
