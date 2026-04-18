@@ -296,7 +296,81 @@ test.describe("リーディング保存・利用回数テスト", () => {
   });
 
   /**
-   * パターン3: パーソナル占い（質問3回）
+   * パターン3: パーソナル占い（手動クローズ）
+   * - Phase2 初回 + Q&A 1問 + 手動クローズで、クロージング応答まで全保存される
+   * - 利用回数は初回の +1 のみ
+   */
+  test("パーソナル占い 手動クローズ: クロージング応答まで全保存される", async ({ request }) => {
+    const { premiumApiToken, premiumClientId, tarotist, spread } = fixtures;
+
+    const phase1Messages: UIMessage[] = [
+      u("p1_1", "よろしくお願いします。"),
+      a("p1_2", "どんなことを占いましょうか？"),
+      u("p1_3", "転職のタイミングについて占ってください。"),
+      a("p1_4", "ケルト十字スプレッドがおすすめです。"),
+      u("p1_5", "お願いします。"),
+    ];
+
+    // --- Step1: Phase2 初回鑑定 ---
+    const res1 = await callReadingApi(request, "/api/readings/personal", {
+      token: premiumApiToken,
+      messages: phase1Messages,
+      tarotist,
+      spread,
+    });
+    expect(res1.status()).toBe(200);
+    expect((await getClientCounts(premiumClientId)).dailyPersonalCount).toBe(1);
+
+    const reading = await getLatestReading(premiumClientId);
+    expect(reading).not.toBeNull();
+    // Phase1(5) + FINAL_READING(1) = 6
+    expect(await getChatMessageCount(reading!.id)).toBe(6);
+
+    const phase2AiMsg = a("p2_ai", "カードの解釈です。");
+
+    // --- Step2: Q&A 1問目 ---
+    const qa1Messages: UIMessage[] = [
+      ...phase1Messages,
+      phase2AiMsg,
+      u("qa1_u", "もう少し詳しく教えてください。"),
+    ];
+    const res2 = await callReadingApi(request, "/api/readings/personal", {
+      token: premiumApiToken,
+      messages: qa1Messages,
+      tarotist,
+      spread,
+      initialLen: phase1Messages.length,
+    });
+    expect(res2.status()).toBe(200);
+    // Phase1(5) + P2AI(1) + QA1U(1) + QA1AI_mock(1) = 8
+    expect(await getChatMessageCount(reading!.id)).toBe(8);
+
+    // --- Step3: 手動クローズ（isEndingEarly=true）---
+    const qa1AiMsg = a("qa1_ai", "回答1です。");
+    const closingMessages: UIMessage[] = [
+      ...qa1Messages,
+      qa1AiMsg,
+      u("close_u", "ありがとうございました。今日の占いはここで終わりにします。"),
+    ];
+    const res3 = await callReadingApi(request, "/api/readings/personal", {
+      token: premiumApiToken,
+      messages: closingMessages,
+      tarotist,
+      spread,
+      initialLen: phase1Messages.length,
+      isEndingEarly: true,
+    });
+    expect(res3.status()).toBe(200);
+    // 8 + closingU(1) + closingAI_mock(1) = 10
+    expect(await getChatMessageCount(reading!.id)).toBe(10);
+
+    // 利用回数は変わらず 1、Reading は 1 件
+    expect((await getClientCounts(premiumClientId)).dailyPersonalCount).toBe(1);
+    expect(await getReadingCount(premiumClientId)).toBe(1);
+  });
+
+  /**
+   * パターン4: パーソナル占い（質問3回）
    * - Phase2 初回 + Q&A 3回で、全会話が Reading に保存される
    * - 利用回数は初回の +1 のみ
    */
