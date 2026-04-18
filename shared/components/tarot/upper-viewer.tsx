@@ -98,6 +98,7 @@ const TarotFlipCard: React.FC<TarotFlipCardProps> = ({
 // ─────────────────────────────────────────────────────────────
 
 type ViewMode = "grid" | "carousel";
+export type UpperViewerTab = ViewMode | "profile";
 
 interface UpperViewerProps {
   spread: Spread;
@@ -110,6 +111,12 @@ interface UpperViewerProps {
   tarotistName?: string;
   /** カード画像の base パス。デフォルト: "/cards" */
   cardBasePath?: string;
+  /** 初期タブ。デフォルト: "grid" */
+  initialTab?: UpperViewerTab;
+  /** controlled 時の現在タブ。指定すると内部 state を無視して外部値に従う */
+  activeTab?: UpperViewerTab;
+  /** タブ切替時のコールバック。controlled / uncontrolled どちらでも呼ばれる */
+  onActiveTabChange?: (tab: UpperViewerTab) => void;
 }
 
 const DIALOG_CARD_WIDTH = 200;
@@ -126,6 +133,9 @@ export const UpperViewer: React.FC<UpperViewerProps> = ({
   tarotistImageUrl,
   tarotistName,
   cardBasePath = "/cards",
+  initialTab = "grid",
+  activeTab: controlledActiveTab,
+  onActiveTabChange,
 }) => {
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
@@ -179,12 +189,23 @@ export const UpperViewer: React.FC<UpperViewerProps> = ({
   const FLIP_W = 56;
   const FLIP_H = 96;
 
-  const tabs: { key: ViewMode | "profile"; label: string }[] = [
+  const tabs: { key: UpperViewerTab; label: string }[] = [
     ...(tarotistImageUrl ? [{ key: "profile" as const, label: "占い師" }] : []),
     { key: "grid", label: "スプレッド" },
     { key: "carousel", label: "個別カード" },
   ];
-  const [activeTab, setActiveTab] = useState<ViewMode | "profile">("grid");
+  const [internalActiveTab, setInternalActiveTab] =
+    useState<UpperViewerTab>(initialTab);
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const setActiveTab = useCallback(
+    (tab: UpperViewerTab) => {
+      if (controlledActiveTab === undefined) {
+        setInternalActiveTab(tab);
+      }
+      onActiveTabChange?.(tab);
+    },
+    [controlledActiveTab, onActiveTabChange],
+  );
 
   return (
     <div className="w-full h-full bg-white flex flex-col pt-1">

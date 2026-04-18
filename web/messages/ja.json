@@ -98,7 +98,9 @@
     "tapToReveal": "タップしてカードを開く",
     "upright": "正位置",
     "reversed": "逆位置",
-    "keywords": "キーワード"
+    "keywords": "キーワード",
+    "categoryLabel": "占い内容",
+    "spreadLabel": "スプレッド"
   },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",
@@ -117,12 +119,21 @@
   },
   "personal": {
     "title": "パーソナル占い",
+    "tarotistPrompt": "対話しながらじっくり占う占い師を選んでください",
     "phase1Title": "あなたの悩みを教えてください",
     "phase2Title": "カードが答えます",
     "phase1Desc": "占い師があなたの状況を深く理解するために質問します",
     "premiumOnly": "パーソナル占いはプレミアム占い師のみ対応しています",
-    "startCards": "カードを引く",
-    "selectTarotistAndSpread": "占い師とスプレッドを選択してください",
+    "startChat": "対話を始める",
+    "startReading": "このスプレッドで占う",
+    "selectTarotistFirst": "先に占い師を選んでください",
+    "confirmSpreadTitle": "スプレッドを確認してください",
+    "confirmSpreadDesc": "占い師が推薦したスプレッドでよろしければ、このまま占いを始めましょう",
+    "confirmSpreadPrompt": "スプレッドを確認して占いを始めてください",
+    "readAgain": "もう一度占う",
+    "limitReached": "本日の占いは終了しました",
+    "sessionEndedLabel": "パーソナル占いセッションが終了しました",
+    "sessionEndedSubLabel": "またいつでもご相談ください",
     "remainingPersonal": "パーソナル残り{count}回"
   },
   "history": {

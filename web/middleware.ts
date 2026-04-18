@@ -19,9 +19,7 @@ export default function middleware(req: NextRequest) {
     pathname.startsWith("/delete-account") ||
     pathname.startsWith("/admin") ||           // 管理画面
     pathname.startsWith("/signin") ||          // 管理者サインイン
-    pathname.startsWith("/salon") ||           // アプリページ (locale なし)
-    pathname.startsWith("/simple") ||
-    pathname.startsWith("/reading") ||
+    pathname.startsWith("/simple") ||          // アプリページ (locale なし)
     pathname.startsWith("/personal") ||
     pathname.startsWith("/clara") ||
     pathname.startsWith("/history") ||
