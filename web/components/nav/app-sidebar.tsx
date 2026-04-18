@@ -19,7 +19,7 @@ import { History, Home, Sparkles, Star, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 const NAV_ITEMS = [
-  { key: "home" as const, icon: Home, path: "" },
+  { key: "home" as const, icon: Home, path: "salon" },
   { key: "history" as const, icon: History, path: "history" },
   { key: "tarotists" as const, icon: Star, path: "tarotists" },
   { key: "plans" as const, icon: Sparkles, path: "plans" },
@@ -39,7 +39,7 @@ export function AppSidebar() {
   const { data: session } = useSession();
   const { usage } = useClientStore();
 
-  const navigate = (path: string) => router.push(path === "" ? "/" : `/${path}`);
+  const navigate = (path: string) => router.push(`/${path}`);
 
   const planCode = usage?.plan?.code ?? "GUEST";
   const planBadgeClass = PLAN_BADGE_CLASS[planCode] ?? PLAN_BADGE_CLASS.GUEST;
@@ -72,10 +72,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => {
-                const isActive =
-                  item.path === ""
-                    ? pathname === "/" || pathname === ""
-                    : pathname.includes(`/${item.path}`);
+                const isActive = pathname.includes(`/${item.path}`);
                 return (
                   <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton

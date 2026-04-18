@@ -133,7 +133,7 @@ export default function PersonalPage() {
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500">{t("selectTarotistAndSpread")}</p>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
           {tCommon("backToHome")}
@@ -147,7 +147,7 @@ export default function PersonalPage() {
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500">{t("premiumOnly")}</p>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
           {tCommon("backToHome")}
@@ -166,7 +166,7 @@ export default function PersonalPage() {
         <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100">
           <div className="flex items-center justify-between mb-3">
             <Link
-              href="/"
+              href="/salon"
               onClick={() => resetSession()}
               className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
             >
@@ -258,7 +258,7 @@ export default function PersonalPage() {
         {/* ヘッダー */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
           <Link
-            href="/"
+            href="/salon"
             onClick={() => resetSession()}
             className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
           >
