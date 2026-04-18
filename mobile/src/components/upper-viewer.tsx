@@ -2,6 +2,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
@@ -9,8 +10,6 @@ import { getCardImagePath } from "../lib/utils/salon";
 import CarouselView from "./carousel-view";
 import GridView from "./grid-view";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
-
-const CARD_ASPECT = 300 / 527;
 
 interface UpperViewerProps {
   claraMode?: boolean;

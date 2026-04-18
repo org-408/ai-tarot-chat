@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { CARD_ASPECT } from "../../lib/constants";
 
 interface ShuffleDialogProps {
   isOpen: boolean;
@@ -109,7 +110,7 @@ export const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
             {/* カードの山 */}
             <div
               className="relative"
-              style={{ width: "180px", height: "316px" }}
+              style={{ width: "180px", height: `${Math.round(180 / CARD_ASPECT)}px` }}
             >
               {Array.from({ length: cardCount }).map((_, index) => {
                 const randomPos = getRandomPosition();
@@ -149,7 +150,7 @@ export const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
                   >
                     <div
                       className="w-full h-full rounded-lg shadow-2xl overflow-hidden border-2 border-purple-300/30"
-                      style={{ aspectRatio: "300/527" }}
+                      style={{ aspectRatio: `${CARD_ASPECT}` }}
                     >
                       <img
                         src={cardBackPath}

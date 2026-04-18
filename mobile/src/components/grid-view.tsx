@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { getCardImagePath } from "../lib/utils/salon";
-
-const CARD_ASPECT = 300 / 527;
 
 interface GridViewProps {
   spread: Spread;

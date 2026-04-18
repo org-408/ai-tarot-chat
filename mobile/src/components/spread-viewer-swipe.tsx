@@ -1,13 +1,12 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { getCardImagePath } from "../lib/utils/salon";
 import type { SpreadViewModeType } from "../types";
 import CarouselView from "./carousel-view";
 import GridView from "./grid-view";
-
-const CARD_ASPECT = 300 / 527;
 
 interface SpreadViewerProps {
   spread: Spread;

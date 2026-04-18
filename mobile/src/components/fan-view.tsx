@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
 import React from "react";
+import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, TarotCard } from "../../../shared/lib/types";
-
-const CARD_ASPECT = 300 / 527;
 
 const VIEW_HEIGHT_MAX = 300;
 

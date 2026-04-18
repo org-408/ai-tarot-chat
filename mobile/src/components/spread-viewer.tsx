@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, TarotCard } from "../../../shared/lib/types";
 
 interface SpreadViewerProps {
@@ -76,7 +77,6 @@ const SpreadViewer: React.FC<SpreadViewerProps> = ({ drawnCards }) => {
     className?: string;
   }
 
-  const CARD_ASPECT = 300 / 527;
   const GRID_CARD_HEIGHT = 60;
   const GRID_CARD_WIDTH =
     Math.round(GRID_CARD_HEIGHT * CARD_ASPECT * 100) / 100;
