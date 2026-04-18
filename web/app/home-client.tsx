@@ -1,17 +1,24 @@
 "use client";
 
+import { PurchaseLoadingOverlay } from "@shared/components/ui/purchase-loading-overlay";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import type { Reading } from "@shared/lib/types";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { History, Sparkles, Zap } from "lucide-react";
+
+const PLAN_POLL_INTERVAL_MS = 1000;
+const PLAN_POLL_MAX_ATTEMPTS = 10;
 
 export default function HomeClient() {
   const t = useTranslations("home");
   const tSalon = useTranslations("salon");
+  const tPlans = useTranslations("plans");
+  const router = useRouter();
 
   const { init: initMaster } = useMasterStore();
   const { refreshUsage, usage, readings, fetchReadings } = useClientStore();
@@ -28,7 +35,13 @@ export default function HomeClient() {
     setIsUpgrading(true);
     try {
       await purchase("PREMIUM");
-      await refreshUsage();
+      // プラン反映をポーリングで確認（RC webhook 遅延対策）
+      for (let i = 0; i < PLAN_POLL_MAX_ATTEMPTS; i++) {
+        await refreshUsage();
+        if (useClientStore.getState().usage?.plan?.code === "PREMIUM") break;
+        await new Promise((r) => setTimeout(r, PLAN_POLL_INTERVAL_MS));
+      }
+      router.push("/personal");
     } catch (e) {
       if (!isUserCancelled(e)) {
         window.location.href = "/plans";
@@ -48,6 +61,15 @@ export default function HomeClient() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {isUpgrading && (
+        <PurchaseLoadingOverlay
+          labels={{
+            title: tPlans("changingPlanTitle"),
+            line1: tPlans("changingPlanLine1"),
+            line2: tPlans("changingPlanLine2"),
+          }}
+        />
+      )}
       {/* タイトル */}
       <div>
         <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">

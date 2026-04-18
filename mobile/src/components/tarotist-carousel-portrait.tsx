@@ -337,7 +337,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                         >
                           {tarotist.provider !== "OFFLINE"
                             ? tarotist.plan?.name || "GUEST"
-                            : "オフライン"}
+                            : "いつでも"}
                         </div>
 
                         {/* アクティブインジケーター */}

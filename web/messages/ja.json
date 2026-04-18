@@ -180,7 +180,10 @@
     "features": "特典",
     "requiresAuth": "サインインが必要です",
     "checkoutError": "決済の開始に失敗しました",
-    "processing": "処理中..."
+    "processing": "処理中...",
+    "changingPlanTitle": "プラン変更中",
+    "changingPlanLine1": "プランの切り替えを行っています",
+    "changingPlanLine2": "このままお待ちください"
   },
   "settings": {
     "title": "設定",
@@ -223,7 +226,11 @@
     "locked": "プランが必要",
     "quality": "品質",
     "selectForReading": "この占い師で占う",
-    "noTarotists": "占い師が見つかりませんでした"
+    "noTarotists": "占い師が見つかりませんでした",
+    "alwaysAvailable": "いつでも",
+    "getReading": "占ってもらう",
+    "processing": "処理中...",
+    "upgradeToPlan": "{plan}にアップグレード"
   },
   "auth": {
     "signInTitle": "AI タロット占い",
