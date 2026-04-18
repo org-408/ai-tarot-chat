@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 function useKeyboardHeight() {
   const [height, setHeight] = useState(0);
@@ -42,26 +44,23 @@ export default function ReadingPage() {
 
   const { data: masterData, init: initMaster } = useMasterStore();
   const {
-    selectedTarotist,
-    selectedSpread,
-    selectedCategory,
+    quickTarotist: selectedTarotist,
+    quickSpread: selectedSpread,
+    quickCategory: selectedCategory,
     drawnCards,
     isRevealingCompleted,
     setDrawnCards,
     setIsRevealingCompleted,
+    resetSession,
   } = useSalonStore();
-  const { refreshUsage } = useClientStore();
+  const { refreshUsage, usage } = useClientStore();
 
   const [isReady, setIsReady] = useState(false);
 
-  // masterData が未初期化の場合に初期化（直接URLアクセス対策）
   useEffect(() => {
     initMaster();
   }, [initMaster]);
 
-  // カードを即座に引く（シャッフルアニメーションと並行）
-  // isOpen={drawnCards.length === 0} で制御するため、カードが決定したタイミングで
-  // アニメーションの現サイクル終了後に自動終了する（モバイルと同じ仕様）
   useEffect(() => {
     if (!masterData || !selectedSpread || drawnCards.length > 0) return;
     const cards = drawRandomCards(masterData, selectedSpread);
@@ -92,9 +91,7 @@ export default function ReadingPage() {
       token,
       isPersonal: false,
       isPhase2: false,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       tarotist: selectedTarotist!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       spread: selectedSpread!,
       category: selectedCategory ?? undefined,
       drawnCards,
@@ -115,11 +112,13 @@ export default function ReadingPage() {
           onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
-          {tCommon("backToSalon")}
+          {tCommon("backToHome")}
         </button>
       </div>
     );
   }
+
+  const remainingQuick = usage?.remainingReadings;
 
   const selectorContent = (
     <RevealPromptPanel
@@ -154,8 +153,25 @@ export default function ReadingPage() {
       />
 
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
+        {/* ヘッダー: 戻るボタン + 残り回数 */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
+          <Link
+            href="/salon"
+            onClick={() => resetSession()}
+            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            {tCommon("backToHome")}
+          </Link>
+          {remainingQuick !== undefined && (
+            <span className="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded-full">
+              {t("remainingQuick", { count: remainingQuick })}
+            </span>
+          )}
+        </div>
+
         {/* 上部: カードビューア */}
-        <div className="flex-shrink-0" style={{ height: "45vh" }}>
+        <div className="flex-shrink-0" style={{ height: "40vh" }}>
           {isReady && (
             <UpperViewer
               spread={selectedSpread}
@@ -169,12 +185,14 @@ export default function ReadingPage() {
           )}
         </div>
 
-        {/* 下部: チャット/セレクター */}
+        {/* 下部: カード操作 / チャット */}
         <div className="flex-1 overflow-hidden">
           <LowerViewer
             selectorContent={selectorContent}
             personalContent={personalContent}
-            defaultMode="personal"
+            defaultMode="selector"
+            selectorLabel={t("tabCards")}
+            personalLabel={t("tabChat")}
           />
         </div>
       </div>

@@ -2,49 +2,76 @@
 
 import type { DrawnCard, ReadingCategory, Spread, Tarotist } from "@shared/lib/types";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 interface SalonState {
-  // 選択状態
-  selectedTarotist: Tarotist | null;
-  selectedCategory: ReadingCategory | null;
-  selectedSpread: Spread | null;
-  customQuestion: string;
+  // クイック占い選択（永続化）
+  quickTarotist: Tarotist | null;
+  quickSpread: Spread | null;
+  quickCategory: ReadingCategory | null;
 
-  // セッション状態 (永続化しない)
+  // パーソナル占い選択（永続化）
+  personalTarotist: Tarotist | null;
+  personalSpread: Spread | null;
+  personalCategory: ReadingCategory | null;
+
+  // セッション状態（永続化しない）
   drawnCards: DrawnCard[];
   isRevealingCompleted: boolean;
   isPersonal: boolean;
 
   // Setters
-  setSelectedTarotist: (t: Tarotist | null) => void;
-  setSelectedCategory: (c: ReadingCategory | null) => void;
-  setSelectedSpread: (s: Spread | null) => void;
-  setCustomQuestion: (q: string) => void;
+  setQuickTarotist: (t: Tarotist | null) => void;
+  setQuickSpread: (s: Spread | null) => void;
+  setQuickCategory: (c: ReadingCategory | null) => void;
+  setPersonalTarotist: (t: Tarotist | null) => void;
+  setPersonalSpread: (s: Spread | null) => void;
+  setPersonalCategory: (c: ReadingCategory | null) => void;
   setDrawnCards: (cards: DrawnCard[]) => void;
   setIsRevealingCompleted: (v: boolean) => void;
   setIsPersonal: (v: boolean) => void;
-  reset: () => void;
+  resetSession: () => void;
 }
 
-const initialState = {
-  selectedTarotist: null,
-  selectedCategory: null,
-  selectedSpread: null,
-  customQuestion: "",
+const sessionInitial = {
   drawnCards: [],
   isRevealingCompleted: false,
   isPersonal: false,
 };
 
-export const useSalonStore = create<SalonState>((set) => ({
-  ...initialState,
+export const useSalonStore = create<SalonState>()(
+  persist(
+    (set) => ({
+      quickTarotist: null,
+      quickSpread: null,
+      quickCategory: null,
+      personalTarotist: null,
+      personalSpread: null,
+      personalCategory: null,
+      ...sessionInitial,
 
-  setSelectedTarotist: (t) => set({ selectedTarotist: t }),
-  setSelectedCategory: (c) => set({ selectedCategory: c }),
-  setSelectedSpread: (s) => set({ selectedSpread: s }),
-  setCustomQuestion: (q) => set({ customQuestion: q }),
-  setDrawnCards: (cards) => set({ drawnCards: cards }),
-  setIsRevealingCompleted: (v) => set({ isRevealingCompleted: v }),
-  setIsPersonal: (v) => set({ isPersonal: v }),
-  reset: () => set(initialState),
-}));
+      setQuickTarotist: (t) => set({ quickTarotist: t }),
+      setQuickSpread: (s) => set({ quickSpread: s }),
+      setQuickCategory: (c) => set({ quickCategory: c }),
+      setPersonalTarotist: (t) => set({ personalTarotist: t }),
+      setPersonalSpread: (s) => set({ personalSpread: s }),
+      setPersonalCategory: (c) => set({ personalCategory: c }),
+      setDrawnCards: (cards) => set({ drawnCards: cards }),
+      setIsRevealingCompleted: (v) => set({ isRevealingCompleted: v }),
+      setIsPersonal: (v) => set({ isPersonal: v }),
+      resetSession: () => set(sessionInitial),
+    }),
+    {
+      name: "salon-store",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        quickTarotist: state.quickTarotist,
+        quickSpread: state.quickSpread,
+        quickCategory: state.quickCategory,
+        personalTarotist: state.personalTarotist,
+        personalSpread: state.personalSpread,
+        personalCategory: state.personalCategory,
+      }),
+    }
+  )
+);

@@ -340,19 +340,22 @@ export class ClientService {
     clientId: string,
     take = 20,
     skip = 0
-  ): Promise<Reading[]> {
+  ): Promise<{ readings: Reading[]; total: number }> {
     const client = await clientRepository.getClientById(clientId);
     if (!client) throw new Error("Client not found");
 
     const plan = await planRepository.getPlanById(client.planId);
     if (!plan) throw new Error("Plan not found");
 
-    // プランに履歴機能がない場合はエラー
     if (!plan.hasHistory) {
-      throw new Error("History feature not available in current plan");
+      return { readings: [], total: 0 };
     }
 
-    return await readingRepository.getReadingsByClientId(clientId, take, skip);
+    const [readings, total] = await Promise.all([
+      readingRepository.getReadingsByClientId(clientId, take, skip),
+      readingRepository.countByClientId(clientId),
+    ]);
+    return { readings, total };
   }
 
   async consumeReadingQuota(params: {

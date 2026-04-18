@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 type Phase = "chat" | "reading";
 
@@ -39,21 +41,22 @@ function useKeyboardHeight() {
 export default function PersonalPage() {
   const t = useTranslations("personal");
   const tCommon = useTranslations("common");
+  const tReading = useTranslations("reading");
   const router = useRouter();
   const { data: session } = useSession();
 
   const { data: masterData, init: initMaster } = useMasterStore();
   const {
-    selectedTarotist,
-    selectedSpread,
+    personalTarotist: selectedTarotist,
+    personalSpread: selectedSpread,
     drawnCards,
     isRevealingCompleted,
     setDrawnCards,
     setIsRevealingCompleted,
+    resetSession,
   } = useSalonStore();
-  const { refreshUsage } = useClientStore();
+  const { refreshUsage, usage } = useClientStore();
 
-  // masterData が未初期化の場合に初期化（直接URLアクセス対策）
   useEffect(() => {
     initMaster();
   }, [initMaster]);
@@ -65,16 +68,13 @@ export default function PersonalPage() {
 
   const token = (session as { accessToken?: string })?.accessToken ?? "";
 
-  // Phase 1: 質問収集チャット
   const phase1Session = useChatSession(
     {
       api: "/api/readings/personal",
       token,
       isPersonal: true,
       isPhase2: false,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       tarotist: selectedTarotist!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       spread: selectedSpread!,
       drawnCards: [],
       isRevealingCompleted: false,
@@ -83,7 +83,6 @@ export default function PersonalPage() {
       onRefreshUsage: refreshUsage,
       onRefreshToken: async () => token,
       onUnlock: () => {
-        // Phase1 完了時: メッセージを保存してシャッフル開始
         setPhase1Messages(phase1Session.messages);
         setShuffleOpen(true);
       },
@@ -91,16 +90,13 @@ export default function PersonalPage() {
     }
   );
 
-  // Phase 2: カード + 解釈チャット
   const phase2Session = useChatSession(
     {
       api: "/api/readings/personal",
       token,
       isPersonal: true,
       isPhase2: true,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       tarotist: selectedTarotist!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       spread: selectedSpread!,
       drawnCards,
       isRevealingCompleted,
@@ -113,8 +109,6 @@ export default function PersonalPage() {
     }
   );
 
-  // shuffleOpen=true になった直後にカードを引き、isOpen=false を送信
-  // → ShuffleDialog は現サイクル終了後に自動終了する（モバイルと同仕様）
   useEffect(() => {
     if (!shuffleOpen || drawnCards.length > 0 || !masterData || !selectedSpread) return;
     const cards = drawRandomCards(masterData, selectedSpread);
@@ -142,7 +136,7 @@ export default function PersonalPage() {
           onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
-          {tCommon("backToSalon")}
+          {tCommon("backToHome")}
         </button>
       </div>
     );
@@ -156,18 +150,35 @@ export default function PersonalPage() {
           onClick={() => router.push("/salon")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
-          {tCommon("backToSalon")}
+          {tCommon("backToHome")}
         </button>
       </div>
     );
   }
 
   const tarotistImageUrl = `/tarotists/${selectedTarotist.name}.png`;
+  const remainingPersonal = usage?.remainingPersonal;
 
   if (phase === "chat") {
     return (
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
-        <div className="flex-shrink-0 px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100">
+        {/* ヘッダー */}
+        <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100">
+          <div className="flex items-center justify-between mb-3">
+            <Link
+              href="/salon"
+              onClick={() => resetSession()}
+              className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+            >
+              <ArrowLeft size={16} />
+              {tCommon("backToHome")}
+            </Link>
+            {remainingPersonal !== undefined && (
+              <span className="text-xs bg-pink-50 text-pink-700 px-3 py-1 rounded-full border border-pink-100">
+                {t("remainingPersonal", { count: remainingPersonal })}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-4">
             <div className="relative flex-shrink-0 w-16 h-16 rounded-full overflow-hidden border-2 border-purple-200 shadow-md">
               <img
@@ -244,13 +255,25 @@ export default function PersonalPage() {
         cardBackPath="/cards/back.png"
       />
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
-        <div className="flex-shrink-0" style={{ height: "45vh" }}>
+        {/* ヘッダー */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
+          <Link
+            href="/salon"
+            onClick={() => resetSession()}
+            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            {tCommon("backToHome")}
+          </Link>
+          <span className="text-xs text-pink-600 font-medium">{t("phase2Title")}</span>
+        </div>
+        <div className="flex-shrink-0" style={{ height: "40vh" }}>
           <UpperViewer
             spread={selectedSpread}
             drawnCards={drawnCards}
             isRevealingCompleted={isRevealingCompleted}
             onRevealingCompleted={() => setIsRevealingCompleted(true)}
-            tarotistImageUrl={`/tarotists/${selectedTarotist.name}.png`}
+            tarotistImageUrl={tarotistImageUrl}
             tarotistName={selectedTarotist.name}
             cardBasePath="/cards"
           />
@@ -260,6 +283,8 @@ export default function PersonalPage() {
             selectorContent={selectorContent}
             personalContent={personalContent}
             defaultMode="personal"
+            selectorLabel={tReading("tabCards")}
+            personalLabel={tReading("tabChat")}
           />
         </div>
       </div>

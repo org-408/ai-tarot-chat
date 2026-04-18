@@ -167,6 +167,10 @@ export class ReadingRepository extends BaseRepository {
     })) as unknown as Reading | null;
   }
 
+  async countByClientId(clientId: string): Promise<number> {
+    return this.db.reading.count({ where: { clientId } });
+  }
+
   async getReadingsByClientId(
     clientId: string,
     take = 20,

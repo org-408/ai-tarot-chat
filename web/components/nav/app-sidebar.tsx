@@ -15,11 +15,11 @@ import {
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { History, Sparkles, Star, User, Wand2 } from "lucide-react";
+import { History, Home, Sparkles, Star, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 const NAV_ITEMS = [
-  { key: "salon" as const, icon: Wand2, path: "salon" },
+  { key: "home" as const, icon: Home, path: "salon" },
   { key: "history" as const, icon: History, path: "history" },
   { key: "tarotists" as const, icon: Star, path: "tarotists" },
   { key: "plans" as const, icon: Sparkles, path: "plans" },

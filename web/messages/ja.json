@@ -14,7 +14,8 @@
     "signInWithGoogle": "Google でサインイン",
     "continueAsGuest": "ゲストとして続ける",
     "or": "または",
-    "backToSalon": "サロンに戻る"
+    "backToSalon": "サロンに戻る",
+    "backToHome": "ホームに戻る"
   },
   "chat": {
     "placeholder": "メッセージを入力...",
@@ -24,6 +25,7 @@
     "done": "占いが完了しました"
   },
   "nav": {
+    "home": "ホーム",
     "salon": "サロン",
     "history": "占い履歴",
     "tarotists": "占い師",
@@ -60,6 +62,18 @@
     "upgradeDesc": "より多くの占い回数・プレミアム占い師・パーソナル占いが利用できます",
     "upgradeAction": "プランを見る"
   },
+  "home": {
+    "title": "AI タロット占い",
+    "subtitle": "今日のお告げを聞いてみましょう",
+    "quickTitle": "クイック占い",
+    "quickDesc": "カードを引いてAIが即座に解釈します",
+    "personalTitle": "パーソナル占い",
+    "personalDesc": "あなたの悩みをAIと対話しながら深く占います",
+    "personalLocked": "プレミアムプランでご利用いただけます",
+    "startPersonal": "パーソナル占いを始める",
+    "recentHistory": "最近の占い",
+    "viewAll": "すべて見る"
+  },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",
     "startPersonal": "パーソナル占いを始める",
@@ -70,7 +84,10 @@
     "revealAll": "すべてのカードをめくる",
     "allRevealed": "すべてのカードが開きました",
     "title": "タロット占い",
-    "loadError": "占いの読み込みに失敗しました"
+    "loadError": "占いの読み込みに失敗しました",
+    "tabCards": "カード",
+    "tabChat": "チャット",
+    "remainingQuick": "残り{count}回"
   },
   "personal": {
     "title": "パーソナル占い",
@@ -79,7 +96,8 @@
     "phase1Desc": "占い師があなたの状況を深く理解するために質問します",
     "premiumOnly": "パーソナル占いはプレミアム占い師のみ対応しています",
     "startCards": "カードを引く",
-    "selectTarotistAndSpread": "占い師とスプレッドを選択してください"
+    "selectTarotistAndSpread": "占い師とスプレッドを選択してください",
+    "remainingPersonal": "パーソナル残り{count}回"
   },
   "history": {
     "title": "占い履歴",
