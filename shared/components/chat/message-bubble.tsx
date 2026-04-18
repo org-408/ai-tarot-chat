@@ -4,6 +4,8 @@ import { MessageContent } from "./message-content";
 interface MessageBubbleProps {
   message: UIMessage;
   isStreaming?: boolean;
+  tarotistImageUrl?: string;
+  tarotistIcon?: string;
 }
 
 /**
@@ -13,6 +15,8 @@ interface MessageBubbleProps {
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isStreaming = false,
+  tarotistImageUrl,
+  tarotistIcon,
 }) => {
   const textContent = message.parts
     .filter((part) => part.type === "text")
@@ -32,8 +36,25 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   }
 
   return (
-    <div className="flex justify-start">
-      <MessageContent content={textContent} isStreaming={isStreaming} />
+    <div className="flex justify-start gap-2">
+      {/* 占い師アバター */}
+      <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-purple-200 shadow-sm mt-1">
+        {tarotistImageUrl ? (
+          <img
+            src={tarotistImageUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "center 20%" }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-purple-700 to-indigo-800 flex items-center justify-center text-xs text-white">
+            {tarotistIcon ?? "✦"}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <MessageContent content={textContent} isStreaming={isStreaming} />
+      </div>
     </div>
   );
 };

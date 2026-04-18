@@ -49,6 +49,10 @@ interface ChatViewProps {
   shouldShowBackButton?: boolean;
   backButtonLabel?: string;
 
+  /** 占い師アバター */
+  tarotistImageUrl?: string;
+  tarotistIcon?: string;
+
   /** フッタースロット（RevealPromptPanel 等を差し込む用） */
   footer?: React.ReactNode;
 
@@ -89,6 +93,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
   footer,
   sessionEndedLabel = "パーソナル占いセッションが終了しました",
   sessionEndedSubLabel = "またいつでもご相談ください",
+  tarotistImageUrl,
+  tarotistIcon,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -127,6 +133,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
               message.role === "assistant" &&
               status === "streaming"
             }
+            tarotistImageUrl={tarotistImageUrl}
+            tarotistIcon={tarotistIcon}
           />
         ))}
 
@@ -182,39 +190,45 @@ export const ChatView: React.FC<ChatViewProps> = ({
       {footer}
 
       {/* Back button */}
-      {shouldShowBackButton && !isSaving && !error && (
-        <motion.button
-          key="back-button"
-          initial={{ opacity: 0, scale: 0.7, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.7, y: 40 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="absolute bottom-6 right-6 z-50 shadow-xl rounded-full px-5 py-3 font-bold flex items-center gap-2 bg-white/20 text-purple-600"
-          onClick={onBack}
-        >
-          <motion.span
-            animate={{ opacity: [1, 0.5, 1] }}
-            transition={{ repeat: Infinity, duration: 3 }}
+      <AnimatePresence>
+        {shouldShowBackButton && !isSaving && !error && (
+          <motion.button
+            key="back-button"
+            initial={{ opacity: 0, scale: 0.7, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.7, y: 40 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="absolute bottom-6 right-6 z-50 shadow-xl rounded-full px-5 py-3 font-bold flex items-center gap-2 bg-white/20 text-purple-600"
+            onClick={onBack}
           >
-            {backButtonLabel}
-          </motion.span>
-        </motion.button>
-      )}
+            <motion.span
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+            >
+              {backButtonLabel}
+            </motion.span>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Phase2 完了バナー */}
-      {isPhase2 && phase2Stage === "done" && !error && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="px-4 py-5 bg-gray-50 border-t border-gray-200 text-center"
-        >
-          <div className="text-sm font-medium text-gray-600 mb-1">
-            {sessionEndedLabel}
-          </div>
-          <div className="text-xs text-gray-400">{sessionEndedSubLabel}</div>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {isPhase2 && phase2Stage === "done" && !error && (
+          <motion.div
+            key="session-ended"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ type: "spring", stiffness: 260, damping: 28 }}
+            className="px-4 py-5 bg-gradient-to-r from-purple-50 to-pink-50 border-t border-purple-100 text-center"
+          >
+            <div className="text-sm font-medium text-purple-700 mb-1">
+              {sessionEndedLabel}
+            </div>
+            <div className="text-xs text-gray-400">{sessionEndedSubLabel}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Phase2: 残り質問数バナー + 入力 */}
       {showPhase2Input && questionsRemaining !== undefined && (
@@ -279,10 +293,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
         />
       )}
 
-      {/* 保存失敗トースト */}
-      <AnimatePresence>
-        {/* saveError は useChatSession 側で管理。必要に応じて props 追加 */}
-      </AnimatePresence>
     </div>
   );
 };

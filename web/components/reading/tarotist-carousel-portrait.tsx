@@ -209,13 +209,15 @@ export function TarotistCarouselPortrait({
             />
 
             {/* 画像エラー時フォールバック */}
-            <div
-              className="absolute inset-0 flex items-center justify-center text-8xl pointer-events-none"
-              style={{ background: `linear-gradient(135deg, ${primary}cc, ${accent}99)` }}
-              aria-hidden="true"
-            >
-              {selectedTarotist.icon}
-            </div>
+            {imgErrors.has(selectedTarotist.id) && (
+              <div
+                className="absolute inset-0 flex items-center justify-center text-8xl pointer-events-none"
+                style={{ background: `linear-gradient(135deg, ${primary}cc, ${accent}99)` }}
+                aria-hidden="true"
+              >
+                {selectedTarotist.icon}
+              </div>
+            )}
 
             {/* 下部グラデーション */}
             <div
@@ -316,13 +318,14 @@ export function TarotistCarouselPortrait({
                         border: `3px solid ${secondary}`,
                       }}
                     >
-                      {/* 画像エリア（上 60%） */}
-                      <div className="relative flex-[6] overflow-hidden">
+                      {/* 画像エリア（上 70%） */}
+                      <div className="relative flex-[7] overflow-hidden">
                         <img
                           src={`/tarotists/${tarotist.name}.png`}
                           alt={tarotist.name}
-                          className="w-full h-full object-cover object-top"
+                          className="w-full h-full object-cover"
                           style={{
+                            objectPosition: "center 20%",
                             filter: available ? "none" : "grayscale(70%) brightness(0.7)",
                           }}
                           onError={() =>
@@ -354,8 +357,8 @@ export function TarotistCarouselPortrait({
                         )}
                       </div>
 
-                      {/* 情報エリア（下 40%） */}
-                      <div className="relative flex-[4] p-4 flex flex-col justify-between">
+                      {/* 情報エリア（下 30%） */}
+                      <div className="relative flex-[3] p-4 flex flex-col justify-between">
                         <div className="text-center mb-2">
                           <div className="flex items-center justify-center gap-2 mb-1">
                             <span className="text-2xl drop-shadow">{tarotist.icon}</span>

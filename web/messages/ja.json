@@ -54,7 +54,11 @@
     "remainingToday": "今日はあと{count}回",
     "loading": "読み込み中...",
     "personalPremiumRequired": "パーソナル占いはプレミアムプランでご利用いただけます",
-    "selectTarotistFirst": "先に占い師を選んでください"
+    "selectTarotistFirst": "先に占い師を選んでください",
+    "upgradeGuestTitle": "無料登録でもっと楽しもう",
+    "upgradeTitle": "上位プランにアップグレード",
+    "upgradeDesc": "より多くの占い回数・プレミアム占い師・パーソナル占いが利用できます",
+    "upgradeAction": "プランを見る"
   },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",
