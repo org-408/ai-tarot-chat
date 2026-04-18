@@ -42,7 +42,7 @@ export default function HomeClient() {
                 {tSalon("remainingQuick", { count: remainingQuick })}
               </span>
             )}
-            {remainingPersonal !== undefined && canPersonal && (
+            {remainingPersonal !== undefined && (
               <span className="bg-pink-50 text-pink-700 px-3 py-1 rounded-full border border-pink-100">
                 {tSalon("remainingPersonal", { count: remainingPersonal })}
               </span>
