@@ -6,7 +6,7 @@ import type { Reading } from "@shared/lib/types";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect } from "react";
-import { Zap, Sparkles, BookOpen, History } from "lucide-react";
+import { Zap, Sparkles, Lock, History } from "lucide-react";
 
 export default function HomeClient() {
   const t = useTranslations("home");
@@ -51,8 +51,8 @@ export default function HomeClient() {
         )}
       </div>
 
-      {/* 3つのCTA */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 2つのCTA */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* クイック占い */}
         <Link
           href="/simple"
@@ -76,31 +76,19 @@ export default function HomeClient() {
 
         {/* パーソナル占い */}
         <Link
-          href={canPersonal ? "/personal" : "/plans"}
-          className={`group relative rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3 ${
-            canPersonal ? "bg-white" : "bg-gray-50"
-          }`}
+          href="/personal"
+          className="group relative bg-white rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3"
         >
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              canPersonal ? "bg-pink-100" : "bg-gray-200"
-            }`}
-          >
-            <Sparkles
-              className={`w-5 h-5 ${canPersonal ? "text-pink-600" : "text-gray-400"}`}
-            />
+          <div className="flex items-center gap-2 w-10 h-10">
+            <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-pink-600" />
+            </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2
-                className={`font-bold ${canPersonal ? "text-gray-900" : "text-gray-400"}`}
-              >
-                {t("personalTitle")}
-              </h2>
+              <h2 className="font-bold text-gray-900">{t("personalTitle")}</h2>
               {!canPersonal && (
-                <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
-                  {tSalon("personalPremiumRequired")}
-                </span>
+                <Lock className="w-3.5 h-3.5 text-gray-400" />
               )}
             </div>
             <p className="text-xs text-gray-500 mt-0.5">{t("personalDesc")}</p>
@@ -114,27 +102,10 @@ export default function HomeClient() {
               </span>
             )
           ) : (
-            <span className="text-sm font-semibold text-purple-500 group-hover:underline">
-              {tSalon("upgradeAction")} →
+            <span className="text-sm font-semibold text-gray-400">
+              {tSalon("personalPremiumRequired")}
             </span>
           )}
-        </Link>
-
-        {/* いつでも占い (Clara) */}
-        <Link
-          href="/clara"
-          className="group relative bg-white rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3"
-        >
-          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-indigo-600" />
-          </div>
-          <div>
-            <h2 className="font-bold text-gray-900">{t("claraTitle")}</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{t("claraDesc")}</p>
-          </div>
-          <span className="text-sm font-semibold text-indigo-600 group-hover:underline">
-            {t("startClara")} →
-          </span>
         </Link>
       </div>
 
