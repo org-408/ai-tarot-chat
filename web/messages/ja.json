@@ -194,7 +194,7 @@
     "quickReading": "クイック占い",
     "personalReading": "パーソナル占い",
     "usageCount": "{used} / {max} 回",
-    "unlimited": "無制限",
+    "unavailable": "利用不可",
     "usageResetNote": "日本時間 0:00 にリセット",
     "subscription": "サブスクリプション",
     "manageSubscription": "Stripe でサブスクリプションを管理",

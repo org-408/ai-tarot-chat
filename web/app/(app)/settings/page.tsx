@@ -87,20 +87,20 @@ function UsageRow({
   max: number;
   t: ReturnType<typeof useTranslations>;
 }) {
-  const isUnlimited = max === 0;
-  const pct = isUnlimited ? 0 : Math.min(100, (used / max) * 100);
+  const isUnavailable = max === 0;
+  const pct = isUnavailable ? 0 : Math.min(100, (used / max) * 100);
 
   return (
     <div className="px-4 py-3">
       <div className="flex justify-between text-sm mb-1.5">
         <span className="text-foreground">{label}</span>
         <span className="text-muted-foreground text-xs">
-          {isUnlimited
-            ? t("unlimited")
+          {isUnavailable
+            ? t("unavailable")
             : t("usageCount", { used, max })}
         </span>
       </div>
-      {!isUnlimited && (
+      {!isUnavailable && (
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-primary rounded-full transition-all"

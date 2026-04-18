@@ -113,7 +113,7 @@
     "quickReading": "Quick Reading",
     "personalReading": "Personal Reading",
     "usageCount": "{used} / {max}",
-    "unlimited": "Unlimited",
+    "unavailable": "Unavailable",
     "usageResetNote": "Resets at midnight JST",
     "subscription": "Subscription",
     "manageSubscription": "Manage via Stripe",
