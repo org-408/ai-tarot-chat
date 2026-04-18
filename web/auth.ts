@@ -49,20 +49,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       logWithContext("info", "Sign-in attempt", { user });
-      if (!user.id) return true;
-      logWithContext("info", "User signed in", { user });
-      // Client が存在しなければ FREE プランで新規作成、存在すれば lastLoginAt を更新
-      const client = await clientService.getOrCreateForWebUser({
-        userId: user.id,
-        email: user.email ?? undefined,
-        name: user.name ?? undefined,
-        image: user.image ?? undefined,
-        provider: account?.provider ?? "google",
-      });
-      await clientService.updateLoginDate(client.id);
-      logWithContext("info", "Client ready", { clientId: client.id });
       return true;
     },
 
@@ -75,6 +63,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // ユーザーIDを保存（初回ログイン時のみ）
       if (user?.id) {
         token.id = user.id;
+      }
+
+      // 初回ログイン時（account がある = OAuth callback 直後）に Client を作成・更新
+      // signIn コールバックではなくここで行う理由:
+      // Auth.js v5 では signIn コールバックが createUser (Prisma Adapter) より前に
+      // 呼ばれる場合があり、その時点では User レコードが存在しない
+      if (account && user?.id) {
+        try {
+          logWithContext("info", "User signed in", { userId: user.id });
+          const client = await clientService.getOrCreateForWebUser({
+            userId: user.id,
+            email: user.email ?? undefined,
+            name: user.name ?? undefined,
+            image: user.image ?? undefined,
+            provider: account.provider,
+          });
+          await clientService.updateLoginDate(client.id);
+          logWithContext("info", "Client ready", { clientId: client.id });
+        } catch (error) {
+          logWithContext("error", "Failed to create/update client in jwt callback", {
+            error: error instanceof Error ? error.message : String(error),
+            userId: user.id,
+          });
+        }
       }
 
       // ロールは毎回DBから取得（キャッシュによる権限昇格を防ぐ）
