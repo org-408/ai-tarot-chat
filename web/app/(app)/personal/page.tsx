@@ -1,24 +1,26 @@
 "use client";
 
+import { CategorySpreadSelector } from "@shared/components/reading/category-spread-selector";
 import { ChatView } from "@shared/components/chat/chat-view";
 import { LowerViewer } from "@shared/components/tarot/lower-viewer";
 import { RevealPromptPanel } from "@shared/components/reading/reveal-prompt-panel";
 import { ShuffleDialog } from "@shared/components/reading/shuffle-dialog";
 import { UpperViewer } from "@shared/components/tarot/upper-viewer";
+import { TarotistCarouselPortrait } from "@/components/reading/tarotist-carousel-portrait";
 import { useChatSession } from "@shared/hooks/use-chat-session";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type { UIMessage } from "@ai-sdk/react";
-import { useRouter } from "next/navigation";
+import type { ReadingCategory, Spread, Tarotist } from "@shared/lib/types";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-type Phase = "chat" | "reading";
+type Phase = "selection" | "chat" | "reading";
 
 function useKeyboardHeight() {
   const [height, setHeight] = useState(0);
@@ -41,16 +43,18 @@ function useKeyboardHeight() {
 export default function PersonalPage() {
   const t = useTranslations("personal");
   const tCommon = useTranslations("common");
+  const tSalon = useTranslations("salon");
   const tReading = useTranslations("reading");
-  const router = useRouter();
   const { data: session } = useSession();
 
-  const { data: masterData, init: initMaster } = useMasterStore();
+  const { data: masterData, init: initMaster, tarotists, categories, spreads, isLoading } =
+    useMasterStore();
   const {
     personalTarotist: selectedTarotist,
     personalSpread: selectedSpread,
     drawnCards,
     isRevealingCompleted,
+    setPersonalTarotist,
     setDrawnCards,
     setIsRevealingCompleted,
     resetSession,
@@ -59,14 +63,18 @@ export default function PersonalPage() {
 
   useEffect(() => {
     initMaster();
-  }, [initMaster]);
+    refreshUsage();
+  }, [initMaster, refreshUsage]);
 
-  const [phase, setPhase] = useState<Phase>("chat");
+  const [phase, setPhase] = useState<Phase>("selection");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
   const [shuffleOpen, setShuffleOpen] = useState(false);
   const keyboardHeight = useKeyboardHeight();
 
   const token = (session as { accessToken?: string })?.accessToken ?? "";
+
+  const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
+  const premiumTarotists = tarotists.filter((tarotist: Tarotist) => tarotist.plan?.code === "PREMIUM");
 
   const phase1Session = useChatSession(
     {
@@ -121,6 +129,16 @@ export default function PersonalPage() {
     setPhase("reading");
   };
 
+  const handleStartPersonal = ({
+    category,
+    spread,
+  }: { category: ReadingCategory | null; spread: Spread }) => {
+    useSalonStore.getState().setPersonalSpread(spread);
+    useSalonStore.getState().setPersonalCategory(category);
+    resetSession();
+    setPhase("chat");
+  };
+
   const readingRef = useRef(false);
   useEffect(() => {
     if (phase === "reading" && drawnCards.length > 0 && !readingRef.current) {
@@ -128,51 +146,126 @@ export default function PersonalPage() {
     }
   }, [phase, drawnCards]);
 
+  const remainingPersonal = usage?.remainingPersonal;
+  const currentPlan = usage?.plan as Parameters<typeof CategorySpreadSelector>[0]["currentPlan"];
+
+  // ── Phase 0: タロティスト + スプレッド選択 ──
+  if (phase === "selection") {
+    return (
+      <div className="max-w-5xl mx-auto space-y-4">
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            {tCommon("backToHome")}
+          </Link>
+          {remainingPersonal !== undefined && canPersonal && (
+            <span className="text-xs bg-pink-50 text-pink-700 px-3 py-1 rounded-full border border-pink-100">
+              {tSalon("remainingPersonal", { count: remainingPersonal })}
+            </span>
+          )}
+        </div>
+
+        <h1 className="text-xl font-bold text-gray-800">{t("title")}</h1>
+
+        {!canPersonal ? (
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-400 mb-4">{t("premiumOnly")}</p>
+            <Link
+              href="/plans"
+              className="inline-block px-5 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 shadow hover:opacity-90 transition-opacity"
+            >
+              {tSalon("upgradeAction")}
+            </Link>
+          </div>
+        ) : isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="w-8 h-8 rounded-full border-4 border-purple-300 border-t-purple-600 animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* プレミアム占い師選択 */}
+            <div
+              className="bg-white/50 rounded-2xl border shadow-sm overflow-hidden"
+              style={{ height: "600px" }}
+            >
+              <TarotistCarouselPortrait
+                tarotists={premiumTarotists}
+                selectedTarotist={selectedTarotist}
+                onSelect={setPersonalTarotist}
+                currentPlan={usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"] ?? null}
+              />
+            </div>
+
+            {/* スプレッド選択 */}
+            <div className="bg-white rounded-2xl shadow-sm border p-4">
+              <CategorySpreadSelector
+                categories={categories}
+                spreads={spreads}
+                currentPlan={currentPlan}
+                isPersonal={true}
+                remainingCount={remainingPersonal}
+                disabled={!selectedTarotist}
+                onStartReading={handleStartPersonal}
+                labels={{
+                  selectSpreadPrompt: tSalon("selectSpread"),
+                  selectCategoryAndSpreadPrompt: tSalon("selectCategoryAndSpread"),
+                  categoryLabel: tSalon("categoryLabel"),
+                  spreadLabel: tSalon("spreadLabel"),
+                  selectPlaceholder: tSalon("selectPlaceholder"),
+                  categoryQuestion: tSalon("categoryQuestion"),
+                  spreadQuestion: tSalon("spreadQuestion"),
+                  spreadSubtitle: tSalon("spreadSubtitle"),
+                  startReading: t("startPersonal"),
+                  limitReached: tSalon("limitReached"),
+                  remainingText:
+                    remainingPersonal !== undefined && remainingPersonal > 0
+                      ? tSalon("remainingToday", { count: remainingPersonal })
+                      : undefined,
+                  disabledMessage: tSalon("selectTarotistFirst"),
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (!selectedSpread || !selectedTarotist) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500">{t("selectTarotistAndSpread")}</p>
         <button
-          onClick={() => router.push("/salon")}
+          onClick={() => setPhase("selection")}
           className="px-4 py-2 bg-purple-500 text-white rounded-lg"
         >
-          {tCommon("backToHome")}
-        </button>
-      </div>
-    );
-  }
-
-  if (selectedTarotist.plan?.code !== "PREMIUM") {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-gray-500">{t("premiumOnly")}</p>
-        <button
-          onClick={() => router.push("/salon")}
-          className="px-4 py-2 bg-purple-500 text-white rounded-lg"
-        >
-          {tCommon("backToHome")}
+          {tCommon("back")}
         </button>
       </div>
     );
   }
 
   const tarotistImageUrl = `/tarotists/${selectedTarotist.name}.png`;
-  const remainingPersonal = usage?.remainingPersonal;
 
+  // ── Phase 1: チャット ──
   if (phase === "chat") {
     return (
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         {/* ヘッダー */}
         <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100">
           <div className="flex items-center justify-between mb-3">
-            <Link
-              href="/salon"
-              onClick={() => resetSession()}
+            <button
+              type="button"
+              onClick={() => { resetSession(); setPhase("selection"); }}
               className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
             >
               <ArrowLeft size={16} />
-              {tCommon("backToHome")}
-            </Link>
+              {tCommon("back")}
+            </button>
             {remainingPersonal !== undefined && (
               <span className="text-xs bg-pink-50 text-pink-700 px-3 py-1 rounded-full border border-pink-100">
                 {t("remainingPersonal", { count: remainingPersonal })}
@@ -222,7 +315,7 @@ export default function PersonalPage() {
     );
   }
 
-  // Phase 2 (reading)
+  // ── Phase 2: リーディング ──
   const selectorContent = (
     <RevealPromptPanel
       isAllRevealed={isRevealingCompleted}
@@ -257,14 +350,14 @@ export default function PersonalPage() {
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         {/* ヘッダー */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
-          <Link
-            href="/salon"
-            onClick={() => resetSession()}
+          <button
+            type="button"
+            onClick={() => { resetSession(); setPhase("selection"); }}
             className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
           >
             <ArrowLeft size={16} />
-            {tCommon("backToHome")}
-          </Link>
+            {tCommon("back")}
+          </button>
           <span className="text-xs text-pink-600 font-medium">{t("phase2Title")}</span>
         </div>
         <div className="flex-shrink-0" style={{ height: "40vh" }}>

@@ -27,6 +27,9 @@
   "nav": {
     "home": "ホーム",
     "salon": "サロン",
+    "quick": "クイック占い",
+    "personal": "パーソナル占い",
+    "clara": "いつでも占い",
     "history": "占い履歴",
     "tarotists": "占い師",
     "settings": "設定",
@@ -70,9 +73,30 @@
     "personalTitle": "パーソナル占い",
     "personalDesc": "あなたの悩みをAIと対話しながら深く占います",
     "personalLocked": "プレミアムプランでご利用いただけます",
+    "startQuick": "クイック占いを始める",
     "startPersonal": "パーソナル占いを始める",
+    "claraTitle": "いつでも占い",
+    "claraDesc": "カードの意味を参照しながらオフラインで占えます",
+    "startClara": "始める",
     "recentHistory": "最近の占い",
     "viewAll": "すべて見る"
+  },
+  "simple": {
+    "title": "クイック占い",
+    "aiReading": "AIがリーディングしています...",
+    "readAgain": "もう一度占う",
+    "limitReached": "本日の占いは終了しました"
+  },
+  "clara": {
+    "title": "いつでも占い",
+    "desc": "AIを使わず、カードの意味を参照しながら自分で占えます",
+    "phase2Title": "カードを引きました",
+    "startReading": "占いを始める",
+    "readAgain": "もう一度占う",
+    "tapToReveal": "タップしてカードを開く",
+    "upright": "正位置",
+    "reversed": "逆位置",
+    "keywords": "キーワード"
   },
   "reading": {
     "shufflePrompt": "カードをシャッフルしてください",

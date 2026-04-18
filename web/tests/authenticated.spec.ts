@@ -46,12 +46,19 @@ async function assertAuthenticatedPage(page: Page, path: string) {
 // ─────────────────────────────────────────────────────────
 
 test.describe("サービスページ（認証済み）", () => {
-  test("/salon: タロティスト・スプレッド選択UIが表示される", async ({
-    page,
-  }) => {
-    await assertAuthenticatedPage(page, "/salon");
-    // タロティスト選択セクションが存在する
+  test("/simple: クイック占いUIが表示される", async ({ page }) => {
+    await assertAuthenticatedPage(page, "/simple");
     await expect(page.locator("h1, h2").first()).toBeVisible();
+  });
+
+  test("/personal: パーソナル占いUIが表示される", async ({ page }) => {
+    await assertAuthenticatedPage(page, "/personal");
+    await expect(page.locator("h1, h2").first()).toBeVisible();
+  });
+
+  test("/clara: いつでも占いUIが表示される", async ({ page }) => {
+    await assertAuthenticatedPage(page, "/clara");
+    await expect(page.locator("h1").first()).toBeVisible();
   });
 
   test("/history: 履歴ページが表示される", async ({ page }) => {
@@ -70,39 +77,22 @@ test.describe("サービスページ（認証済み）", () => {
     await assertAuthenticatedPage(page, "/settings");
   });
 
-  // /reading・/personal は salon store の事前セットアップが必要なためスキップ
-  // （スプレッド未選択の場合はエラー表示になるが、それ自体が正常な挙動）
-  test("/reading: 未選択エラー表示または選択画面（TypeError なし）", async ({
-    page,
-  }) => {
-    const getErrors = collectTypeErrors(page);
-    await page.goto("/reading");
-    await page.waitForLoadState("networkidle");
-    expect(page.url()).not.toContain("/auth/signin");
-    expect(getErrors()).toHaveLength(0);
-  });
 });
 
 // ─────────────────────────────────────────────────────────
-// スマートエントリ: 認証済みは /salon へリダイレクト
+// スマートエントリ: 認証済みはホームダッシュボードを表示
 // ─────────────────────────────────────────────────────────
 
 test.describe("スマートエントリ（認証済み）", () => {
-  test("/: 認証済みなら /salon にリダイレクトされる", async ({ page }) => {
+  test("/: 認証済みならホームダッシュボードが表示される", async ({ page }) => {
+    const getErrors = collectTypeErrors(page);
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    expect(page.url()).toContain("/salon");
-  });
-
-  test("マーケティング LP: 認証済みなら /salon にリダイレクトされる", async ({
-    page,
-  }) => {
-    await page.goto("/ja");
-    await page.waitForLoadState("networkidle");
-
-    // LP は認証済みユーザーを /salon に飛ばす
-    expect(page.url()).toContain("/salon");
+    // /auth/signin にリダイレクトされないこと
+    expect(page.url()).not.toContain("/auth/signin");
+    // /salon にリダイレクトされないこと（/ のまま）
+    expect(page.url()).not.toContain("/salon");
+    expect(getErrors()).toHaveLength(0);
   });
 });
-

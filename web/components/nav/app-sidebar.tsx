@@ -15,15 +15,8 @@ import {
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { History, Home, Sparkles, Star, User } from "lucide-react";
+import { BookOpen, History, Home, Sparkles, Star, Zap, Crown } from "lucide-react";
 import { useSession } from "next-auth/react";
-
-const NAV_ITEMS = [
-  { key: "home" as const, icon: Home, path: "salon" },
-  { key: "history" as const, icon: History, path: "history" },
-  { key: "tarotists" as const, icon: Star, path: "tarotists" },
-  { key: "plans" as const, icon: Sparkles, path: "plans" },
-] as const;
 
 const PLAN_BADGE_CLASS: Record<string, string> = {
   PREMIUM: "bg-amber-100 text-amber-700",
@@ -39,12 +32,24 @@ export function AppSidebar() {
   const { data: session } = useSession();
   const { usage } = useClientStore();
 
-  const navigate = (path: string) => router.push(`/${path}`);
+  const navigate = (path: string) => router.push(path ? `/${path}` : "/");
 
   const planCode = usage?.plan?.code ?? "GUEST";
   const planBadgeClass = PLAN_BADGE_CLASS[planCode] ?? PLAN_BADGE_CLASS.GUEST;
   const displayName =
     session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "";
+
+  const canPersonal = usage == null || (usage.plan?.hasPersonal ?? false);
+
+  const NAV_ITEMS = [
+    { key: "home" as const, icon: Home, path: "", disabled: false },
+    { key: "quick" as const, icon: Zap, path: "simple", disabled: false },
+    { key: "personal" as const, icon: Sparkles, path: "personal", disabled: !canPersonal },
+    { key: "clara" as const, icon: BookOpen, path: "clara", disabled: false },
+    { key: "tarotists" as const, icon: Star, path: "tarotists", disabled: false },
+    { key: "plans" as const, icon: Crown, path: "plans", disabled: false },
+    { key: "history" as const, icon: History, path: "history", disabled: false },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -72,13 +77,19 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {NAV_ITEMS.map((item) => {
-                const isActive = pathname.includes(`/${item.path}`);
+                const isActive =
+                  item.path === ""
+                    ? pathname === "/"
+                    : pathname.startsWith(`/${item.path}`);
+
                 return (
                   <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton
-                      onClick={() => navigate(item.path)}
+                      onClick={item.disabled ? undefined : () => navigate(item.path)}
                       isActive={isActive}
                       tooltip={t(item.key)}
+                      disabled={item.disabled}
+                      className={item.disabled ? "opacity-40 cursor-not-allowed" : undefined}
                     >
                       <item.icon />
                       <span>{t(item.key)}</span>
@@ -106,7 +117,9 @@ export function AppSidebar() {
                 className="w-8 h-8 rounded-full"
               />
             ) : (
-              <User className="w-4 h-4 text-purple-600" />
+              <span className="text-purple-600 text-sm font-bold">
+                {displayName.charAt(0).toUpperCase() || "U"}
+              </span>
             )}
           </div>
           <div className="group-data-[collapsible=icon]:hidden flex-1 min-w-0 text-left">
