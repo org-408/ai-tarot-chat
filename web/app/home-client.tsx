@@ -45,7 +45,6 @@ export default function HomeClient() {
   const remainingPersonal = usage?.remainingPersonal;
   const maxQuick = plan?.maxReadings;
   const maxPersonal = plan?.maxPersonal;
-  const isPremium = plan?.code === "PREMIUM" || plan?.code === "MASTER";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -178,7 +177,7 @@ export default function HomeClient() {
               disabled={isUpgrading}
               className="text-sm font-semibold text-purple-600 hover:underline disabled:opacity-50 text-left"
             >
-              {isUpgrading ? t("upgrading") : `${t("upgradeToStart")} →`}
+              {isUpgrading ? t("upgrading") : `${t("upgradeToPremium")} →`}
             </button>
           )}
         </div>
@@ -264,27 +263,6 @@ export default function HomeClient() {
         </section>
       )}
 
-      {/* アップグレード案内 (非プレミアム時のみ) */}
-      {usage && !isPremium && (
-        <section className="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-5 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <p className="font-semibold text-purple-800 text-sm">
-              {plan?.code === "GUEST"
-                ? tSalon("upgradeGuestTitle")
-                : tSalon("upgradeTitle")}
-            </p>
-            <p className="text-xs text-purple-600 mt-0.5">
-              {tSalon("upgradeDesc")}
-            </p>
-          </div>
-          <Link
-            href="/plans"
-            className="shrink-0 px-5 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 shadow hover:opacity-90 transition-opacity"
-          >
-            {tSalon("upgradeAction")}
-          </Link>
-        </section>
-      )}
     </div>
   );
 }
