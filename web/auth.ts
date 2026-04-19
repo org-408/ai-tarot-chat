@@ -16,15 +16,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           prompt: "select_account",
         },
       },
-      // Google は email を検証済みで返すため、既存 User (別プロバイダ or
-      // 同プロバイダの再サインイン) との自動リンクを許可。
-      // これがないと getUserByAccount が null かつ getUserByEmail が
-      // User を返したときに OAuthAccountNotLinked で固まる。
-      allowDangerousEmailAccountLinking: true,
     }),
-    Apple({
-      allowDangerousEmailAccountLinking: true,
-    }),
+    Apple,
     // E2E テスト専用 Credentials プロバイダー
     // OAuth フローなしでサインインフロー（jwt コールバック → Client 作成）を検証できる
     ...(process.env.E2E_MOCK_AUTH === "true"
@@ -113,101 +106,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-    // ──────────────────────────────────────────────────────────
-    // signIn — OAuth フロー成功時に User + Account を明示的に upsert
-    //
-    // Auth.js v5 beta + JWT strategy + PrismaAdapter の組み合わせでは
-    // OAuth プロバイダー経由でも `adapter.createUser` / `linkAccount` が
-    // 無音で skip されるケースが確認されている（Prisma 7 driver adapter
-    // との相性 / beta バージョン間の不整合）。
-    //
-    // この callback で明示的に `user.upsert` / `account.upsert` して
-    // DB に確実に書き込み、後続の jwt callback で `user.id` が DB の
-    // User.id を指すように保証する。
-    // ──────────────────────────────────────────────────────────
-    async signIn({ user, account, profile }) {
-      logWithContext("info", "[signIn callback] received", {
-        email: user?.email,
-        provider: account?.provider,
-        hasUserId: !!user?.id,
-      });
-
-      // credentials (E2E) は authorize 内で upsert 済みなのでスキップ
-      if (!account || account.provider === "credentials") return true;
-      if (!user?.email) {
-        logWithContext("warn", "[signIn] OAuth user has no email — cannot upsert");
-        return true;
-      }
-
-      try {
-        // User と Account を 1 トランザクションで upsert
-        // (片方だけ成功する中途半端な状態を防ぐ)
-        const dbUserId = await prisma.$transaction(async (tx) => {
-          const dbUser = await tx.user.upsert({
-            where: { email: user.email! },
-            create: {
-              email: user.email!,
-              name: user.name ?? (profile?.name as string | undefined) ?? null,
-              image: user.image ?? (profile?.picture as string | undefined) ?? null,
-              emailVerified: new Date(),
-            },
-            update: {
-              name: user.name ?? undefined,
-              image: user.image ?? undefined,
-            },
-          });
-
-          await tx.account.upsert({
-            where: {
-              provider_providerAccountId: {
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-              },
-            },
-            create: {
-              userId: dbUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              access_token: account.access_token as string | null,
-              refresh_token: account.refresh_token as string | null,
-              expires_at: account.expires_at as number | null,
-              token_type: account.token_type as string | null,
-              scope: account.scope as string | null,
-              id_token: account.id_token as string | null,
-              session_state: account.session_state as string | null,
-            },
-            update: {
-              access_token: account.access_token as string | null,
-              refresh_token: account.refresh_token as string | null,
-              expires_at: account.expires_at as number | null,
-              id_token: account.id_token as string | null,
-            },
-          });
-
-          return dbUser.id;
-        });
-
-        // Adapter が User を作っていない場合に備え、DB の User.id を
-        // user オブジェクトに書き戻す (jwt callback の user.id に伝播する)
-        user.id = dbUserId;
-
-        logWithContext("info", "[signIn] User + Account upserted (tx)", {
-          userId: dbUserId,
-          provider: account.provider,
-        });
-
-        return true;
-      } catch (error) {
-        logWithContext("error", "[signIn] Failed to upsert User/Account", {
-          error: error instanceof Error ? error.message : String(error),
-          email: user.email,
-          provider: account.provider,
-        });
-        return false;
-      }
-    },
-
     async jwt({ token, account, user }) {
       // プロバイダー情報を保存
       if (account?.provider) {
@@ -220,8 +118,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // 初回ログイン時（user が渡される = サインイン直後）に Client を作成・更新
-      // signIn callback で User + Account は upsert 済みなので、ここで
-      // `getOrCreateForWebUser` を呼ぶと必ず Client が作られる。
       if (user?.id) {
         try {
           logWithContext("info", "User signed in", { userId: user.id });
