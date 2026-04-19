@@ -285,7 +285,15 @@ export default function SimplePage() {
     setIsLocked,
     resetSession,
   } = useSalonStore();
-  const { refreshUsage, usage } = useClientStore();
+  const { refreshUsage, usage, clearReadings } = useClientStore();
+
+  // サーバーが Reading を保存したタイミングで呼ぶ。利用回数を再取得しつつ、
+  // 履歴キャッシュも無効化することで、次に /history を開いたときに古いキャッシュが
+  // 一瞬見えてから差し替わる中途半端な表示を防ぐ。
+  const handleReadingSaved = useCallback(async () => {
+    clearReadings();
+    await refreshUsage();
+  }, [clearReadings, refreshUsage]);
 
   const [phase, setPhase] = useState<Phase>("selection");
   const [readingKey, setReadingKey] = useState(0);
@@ -355,7 +363,7 @@ export default function SimplePage() {
         remainingQuick={remainingQuick}
         onReadAgain={handleReadAgain}
         onHeaderBack={handleHeaderBack}
-        onRefreshUsage={refreshUsage}
+        onRefreshUsage={handleReadingSaved}
         labels={{
           backToHome: tCommon("backToHome"),
           remainingQuick:
