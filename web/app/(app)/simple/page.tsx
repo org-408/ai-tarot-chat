@@ -139,7 +139,7 @@ function SimpleReadingView({
   return (
     <>
       <ShuffleDialog
-        isOpen={drawnCards.length === 0 || !isShuffleDone}
+        isOpen={drawnCards.length === 0}
         onComplete={handleShuffleComplete}
         cardBackPath="/cards/back.png"
       />
