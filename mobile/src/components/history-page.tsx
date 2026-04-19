@@ -187,7 +187,8 @@ const TABS: { id: FilterTab; label: string }[] = [
 ];
 
 const HistoryPage: React.FC = () => {
-  const { readings, fetchReadings, error, currentPlan } = useClient();
+  const { readings, readingsTotal, fetchReadings, error, currentPlan } =
+    useClient();
   const { decks } = useMaster();
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [selectedTarotistProfile, setSelectedTarotistProfile] =
@@ -195,7 +196,6 @@ const HistoryPage: React.FC = () => {
   const [tab, setTab] = useState<FilterTab>("all");
   const [openYears, setOpenYears] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const initialLoadDone = useRef(false);
 
   const cardMap = new Map<string, TarotCard>(
@@ -203,6 +203,7 @@ const HistoryPage: React.FC = () => {
   );
 
   const all = dedup(readings);
+  const hasMore = all.length < readingsTotal;
 
   const filtered =
     tab === "all"
@@ -220,11 +221,9 @@ const HistoryPage: React.FC = () => {
 
   const loadMore = async () => {
     if (isLoading || !hasMore) return;
-    const before = all.length;
     setIsLoading(true);
     await fetchReadings({ next: true });
     setIsLoading(false);
-    if (all.length - before < TAKE) setHasMore(false);
   };
 
   const grouped = groupByYearMonth(filtered);
