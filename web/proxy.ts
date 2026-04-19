@@ -1,10 +1,18 @@
+import { SignJWT } from "jose";
+import { getToken } from "next-auth/jwt";
 import createMiddleware from "next-intl/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
 
-export default function proxy(req: NextRequest) {
+const APP_TOKEN_COOKIE = "access_token";
+const APP_JWT_ALG = "HS256";
+const APP_JWT_TTL = "12h";
+const APP_JWT_MAX_AGE_SEC = 60 * 60 * 12;
+const NEXTAUTH_SESSION_COOKIE = "__Secure-authjs.session-token";
+
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // API / auth / admin / 静的アセット / アプリページは intl ルーティングをスキップ
@@ -54,7 +62,65 @@ export default function proxy(req: NextRequest) {
     return new NextResponse(null, { status: 204, headers: res.headers });
   }
 
+  // Web ユーザー向け access_token 自動発行
+  // NextAuth セッションはあるが access_token cookie が未発行の場合に発行する。
+  // これによりサインイン直後の最初の API コールから認証が通り、
+  // GUEST → FREE の反映遅延レースを避けられる。
+  await issueAccessTokenIfNeeded(req, res);
+
   return res;
+}
+
+async function issueAccessTokenIfNeeded(req: NextRequest, res: NextResponse) {
+  if (req.cookies.get(APP_TOKEN_COOKIE)) return;
+
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) return;
+
+  let nextAuthToken;
+  try {
+    nextAuthToken = await getToken({
+      req,
+      secret,
+      cookieName: NEXTAUTH_SESSION_COOKIE,
+    });
+  } catch {
+    // セッショントークンが壊れている / 署名不一致などは静かに無視
+    return;
+  }
+
+  if (!nextAuthToken?.id || !nextAuthToken?.clientId) return;
+
+  const userId = nextAuthToken.id as string;
+  const clientId = nextAuthToken.clientId as string;
+  const provider = (nextAuthToken.provider as string | undefined) ?? "google";
+  const email = (nextAuthToken.email as string | undefined) ?? undefined;
+  const name = (nextAuthToken.name as string | undefined) ?? undefined;
+  const image = (nextAuthToken.picture as string | undefined) ?? undefined;
+
+  try {
+    const appJwt = await new SignJWT({
+      t: "app",
+      deviceId: `web:${userId}`,
+      clientId,
+      provider,
+      user: { id: userId, email, name, image },
+    })
+      .setProtectedHeader({ alg: APP_JWT_ALG })
+      .setIssuedAt()
+      .setExpirationTime(APP_JWT_TTL)
+      .sign(new TextEncoder().encode(secret));
+
+    res.cookies.set(APP_TOKEN_COOKIE, appJwt, {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: APP_JWT_MAX_AGE_SEC,
+      sameSite: "lax",
+    });
+  } catch (error) {
+    console.warn("[proxy] Failed to issue access_token:", error);
+  }
 }
 
 export const config = {

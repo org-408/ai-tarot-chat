@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { WebSessionInitializer } from "@/components/auth/web-session-initializer";
 import { AppSidebar } from "@/components/nav/app-sidebar";
 import { UsagePoller } from "@/components/providers/usage-poller";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -26,7 +25,6 @@ export default async function RootPage() {
     <NextIntlClientProvider locale={locale} messages={messages}>
       <TooltipProvider>
         <SidebarProvider>
-          <WebSessionInitializer />
           <UsagePoller />
           <AppSidebar />
           <SidebarInset>

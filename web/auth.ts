@@ -129,6 +129,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             provider: account?.provider ?? "google",
           });
           await clientService.updateLoginDate(client.id);
+          token.clientId = client.id;
           logWithContext("info", "Client ready", { clientId: client.id });
         } catch (error) {
           logWithContext("error", "Failed to create/update client in jwt callback", {
@@ -139,12 +140,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // ロールは毎回DBから取得（キャッシュによる権限昇格を防ぐ）
+      // clientId が欠けている既存セッションはここで補完する（middleware の
+      // access_token 自動発行で必要）
       if (token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true },
+          select: {
+            role: true,
+            client: { select: { id: true, deletedAt: true } },
+          },
         });
         token.role = dbUser?.role ?? "USER";
+        if (!token.clientId && dbUser?.client && !dbUser.client.deletedAt) {
+          token.clientId = dbUser.client.id;
+        }
       }
 
       return token;

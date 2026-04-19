@@ -583,9 +583,8 @@ export class AuthService {
    * セッションが有効で clientId が取得できる場合のみ返す。
    *
    * Client が未作成の場合は `getOrCreateForWebUser` で作成または既存ゲスト
-   * Client にリンクする (サインイン直後のレース条件: WebSessionInitializer
-   * の POST /api/auth/web-session が完走する前に /api/clients/usage が
-   * 飛ぶケースへの防御)。
+   * Client にリンクする (middleware の access_token 自動発行が何らかの理由
+   * で失敗したケースへの防御)。
    */
   private async verifyNextAuthSession(
     _request: NextRequest
