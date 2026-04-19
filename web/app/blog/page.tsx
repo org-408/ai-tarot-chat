@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   description: "タロット占いの使い方、カードの意味、AI占いの活用法などを解説するAriadneの公式ブログ。",
 };
 
+// ビルド時の prerender を避ける（CI では blog_posts テーブルが未作成）。
+// admin からの revalidatePath("/blog") で更新するので dynamic で問題ない。
+export const dynamic = "force-dynamic";
+
 export default async function BlogListPage() {
   const posts = await blogPostRepository.findPublished({ limit: 20 });
 

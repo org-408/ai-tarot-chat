@@ -4,6 +4,9 @@ import Link from "next/link";
 import { blogPostRepository } from "@/lib/server/repositories/blog-post";
 import { BlogPostStatus } from "@/lib/generated/prisma/client";
 
+// generateStaticParams を入れた際に CI の DB 未作成でビルドが落ちるのを防ぐ。
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
