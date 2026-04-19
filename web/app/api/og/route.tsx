@@ -30,14 +30,24 @@ function getCardImageDataUrl(cardName: string): string {
 let cachedFont: ArrayBuffer | undefined;
 let cachedScriptFont: ArrayBuffer | undefined;
 
+async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 3000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchGoogleFont(cssUrl: string): Promise<ArrayBuffer | undefined> {
   try {
-    const css = await fetch(cssUrl, {
+    const css = await fetchWithTimeout(cssUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1)" },
     }).then((r) => r.text());
     const fontUrl = css.match(/src: url\(([^)]+)\) format/)?.[1];
     if (!fontUrl) return undefined;
-    return await fetch(fontUrl).then((r) => r.arrayBuffer());
+    return await fetchWithTimeout(fontUrl).then((r) => r.arrayBuffer());
   } catch {
     return undefined;
   }
@@ -91,14 +101,14 @@ export async function GET() {
           }}
         >
           {/* タイトル */}
-          <div style={{ display: "flex", alignItems: "baseline", lineHeight: 1.1, marginBottom: 22 }}>
+          <div style={{ display: "flex", alignItems: "center", lineHeight: 1.1, marginBottom: 22 }}>
             <span
               style={{
-                fontSize: 72,
+                fontSize: 64,
                 fontWeight: 400,
                 color: "#87CEEB",
-                fontFamily: scriptFontData ? "MonteCarlo, cursive" : "cursive",
-                marginRight: 8,
+                fontFamily: scriptFontData ? "MonteCarlo" : "sans-serif",
+                marginRight: 10,
               }}
             >
               Ariadne
