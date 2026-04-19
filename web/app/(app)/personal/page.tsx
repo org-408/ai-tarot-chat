@@ -13,7 +13,7 @@ import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type { UIMessage } from "@ai-sdk/react";
 import type { ReadingCategory, Spread, Tarotist } from "@shared/lib/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -61,12 +61,22 @@ export default function PersonalPage() {
     setIsRevealingCompleted,
     resetSession,
   } = useSalonStore();
-  const { refreshUsage, usage } = useClientStore();
+  const { refreshUsage, usage, clearReadings } = useClientStore();
 
   useEffect(() => {
     initMaster();
     refreshUsage();
   }, [initMaster, refreshUsage]);
+
+  // サーバーが Reading を保存したタイミングで呼ぶ。利用回数を再取得しつつ、
+  // 履歴キャッシュも無効化することで、次に /history を開いたときに古いキャッシュが
+  // 一瞬見えてから差し替わる中途半端な表示を防ぐ。
+  // Phase1 のコールバックは shared hook 内で (!isPersonal || isPhase2) により
+  // 呼ばれないため、Phase1 に渡しても無害。
+  const handleReadingSaved = useCallback(async () => {
+    clearReadings();
+    await refreshUsage();
+  }, [clearReadings, refreshUsage]);
 
   const [phase, setPhase] = useState<Phase>("tarotist");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
@@ -96,7 +106,7 @@ export default function PersonalPage() {
       isRevealingCompleted: false,
     },
     {
-      onRefreshUsage: refreshUsage,
+      onRefreshUsage: handleReadingSaved,
       onRefreshToken: async () => token,
       onUnlock: () => {},
       onMessagesChange: setPhase1Messages,
@@ -127,7 +137,7 @@ export default function PersonalPage() {
       initialMessages: phase1Messages,
     },
     {
-      onRefreshUsage: refreshUsage,
+      onRefreshUsage: handleReadingSaved,
       onRefreshToken: async () => token,
       onUnlock: () => {},
     },
