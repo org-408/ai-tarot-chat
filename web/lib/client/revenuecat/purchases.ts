@@ -39,7 +39,15 @@ export async function getCustomerInfo() {
 
 export async function getManagementURL(): Promise<string | null> {
   const info = await getCustomerInfo();
-  return info.managementURL ?? null;
+
+  // Web Billing (rc_billing) のサブスクリプションURLを優先。
+  // root の managementURL は課金元 store 次第で App Store / Play Store を返すため、
+  // Web 管理ポータル（pay.rev.cat/...）を確実に開くには per-subscription URL を使う。
+  const webBillingURL = Object.values(info.subscriptionsByProductIdentifier)
+    .find((s) => s.store === "rc_billing" && s.managementURL)
+    ?.managementURL;
+
+  return webBillingURL ?? info.managementURL ?? null;
 }
 
 // mobile の getEntitlementIdentifier() と対称
