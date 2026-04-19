@@ -168,8 +168,6 @@ function App() {
     isOffline,
     offlineMode,
     isChangingPlan,
-    isLoggingIn,
-    isLoggingOut,
     planChangeError,
     init,
     cleanup,
