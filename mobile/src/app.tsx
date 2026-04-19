@@ -13,7 +13,6 @@ import { useSalonStore } from "./lib/stores/salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import { showInterstitialAd } from "./lib/utils/admob";
 import { Http } from "./lib/utils/http";
-import { canUseTarotist } from "./lib/utils/salon";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
@@ -169,8 +168,6 @@ function App() {
     isOffline,
     offlineMode,
     isChangingPlan,
-    isLoggingIn,
-    isLoggingOut,
     planChangeError,
     init,
     cleanup,
@@ -259,37 +256,8 @@ function App() {
     }
   }, [planChangeError]);
 
-  // 🔥 【実行時】プラン変更時に選択中の占い師を自動ダウングレード
-  // ※ 起動時の補正は lifecycle.init() Step6 で実施済みのため、ここは実行中の変更のみ担当
-  // ※ isInitialized が false の間はスキップ（起動時は Step6 が担当）
-  // ※ isChangingPlan 中は中間状態で誤発火するためスキップ
-  // ※ isLoggingIn / isLoggingOut 中も RC の中間状態が混入するためスキップ
-  const { selectedTarotist, setSelectedTarotist } = useSalon();
-  useEffect(() => {
-    if (!isInitialized) return; // 起動時はスキップ（lifecycle.init() Step6 が担当）
-    if (isChangingPlan) return;
-    if (isLoggingIn || isLoggingOut) return; // ログイン・ログアウト中の中間状態を除外
-    if (!currentPlan || !selectedTarotist?.plan) return;
-    if (!canUseTarotist(selectedTarotist.plan, currentPlan)) {
-      // 現在のプランで使える最高ランクの占い師に自動切り替え
-      const available = masterData.tarotists
-        .filter((t) => t.plan && canUseTarotist(t.plan, currentPlan))
-        .sort((a, b) => (b.plan?.no ?? 0) - (a.plan?.no ?? 0));
-      if (available.length > 0) {
-        console.log(
-          `[App] プラン変更により占い師を自動切り替え: ${selectedTarotist.name} → ${available[0].name}`,
-        );
-        setSelectedTarotist(available[0]);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    currentPlan?.code,
-    isChangingPlan,
-    isInitialized,
-    isLoggingIn,
-    isLoggingOut,
-  ]);
+  // 🔥 選択中占い師（handleStartReading で OFFLINE 判定に使用）
+  const { selectedTarotist } = useSalon();
 
   // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
   useEffect(() => {
