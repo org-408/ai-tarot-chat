@@ -79,6 +79,9 @@ jobs:
         run: npm run build
 
       # E2E テスト用 DB セットアップ（認証済みテストで Plan/User が必要）
+      - name: Create .env for seed scripts
+        run: echo "DATABASE_URL=$DATABASE_URL" > .env
+
       - name: E2E DB setup (migrate + seed)
         run: |
           npx prisma migrate deploy
