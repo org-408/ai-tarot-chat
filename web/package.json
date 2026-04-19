@@ -16,6 +16,7 @@
     "db:master:production": "tsx --env-file=.env prisma/generate-master.ts",
     "db:admin-set": "tsx --env-file=.env prisma/set-admin.ts",
     "migrate:admin-users": "tsx --env-file=.env scripts/migrate-admin-users.ts",
+    "og:generate": "tsx scripts/generate-og-assets.ts",
     "ui:add": "npx shadcn@latest add ",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",

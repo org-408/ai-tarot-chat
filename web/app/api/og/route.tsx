@@ -10,7 +10,7 @@ const imageCache = new Map<string, string>();
 
 function getImageDataUrl(name: string): string {
   if (!imageCache.has(name)) {
-    const filePath = path.join(process.cwd(), "public", "tarotists", `${name}.png`);
+    const filePath = path.join(process.cwd(), "public", "og-assets", "tarotists", `${name}.png`);
     const buffer = readFileSync(filePath);
     imageCache.set(name, `data:image/png;base64,${buffer.toString("base64")}`);
   }
@@ -20,7 +20,7 @@ function getImageDataUrl(name: string): string {
 function getCardImageDataUrl(cardName: string): string {
   const cacheKey = `card_${cardName}`;
   if (!imageCache.has(cacheKey)) {
-    const filePath = path.join(process.cwd(), "public", "cards", `${cardName}.png`);
+    const filePath = path.join(process.cwd(), "public", "og-assets", "cards", `${cardName}.png`);
     const buffer = readFileSync(filePath);
     imageCache.set(cacheKey, `data:image/png;base64,${buffer.toString("base64")}`);
   }
