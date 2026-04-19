@@ -746,6 +746,19 @@ enum BlogPostStatus {
   ARCHIVED
 }
 
+enum BlogPostType {
+  TAROT_GUIDE      // タロット解説（カード意味・基礎）
+  TAROT_TIP        // タロット豆知識（長文）
+  APP_PROMO        // アプリ紹介記事
+  BUILD_IN_PUBLIC  // 開発進捗（ローンチ前）
+  MANUAL           // 手動投稿
+}
+
+enum BlogPostPhase {
+  PRE_LAUNCH  // ローンチ前
+  POST_LAUNCH // ローンチ後
+}
+
 model BlogPost {
   id               String         @id @default(cuid())
   title            String
@@ -756,7 +769,9 @@ model BlogPost {
   tags             String[]
   metaDescription  String?
   status           BlogPostStatus @default(DRAFT)
+  postType         BlogPostType   @default(MANUAL)
   isAuto           Boolean        @default(false)
+  prompt           String?        @db.Text
   scheduledAt      DateTime?
   publishedAt      DateTime?
   createdAt        DateTime       @default(now())
@@ -766,4 +781,13 @@ model BlogPost {
   @@index([slug])
   @@index([publishedAt])
   @@map("blog_posts")
+}
+
+model BlogPostConfig {
+  id              String        @id @default("singleton")
+  autoPostEnabled Boolean       @default(false)
+  phase           BlogPostPhase @default(POST_LAUNCH)
+  updatedAt       DateTime      @updatedAt
+
+  @@map("blog_post_config")
 }

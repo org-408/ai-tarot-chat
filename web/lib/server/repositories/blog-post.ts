@@ -1,4 +1,4 @@
-import { BlogPostStatus } from "@/lib/generated/prisma/client";
+import { BlogPostPhase, BlogPostStatus, BlogPostType } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export type BlogPostRow = {
@@ -11,7 +11,9 @@ export type BlogPostRow = {
   tags: string[];
   metaDescription: string | null;
   status: BlogPostStatus;
+  postType: BlogPostType;
   isAuto: boolean;
+  prompt: string | null;
   scheduledAt: Date | null;
   publishedAt: Date | null;
   createdAt: Date;
@@ -27,7 +29,9 @@ export type CreateBlogPostInput = {
   tags?: string[];
   metaDescription?: string;
   status?: BlogPostStatus;
+  postType?: BlogPostType;
   isAuto?: boolean;
+  prompt?: string;
   scheduledAt?: Date;
   publishedAt?: Date;
 };
@@ -41,6 +45,7 @@ export type UpdateBlogPostInput = Partial<{
   tags: string[];
   metaDescription: string | null;
   status: BlogPostStatus;
+  postType: BlogPostType;
   scheduledAt: Date | null;
   publishedAt: Date | null;
 }>;
@@ -94,6 +99,22 @@ class BlogPostRepository extends BaseRepository {
     });
   }
 
+  async hasTodayAutoPost(): Promise<boolean> {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    const count = await this.db.blogPost.count({
+      where: {
+        isAuto: true,
+        status: BlogPostStatus.PUBLISHED,
+        publishedAt: { gte: start, lte: end },
+      },
+    });
+    return count > 0;
+  }
+
   async create(data: CreateBlogPostInput): Promise<BlogPostRow> {
     return this.db.blogPost.create({
       data: {
@@ -105,7 +126,9 @@ class BlogPostRepository extends BaseRepository {
         tags: data.tags ?? [],
         metaDescription: data.metaDescription ?? null,
         status: data.status ?? BlogPostStatus.DRAFT,
+        postType: data.postType ?? BlogPostType.MANUAL,
         isAuto: data.isAuto ?? false,
+        prompt: data.prompt ?? null,
         scheduledAt: data.scheduledAt ?? null,
         publishedAt: data.publishedAt ?? null,
       },
@@ -129,3 +152,38 @@ class BlogPostRepository extends BaseRepository {
 }
 
 export const blogPostRepository = new BlogPostRepository();
+
+// ==========================================
+// BlogPostConfig (自動公開設定)
+// ==========================================
+
+class BlogPostConfigRepository extends BaseRepository {
+  async get(): Promise<{ autoPostEnabled: boolean; phase: BlogPostPhase }> {
+    const config = await this.db.blogPostConfig.findUnique({
+      where: { id: "singleton" },
+    });
+    return {
+      autoPostEnabled: config?.autoPostEnabled ?? false,
+      phase: config?.phase ?? BlogPostPhase.POST_LAUNCH,
+    };
+  }
+
+  async setAutoPostEnabled(enabled: boolean): Promise<void> {
+    await this.db.blogPostConfig.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", autoPostEnabled: enabled },
+      update: { autoPostEnabled: enabled },
+    });
+  }
+
+  async setPhase(phase: BlogPostPhase): Promise<void> {
+    await this.db.blogPostConfig.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", phase },
+      update: { phase },
+    });
+  }
+}
+
+export const blogPostConfigRepository = new BlogPostConfigRepository();
+export { BlogPostPhase };

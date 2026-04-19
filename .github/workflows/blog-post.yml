@@ -1,0 +1,35 @@
+name: Blog Auto Post
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 10:00 JST → 自動で1記事生成・公開
+  workflow_dispatch:
+    inputs:
+      type:
+        description: '記事タイプ (TAROT_GUIDE / TAROT_TIP / APP_PROMO / BUILD_IN_PUBLIC)'
+        required: false
+        default: ''
+
+jobs:
+  post:
+    name: Trigger blog auto post
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call blog post cron endpoint
+        run: |
+          BODY='{}'
+          if [ -n "${{ github.event.inputs.type }}" ]; then
+            BODY="{\"type\":\"${{ github.event.inputs.type }}\"}"
+          fi
+          STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "${{ secrets.APP_URL }}/api/cron/blog-posts" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY")
+          echo "HTTP Status: $STATUS"
+          echo "Response:"
+          cat /tmp/response.json
+          if [ "$STATUS" != "200" ]; then
+            echo "Error: Unexpected status code $STATUS"
+            exit 1
+          fi
