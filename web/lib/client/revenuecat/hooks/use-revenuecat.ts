@@ -39,9 +39,12 @@ export function useRevenuecat() {
 
   const openManagement = useCallback(async () => {
     const url = await getManagementURL();
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
+    if (!url) {
+      // URL が取れないケース（管理URLが未発行・クロスストア等）は呼び出し元で
+      // フォールバック（/plans 遷移など）できるよう例外を投げる。
+      throw new Error("management URL unavailable");
     }
+    window.open(url, "_blank", "noopener,noreferrer");
   }, []);
 
   const isUserCancelled = (e: unknown): boolean =>
