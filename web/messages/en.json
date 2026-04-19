@@ -121,7 +121,7 @@
     "unavailable": "Unavailable",
     "usageResetNote": "Resets at midnight JST",
     "subscription": "Subscription",
-    "manageSubscription": "Manage via Stripe",
+    "manageSubscription": "Manage Subscription",
     "manageSubscriptionDesc": "Cancel, invoices, payment methods",
     "portalLoading": "Opening portal...",
     "display": "Display",
