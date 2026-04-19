@@ -30,6 +30,7 @@ interface ClientState {
   // 占い履歴
   // ============================================
   readings: Reading[];
+  readingsTotal: number;
   take: number;
   skip: number;
 
@@ -91,6 +92,7 @@ export const useClientStore = create<ClientState>()(
       usage: null,
       lastFetchedDate: null,
       readings: [],
+      readingsTotal: 0,
       take: 20,
       skip: 0,
       error: null,
@@ -328,16 +330,21 @@ export const useClientStore = create<ClientState>()(
         });
 
         try {
-          const fetchedReadings = await clientService.getReadingHistory(
-            take,
-            skip
-          );
+          const { readings: fetchedReadings, total } =
+            await clientService.getReadingHistory(take, skip);
           logWithContext("info", "[ClientStore] Readings fetched", {
             count: fetchedReadings.length,
+            total,
           });
 
           const { readings } = get();
-          set({ readings: skip === 0 ? fetchedReadings : [...readings, ...fetchedReadings] });
+          set({
+            readings:
+              skip === 0
+                ? fetchedReadings
+                : [...readings, ...fetchedReadings],
+            readingsTotal: total,
+          });
         } catch (error) {
           logWithContext("error", "[ClientStore] Failed to fetch readings", {
             error: error instanceof Error ? error.message : String(error),
@@ -391,6 +398,23 @@ export const useClientStore = create<ClientState>()(
 
     {
       name: "client-storage",
+      version: 1,
+      // v1 移行: API レスポンス形式変更前の壊れた readings キャッシュをクリア
+      migrate: (persistedState: unknown, _version: number) => {
+        if (persistedState && typeof persistedState === "object") {
+          return {
+            ...(persistedState as Record<string, unknown>),
+            readings: [],
+            readingsTotal: 0,
+          };
+        }
+        return persistedState;
+      },
+      // readings は毎回サーバーから取得するため永続化しない
+      partialize: (state) => {
+        const { readings: _r, readingsTotal: _t, ...rest } = state;
+        return rest;
+      },
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
           const value = await storeRepository.get(name);

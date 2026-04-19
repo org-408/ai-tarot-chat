@@ -119,20 +119,24 @@ export class ClientService {
   /**
    * 占い履歴を取得する
    */
-  async getReadingHistory(take?: number, skip?: number): Promise<Reading[]> {
+  async getReadingHistory(
+    take?: number,
+    skip?: number
+  ): Promise<{ readings: Reading[]; total: number }> {
     logWithContext("info", "[ClientService] Fetching reading history", {
       take,
       skip,
     });
     try {
       const query = skip ? `?take=${take}&skip=${skip}` : `?take=${take}`;
-      const readings = await apiClient.get<Reading[]>(
+      const result = await apiClient.get<{ readings: Reading[]; total: number }>(
         `/api/clients/readings${query}`
       );
       logWithContext("info", "[ClientService] Reading history fetched", {
-        count: readings.length,
+        count: result.readings.length,
+        total: result.total,
       });
-      return readings;
+      return result;
     } catch (error) {
       logWithContext(
         "error",
