@@ -78,14 +78,18 @@ export function PendingWaiting({ email }: { email: string }) {
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full space-y-6">
         <div className="text-center space-y-2">
           <div className="text-5xl">⏳</div>
-          <h1 className="text-2xl font-bold text-slate-800">招待コードの有効期限切れ</h1>
+          <h1 className="text-2xl font-bold text-slate-800">管理者の承認待ち</h1>
           <p className="text-sm text-slate-500">
-            <span className="font-medium text-slate-700">{email}</span> の
-            <br />招待コードが見つからないか、期限が切れています
+            <span className="font-medium text-slate-700">{email}</span> は
+            <br />まだ管理者として有効化されていません
           </p>
         </div>
-        <div className="rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-sm px-4 py-3">
-          管理者に招待メールの再送を依頼してください。新しい 6 桁コードが届いたら、再度このページで入力できます。
+        <div className="rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-sm px-4 py-3 space-y-2">
+          <p>以下のいずれかで有効化されます:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>既存管理者から招待コード（6桁）を受け取って入力</li>
+            <li>既存管理者が DB 上で直接有効化</li>
+          </ul>
         </div>
       </div>
     </div>

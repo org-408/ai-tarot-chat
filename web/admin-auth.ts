@@ -1,7 +1,6 @@
 import { AdminPrismaAdapter } from "@/lib/server/admin-prisma-adapter";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { adminUserRepository } from "@/lib/server/repositories/admin-user";
-import { adminUserService } from "@/lib/server/services";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
@@ -58,16 +57,13 @@ const {
       logWithContext("info", "[AdminAuth] Sign-in attempt", { user });
       if (!user.email) return false;
 
-      // AdminUser テーブルに事前登録された email のみ許可。
-      // 初回管理者は DB に直接 INSERT、以降は /admin/users の招待フロー
-      // (sendInviteEmailAction → registerAdmin で AdminUser upsert) で追加する。
-      const isRegistered = await adminUserService.isRegistered(user.email);
-      if (!isRegistered) {
-        logWithContext("warn", "[AdminAuth] Sign-in rejected: not registered as admin", {
-          email: user.email,
-        });
-        return false;
-      }
+      // email さえあればサインイン自体は許可し、AdminUser 行を Adapter 経由で
+      // 自動作成する（activatedAt=null のまま）。管理画面への実アクセスは
+      // adminAuth() の activatedAt チェックでブロックされる。
+      //
+      // 有効化の2パターン:
+      //   A) 既存管理者が DB で activatedAt に現在時刻を直接セットする
+      //   B) /admin/users から招待コードを送付し、招待者が pending ページで入力する
       return true;
     },
 
