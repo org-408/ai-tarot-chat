@@ -28,34 +28,46 @@ function getCardImageDataUrl(cardName: string): string {
 }
 
 let cachedFont: ArrayBuffer | undefined;
+let cachedScriptFont: ArrayBuffer | undefined;
 
-async function loadJapaneseFont(): Promise<ArrayBuffer | undefined> {
-  if (cachedFont) return cachedFont;
+async function fetchGoogleFont(cssUrl: string): Promise<ArrayBuffer | undefined> {
   try {
-    const chars = "AIタロット占い人の本格的なリーディングを体験しよう種スプレッド";
-    const cssUrl = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(chars)}`;
     const css = await fetch(cssUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1)" },
     }).then((r) => r.text());
     const fontUrl = css.match(/src: url\(([^)]+)\) format/)?.[1];
     if (!fontUrl) return undefined;
-    cachedFont = await fetch(fontUrl).then((r) => r.arrayBuffer());
-    return cachedFont;
+    return await fetch(fontUrl).then((r) => r.arrayBuffer());
   } catch {
     return undefined;
   }
+}
+
+async function loadJapaneseFont(): Promise<ArrayBuffer | undefined> {
+  if (cachedFont) return cachedFont;
+  const chars = "AIタロット占い人の本格的なリーディングを体験しよう種スプレッド";
+  const cssUrl = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(chars)}`;
+  cachedFont = await fetchGoogleFont(cssUrl);
+  return cachedFont;
+}
+
+async function loadScriptFont(): Promise<ArrayBuffer | undefined> {
+  if (cachedScriptFont) return cachedScriptFont;
+  const cssUrl = `https://fonts.googleapis.com/css2?family=MonteCarlo&text=${encodeURIComponent("Ariadne")}`;
+  cachedScriptFont = await fetchGoogleFont(cssUrl);
+  return cachedScriptFont;
 }
 
 export async function GET() {
   const images = TAROTISTS.map(getImageDataUrl);
   const cardBackUrl = getCardImageDataUrl("back");
   const cardFaceUrl = getCardImageDataUrl("0_fool");
-  const fontData = await loadJapaneseFont();
+  const [fontData, scriptFontData] = await Promise.all([loadJapaneseFont(), loadScriptFont()]);
 
   type FontOption = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 };
-  const fonts: FontOption[] = fontData
-    ? [{ name: "NotoSansJP", data: fontData, weight: 700 }]
-    : [];
+  const fonts: FontOption[] = [];
+  if (fontData) fonts.push({ name: "NotoSansJP", data: fontData, weight: 700 });
+  if (scriptFontData) fonts.push({ name: "MonteCarlo", data: scriptFontData, weight: 400 });
 
   // 各キャラクター画像の幅・高さ (8人を横並び)
   const imgW = 112;
@@ -100,16 +112,20 @@ export async function GET() {
               style={{ position: "absolute", left: 34, bottom: 0, borderRadius: 6, objectFit: "cover",
                        boxShadow: "0 5px 14px rgba(0,0,0,0.7)" }} />
           </div>
-          <span
-            style={{
-              fontSize: 52,
-              fontWeight: 700,
-              color: "white",
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Ariadne - AIタロット占い
-          </span>
+          <div style={{ display: "flex", alignItems: "baseline", letterSpacing: "-0.5px" }}>
+            <span
+              style={{
+                fontSize: 72,
+                fontWeight: 400,
+                color: "#87CEEB",
+                fontFamily: scriptFontData ? "MonteCarlo, cursive" : "cursive",
+                marginRight: 8,
+              }}
+            >
+              Ariadne
+            </span>
+            <span style={{ fontSize: 52, fontWeight: 700, color: "white" }}>- AIタロット占い</span>
+          </div>
         </div>
 
         {/* サブテキスト */}
