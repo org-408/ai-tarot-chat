@@ -9,10 +9,14 @@ import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { PurchaseLoadingOverlay } from "@shared/components/ui/purchase-loading-overlay";
 
+type Mode = "carousel" | "portrait";
+
 interface TarotistCarouselPortraitProps {
   tarotists: Tarotist[];
   selectedTarotist: Tarotist | null;
   onSelect: (tarotist: Tarotist) => void;
+  /** mode 変化（占い師確定 / 変更要求）を親に通知 */
+  onModeChange?: (mode: Mode) => void;
   currentPlan?: Plan | null;
 }
 
@@ -24,12 +28,11 @@ const canUse = (tarotist: Tarotist, currentPlan: Plan | null | undefined): boole
 const renderStars = (quality: number | null | undefined) =>
   "⭐️".repeat(quality ?? 0);
 
-type Mode = "carousel" | "portrait";
-
 export function TarotistCarouselPortrait({
   tarotists,
   selectedTarotist,
   onSelect,
+  onModeChange,
   currentPlan,
 }: TarotistCarouselPortraitProps) {
   const tTarotist = useTranslations("tarotist");
@@ -41,6 +44,11 @@ export function TarotistCarouselPortrait({
   const [mode, setMode] = useState<Mode>(
     selectedTarotist ? "portrait" : "carousel",
   );
+
+  // マウント時の初期 mode と、mode 変化を親に通知
+  useEffect(() => {
+    onModeChange?.(mode);
+  }, [mode, onModeChange]);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "center",

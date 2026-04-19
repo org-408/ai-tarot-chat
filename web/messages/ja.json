@@ -15,7 +15,8 @@
     "continueAsGuest": "ゲストとして続ける",
     "or": "または",
     "backToSalon": "サロンに戻る",
-    "backToHome": "ホームに戻る"
+    "backToHome": "ホームに戻る",
+    "lockedDuringReading": "占い中は移動できません"
   },
   "chat": {
     "placeholder": "メッセージを入力...",

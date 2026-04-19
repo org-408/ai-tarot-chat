@@ -31,6 +31,9 @@ export const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
   const [isBackReady, setIsBackReady] = useState(false);
   const cycleCountRef = useRef(0);
   const isOpenRef = useRef(isOpen);
+  // 画像ロード完了前に isOpen が true→false と切り替わっても、一度でも
+  // true だったら開始する。image preload 完了が遅れるケースを救済。
+  const requestedRef = useRef(false);
 
   // 裏面画像を事前ロードして初回の「透明カード」状態を防ぐ
   useEffect(() => {
@@ -44,10 +47,12 @@ export const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
 
   useEffect(() => {
     isOpenRef.current = isOpen;
-    if (isOpen && isBackReady && !internalOpen) {
+    if (isOpen) requestedRef.current = true;
+    if (requestedRef.current && isBackReady && !internalOpen) {
       setInternalOpen(true);
       cycleCountRef.current = 0;
       setPhase("shuffle");
+      requestedRef.current = false;
     }
   }, [isOpen, isBackReady, internalOpen]);
 
