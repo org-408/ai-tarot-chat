@@ -37,7 +37,10 @@ export function TarotistCarouselPortrait({
   const { purchase, isUserCancelled } = useRevenuecat();
   const { refreshUsage } = useClientStore();
   const [upgrading, setUpgrading] = useState<string | null>(null);
-  const [mode, setMode] = useState<Mode>("carousel");
+  // 既に占い師が選択されていればポートレートモードで開く（モバイル同等）
+  const [mode, setMode] = useState<Mode>(
+    selectedTarotist ? "portrait" : "carousel",
+  );
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "center",
@@ -293,33 +296,24 @@ export function TarotistCarouselPortrait({
                       </div>
 
                       {/* 情報エリア（下 40%） */}
-                      <div className="relative flex-[4] p-4 flex flex-col justify-between">
+                      <div className="relative flex-[4] p-4 flex flex-col justify-between bg-white/95 backdrop-blur-sm">
                         <div className="text-center mb-2">
                           <div className="flex items-center justify-center gap-2 mb-1">
-                            <span className="text-2xl drop-shadow">{tarotist.icon}</span>
-                            <h3
-                              className="text-xl font-bold drop-shadow"
-                              style={{ color: accent, textShadow: "1px 1px 4px rgba(0,0,0,0.8)" }}
-                            >
+                            <span className="text-2xl">{tarotist.icon}</span>
+                            <h3 className="text-xl font-bold text-gray-900">
                               {tarotist.name}
                             </h3>
                           </div>
-                          <p
-                            className="text-xs font-semibold"
-                            style={{ color: accent, textShadow: "1px 1px 3px rgba(0,0,0,0.7)" }}
-                          >
+                          <p className="text-xs font-semibold text-gray-700">
                             {tarotist.title}
                           </p>
                         </div>
 
-                        <p
-                          className="text-center text-xs mb-2"
-                          style={{ color: accent, textShadow: "1px 1px 3px rgba(0,0,0,0.7)" }}
-                        >
+                        <p className="text-center text-xs mb-2 text-gray-700">
                           {tarotist.trait}
                         </p>
 
-                        <p className="text-center text-xs text-white/85 mb-2 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-center text-xs text-gray-800 mb-2 leading-relaxed whitespace-pre-wrap">
                           {tarotist.bio}
                         </p>
 
