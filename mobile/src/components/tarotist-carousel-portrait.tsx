@@ -13,7 +13,7 @@ import type { UserPlan } from "../types";
 interface TarotistCarouselPortraitProps {
   masterData: MasterData;
   currentPlan?: Plan;
-  onChangePlan?: (planCode: UserPlan) => void;
+  onChangePlan?: (planCode: UserPlan) => void | Promise<void>;
   isChangingPlan?: boolean;
   onClickTarotist?: (tarotist: Tarotist) => void;
   readonly?: boolean;
@@ -50,17 +50,6 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
       return !!tarotist;
     });
   }, [masterData, isPersonal]);
-
-  useEffect(() => {
-    console.log(
-      "[TarotistPortrait] availableTarotists or activeSelected changed",
-      availableTarotists,
-      activeSelected
-    );
-    if (availableTarotists.length > 0 && !activeSelected) {
-      setActiveSelected(availableTarotists[0]);
-    }
-  }, [availableTarotists, activeSelected, setActiveSelected]);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -133,13 +122,12 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   }
 
   // プラン変更処理
-  const handleChangePlan = (requiredPlan: UserPlan, tarotist: Tarotist) => {
+  const handleChangePlan = async (requiredPlan: UserPlan, tarotist: Tarotist) => {
+    if (!onChangePlan) return;
     try {
-      if (onChangePlan) {
-        onChangePlan(requiredPlan);
-        // プラン変更後に選択占い師を設定
-        handleSelectTarotist(tarotist);
-      }
+      await onChangePlan(requiredPlan);
+      // プラン変更が成功した場合のみ占い師を選択
+      handleSelectTarotist(tarotist);
     } catch (error) {
       console.error("プラン変更中にエラーが発生しました:", error);
     }
