@@ -1,4 +1,4 @@
-import { BlogPostStatus } from "@/lib/generated/prisma/client";
+import { BlogPostPhase, BlogPostStatus, BlogPostType } from "@/lib/generated/prisma/client";
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { blogPostRepository, type BlogPostRow } from "@/lib/server/repositories/blog-post";
@@ -30,23 +30,59 @@ export type GenerateBlogPostResult = {
   tags: string[];
 };
 
-export async function generateBlogContent(customPrompt?: string): Promise<GenerateBlogPostResult> {
-  const systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のブログライターです。
-SEOに最適化された日本語のブログ記事を書きます。
-記事はMarkdown形式で書いてください。
-見出し(##, ###)、箇条書き、太字などを適切に使ってください。`;
+export async function generateBlogContent(
+  type: BlogPostType,
+  customPrompt?: string,
+): Promise<GenerateBlogPostResult> {
+  let systemPrompt: string;
+  let userPrompt: string;
 
-  const userPrompt = customPrompt ?? `タロット占いに関する読者に価値のあるブログ記事を1本書いてください。
-例: タロットカードの意味、占いの使い方、スプレッドの紹介、AI占いの活用法など。
-記事の長さは800〜1200文字程度。
-最後にJSON形式で以下を返してください:
+  const jsonSuffix = `最後に必ず記事本文のあとに以下のJSONだけを出力してください:
 {"title": "記事タイトル", "excerpt": "120文字以内の概要", "metaDescription": "160文字以内のSEO用説明", "tags": ["タグ1", "タグ2", "タグ3"]}`;
+
+  if (customPrompt) {
+    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のブログライターです。
+SEOに最適化された日本語のブログ記事を書きます。
+記事はMarkdown形式で書いてください。見出し(##, ###)・箇条書き・太字などを適切に使ってください。`;
+    userPrompt = `${customPrompt}\n\n${jsonSuffix}`;
+  } else if (type === BlogPostType.TAROT_GUIDE) {
+    systemPrompt = `あなたはタロット占いの講師です。初心者〜中級者向けに、タロットカードの意味やスプレッド、読み方のコツを日本語で解説します。
+記事はMarkdown形式・1200〜1800文字程度。見出し(##, ###)・箇条書き・太字を適切に使い、SEOに有効なキーワードを自然に織り込んでください。`;
+    userPrompt = `タロットカードの意味・スプレッド・読み方などから1つテーマを選び、初心者にも分かる解説記事を書いてください。
+末尾に「Ariadne AIタロット占い」で実際に試せる旨を自然に添えてください。
+
+${jsonSuffix}`;
+  } else if (type === BlogPostType.TAROT_TIP) {
+    systemPrompt = `あなたはタロット占いのライターです。タロットに関する豆知識や歴史・文化的背景を日本語で紹介します。
+記事はMarkdown形式・800〜1200文字程度。読者が「へえ！」と思える雑学を複数織り込んでください。`;
+    userPrompt = `タロットにまつわる豆知識や歴史・文化的トピックを1つ選び、読み物として楽しい記事を書いてください。
+
+${jsonSuffix}`;
+  } else if (type === BlogPostType.APP_PROMO) {
+    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のマーケター兼ライターです。
+アプリの特徴や使い方を日本語のブログ記事として紹介します。押し売りにならない自然な紹介を心がけてください。
+記事はMarkdown形式・1000〜1500文字程度。`;
+    userPrompt = `「Ariadne AIタロット」アプリの魅力を伝える記事を書いてください。AIによる本格的なタロット占い、無料で始められること、複数タロティストから選べることなどを紹介してください。
+末尾に ${APP_URL} からダウンロードできる旨を添えてください。
+
+${jsonSuffix}`;
+  } else if (type === BlogPostType.BUILD_IN_PUBLIC) {
+    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」を個人開発しているエンジニアです。
+開発過程・技術選定・学びを #buildinpublic の文脈で日本語のブログ記事にします。
+記事はMarkdown形式・1000〜1500文字程度。技術的な内容を親しみやすく伝えてください。`;
+    userPrompt = `個人開発で得た学び・工夫・失敗談から1テーマ選び、開発者ブログ記事を書いてください。
+具体的な技術（Next.js / Capacitor / Prisma / AI SDK 等）に触れつつ、読み手に役立つ知見を残してください。
+
+${jsonSuffix}`;
+  } else {
+    throw new Error(`自動生成非対応の記事タイプ: ${type}`);
+  }
 
   const { text } = await generateText({
     model: getGenerationModel(),
     system: systemPrompt,
     prompt: userPrompt,
-    maxOutputTokens: 2000,
+    maxOutputTokens: 3000,
   });
 
   // JSON部分を抽出
@@ -101,23 +137,33 @@ export async function processDue(): Promise<{ published: number; failed: number 
   return { published, failed };
 }
 
-export async function createAutoPost(customPrompt?: string): Promise<BlogPostRow> {
-  const generated = await generateBlogContent(customPrompt);
+export function getAutoPostTypesForPhase(phase: BlogPostPhase): BlogPostType[] {
+  if (phase === BlogPostPhase.PRE_LAUNCH) {
+    return [BlogPostType.BUILD_IN_PUBLIC, BlogPostType.TAROT_GUIDE, BlogPostType.TAROT_TIP];
+  }
+  return [BlogPostType.TAROT_GUIDE, BlogPostType.TAROT_TIP, BlogPostType.APP_PROMO];
+}
+
+export async function createAutoPost(type: BlogPostType, customPrompt?: string): Promise<BlogPostRow> {
+  const generated = await generateBlogContent(type, customPrompt);
   const slug = generateSlug(generated.title);
 
-  const post = await blogPostRepository.create({
+  const saved = await blogPostRepository.create({
     title: generated.title,
     slug,
     content: generated.content,
     excerpt: generated.excerpt,
     metaDescription: generated.metaDescription,
     tags: generated.tags,
-    status: BlogPostStatus.DRAFT,
+    status: BlogPostStatus.PUBLISHED,
+    postType: type,
     isAuto: true,
+    prompt: customPrompt,
+    publishedAt: new Date(),
   });
 
-  logger.info("ブログ記事自動生成完了", { id: post.id, title: post.title });
-  return post;
+  logger.info("ブログ記事自動生成・公開完了", { id: saved.id, title: saved.title, type });
+  return saved;
 }
 
-export { APP_URL };
+export { APP_URL, BlogPostPhase };

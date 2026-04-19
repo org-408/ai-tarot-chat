@@ -1,15 +1,15 @@
 "use server";
 
-import { BlogPostStatus } from "@/lib/generated/prisma/client";
+import { BlogPostPhase, BlogPostStatus, BlogPostType } from "@/lib/generated/prisma/client";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
-import { blogPostRepository } from "@/lib/server/repositories/blog-post";
+import { blogPostRepository, blogPostConfigRepository } from "@/lib/server/repositories/blog-post";
 import * as blogPostService from "@/lib/server/services/blog-post";
 import { revalidatePath } from "next/cache";
 
-export async function generateBlogContentAction(customPrompt?: string) {
+export async function generateBlogContentAction(type: BlogPostType, customPrompt?: string) {
   try {
     await assertAdminSession();
-    const result = await blogPostService.generateBlogContent(customPrompt);
+    const result = await blogPostService.generateBlogContent(type, customPrompt || undefined);
     return { ok: true as const, ...result };
   } catch (error) {
     return {
@@ -27,6 +27,7 @@ export async function saveBlogDraftAction(data: {
   metaDescription: string;
   tags: string[];
   coverImageUrl?: string;
+  postType: BlogPostType;
 }) {
   try {
     await assertAdminSession();
@@ -71,6 +72,7 @@ export async function scheduleBlogPostAction(data: {
   metaDescription: string;
   tags: string[];
   coverImageUrl?: string;
+  postType: BlogPostType;
   scheduledAt: string;
 }) {
   try {
@@ -94,7 +96,7 @@ export async function scheduleBlogPostAction(data: {
   }
 }
 
-export async function publishNowNewAction(data: {
+export async function publishNewNowAction(data: {
   title: string;
   slug: string;
   content: string;
@@ -102,6 +104,7 @@ export async function publishNowNewAction(data: {
   metaDescription: string;
   tags: string[];
   coverImageUrl?: string;
+  postType: BlogPostType;
 }) {
   try {
     await assertAdminSession();
@@ -132,6 +135,7 @@ export async function updateBlogPostAction(postId: string, data: {
   metaDescription: string;
   tags: string[];
   coverImageUrl?: string;
+  postType: BlogPostType;
 }) {
   try {
     await assertAdminSession();
@@ -197,6 +201,47 @@ export async function loadBlogPostsAction(opts: { status?: BlogPostStatus; offse
   }
 }
 
+export async function getAutoPostConfigAction() {
+  try {
+    await assertAdminSession();
+    const config = await blogPostConfigRepository.get();
+    return { ok: true as const, autoPostEnabled: config.autoPostEnabled, phase: config.phase };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "設定取得に失敗しました",
+    };
+  }
+}
+
+export async function setAutoPostEnabledAction(enabled: boolean) {
+  try {
+    await assertAdminSession();
+    await blogPostConfigRepository.setAutoPostEnabled(enabled);
+    revalidatePath("/admin/blog");
+    return { ok: true as const, autoPostEnabled: enabled };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "設定の保存に失敗しました",
+    };
+  }
+}
+
+export async function setPhaseAction(phase: BlogPostPhase) {
+  try {
+    await assertAdminSession();
+    await blogPostConfigRepository.setPhase(phase);
+    revalidatePath("/admin/blog");
+    return { ok: true as const, phase };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "フェーズの保存に失敗しました",
+    };
+  }
+}
+
 function serializePost(post: Awaited<ReturnType<typeof blogPostRepository.findById>>) {
   if (!post) throw new Error("post is null");
   return {
@@ -209,6 +254,7 @@ function serializePost(post: Awaited<ReturnType<typeof blogPostRepository.findBy
     tags: post.tags,
     metaDescription: post.metaDescription,
     status: post.status,
+    postType: post.postType,
     isAuto: post.isAuto,
     scheduledAt: post.scheduledAt?.toISOString() ?? null,
     publishedAt: post.publishedAt?.toISOString() ?? null,

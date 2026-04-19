@@ -1,17 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { BlogPostStatus } from "@/lib/generated/prisma/enums";
+import { BlogPostPhase, BlogPostStatus, BlogPostType } from "@/lib/generated/prisma/enums";
 import {
   generateBlogContentAction,
   saveBlogDraftAction,
   publishBlogPostAction,
   scheduleBlogPostAction,
-  publishNowNewAction,
+  publishNewNowAction,
   updateBlogPostAction,
   archiveBlogPostAction,
   deleteBlogPostAction,
   loadBlogPostsAction,
+  setAutoPostEnabledAction,
+  setPhaseAction,
 } from "./actions";
 
 type BlogPostItem = {
@@ -24,6 +26,7 @@ type BlogPostItem = {
   tags: string[];
   metaDescription: string | null;
   status: BlogPostStatus;
+  postType: BlogPostType;
   isAuto: boolean;
   scheduledAt: string | null;
   publishedAt: string | null;
@@ -44,16 +47,49 @@ const STATUS_COLOR: Record<BlogPostStatus, string> = {
   ARCHIVED: "bg-zinc-100 text-zinc-400",
 };
 
+const TYPE_LABEL: Record<BlogPostType, string> = {
+  TAROT_GUIDE: "タロット解説",
+  TAROT_TIP: "タロット豆知識",
+  APP_PROMO: "アプリ紹介",
+  BUILD_IN_PUBLIC: "開発進捗",
+  MANUAL: "手動",
+};
+
+const TYPE_COLOR: Record<BlogPostType, string> = {
+  TAROT_GUIDE: "bg-violet-100 text-violet-700",
+  TAROT_TIP: "bg-teal-100 text-teal-700",
+  APP_PROMO: "bg-orange-100 text-orange-700",
+  BUILD_IN_PUBLIC: "bg-sky-100 text-sky-700",
+  MANUAL: "bg-zinc-100 text-zinc-600",
+};
+
+const POST_TYPE_OPTIONS: { value: BlogPostType; label: string }[] = [
+  { value: BlogPostType.MANUAL, label: "手動（AI生成なし）" },
+  { value: BlogPostType.TAROT_GUIDE, label: "タロット解説" },
+  { value: BlogPostType.TAROT_TIP, label: "タロット豆知識" },
+  { value: BlogPostType.APP_PROMO, label: "アプリ紹介" },
+  { value: BlogPostType.BUILD_IN_PUBLIC, label: "開発進捗 (#buildinpublic)" },
+];
+
 type Props = {
   initialPosts: BlogPostItem[];
   totalCount: number;
+  initialAutoPostEnabled: boolean;
+  initialPhase: BlogPostPhase;
 };
 
-export function BlogPageClient({ initialPosts, totalCount }: Props) {
+export function BlogPageClient({ initialPosts, totalCount, initialAutoPostEnabled, initialPhase }: Props) {
   const [tab, setTab] = useState<"compose" | "history">("compose");
   const [editingPost, setEditingPost] = useState<BlogPostItem | null>(null);
 
+  // Auto post config state
+  const [autoPostEnabled, setAutoPostEnabled] = useState(initialAutoPostEnabled);
+  const [autoPostError, setAutoPostError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<BlogPostPhase>(initialPhase);
+  const [phaseError, setPhaseError] = useState<string | null>(null);
+
   // Compose state
+  const [postType, setPostType] = useState<BlogPostType>(BlogPostType.TAROT_GUIDE);
   const [customPrompt, setCustomPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -73,6 +109,30 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
 
   const [isPending, startTransition] = useTransition();
 
+  async function handleAutoPostToggle(enabled: boolean) {
+    setAutoPostError(null);
+    startTransition(async () => {
+      const res = await setAutoPostEnabledAction(enabled);
+      if (res.ok) {
+        setAutoPostEnabled(res.autoPostEnabled);
+      } else {
+        setAutoPostError(res.error);
+      }
+    });
+  }
+
+  async function handlePhaseChange(newPhase: BlogPostPhase) {
+    setPhaseError(null);
+    startTransition(async () => {
+      const res = await setPhaseAction(newPhase);
+      if (res.ok) {
+        setPhase(res.phase);
+      } else {
+        setPhaseError(res.error);
+      }
+    });
+  }
+
   function clearCompose() {
     setCustomPrompt("");
     setTitle("");
@@ -86,6 +146,7 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
     setComposeError(null);
     setComposeSuccess(null);
     setEditingPost(null);
+    setPostType(BlogPostType.TAROT_GUIDE);
   }
 
   function fillFromGenerated(result: {
@@ -100,7 +161,6 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
     setExcerpt(result.excerpt);
     setMetaDescription(result.metaDescription);
     setTags(result.tags.join(", "));
-    // スラッグを自動生成
     const base = result.title
       .toLowerCase()
       .replace(/[^\w\s-]/g, "")
@@ -110,10 +170,14 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
   }
 
   async function handleGenerate() {
+    if (postType === BlogPostType.MANUAL && !customPrompt.trim()) {
+      setComposeError("手動モードでは AI 生成は使用できません");
+      return;
+    }
     setComposeError(null);
     setComposeSuccess(null);
     startTransition(async () => {
-      const res = await generateBlogContentAction(customPrompt.trim() || undefined);
+      const res = await generateBlogContentAction(postType, customPrompt.trim() || undefined);
       if (res.ok) {
         fillFromGenerated(res);
       } else {
@@ -131,6 +195,7 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
       metaDescription: metaDescription.trim(),
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
       coverImageUrl: coverImageUrl.trim() || undefined,
+      postType,
     };
   }
 
@@ -182,7 +247,7 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
           setComposeError(pubRes.error);
         }
       } else {
-        const res = await publishNowNewAction(buildPostData());
+        const res = await publishNewNowAction(buildPostData());
         if (res.ok) {
           setComposeSuccess("公開しました");
           clearCompose();
@@ -237,6 +302,7 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
     setMetaDescription(post.metaDescription ?? "");
     setTags(post.tags.join(", "));
     setCoverImageUrl(post.coverImageUrl ?? "");
+    setPostType(post.postType);
     setComposeError(null);
     setComposeSuccess(null);
     setTab("compose");
@@ -276,9 +342,95 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold">ブログ管理</h1>
-        <p className="text-zinc-500 text-sm mt-1">SEO ブログ記事の作成・管理・公開</p>
+        <p className="text-zinc-500 text-sm mt-1">SEO ブログ記事の作成・管理・自動公開</p>
+      </div>
+
+      {/* 自動公開トグル */}
+      <div className={`flex items-center justify-between rounded-xl border px-5 py-4 mb-6 transition-colors ${
+        autoPostEnabled ? "bg-green-50 border-green-200" : "bg-zinc-50 border-zinc-200"
+      }`}>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{autoPostEnabled ? "🤖" : "⏸️"}</span>
+            <span className="font-medium text-sm">
+              自動公開モード
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+              autoPostEnabled ? "bg-green-100 text-green-700" : "bg-zinc-200 text-zinc-500"
+            }`}>
+              {autoPostEnabled ? "ON" : "OFF"}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 mt-1 ml-7">
+            {autoPostEnabled
+              ? phase === BlogPostPhase.PRE_LAUNCH
+                ? "毎日 10:00 JST に開発進捗・タロット解説・豆知識を自動生成して公開します"
+                : "毎日 10:00 JST にタロット解説・豆知識・アプリ紹介を自動生成して公開します"
+              : "チェックすると GitHub Actions による定時自動公開が有効になります"}
+          </p>
+          {autoPostError && (
+            <p className="text-xs text-red-500 mt-1 ml-7">{autoPostError}</p>
+          )}
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            className="sr-only peer"
+            checked={autoPostEnabled}
+            disabled={isPending}
+            onChange={(e) => handleAutoPostToggle(e.target.checked)}
+          />
+          <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all" />
+        </label>
+      </div>
+
+      {/* フェーズ切替 */}
+      <div className="flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4 mb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{phase === BlogPostPhase.PRE_LAUNCH ? "🚀" : "🌟"}</span>
+            <span className="font-medium text-sm">公開フェーズ</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+              phase === BlogPostPhase.PRE_LAUNCH
+                ? "bg-sky-100 text-sky-700"
+                : "bg-green-100 text-green-700"
+            }`}>
+              {phase === BlogPostPhase.PRE_LAUNCH ? "ローンチ前" : "ローンチ後"}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 mt-1 ml-7">
+            {phase === BlogPostPhase.PRE_LAUNCH
+              ? "自動公開: 開発進捗 (#buildinpublic) + タロット解説 + 豆知識"
+              : "自動公開: タロット解説 + 豆知識 + アプリ紹介"}
+          </p>
+          {phaseError && <p className="text-xs text-red-500 mt-1 ml-7">{phaseError}</p>}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handlePhaseChange(BlogPostPhase.PRE_LAUNCH)}
+            disabled={isPending || phase === BlogPostPhase.PRE_LAUNCH}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition ${
+              phase === BlogPostPhase.PRE_LAUNCH
+                ? "bg-sky-600 text-white"
+                : "border border-zinc-300 text-zinc-600 hover:bg-zinc-100 disabled:opacity-50"
+            }`}
+          >
+            ローンチ前
+          </button>
+          <button
+            onClick={() => handlePhaseChange(BlogPostPhase.POST_LAUNCH)}
+            disabled={isPending || phase === BlogPostPhase.POST_LAUNCH}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition ${
+              phase === BlogPostPhase.POST_LAUNCH
+                ? "bg-green-600 text-white"
+                : "border border-zinc-300 text-zinc-600 hover:bg-zinc-100 disabled:opacity-50"
+            }`}
+          >
+            ローンチ後
+          </button>
+        </div>
       </div>
 
       {/* Tab */}
@@ -313,23 +465,44 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
             </div>
           )}
 
+          {/* 記事タイプ */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1">記事タイプ</label>
+            <select
+              value={postType}
+              onChange={(e) => setPostType(e.target.value as BlogPostType)}
+              className="border rounded-md px-3 py-2 text-sm w-full max-w-xs"
+            >
+              {POST_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* AI生成 */}
           <div className="bg-zinc-50 border rounded-xl p-4 space-y-3">
-            <p className="text-sm font-medium text-zinc-700">AIで記事を生成</p>
+            <p className="text-sm font-medium text-zinc-700">
+              AIで記事を生成
+              <span className="ml-2 text-xs text-zinc-400 font-normal">カスタムプロンプトを入力するとタイプ設定より優先されます</span>
+            </p>
             <textarea
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               rows={3}
-              placeholder="例: タロットの大アルカナについて初心者向けに解説する記事を書いてください（省略時はAIが自動でテーマを選択）"
+              placeholder="例: タロットの大アルカナについて初心者向けに解説する記事を書いてください（省略時はタイプに応じてAIが自動生成）"
               className="w-full border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-400"
             />
-            <button
-              onClick={handleGenerate}
-              disabled={isPending}
-              className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 transition"
-            >
-              {isPending ? "生成中…" : "✨ AI で記事生成"}
-            </button>
+            {(postType !== BlogPostType.MANUAL || customPrompt.trim()) && (
+              <button
+                onClick={handleGenerate}
+                disabled={isPending}
+                className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 transition"
+              >
+                {isPending ? "生成中…" : customPrompt.trim() ? "✨ カスタムプロンプトで生成" : "✨ AI で記事生成"}
+              </button>
+            )}
           </div>
 
           {/* フォーム */}
@@ -476,6 +649,17 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
               クリア
             </button>
           </div>
+
+          {/* Auto-posting info */}
+          <div className="mt-8 p-4 bg-zinc-50 rounded-lg border text-sm text-zinc-600">
+            <p className="font-medium mb-2">🤖 自動公開について</p>
+            <ul className="space-y-1 text-xs text-zinc-500 list-disc list-inside">
+              <li>上のトグルを ON にすると GitHub Actions による定時自動公開が有効になります</li>
+              <li>毎日 10:00 JST にフェーズに応じた記事タイプからランダムで1記事生成・公開</li>
+              <li>毎回 AI が内容を自動生成するので同じ記事は繰り返しません</li>
+              <li>GitHub Secrets に <code className="bg-zinc-100 px-1 rounded">APP_URL</code> と <code className="bg-zinc-100 px-1 rounded">CRON_SECRET</code> を設定してください</li>
+            </ul>
+          </div>
         </div>
       )}
 
@@ -507,7 +691,7 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
               <thead className="bg-zinc-50 border-b">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-zinc-600 w-2/5">タイトル</th>
-                  <th className="text-left px-4 py-3 font-medium text-zinc-600">タグ</th>
+                  <th className="text-left px-4 py-3 font-medium text-zinc-600">タイプ</th>
                   <th className="text-left px-4 py-3 font-medium text-zinc-600">ステータス</th>
                   <th className="text-left px-4 py-3 font-medium text-zinc-600">日時</th>
                   <th className="px-4 py-3" />
@@ -536,16 +720,14 @@ export function BlogPageClient({ initialPosts, totalCount }: Props) {
                           公開ページを見る →
                         </a>
                       )}
-                      {post.isAuto && <span className="text-xs text-zinc-400">🤖 AI生成</span>}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="text-xs bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLOR[post.postType]}`}>
+                        {TYPE_LABEL[post.postType]}
+                      </span>
+                      {post.isAuto && (
+                        <span className="ml-1 text-xs text-zinc-400">🤖</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLOR[post.status]}`}>
