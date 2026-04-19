@@ -52,6 +52,8 @@ interface ChatViewProps {
   /** 占い師アバター */
   tarotistImageUrl?: string;
   tarotistIcon?: string;
+  /** 占い師アバターを表示するか。デフォルト true */
+  showAvatar?: boolean;
 
   /** フッタースロット（RevealPromptPanel 等を差し込む用） */
   footer?: React.ReactNode;
@@ -95,6 +97,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   sessionEndedSubLabel = "またいつでもご相談ください",
   tarotistImageUrl,
   tarotistIcon,
+  showAvatar = true,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -135,6 +138,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
             }
             tarotistImageUrl={tarotistImageUrl}
             tarotistIcon={tarotistIcon}
+            showAvatar={showAvatar}
           />
         ))}
 

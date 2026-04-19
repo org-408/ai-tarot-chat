@@ -6,6 +6,8 @@ interface MessageBubbleProps {
   isStreaming?: boolean;
   tarotistImageUrl?: string;
   tarotistIcon?: string;
+  /** 占い師アバターを表示するか。デフォルト true */
+  showAvatar?: boolean;
 }
 
 /**
@@ -17,6 +19,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   isStreaming = false,
   tarotistImageUrl,
   tarotistIcon,
+  showAvatar = true,
 }) => {
   const textContent = message.parts
     .filter((part) => part.type === "text")
@@ -30,6 +33,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           <p className="text-base text-gray-900 whitespace-pre-wrap">
             {textContent}
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!showAvatar) {
+    return (
+      <div className="flex justify-start">
+        <div className="flex-1 min-w-0">
+          <MessageContent content={textContent} isStreaming={isStreaming} />
         </div>
       </div>
     );

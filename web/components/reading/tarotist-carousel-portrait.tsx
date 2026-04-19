@@ -175,16 +175,10 @@ export function TarotistCarouselPortrait({
                 {selectedTarotist.title}
               </p>
               <p
-                className="text-xs mb-1"
+                className="text-xs"
                 style={{ color: accent, textShadow: "1px 1px 3px rgba(0,0,0,0.9)" }}
               >
                 {selectedTarotist.trait}
-              </p>
-              <p
-                className="text-xs text-white/70 line-clamp-2 leading-relaxed"
-                style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.9)" }}
-              >
-                {selectedTarotist.bio}
               </p>
             </div>
 
@@ -250,8 +244,8 @@ export function TarotistCarouselPortrait({
                         border: `3px solid ${secondary}`,
                       }}
                     >
-                      {/* 画像エリア（上 70%） */}
-                      <div className="relative flex-[7] overflow-hidden">
+                      {/* 画像エリア（上 60%） */}
+                      <div className="relative flex-[6] overflow-hidden">
                         <img
                           src={`/tarotists/${tarotist.name}.png`}
                           alt={tarotist.name}
@@ -298,8 +292,8 @@ export function TarotistCarouselPortrait({
                         )}
                       </div>
 
-                      {/* 情報エリア（下 30%） */}
-                      <div className="relative flex-[3] p-4 flex flex-col justify-between">
+                      {/* 情報エリア（下 40%） */}
+                      <div className="relative flex-[4] p-4 flex flex-col justify-between">
                         <div className="text-center mb-2">
                           <div className="flex items-center justify-center gap-2 mb-1">
                             <span className="text-2xl drop-shadow">{tarotist.icon}</span>
@@ -325,7 +319,7 @@ export function TarotistCarouselPortrait({
                           {tarotist.trait}
                         </p>
 
-                        <p className="text-center text-xs text-white/80 line-clamp-2 mb-2 leading-relaxed">
+                        <p className="text-center text-xs text-white/85 mb-2 leading-relaxed whitespace-pre-wrap">
                           {tarotist.bio}
                         </p>
 

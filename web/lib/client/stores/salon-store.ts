@@ -19,6 +19,8 @@ interface SalonState {
   drawnCards: DrawnCard[];
   isRevealingCompleted: boolean;
   isPersonal: boolean;
+  /** 占い進行中のサイドメニューロック。true の間はナビゲーション不可 */
+  isLocked: boolean;
 
   // Setters
   setQuickTarotist: (t: Tarotist | null) => void;
@@ -30,6 +32,7 @@ interface SalonState {
   setDrawnCards: (cards: DrawnCard[]) => void;
   setIsRevealingCompleted: (v: boolean) => void;
   setIsPersonal: (v: boolean) => void;
+  setIsLocked: (v: boolean) => void;
   resetSession: () => void;
 }
 
@@ -37,6 +40,7 @@ const sessionInitial = {
   drawnCards: [],
   isRevealingCompleted: false,
   isPersonal: false,
+  isLocked: false,
 };
 
 export const useSalonStore = create<SalonState>()(
@@ -59,6 +63,7 @@ export const useSalonStore = create<SalonState>()(
       setDrawnCards: (cards) => set({ drawnCards: cards }),
       setIsRevealingCompleted: (v) => set({ isRevealingCompleted: v }),
       setIsPersonal: (v) => set({ isPersonal: v }),
+      setIsLocked: (v) => set({ isLocked: v }),
       resetSession: () => set(sessionInitial),
     }),
     {
