@@ -1,6 +1,7 @@
 import { AdminPrismaAdapter } from "@/lib/server/admin-prisma-adapter";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { adminUserRepository } from "@/lib/server/repositories/admin-user";
+import { adminUserService } from "@/lib/server/services";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
@@ -56,11 +57,17 @@ const {
     async signIn({ user }) {
       logWithContext("info", "[AdminAuth] Sign-in attempt", { user });
       if (!user.email) return false;
-      // メールアドレスがあれば全員サインイン許可
-      // activatedAt チェックは adminAuth() で行う
-      logWithContext("info", "[AdminAuth] Sign-in allowed (activation check deferred)", {
-        email: user.email,
-      });
+
+      // AdminUser テーブルに事前登録された email のみ許可。
+      // 初回管理者は DB に直接 INSERT、以降は /admin/users の招待フロー
+      // (sendInviteEmailAction → registerAdmin で AdminUser upsert) で追加する。
+      const isRegistered = await adminUserService.isRegistered(user.email);
+      if (!isRegistered) {
+        logWithContext("warn", "[AdminAuth] Sign-in rejected: not registered as admin", {
+          email: user.email,
+        });
+        return false;
+      }
       return true;
     },
 

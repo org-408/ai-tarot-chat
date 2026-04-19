@@ -78,15 +78,14 @@ export function PendingWaiting({ email }: { email: string }) {
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full space-y-6">
         <div className="text-center space-y-2">
           <div className="text-5xl">⏳</div>
-          <h1 className="text-2xl font-bold text-slate-800">承認待ち</h1>
+          <h1 className="text-2xl font-bold text-slate-800">招待コードの有効期限切れ</h1>
           <p className="text-sm text-slate-500">
-            <span className="font-medium text-slate-700">{email}</span> は
-            <br />管理者による承認をお待ちください
+            <span className="font-medium text-slate-700">{email}</span> の
+            <br />招待コードが見つからないか、期限が切れています
           </p>
         </div>
         <div className="rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-sm px-4 py-3">
-          管理者がアカウントを承認すると、管理画面にアクセスできるようになります。
-          招待メールを受け取った場合は、管理者に再送を依頼してください。
+          管理者に招待メールの再送を依頼してください。新しい 6 桁コードが届いたら、再度このページで入力できます。
         </div>
       </div>
     </div>
