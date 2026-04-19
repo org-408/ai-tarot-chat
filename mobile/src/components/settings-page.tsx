@@ -213,13 +213,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               onClick={onLogout}
               danger
             />
-            <Row
-              icon={<Trash2 size={16} />}
-              label="アカウントを削除"
-              description="すべてのデータが削除されます"
-              onClick={() => setShowDeleteConfirm(true)}
-              danger
-            />
           </>
         ) : (
           <>
@@ -293,6 +286,22 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           right={<span className="text-xs text-gray-400">{appVersion}</span>}
         />
       </RowGroup>
+
+      {/* ── アカウント管理 ────────────── */}
+      {isAuthenticated && (
+        <>
+          <SectionHeader label="アカウント管理" />
+          <RowGroup>
+            <Row
+              icon={<Trash2 size={16} />}
+              label="アカウントを削除"
+              description="すべてのデータが削除されます"
+              onClick={() => setShowDeleteConfirm(true)}
+              danger
+            />
+          </RowGroup>
+        </>
+      )}
     </div>
   );
 };
