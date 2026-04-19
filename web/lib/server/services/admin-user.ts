@@ -3,6 +3,12 @@ import { logWithContext } from "@/lib/server/logger/logger";
 import { adminUserRepository } from "@/lib/server/repositories/admin-user";
 
 export class AdminUserService {
+  /** 指定メールアドレスが AdminUser テーブルに存在するか確認（activatedAt は問わない） */
+  async isRegistered(email: string): Promise<boolean> {
+    const adminUser = await adminUserRepository.findByEmail(email);
+    return adminUser !== null;
+  }
+
   /** 指定メールアドレスが AdminUser テーブルに存在してアクティブか確認 */
   async isActivated(email: string): Promise<boolean> {
     const adminUser = await adminUserRepository.findByEmail(email);
