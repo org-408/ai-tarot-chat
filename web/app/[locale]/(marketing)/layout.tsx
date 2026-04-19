@@ -56,6 +56,23 @@ interface Props {
 
 export default async function MarketingLayout({ children, params }: Props) {
   const { locale } = await params;
+  const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Ariadne AI タロット占い",
+    url: `${baseUrl}/${locale}`,
+    description: "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。",
+    applicationCategory: "LifestyleApplication",
+    operatingSystem: "iOS, Android, Web",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "JPY" },
+    publisher: {
+      "@type": "Organization",
+      name: "Atelier Flow Lab",
+      url: baseUrl,
+    },
+  };
 
   const navLinks = [
     { href: `/${locale}#features`, label: "機能" },
@@ -65,6 +82,10 @@ export default async function MarketingLayout({ children, params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ナビゲーションヘッダー */}
       <header className="sticky top-0 z-50 w-full border-b border-purple-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

@@ -1,6 +1,6 @@
 "use server";
 
-import { XPostStatus, XPostType } from "@/lib/generated/prisma/client";
+import { XPostPhase, XPostStatus, XPostType } from "@/lib/generated/prisma/client";
 import { assertAdminSession } from "@/lib/server/utils/admin-guard";
 import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositories/x-post";
 import * as xPostService from "@/lib/server/services/x-post";
@@ -179,7 +179,7 @@ export async function getAutoPostConfigAction() {
   try {
     await assertAdminSession();
     const config = await xPostConfigRepository.get();
-    return { ok: true as const, autoPostEnabled: config.autoPostEnabled };
+    return { ok: true as const, autoPostEnabled: config.autoPostEnabled, phase: config.phase };
   } catch (error) {
     return {
       ok: false as const,
@@ -198,6 +198,20 @@ export async function setAutoPostEnabledAction(enabled: boolean) {
     return {
       ok: false as const,
       error: error instanceof Error ? error.message : "設定の保存に失敗しました",
+    };
+  }
+}
+
+export async function setPhaseAction(phase: XPostPhase) {
+  try {
+    await assertAdminSession();
+    await xPostConfigRepository.setPhase(phase);
+    revalidatePath("/admin/x-posts");
+    return { ok: true as const, phase };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "フェーズの保存に失敗しました",
     };
   }
 }

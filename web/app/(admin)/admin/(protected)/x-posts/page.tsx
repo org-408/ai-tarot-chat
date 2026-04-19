@@ -31,6 +31,7 @@ export default async function XPostsPage() {
       totalCount={totalCount}
       twitterConfigured={isTwitterConfigured()}
       initialAutoPostEnabled={config.autoPostEnabled}
+      initialPhase={config.phase}
     />
   );
 }
