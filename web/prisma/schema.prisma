@@ -695,10 +695,16 @@ enum XPostStatus {
 }
 
 enum XPostType {
-  DAILY_CARD // 今日のタロット
-  APP_PROMO  // アプリ宣伝
-  TAROT_TIP  // タロット豆知識
-  MANUAL     // 手動投稿
+  DAILY_CARD       // 今日のタロット
+  APP_PROMO        // アプリ宣伝
+  TAROT_TIP        // タロット豆知識
+  BUILD_IN_PUBLIC  // 開発進捗（ローンチ前）
+  MANUAL           // 手動投稿
+}
+
+enum XPostPhase {
+  PRE_LAUNCH  // ローンチ前
+  POST_LAUNCH // ローンチ後
 }
 
 model XPost {
@@ -721,9 +727,43 @@ model XPost {
 }
 
 model XPostConfig {
-  id              String   @id @default("singleton")
-  autoPostEnabled Boolean  @default(false)
-  updatedAt       DateTime @updatedAt
+  id              String      @id @default("singleton")
+  autoPostEnabled Boolean     @default(false)
+  phase           XPostPhase  @default(POST_LAUNCH)
+  updatedAt       DateTime    @updatedAt
 
   @@map("x_post_config")
+}
+
+// ==========================================
+// ブログ記事管理
+// ==========================================
+
+enum BlogPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+model BlogPost {
+  id               String         @id @default(cuid())
+  title            String
+  slug             String         @unique
+  content          String         @db.Text
+  excerpt          String?        @db.Text
+  coverImageUrl    String?
+  tags             String[]
+  metaDescription  String?
+  status           BlogPostStatus @default(DRAFT)
+  isAuto           Boolean        @default(false)
+  scheduledAt      DateTime?
+  publishedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([status])
+  @@index([slug])
+  @@index([publishedAt])
+  @@map("blog_posts")
 }

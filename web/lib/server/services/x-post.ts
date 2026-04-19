@@ -1,4 +1,4 @@
-import { XPostStatus, XPostType } from "@/lib/generated/prisma/client";
+import { XPostPhase, XPostStatus, XPostType } from "@/lib/generated/prisma/client";
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { xPostRepository, type XPostRow } from "@/lib/server/repositories/x-post";
@@ -48,6 +48,13 @@ AIが本格的なタロット占いをしてくれること、無料で始めら
     userPrompt = `タロットに関する面白い豆知識や雑学を1つ紹介する投稿を作成してください。
 読んだ人がタロットに興味を持てるような内容にしてください。
 末尾に「#タロット #タロット豆知識」を付けてください。`;
+  } else if (type === XPostType.BUILD_IN_PUBLIC) {
+    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」を個人開発しているエンジニアです。
+開発の進捗や学びをX(Twitter)で #buildinpublic としてシェアします。
+投稿は必ず140文字以内にしてください。技術的な内容を親しみやすく伝えてください。絵文字を適切に使ってください。`;
+    userPrompt = `今日の開発進捗や気づきを1つ投稿してください。
+例：新機能の実装、バグ修正の学び、設計の工夫、ユーザー体験の改善など。
+末尾に「#buildinpublic #個人開発 #タロット」を付けてください。`;
   } else {
     throw new Error(`自動生成非対応の投稿タイプ: ${type}`);
   }
@@ -111,6 +118,13 @@ export async function processDue(): Promise<{ posted: number; failed: number }> 
   return { posted, failed };
 }
 
+export function getAutoPostTypesForPhase(phase: XPostPhase): XPostType[] {
+  if (phase === XPostPhase.PRE_LAUNCH) {
+    return [XPostType.BUILD_IN_PUBLIC, XPostType.TAROT_TIP];
+  }
+  return [XPostType.DAILY_CARD, XPostType.TAROT_TIP, XPostType.APP_PROMO];
+}
+
 export async function createAutoPost(type: XPostType): Promise<XPostRow> {
   const content = await generateContent(type);
 
@@ -138,4 +152,4 @@ export async function createAutoPost(type: XPostType): Promise<XPostRow> {
   return updated ?? saved;
 }
 
-export { isTwitterConfigured };
+export { isTwitterConfigured, XPostPhase };

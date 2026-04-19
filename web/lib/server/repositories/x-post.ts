@@ -1,4 +1,4 @@
-import { XPostStatus, XPostType } from "@/lib/generated/prisma/client";
+import { XPostPhase, XPostStatus, XPostType } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export type XPostRow = {
@@ -119,11 +119,14 @@ export const xPostRepository = new XPostRepository();
 // ==========================================
 
 class XPostConfigRepository extends BaseRepository {
-  async get(): Promise<{ autoPostEnabled: boolean }> {
+  async get(): Promise<{ autoPostEnabled: boolean; phase: XPostPhase }> {
     const config = await this.db.xPostConfig.findUnique({
       where: { id: "singleton" },
     });
-    return { autoPostEnabled: config?.autoPostEnabled ?? false };
+    return {
+      autoPostEnabled: config?.autoPostEnabled ?? false,
+      phase: config?.phase ?? XPostPhase.POST_LAUNCH,
+    };
   }
 
   async setAutoPostEnabled(enabled: boolean): Promise<void> {
@@ -133,6 +136,15 @@ class XPostConfigRepository extends BaseRepository {
       update: { autoPostEnabled: enabled },
     });
   }
+
+  async setPhase(phase: XPostPhase): Promise<void> {
+    await this.db.xPostConfig.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", phase },
+      update: { phase },
+    });
+  }
 }
 
 export const xPostConfigRepository = new XPostConfigRepository();
+export { XPostPhase };

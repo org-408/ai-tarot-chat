@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { XPostStatus, XPostType } from "@/lib/generated/prisma/enums";
+import { XPostPhase, XPostStatus, XPostType } from "@/lib/generated/prisma/enums";
 import {
   generateContentAction,
   createDraftAction,
@@ -11,6 +11,7 @@ import {
   deletePostAction,
   loadPostsAction,
   setAutoPostEnabledAction,
+  setPhaseAction,
 } from "./actions";
 
 type XPostItem = {
@@ -46,6 +47,7 @@ const TYPE_LABEL: Record<XPostType, string> = {
   DAILY_CARD: "今日のタロット",
   APP_PROMO: "アプリ宣伝",
   TAROT_TIP: "タロット豆知識",
+  BUILD_IN_PUBLIC: "開発進捗",
   MANUAL: "手動",
 };
 
@@ -53,6 +55,7 @@ const TYPE_COLOR: Record<XPostType, string> = {
   DAILY_CARD: "bg-violet-100 text-violet-700",
   APP_PROMO: "bg-orange-100 text-orange-700",
   TAROT_TIP: "bg-teal-100 text-teal-700",
+  BUILD_IN_PUBLIC: "bg-sky-100 text-sky-700",
   MANUAL: "bg-zinc-100 text-zinc-600",
 };
 
@@ -61,6 +64,7 @@ const POST_TYPE_OPTIONS: { value: XPostType; label: string }[] = [
   { value: XPostType.DAILY_CARD, label: "今日のタロット" },
   { value: XPostType.APP_PROMO, label: "アプリ宣伝" },
   { value: XPostType.TAROT_TIP, label: "タロット豆知識" },
+  { value: XPostType.BUILD_IN_PUBLIC, label: "開発進捗 (#buildinpublic)" },
 ];
 
 const MAX_CHARS = 280;
@@ -70,14 +74,17 @@ type Props = {
   totalCount: number;
   twitterConfigured: boolean;
   initialAutoPostEnabled: boolean;
+  initialPhase: XPostPhase;
 };
 
-export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, initialAutoPostEnabled }: Props) {
+export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, initialAutoPostEnabled, initialPhase }: Props) {
   const [tab, setTab] = useState<"compose" | "history">("compose");
 
   // Auto post config state
   const [autoPostEnabled, setAutoPostEnabled] = useState(initialAutoPostEnabled);
   const [autoPostError, setAutoPostError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<XPostPhase>(initialPhase);
+  const [phaseError, setPhaseError] = useState<string | null>(null);
 
   // Compose state
   const [postType, setPostType] = useState<XPostType>(XPostType.DAILY_CARD);
@@ -102,6 +109,18 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
         setAutoPostEnabled(res.autoPostEnabled);
       } else {
         setAutoPostError(res.error);
+      }
+    });
+  }
+
+  async function handlePhaseChange(newPhase: XPostPhase) {
+    setPhaseError(null);
+    startTransition(async () => {
+      const res = await setPhaseAction(newPhase);
+      if (res.ok) {
+        setPhase(res.phase);
+      } else {
+        setPhaseError(res.error);
       }
     });
   }
@@ -276,7 +295,9 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
           </div>
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {autoPostEnabled
-              ? "毎日 9:00・12:00・18:00 に今日のタロット・豆知識・アプリ宣伝を自動投稿します"
+              ? phase === XPostPhase.PRE_LAUNCH
+                ? "毎日 9:00・12:00・18:00 に開発進捗・タロット豆知識を自動投稿します"
+                : "毎日 9:00・12:00・18:00 に今日のタロット・豆知識・アプリ宣伝を自動投稿します"
               : "チェックすると GitHub Actions による定時自動投稿が有効になります"}
           </p>
           {autoPostError && (
@@ -293,6 +314,53 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
           />
           <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all" />
         </label>
+      </div>
+
+      {/* フェーズ切替 */}
+      <div className="flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4 mb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{phase === XPostPhase.PRE_LAUNCH ? "🚀" : "🌟"}</span>
+            <span className="font-medium text-sm">投稿フェーズ</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+              phase === XPostPhase.PRE_LAUNCH
+                ? "bg-sky-100 text-sky-700"
+                : "bg-green-100 text-green-700"
+            }`}>
+              {phase === XPostPhase.PRE_LAUNCH ? "ローンチ前" : "ローンチ後"}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 mt-1 ml-7">
+            {phase === XPostPhase.PRE_LAUNCH
+              ? "自動投稿: 開発進捗 (#buildinpublic) + タロット豆知識"
+              : "自動投稿: 今日のタロット + タロット豆知識 + アプリ宣伝"}
+          </p>
+          {phaseError && <p className="text-xs text-red-500 mt-1 ml-7">{phaseError}</p>}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handlePhaseChange(XPostPhase.PRE_LAUNCH)}
+            disabled={isPending || phase === XPostPhase.PRE_LAUNCH}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition ${
+              phase === XPostPhase.PRE_LAUNCH
+                ? "bg-sky-600 text-white"
+                : "border border-zinc-300 text-zinc-600 hover:bg-zinc-100 disabled:opacity-50"
+            }`}
+          >
+            ローンチ前
+          </button>
+          <button
+            onClick={() => handlePhaseChange(XPostPhase.POST_LAUNCH)}
+            disabled={isPending || phase === XPostPhase.POST_LAUNCH}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition ${
+              phase === XPostPhase.POST_LAUNCH
+                ? "bg-green-600 text-white"
+                : "border border-zinc-300 text-zinc-600 hover:bg-zinc-100 disabled:opacity-50"
+            }`}
+          >
+            ローンチ後
+          </button>
+        </div>
       </div>
 
       {/* Tab */}
