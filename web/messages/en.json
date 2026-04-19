@@ -13,7 +13,8 @@
     "signOut": "Sign Out",
     "signInWithGoogle": "Sign in with Google",
     "continueAsGuest": "Continue as Guest",
-    "or": "or"
+    "or": "or",
+    "lockedDuringReading": "Cannot leave during a reading"
   },
   "chat": {
     "placeholder": "Type a message...",

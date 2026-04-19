@@ -22,7 +22,7 @@ import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, RefreshCw } from "lucide-react";
+import { ArrowLeft, ChevronDown, Lock, RefreshCw } from "lucide-react";
 
 type Phase = "selection" | "reading";
 
@@ -50,6 +50,7 @@ interface SimpleReadingViewProps {
     aiReading: string;
     readAgain: string;
     limitReached: string;
+    lockedDuringReading: string;
   };
 }
 
@@ -68,6 +69,7 @@ function SimpleReadingView({
   const {
     drawnCards,
     isRevealingCompleted,
+    isLocked,
     setDrawnCards,
     setIsRevealingCompleted,
     setIsLocked,
@@ -139,7 +141,7 @@ function SimpleReadingView({
   return (
     <>
       <ShuffleDialog
-        isOpen={drawnCards.length === 0}
+        isOpen={!isShuffleDone && drawnCards.length === 0}
         onComplete={handleShuffleComplete}
         cardBackPath="/cards/back.png"
       />
@@ -147,14 +149,26 @@ function SimpleReadingView({
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         {/* ヘッダー */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
-          <Link
-            href="/"
-            onClick={onHeaderBack}
-            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            {labels.backToHome}
-          </Link>
+          {isLocked ? (
+            <button
+              type="button"
+              disabled
+              title={labels.lockedDuringReading}
+              className="flex items-center gap-1 text-sm text-gray-400 cursor-not-allowed"
+            >
+              <Lock size={14} />
+              {labels.backToHome}
+            </button>
+          ) : (
+            <Link
+              href="/"
+              onClick={onHeaderBack}
+              className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+            >
+              <ArrowLeft size={16} />
+              {labels.backToHome}
+            </Link>
+          )}
           {remainingQuick !== undefined && (
             <span className="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded-full">
               {labels.remainingQuick}
@@ -275,6 +289,10 @@ export default function SimplePage() {
 
   const [phase, setPhase] = useState<Phase>("selection");
   const [readingKey, setReadingKey] = useState(0);
+  // 占い師カルーセルが "portrait"（確定済み）になるまで占い開始ボタンを無効化
+  const [tarotistMode, setTarotistMode] = useState<"carousel" | "portrait">(
+    selectedTarotist ? "portrait" : "carousel",
+  );
 
   const token = (session as { accessToken?: string })?.accessToken ?? "";
 
@@ -347,6 +365,7 @@ export default function SimplePage() {
           aiReading: t("aiReading"),
           readAgain: t("readAgain"),
           limitReached: t("limitReached"),
+          lockedDuringReading: tCommon("lockedDuringReading"),
         }}
       />
     );
@@ -388,6 +407,7 @@ export default function SimplePage() {
               tarotists={tarotists}
               selectedTarotist={selectedTarotist}
               onSelect={setQuickTarotist}
+              onModeChange={setTarotistMode}
               currentPlan={
                 (usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"]) ??
                 null
@@ -402,7 +422,7 @@ export default function SimplePage() {
               currentPlan={currentPlan}
               isPersonal={false}
               remainingCount={remainingQuick}
-              disabled={!selectedTarotist}
+              disabled={!selectedTarotist || tarotistMode !== "portrait"}
               onStartReading={handleStartReading}
               labels={{
                 selectSpreadPrompt: tSalon("selectSpread"),
