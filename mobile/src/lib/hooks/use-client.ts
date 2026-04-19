@@ -22,6 +22,7 @@ export function useClient() {
     refreshUsage,
     checkAndResetIfNeeded,
     fetchReadings,
+    invalidateReadings,
   } = useClientStore();
 
   return {
@@ -47,5 +48,6 @@ export function useClient() {
     refreshUsage,
     checkAndResetIfNeeded,
     fetchReadings,
+    invalidateReadings,
   };
 }

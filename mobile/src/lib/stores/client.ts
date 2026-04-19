@@ -54,6 +54,7 @@ interface ClientState {
   refreshUsage: () => Promise<void>;
   checkAndResetIfNeeded: () => Promise<boolean>;
   fetchReadings: (params: PaginationParams) => Promise<void>;
+  invalidateReadings: () => void;
   setParams: (params: PaginationParams) => { take: number; skip: number };
   setTake: (take: number) => void;
   setSkip: (skip: number) => void;
@@ -354,6 +355,17 @@ export const useClientStore = create<ClientState>()(
           });
         }
       },
+      // ============================================
+      // 占い履歴キャッシュの無効化
+      // ============================================
+      // 新しい Reading が保存されたタイミングで呼ぶ。次に履歴画面を開いた際に
+      // 必ずサーバーから取り直すことで、「古いキャッシュ → fresh に差し替え」の
+      // 中途半端な表示を防ぐ。
+      invalidateReadings: () => {
+        logWithContext("info", "[ClientStore] Invalidating readings cache");
+        set({ readings: [], readingsTotal: 0, skip: 0 });
+      },
+
       setParams: (params: PaginationParams) => {
         const take = params.take ?? get().take;
         const skip = params.take

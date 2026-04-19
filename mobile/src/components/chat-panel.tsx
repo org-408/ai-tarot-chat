@@ -54,7 +54,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   const { token } = useAuth();
 
-  const { refreshUsage } = useClient();
+  const { refreshUsage, invalidateReadings } = useClient();
   const [isSyncingUsage, setIsSyncingUsage] = useState(false);
 
   const {
@@ -236,6 +236,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       }
 
       if (!isPersonal || isPhase2) {
+        // サーバーが Reading を保存したので履歴キャッシュを無効化する。
+        // 次に履歴画面を開いた際にサーバーから取り直し、古いキャッシュが
+        // 一瞬見えてから差し替わる中途半端な表示を防ぐ。
+        // Phase1（スプレッド選択）では保存されないため除外している。
+        invalidateReadings();
+
         setIsSyncingUsage(true);
         try {
           await refreshUsage();
