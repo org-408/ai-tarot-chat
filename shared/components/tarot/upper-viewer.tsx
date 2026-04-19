@@ -117,6 +117,10 @@ interface UpperViewerProps {
   activeTab?: UpperViewerTab;
   /** タブ切替時のコールバック。controlled / uncontrolled どちらでも呼ばれる */
   onActiveTabChange?: (tab: UpperViewerTab) => void;
+  /** グリッドカード幅 (px)。デフォルト 56 */
+  flipCardWidth?: number;
+  /** グリッドカード高さ (px)。デフォルト 96 */
+  flipCardHeight?: number;
 }
 
 const DIALOG_CARD_WIDTH = 200;
@@ -136,6 +140,8 @@ export const UpperViewer: React.FC<UpperViewerProps> = ({
   initialTab = "grid",
   activeTab: controlledActiveTab,
   onActiveTabChange,
+  flipCardWidth,
+  flipCardHeight,
 }) => {
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
@@ -186,8 +192,8 @@ export const UpperViewer: React.FC<UpperViewerProps> = ({
   const gridRows =
     drawnCards.length > 0 ? Math.max(...drawnCards.map((c) => c.y)) + 1 : 3;
 
-  const FLIP_W = 56;
-  const FLIP_H = 96;
+  const FLIP_W = flipCardWidth ?? 56;
+  const FLIP_H = flipCardHeight ?? 96;
 
   const tabs: { key: UpperViewerTab; label: string }[] = [
     ...(tarotistImageUrl ? [{ key: "profile" as const, label: "占い師" }] : []),

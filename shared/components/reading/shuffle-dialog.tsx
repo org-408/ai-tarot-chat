@@ -28,17 +28,28 @@ export const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
 }) => {
   const [phase, setPhase] = useState<"shuffle" | "gather">("shuffle");
   const [internalOpen, setInternalOpen] = useState(false);
+  const [isBackReady, setIsBackReady] = useState(false);
   const cycleCountRef = useRef(0);
   const isOpenRef = useRef(isOpen);
 
+  // 裏面画像を事前ロードして初回の「透明カード」状態を防ぐ
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const img = new window.Image();
+    img.onload = () => setIsBackReady(true);
+    img.onerror = () => setIsBackReady(true);
+    img.src = cardBackPath;
+    if (img.complete) setIsBackReady(true);
+  }, [cardBackPath]);
+
   useEffect(() => {
     isOpenRef.current = isOpen;
-    if (isOpen && !internalOpen) {
+    if (isOpen && isBackReady && !internalOpen) {
       setInternalOpen(true);
       cycleCountRef.current = 0;
       setPhase("shuffle");
     }
-  }, [isOpen, internalOpen]);
+  }, [isOpen, isBackReady, internalOpen]);
 
   const handleAnimationComplete = () => {
     if (phase === "shuffle") {

@@ -13,9 +13,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useClientStore } from "@/lib/client/stores/client-store";
+import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, History, Home, Sparkles, Star, Zap, Crown } from "lucide-react";
+import { BookOpen, History, Home, Lock, Sparkles, Star, Zap, Crown } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 const PLAN_BADGE_CLASS: Record<string, string> = {
@@ -31,6 +32,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { data: session } = useSession();
   const { usage } = useClientStore();
+  const { isLocked } = useSalonStore();
 
   const navigate = (path: string) => router.push(path ? `/${path}` : "/");
 
@@ -81,18 +83,24 @@ export function AppSidebar() {
                   item.path === ""
                     ? pathname === "/"
                     : pathname.startsWith(`/${item.path}`);
+                // 占い進行中はカレントページ以外を無効化
+                const lockedByProgress = isLocked && !isActive;
+                const disabled = item.disabled || lockedByProgress;
 
                 return (
                   <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton
-                      onClick={item.disabled ? undefined : () => navigate(item.path)}
+                      onClick={disabled ? undefined : () => navigate(item.path)}
                       isActive={isActive}
                       tooltip={t(item.key)}
-                      disabled={item.disabled}
-                      className={item.disabled ? "opacity-40 cursor-not-allowed" : undefined}
+                      disabled={disabled}
+                      className={disabled ? "opacity-40 cursor-not-allowed" : undefined}
                     >
                       <item.icon />
                       <span>{t(item.key)}</span>
+                      {lockedByProgress && (
+                        <Lock className="ml-auto h-3 w-3 text-gray-400" />
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
