@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { activateAdminAction, removeAdminAction, sendInviteEmailAction } from "./actions";
 
 type AdminUserRow = {
@@ -124,8 +125,13 @@ export function UsersPageClient({
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {user.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={user.image} alt="" className="w-7 h-7 rounded-full" />
+                        <Image
+                          src={user.image}
+                          alt=""
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 rounded-full"
+                        />
                       )}
                       <div>
                         <div className="font-medium text-slate-800">{user.name ?? "—"}</div>
@@ -181,8 +187,13 @@ export function UsersPageClient({
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {user.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={user.image} alt="" className="w-7 h-7 rounded-full" />
+                        <Image
+                          src={user.image}
+                          alt=""
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 rounded-full"
+                        />
                       )}
                       <div>
                         <div className="font-medium text-slate-800">{user.name ?? "—"}</div>
