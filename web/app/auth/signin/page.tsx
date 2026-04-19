@@ -1,7 +1,7 @@
 import { SignInViewTracker } from "@/components/analytics/signin-view-tracker";
 import { SignInForm } from "@/components/auth/signin-form";
-import { MonteCarlo } from "next/font/google";
 import { ChevronDown } from "lucide-react";
+import { MonteCarlo } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -38,7 +38,7 @@ function CardFan({ size = "md" }: { size?: "sm" | "md" }) {
       : { bw: 52, bh: 80, fw: 64, fh: 96, cls: "w-36 h-24" };
 
   return (
-    <div className={`relative ${s.cls} flex-shrink-0`}>
+    <div className={`relative ${s.cls} shrink-0`}>
       <Image
         src="/cards/back.png"
         width={s.bw}
@@ -85,7 +85,9 @@ function SignInHeroPanel() {
             <div className="flex items-end gap-5 mb-6">
               <CardFan size="md" />
               <div>
-                <h1 className={`text-4xl font-bold text-white leading-tight ${monteCarlo.className}`}>
+                <h1
+                  className={`text-4xl font-bold text-white leading-tight ${monteCarlo.className}`}
+                >
                   Ariadne
                 </h1>
                 <p className="text-2xl font-bold text-violet-200">

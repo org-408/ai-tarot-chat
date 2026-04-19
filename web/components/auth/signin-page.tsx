@@ -82,7 +82,7 @@ export function SignInPage({ isOpen, onSignIn, error }: SignInPageProps) {
       </div>
 
       {/* Right side: Image */}
-      <div className="hidden md:block relative bg-gradient-to-tr from-[var(--cyan-100)] via-[var(--blue-50)] to-[var(--blue-100)]">
+      <div className="hidden md:block relative bg-to-tr from-(--cyan-100) via-(--blue-50) to-(--blue-100)">
         <div className="absolute inset-0 bg-center bg-no-repeat bg-contain">
           <Image
             src="/images/ariadne.webp"
@@ -95,10 +95,10 @@ export function SignInPage({ isOpen, onSignIn, error }: SignInPageProps) {
         </div>
         {/* <div className="absolute inset-0 bg-[var(--blue-300)]/10 backdrop-blur-[2px]"></div> */}
         <div className="absolute bottom-10 left-0 right-0 text-center">
-          <h2 className="font-monte text-5xl text-[var(--cyan-800)] drop-shadow-md">
+          <h2 className="font-monte text-5xl text-(--cyan-800) drop-shadow-md">
             Ariadne
           </h2>
-          <p className="text-[var(--cyan-600)] mt-2">
+          <p className="text-(--cyan-600) mt-2">
             Your Guide Through the Labyrinth of Knowledge
           </p>
         </div>
