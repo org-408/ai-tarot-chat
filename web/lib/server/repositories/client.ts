@@ -88,17 +88,6 @@ export class ClientRepository extends BaseRepository {
     });
   }
 
-  async hardDeleteClientByDeviceId(deviceId: string): Promise<void> {
-    const device = await this.db.device.findUnique({
-      where: { deviceId },
-    });
-    if (device && device.clientId) {
-      await this.db.client.delete({
-        where: { id: device.clientId },
-      });
-    }
-  }
-
   async resetDailyCounts(
     clientId: string,
     options?: { resetReadings?: boolean; resetPersonal?: boolean }

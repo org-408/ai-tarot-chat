@@ -242,10 +242,6 @@ export class ClientService {
     });
   }
 
-  async deleteClientByDeviceId(deviceId: string): Promise<void> {
-    await clientRepository.hardDeleteClientByDeviceId(deviceId);
-  }
-
   /**
    * アカウント削除（soft delete）
    * GDPR / App Store / Google Play ポリシー対応
@@ -571,7 +567,6 @@ export class ClientService {
 
         if (
           !clientId ||
-          !payloadDeviceId ||
           !tarotist ||
           (!category && !customQuestion) ||
           (category && customQuestion) ||
@@ -592,17 +587,20 @@ export class ClientService {
           throw new Error("Bad Request: missing parameters");
         }
 
-        // クライアント取得
+        // クライアント取得（Reading は Client 所属が本質）
         const client = await clientRepo.getClientById(clientId);
-        const device = await clientRepo.getDeviceByDeviceId(payloadDeviceId);
-        if (!client || !device) {
-          logWithContext("error", "Client or Device not found", {
-            clientId,
-            payloadDeviceId,
-          });
-          throw new Error("Client or Device not found");
+        if (!client) {
+          logWithContext("error", "Client not found", { clientId });
+          throw new Error("Client not found");
         }
-        const deviceId = device.id;
+
+        // Device は optional。JWT の deviceId に対応する Device レコードがあれば
+        // Reading に紐付けるが、無ければ紐付けずに保存する（Web ユーザー等）。
+        let deviceId: string | null = null;
+        if (payloadDeviceId) {
+          const device = await clientRepo.getDeviceByDeviceId(payloadDeviceId);
+          deviceId = device?.id ?? null;
+        }
 
         logWithContext("info", "Fetched client", {
           clientId,
@@ -614,8 +612,9 @@ export class ClientService {
           chatMessages,
         });
 
-        // deviceId をセットし直す(payload の deviceId とテーブルの deviceId は別物)
-        params.deviceId = deviceId;
+        // deviceId をセットし直す(payload の deviceId=UUID と
+        // Reading に入れる deviceId=Device.id は別物)。null なら紐付けなし。
+        params.deviceId = deviceId ?? undefined;
 
         // 占いタイプ判定
         if (!customQuestion && !category) {

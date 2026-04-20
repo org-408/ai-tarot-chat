@@ -371,9 +371,12 @@ export type Tarotist = {
 };
 
 // リーディング履歴モデル
+//
+// 所有関係: Reading は Client 所属。Device は「どの端末から占ったか」という
+// 付随情報で optional（Web ユーザーは Device を持たない）。
 export type Reading = {
   id: string;
-  clientId?: string | null;
+  clientId: string;
   client?: Client;
   deviceId?: string | null;
   device?: Device;
@@ -410,12 +413,14 @@ export type DrawnCard = {
 };
 
 // チャットメッセージモデル - カード解釈・質問応答の履歴
+//
+// 所有関係: ChatMessage は Reading 配下 + Client 所属。
+// clientId は readingId → Reading.clientId で推論可能な冗長キーだが、
+// JOIN なしで Client 単位のクエリ（モデレーション・GDPR 削除等）を行うため保持する。
 export type ChatMessage = {
   id: string;
-  clientId?: string | null;
+  clientId: string;
   client?: Client;
-  deviceId?: string | null;
-  device?: Device;
   tarotistId: string;
   tarotist?: Tarotist;
   chatType: ChatType;

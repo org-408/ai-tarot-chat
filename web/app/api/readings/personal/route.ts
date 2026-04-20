@@ -73,8 +73,9 @@ export async function POST(req: NextRequest) {
 
     logWithContext("debug", "セッション検証完了", { payload });
     clientId = payload.payload.clientId;
+    // deviceId は optional（Web ユーザーは Device を持たないケースがある）
     const deviceId = payload.payload.deviceId;
-    if (!clientId || !deviceId) {
+    if (!clientId) {
       logWithContext("warn", "clientId不正", { payload });
       return createReadingErrorResponse({
         code: "UNAUTHORIZED",
@@ -224,6 +225,7 @@ export async function POST(req: NextRequest) {
             // Phase2 初回鑑定: 新規作成 + 利用回数消費
             const chatMessages = [
               ...clientMessages.map((msg) => ({
+                clientId,
                 tarotistId: tarotist.id,
                 tarotist,
                 chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("TAROTIST_ANSWER" as const),
@@ -231,6 +233,7 @@ export async function POST(req: NextRequest) {
                 message: msgTextFn(msg),
               })),
               {
+                clientId,
                 tarotistId: tarotist.id,
                 tarotist,
                 chatType: "FINAL_READING" as const,
@@ -260,6 +263,7 @@ export async function POST(req: NextRequest) {
               );
               const chatMessages = [
                 ...clientMessages.map((msg, i) => ({
+                  clientId,
                   tarotistId: tarotist.id,
                   tarotist,
                   chatType:
@@ -272,6 +276,7 @@ export async function POST(req: NextRequest) {
                   message: msgTextFn(msg),
                 })),
                 {
+                  clientId,
                   tarotistId: tarotist.id,
                   tarotist,
                   chatType: "TAROTIST_ANSWER" as const,
@@ -551,6 +556,7 @@ export async function POST(req: NextRequest) {
                 // Phase2 初回鑑定: 新規作成 + 利用回数消費
                 const chatMessages = [
                   ...clientMessages.map((msg) => ({
+                    clientId,
                     tarotistId: tarotist.id,
                     tarotist,
                     chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("TAROTIST_ANSWER" as const),
@@ -558,6 +564,7 @@ export async function POST(req: NextRequest) {
                     message: msgText(msg),
                   })),
                   {
+                    clientId,
                     tarotistId: tarotist.id,
                     tarotist,
                     chatType: "FINAL_READING" as const,
@@ -587,6 +594,7 @@ export async function POST(req: NextRequest) {
                 );
                 const chatMessages = [
                   ...clientMessages.map((msg, i) => ({
+                    clientId,
                     tarotistId: tarotist.id,
                     tarotist,
                     chatType:
@@ -599,6 +607,7 @@ export async function POST(req: NextRequest) {
                     message: msgText(msg),
                   })),
                   {
+                    clientId,
                     tarotistId: tarotist.id,
                     tarotist,
                     chatType: "TAROTIST_ANSWER" as const,
