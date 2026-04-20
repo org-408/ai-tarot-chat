@@ -27,8 +27,24 @@ function getCardImageDataUrl(cardName: string): string {
   return imageCache.get(cacheKey)!;
 }
 
+// MonteCarlo 筆記体の「Ariadne」は build 時に @napi-rs/canvas で生成した PNG を埋め込む。
+// 詳細: scripts/ensure-ariadne-script.ts 参照
+// satori は筆記体フォントの GSUB (lookupType 6) を解釈できず例外 (→ 502) になるため、
+// フォント解決を避けて画像として貼る。
+const ariadneScript: { dataUrl: string; width: number; height: number } | undefined = (() => {
+  try {
+    const buf = readFileSync(path.join(process.cwd(), "public", "og-assets", "ariadne-script.png"));
+    return {
+      dataUrl: `data:image/png;base64,${buf.toString("base64")}`,
+      width: buf.readUInt32BE(16),
+      height: buf.readUInt32BE(20),
+    };
+  } catch {
+    return undefined;
+  }
+})();
+
 let cachedFont: ArrayBuffer | undefined;
-let cachedScriptFont: ArrayBuffer | undefined;
 
 async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 3000): Promise<Response> {
   const controller = new AbortController();
@@ -61,23 +77,21 @@ async function loadJapaneseFont(): Promise<ArrayBuffer | undefined> {
   return cachedFont;
 }
 
-async function loadScriptFont(): Promise<ArrayBuffer | undefined> {
-  if (cachedScriptFont) return cachedScriptFont;
-  const cssUrl = `https://fonts.googleapis.com/css2?family=MonteCarlo&text=${encodeURIComponent("Ariadne")}`;
-  cachedScriptFont = await fetchGoogleFont(cssUrl);
-  return cachedScriptFont;
-}
+const ARIADNE_DISPLAY_HEIGHT = 72;
 
 export async function GET() {
   const images = TAROTISTS.map(getImageDataUrl);
   const cardBackUrl = getCardImageDataUrl("back");
   const cardFaceUrl = getCardImageDataUrl("0_fool");
-  const [fontData, scriptFontData] = await Promise.all([loadJapaneseFont(), loadScriptFont()]);
+  const fontData = await loadJapaneseFont();
 
   type FontOption = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 };
   const fonts: FontOption[] = [];
   if (fontData) fonts.push({ name: "NotoSansJP", data: fontData, weight: 700 });
-  if (scriptFontData) fonts.push({ name: "MonteCarlo", data: scriptFontData, weight: 400 });
+
+  const ariadneWidth = ariadneScript
+    ? Math.round((ARIADNE_DISPLAY_HEIGHT * ariadneScript.width) / ariadneScript.height)
+    : 0;
 
   // 各キャラクター画像の幅・高さ (8人を横並び)
   const imgW = 112;
@@ -123,17 +137,16 @@ export async function GET() {
                        boxShadow: "0 5px 14px rgba(0,0,0,0.7)" }} />
           </div>
           <div style={{ display: "flex", alignItems: "center", letterSpacing: "-0.5px" }}>
-            <span
-              style={{
-                fontSize: 64,
-                fontWeight: 400,
-                color: "#87CEEB",
-                fontFamily: scriptFontData ? "MonteCarlo" : "sans-serif",
-                marginRight: 10,
-              }}
-            >
-              Ariadne
-            </span>
+            {ariadneScript ? (
+              <img
+                src={ariadneScript.dataUrl}
+                width={ariadneWidth}
+                height={ARIADNE_DISPLAY_HEIGHT}
+                style={{ marginRight: 10 }}
+              />
+            ) : (
+              <span style={{ fontSize: 56, fontWeight: 400, color: "#87CEEB", marginRight: 10 }}>Ariadne</span>
+            )}
             <span style={{ fontSize: 52, fontWeight: 700, color: "white" }}>- AIタロット占い</span>
           </div>
         </div>

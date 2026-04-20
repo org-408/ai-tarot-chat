@@ -17,8 +17,10 @@
     "db:admin-set": "tsx --env-file=.env prisma/set-admin.ts",
     "migrate:admin-users": "tsx --env-file=.env scripts/migrate-admin-users.ts",
     "og:optimize": "tsx scripts/optimize-og-images.ts",
+    "og:ensure-ariadne": "tsx scripts/ensure-ariadne-script.ts",
     "ui:add": "npx shadcn@latest add ",
     "dev": "next dev --turbopack",
+    "prebuild": "tsx scripts/ensure-ariadne-script.ts",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
@@ -80,6 +82,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@napi-rs/canvas": "^0.1.99",
     "@playwright/test": "^1.59.1",
     "@swc/helpers": ">=0.5.21",
     "@tailwindcss/postcss": "^4",
