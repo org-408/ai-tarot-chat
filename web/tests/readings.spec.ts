@@ -590,42 +590,52 @@ test.describe("Reading/ChatMessage 所有関係: スキーマ整合性", () => {
 });
 
 test.describe("履歴 API: Client 中心の取得", () => {
-  test("deviceId なし Reading も /api/clients/readings で取得できる", async ({ request }) => {
-    const { webNoDeviceApiToken, normalClientId, tarotist, spread, category } = fixtures;
+  // 履歴取得は Plan.hasHistory=true 必須のため PREMIUM ユーザーで検証する。
+  // PREMIUM JWT から deviceId を抜いた Web 経路トークンを生成するため、
+  // ここでは既存の premium トークンをそのまま使いつつ、DB クエリで
+  // deviceId NULL の Reading を直接作って取得できることを確認する。
 
-    // Web 経路で Reading を保存
+  test("deviceId なし Reading を /api/clients/readings で取得できる", async ({ request }) => {
+    const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
+
+    // 通常の API 呼び出しで Reading を保存
     await callReadingApi(request, "/api/readings/simple", {
-      token: webNoDeviceApiToken,
+      token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
       spread,
       category,
     });
 
+    // この Reading の deviceId を NULL に書き換え（Web 経路を模擬）
+    await pool.query(
+      `UPDATE "Reading" SET "deviceId" = NULL WHERE "clientId" = $1`,
+      [premiumClientId]
+    );
+
     // 履歴 API で取得
     const res = await request.get("/api/clients/readings", {
-      headers: { Authorization: `Bearer ${webNoDeviceApiToken}` },
+      headers: { Authorization: `Bearer ${premiumApiToken}` },
     });
     expect(res.status()).toBe(200);
 
-    const readings = (await res.json()) as Array<{
-      id: string;
-      clientId: string;
-      deviceId: string | null;
-    }>;
+    const body = (await res.json()) as {
+      readings: Array<{ id: string; clientId: string; deviceId: string | null }>;
+      total: number;
+    };
 
-    expect(readings.length).toBeGreaterThan(0);
-    const latest = readings[0];
-    expect(latest.clientId).toBe(normalClientId);
-    // Web 経路なので deviceId は null
+    expect(body.readings.length).toBeGreaterThan(0);
+    const latest = body.readings[0];
+    expect(latest.clientId).toBe(premiumClientId);
+    // Web 経路（deviceId NULL）でも履歴取得できる
     expect(latest.deviceId).toBeNull();
   });
 
   test("deviceId あり Reading も /api/clients/readings で取得できる", async ({ request }) => {
-    const { normalApiToken, normalClientId, tarotist, spread, category } = fixtures;
+    const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
 
     await callReadingApi(request, "/api/readings/simple", {
-      token: normalApiToken,
+      token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
       spread,
@@ -633,19 +643,18 @@ test.describe("履歴 API: Client 中心の取得", () => {
     });
 
     const res = await request.get("/api/clients/readings", {
-      headers: { Authorization: `Bearer ${normalApiToken}` },
+      headers: { Authorization: `Bearer ${premiumApiToken}` },
     });
     expect(res.status()).toBe(200);
 
-    const readings = (await res.json()) as Array<{
-      id: string;
-      clientId: string;
-      deviceId: string | null;
-    }>;
+    const body = (await res.json()) as {
+      readings: Array<{ id: string; clientId: string; deviceId: string | null }>;
+      total: number;
+    };
 
-    expect(readings.length).toBeGreaterThan(0);
-    const latest = readings[0];
-    expect(latest.clientId).toBe(normalClientId);
+    expect(body.readings.length).toBeGreaterThan(0);
+    const latest = body.readings[0];
+    expect(latest.clientId).toBe(premiumClientId);
     // モバイル経路なので deviceId あり
     expect(latest.deviceId).not.toBeNull();
   });

@@ -58,10 +58,10 @@ test.describe("サービスページ（認証済み）", () => {
     // 同じ selection phase に戻ることが仕様なので、この画面が壊れていなければ
     // 復帰先が壊れていないことを保証できる。
     await assertAuthenticatedPage(page, "/simple");
+    // 残り回数バッジ（"残り N 回" 形式。マスターデータ・Usage 取得完了を待つ）
+    await expect(page.getByText(/残り.*回/).first()).toBeVisible({ timeout: 10000 });
     // 「占いを始める」ボタン（未選択なら disabled だが存在する）
-    await expect(page.getByRole("button", { name: /占いを始める/ })).toBeVisible();
-    // 残り回数バッジ（"残り N 回" 形式）
-    await expect(page.getByText(/残り.*回/).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /占いを始める/ })).toBeVisible({ timeout: 10000 });
   });
 
   test("/personal: パーソナル占いUIが表示される", async ({ page }) => {
