@@ -50,3 +50,6 @@ expanded-*.json
 
 # Playwright 認証済みテスト生成ファイル
 tests/.auth/
+
+# build 時に生成される OG アセット (scripts/ensure-ariadne-script.ts)
+/public/og-assets/ariadne-script.png
