@@ -201,6 +201,29 @@ export default async function globalSetup() {
       .setExpirationTime("12h")
       .sign(jwtSecret);
 
+    // Web 経路: deviceId なし JWT（proxy.ts の NextAuth セッション経路を模擬）
+    const webNoDeviceApiToken = await new SignJWT({
+      t: "app",
+      clientId: normalClientId,
+      provider: "google",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("12h")
+      .sign(jwtSecret);
+
+    // Web 経路: 存在しない deviceId（proxy.ts が生成する合成 `web:${userId}`）
+    const webSyntheticDeviceApiToken = await new SignJWT({
+      t: "app",
+      clientId: normalClientId,
+      deviceId: `web:${userId}`,
+      provider: "google",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("12h")
+      .sign(jwtSecret);
+
     // ── テスト用マスターデータを取得 ─────────────────────────
 
     const tarotistResult = await pool.query<{
@@ -233,6 +256,8 @@ export default async function globalSetup() {
         normalClientId,
         premiumApiToken,
         premiumClientId,
+        webNoDeviceApiToken,
+        webSyntheticDeviceApiToken,
         tarotist: tarotistResult.rows[0],
         spread: spreadResult.rows[0],
         category: categoryResult.rows[0],

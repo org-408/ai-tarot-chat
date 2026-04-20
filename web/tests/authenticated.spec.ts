@@ -51,6 +51,7 @@ test.describe("サービスページ（認証済み）", () => {
     await expect(page.locator("h1, h2").first()).toBeVisible();
   });
 
+
   test("/personal: パーソナル占いUIが表示される", async ({ page }) => {
     await assertAuthenticatedPage(page, "/personal");
     await expect(page.locator("h1, h2").first()).toBeVisible();
