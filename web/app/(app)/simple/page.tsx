@@ -330,9 +330,9 @@ export default function SimplePage() {
 
   const handleReadAgain = () => {
     resetSession();
-    setIsLocked(true);
+    setIsLocked(false);
     setReadingKey((k) => k + 1);
-    setPhase("reading");
+    setPhase("selection");
   };
 
   const handleHeaderBack = () => {

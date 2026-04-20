@@ -71,7 +71,6 @@ npm run ui:add <component-name>
 | メソッド | パス | 説明 |
 |---|---|---|
 | POST | `/api/device/register` | デバイス登録・更新 |
-| POST | `/api/device/reset` | デバイスリセット |
 
 ### その他
 

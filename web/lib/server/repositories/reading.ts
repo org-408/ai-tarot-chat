@@ -39,7 +39,7 @@ export class ReadingRepository extends BaseRepository {
     const created = await this.db.reading.create({
       data: {
         clientId: reading.clientId!,
-        deviceId: reading.deviceId!,
+        deviceId: reading.deviceId ?? null,
         tarotistId: tarotist.id,
         spreadId: spread.id,
         categoryId: category?.id ?? null,
@@ -61,8 +61,7 @@ export class ReadingRepository extends BaseRepository {
           : undefined,
         chatMessages: {
           create: reading.chatMessages.map((message) => ({
-            clientId: reading.clientId,
-            deviceId: reading.deviceId,
+            clientId: reading.clientId!,
             tarotistId: tarotist.id,
             chatType: message.chatType,
             role: message.role,
@@ -113,8 +112,7 @@ export class ReadingRepository extends BaseRepository {
         chatMessages: {
           deleteMany: {},
           create: reading.chatMessages.map((message) => ({
-            clientId: reading.clientId,
-            deviceId: reading.deviceId,
+            clientId: reading.clientId!,
             tarotistId: tarotist.id,
             chatType: message.chatType,
             role: message.role,
@@ -181,28 +179,6 @@ export class ReadingRepository extends BaseRepository {
       orderBy: { createdAt: "desc" },
       take,
       skip,
-      include: {
-        client: true,
-        device: true,
-        tarotist: true,
-        spread: true,
-        category: true,
-        cards: { include: { card: true } },
-        chatMessages: true,
-      },
-    })) as unknown as Reading[]; // 型アサーションを追加
-  }
-
-  async getReadingsByDeviceId(
-    deviceId: string,
-    limit = 20,
-    offset = 0
-  ): Promise<Reading[]> {
-    return (await this.db.reading.findMany({
-      where: { deviceId },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      skip: offset,
       include: {
         client: true,
         device: true,

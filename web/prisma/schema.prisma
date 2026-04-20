@@ -90,7 +90,6 @@ model Device {
 
   // 関連
   readings   Reading[]
-  chatMessages ChatMessage[]
 
   @@index([clientId])
   @@index([lastSeenAt])
@@ -423,12 +422,15 @@ model Tarotist {
 }
 
 // リーディングモデル
+//
+// 所有関係: Reading は Client に所属する。Device は「どの端末から占ったか」という
+// 付随情報に過ぎないため optional。Web 版は Device を持たない Client も存在する。
 model Reading {
   id            String    @id @default(cuid())
   clientId      String
   client        Client     @relation(fields: [clientId], references: [id])
-  deviceId      String
-  device        Device    @relation(fields: [deviceId], references: [id])
+  deviceId      String?
+  device        Device?   @relation(fields: [deviceId], references: [id])
   tarotistId    String
   tarotist      Tarotist  @relation(fields: [tarotistId], references: [id])
   spreadId      String
@@ -488,12 +490,15 @@ enum ChatRole {
 }
 
 // チャットメッセージモデル - カード解釈・質問応答の履歴
+//
+// 所有関係: ChatMessage は Reading 配下、そして Client 所属。clientId は
+// readingId → Reading.clientId で推論可能な冗長キーだが、JOIN なしで Client
+// 単位のクエリ（モデレーション・GDPR 削除等）を可能にするため意図的に保持する。
+// Device は保持しない（Reading が Device を持つ場合のみ Reading 経由で辿れる）。
 model ChatMessage {
   id        String   @id @default(cuid())
-  clientId  String?
-  client    Client?  @relation(fields: [clientId], references: [id])
-  deviceId  String?
-  device    Device?  @relation(fields: [deviceId], references: [id])
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
   tarotistId String?
   tarotist   Tarotist? @relation(fields: [tarotistId], references: [id])
   chatType   ChatType
@@ -504,7 +509,6 @@ model ChatMessage {
   createdAt  DateTime @default(now())
 
   @@index([clientId])
-  @@index([deviceId])
   @@index([tarotistId])
   @@index([readingId])
   @@index([chatType])
