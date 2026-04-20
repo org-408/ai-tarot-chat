@@ -24,6 +24,10 @@ interface FixtureData {
   normalClientId: string;
   premiumApiToken: string;
   premiumClientId: string;
+  /** Web 経路: deviceId なし JWT */
+  webNoDeviceApiToken: string;
+  /** Web 経路: 存在しない deviceId（proxy.ts の `web:${userId}` を模擬） */
+  webSyntheticDeviceApiToken: string;
   tarotist: {
     id: string;
     name: string;
@@ -170,8 +174,12 @@ async function getClientCounts(clientId: string) {
 }
 
 async function getLatestReading(clientId: string) {
-  const result = await pool.query<{ id: string; "customQuestion": string | null }>(
-    `SELECT id, "customQuestion" FROM "Reading" WHERE "clientId" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
+  const result = await pool.query<{
+    id: string;
+    customQuestion: string | null;
+    deviceId: string | null;
+  }>(
+    `SELECT id, "customQuestion", "deviceId" FROM "Reading" WHERE "clientId" = $1 ORDER BY "createdAt" DESC LIMIT 1`,
     [clientId]
   );
   return result.rows[0] ?? null;
@@ -460,5 +468,185 @@ test.describe("リーディング保存・利用回数テスト", () => {
 
     // Reading は 1 件
     expect(await getReadingCount(premiumClientId)).toBe(1);
+  });
+});
+
+// ─────────────────────────────────────────────
+// スキーマ所有関係リファクタ（PR #178）回帰防止テスト
+//
+// Reading は Client 所属、Device は optional メタデータ、という仕様が
+// 壊れないことを保証する。
+// ─────────────────────────────────────────────
+
+test.describe("Reading/ChatMessage 所有関係: Web 経路（Device なし）", () => {
+  test("deviceId なし JWT でクイック占いが保存される（deviceId=NULL）", async ({ request }) => {
+    const { webNoDeviceApiToken, normalClientId, tarotist, spread, category } = fixtures;
+
+    const messages: UIMessage[] = [u("msg_1", "今日の運勢を占ってください。")];
+
+    const res = await callReadingApi(request, "/api/readings/simple", {
+      token: webNoDeviceApiToken,
+      messages,
+      tarotist,
+      spread,
+      category,
+    });
+
+    expect(res.status()).toBe(200);
+
+    // Reading は保存されている
+    const reading = await getLatestReading(normalClientId);
+    expect(reading).not.toBeNull();
+
+    // Device は紐付かない
+    expect(reading!.deviceId).toBeNull();
+
+    // 利用回数は増加している
+    const counts = await getClientCounts(normalClientId);
+    expect(counts.dailyReadingsCount).toBe(1);
+  });
+
+  test("DB に存在しない deviceId でも保存され、deviceId=NULL になる", async ({ request }) => {
+    const { webSyntheticDeviceApiToken, normalClientId, tarotist, spread, category } = fixtures;
+
+    const messages: UIMessage[] = [u("msg_1", "今日の運勢を占ってください。")];
+
+    const res = await callReadingApi(request, "/api/readings/simple", {
+      token: webSyntheticDeviceApiToken,
+      messages,
+      tarotist,
+      spread,
+      category,
+    });
+
+    expect(res.status()).toBe(200);
+
+    const reading = await getLatestReading(normalClientId);
+    expect(reading).not.toBeNull();
+    // 合成 web:xxx は Device テーブルに無いので紐付かず null で保存される
+    expect(reading!.deviceId).toBeNull();
+  });
+});
+
+test.describe("Reading/ChatMessage 所有関係: スキーマ整合性", () => {
+  test("ChatMessage.clientId は Reading.clientId と一致する（required 冗長キーの整合性）", async ({ request }) => {
+    const { normalApiToken, normalClientId, tarotist, spread, category } = fixtures;
+
+    await callReadingApi(request, "/api/readings/simple", {
+      token: normalApiToken,
+      messages: [u("msg_1", "占ってください。")],
+      tarotist,
+      spread,
+      category,
+    });
+
+    const reading = await getLatestReading(normalClientId);
+    expect(reading).not.toBeNull();
+
+    const result = await pool.query<{ clientId: string }>(
+      `SELECT "clientId" FROM "ChatMessage" WHERE "readingId" = $1`,
+      [reading!.id]
+    );
+
+    expect(result.rows.length).toBeGreaterThan(0);
+    // 全 ChatMessage の clientId が Reading.clientId と一致する
+    for (const row of result.rows) {
+      expect(row.clientId).toBe(normalClientId);
+    }
+  });
+
+  test("ChatMessage.clientId は NOT NULL 制約で保護されている", async () => {
+    // 情報スキーマで NOT NULL を確認
+    const result = await pool.query<{ is_nullable: string }>(
+      `SELECT is_nullable FROM information_schema.columns
+       WHERE table_name = 'ChatMessage' AND column_name = 'clientId'`
+    );
+    expect(result.rows[0]?.is_nullable).toBe("NO");
+  });
+
+  test("ChatMessage テーブルから deviceId カラムが削除されている", async () => {
+    const result = await pool.query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM information_schema.columns
+       WHERE table_name = 'ChatMessage' AND column_name = 'deviceId'`
+    );
+    expect(parseInt(result.rows[0].count, 10)).toBe(0);
+  });
+
+  test("Reading.deviceId は nullable 制約になっている", async () => {
+    const result = await pool.query<{ is_nullable: string }>(
+      `SELECT is_nullable FROM information_schema.columns
+       WHERE table_name = 'Reading' AND column_name = 'deviceId'`
+    );
+    expect(result.rows[0]?.is_nullable).toBe("YES");
+  });
+
+  test("Reading.clientId は NOT NULL 制約で保護されている", async () => {
+    const result = await pool.query<{ is_nullable: string }>(
+      `SELECT is_nullable FROM information_schema.columns
+       WHERE table_name = 'Reading' AND column_name = 'clientId'`
+    );
+    expect(result.rows[0]?.is_nullable).toBe("NO");
+  });
+});
+
+test.describe("履歴 API: Client 中心の取得", () => {
+  test("deviceId なし Reading も /api/clients/readings で取得できる", async ({ request }) => {
+    const { webNoDeviceApiToken, normalClientId, tarotist, spread, category } = fixtures;
+
+    // Web 経路で Reading を保存
+    await callReadingApi(request, "/api/readings/simple", {
+      token: webNoDeviceApiToken,
+      messages: [u("msg_1", "占ってください。")],
+      tarotist,
+      spread,
+      category,
+    });
+
+    // 履歴 API で取得
+    const res = await request.get("/api/clients/readings", {
+      headers: { Authorization: `Bearer ${webNoDeviceApiToken}` },
+    });
+    expect(res.status()).toBe(200);
+
+    const readings = (await res.json()) as Array<{
+      id: string;
+      clientId: string;
+      deviceId: string | null;
+    }>;
+
+    expect(readings.length).toBeGreaterThan(0);
+    const latest = readings[0];
+    expect(latest.clientId).toBe(normalClientId);
+    // Web 経路なので deviceId は null
+    expect(latest.deviceId).toBeNull();
+  });
+
+  test("deviceId あり Reading も /api/clients/readings で取得できる", async ({ request }) => {
+    const { normalApiToken, normalClientId, tarotist, spread, category } = fixtures;
+
+    await callReadingApi(request, "/api/readings/simple", {
+      token: normalApiToken,
+      messages: [u("msg_1", "占ってください。")],
+      tarotist,
+      spread,
+      category,
+    });
+
+    const res = await request.get("/api/clients/readings", {
+      headers: { Authorization: `Bearer ${normalApiToken}` },
+    });
+    expect(res.status()).toBe(200);
+
+    const readings = (await res.json()) as Array<{
+      id: string;
+      clientId: string;
+      deviceId: string | null;
+    }>;
+
+    expect(readings.length).toBeGreaterThan(0);
+    const latest = readings[0];
+    expect(latest.clientId).toBe(normalClientId);
+    // モバイル経路なので deviceId あり
+    expect(latest.deviceId).not.toBeNull();
   });
 });

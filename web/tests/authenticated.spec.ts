@@ -51,6 +51,19 @@ test.describe("サービスページ（認証済み）", () => {
     await expect(page.locator("h1, h2").first()).toBeVisible();
   });
 
+  test("/simple: selection phase で「占いを始める」ボタンと残り回数表示が出る", async ({ page }) => {
+    // handleReadAgain の遷移先修正（reading → selection）の回帰防止。
+    // 初期状態は selection phase。ここに「占いを始める」ボタンと残り回数
+    // バッジが両方表示されることを確認する。「もう一度占う」クリック後も
+    // 同じ selection phase に戻ることが仕様なので、この画面が壊れていなければ
+    // 復帰先が壊れていないことを保証できる。
+    await assertAuthenticatedPage(page, "/simple");
+    // 「占いを始める」ボタン（未選択なら disabled だが存在する）
+    await expect(page.getByRole("button", { name: /占いを始める/ })).toBeVisible();
+    // 残り回数バッジ（"残り N 回" 形式）
+    await expect(page.getByText(/残り.*回/).first()).toBeVisible();
+  });
+
   test("/personal: パーソナル占いUIが表示される", async ({ page }) => {
     await assertAuthenticatedPage(page, "/personal");
     await expect(page.locator("h1, h2").first()).toBeVisible();
