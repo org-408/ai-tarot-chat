@@ -15,9 +15,12 @@ import {
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { useTranslations } from "next-intl";
+import { MonteCarlo } from "next/font/google";
 import { usePathname, useRouter } from "next/navigation";
 import { BookOpen, History, Home, Lock, Sparkles, Star, Zap, Crown } from "lucide-react";
 import { useSession } from "next-auth/react";
+
+const monteCarlo = MonteCarlo({ subsets: ["latin"], weight: "400" });
 
 const PLAN_BADGE_CLASS: Record<string, string> = {
   PREMIUM: "bg-amber-100 text-amber-700",
@@ -55,20 +58,23 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-3">
-        <div className="flex items-center gap-2">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-3">
           <SidebarTrigger className="flex-shrink-0" />
-          <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2 min-w-0">
+          <div className="group-data-[collapsible=icon]:hidden flex items-center gap-3 min-w-0">
             <img
               src="/tarotists/Ariadne.png"
               alt="Ariadne"
-              className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
             />
             <div className="leading-tight min-w-0">
-              <p className="font-bold text-sm bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <p
+                className={`${monteCarlo.className} text-2xl leading-none`}
+                style={{ color: "#87CEEB" }}
+              >
                 Ariadne
               </p>
-              <p className="text-[10px] text-muted-foreground">AI Tarot Chat</p>
+              <p className="text-xs text-muted-foreground mt-1">AI Tarot Chat</p>
             </div>
           </div>
         </div>
