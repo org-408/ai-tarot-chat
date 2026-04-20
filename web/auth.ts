@@ -150,8 +150,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             client: { select: { id: true, deletedAt: true } },
           },
         });
-        token.role = dbUser?.role ?? "USER";
-        if (!token.clientId && dbUser?.client && !dbUser.client.deletedAt) {
+        // DB に User が存在しない（例: staging の DB リセット後に古い Cookie
+        // が残っているケース）場合は JWT を無効化。null を返すとセッションが
+        // 破棄され、pages の auth() → redirect("/auth/signin") が発動する。
+        if (!dbUser) {
+          logWithContext("warn", "[jwt] User not found in DB, invalidating session", {
+            tokenId: token.id,
+          });
+          return null;
+        }
+        token.role = dbUser.role ?? "USER";
+        if (!token.clientId && dbUser.client && !dbUser.client.deletedAt) {
           token.clientId = dbUser.client.id;
         }
       }
