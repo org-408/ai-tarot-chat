@@ -17,8 +17,14 @@
 
 -- ------------------------------------------------------------
 -- 1. Reading.deviceId を optional 化
+--    nullable 化に伴い FK の onDelete が RESTRICT → SET NULL に変わる
+--    (Prisma のデフォルト挙動に合わせる)
 -- ------------------------------------------------------------
+ALTER TABLE "Reading" DROP CONSTRAINT "Reading_deviceId_fkey";
 ALTER TABLE "Reading" ALTER COLUMN "deviceId" DROP NOT NULL;
+ALTER TABLE "Reading" ADD CONSTRAINT "Reading_deviceId_fkey"
+  FOREIGN KEY ("deviceId") REFERENCES "Device"("id")
+  ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- ------------------------------------------------------------
 -- 2. ChatMessage.clientId を required 化
