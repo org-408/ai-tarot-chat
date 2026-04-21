@@ -5,7 +5,6 @@ import remarkGfm from "remark-gfm";
 
 interface MessageContentProps {
   content: string;
-  isStreaming?: boolean;
 }
 
 /**
@@ -13,7 +12,7 @@ interface MessageContentProps {
  * @ai-sdk/react 依存ゼロ。プラットフォーム非依存。
  */
 export const MessageContent = memo<MessageContentProps>(
-  ({ content, isStreaming = false }) => {
+  ({ content }) => {
     const displayContent = useMemo(() => content ?? "", [content]);
 
     return (
@@ -108,14 +107,10 @@ export const MessageContent = memo<MessageContentProps>(
         >
           {displayContent}
         </ReactMarkdown>
-        {isStreaming && (
-          <span className="inline-block w-1.5 h-4 bg-gray-900 animate-pulse ml-0.5 align-text-bottom" />
-        )}
       </div>
     );
   },
-  (prev, next) =>
-    prev.content === next.content && prev.isStreaming === next.isStreaming,
+  (prev, next) => prev.content === next.content,
 );
 
 MessageContent.displayName = "MessageContent";

@@ -161,9 +161,10 @@ export const TarotistSelector: React.FC<TarotistSelectorProps> = ({
                   </div>
                 )}
                 {showBio && tarotist.bio && (
-                  <div className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">
-                    {tarotist.bio}
-                  </div>
+                  <div
+                    className="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: tarotist.bio }}
+                  />
                 )}
               </div>
             </motion.button>

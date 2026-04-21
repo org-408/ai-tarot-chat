@@ -121,8 +121,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
   const showPhase1Input =
     !isPhase2 && !inputDisabled && !isProcessing;
 
-  const lastMessageIndex = messages.length - 1;
-
   return (
     <div className="w-full h-full flex flex-col relative">
       {/* Messages Area */}
@@ -131,11 +129,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
           <MessageBubble
             key={index}
             message={message}
-            isStreaming={
-              index === lastMessageIndex &&
-              message.role === "assistant" &&
-              status === "streaming"
-            }
             tarotistImageUrl={tarotistImageUrl}
             tarotistIcon={tarotistIcon}
             showAvatar={showAvatar}
