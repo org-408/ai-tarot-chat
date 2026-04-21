@@ -250,14 +250,13 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             const isAuthenticated = useAuthStore.getState().isAuthenticated;
             const { isLoggedIn } = get();
 
-            // RC がログイン済み（identified user）の場合は最低でも FREE にする。
-            // これにより、onResume の認証エラー回復中（registerDevice() 後など）に
-            // RC セッションが残っていて isAuthenticated = false になっているケースで
-            // GUEST へ誤ってダウングレードされるのを防ぐ。
-            // ※ 明示的ログアウト時は subscriptionStore.logout() で isLoggedIn = false に
-            //   なってから listener が呼ばれるため、GUEST への通常パスは維持される。
-            const defaultPlanCode =
-              isAuthenticated || isLoggedIn ? "FREE" : "GUEST";
+            // 両方 false はランタイム中の競合状態（onResume 中に login() 完了前に
+            // 遅延イベントが届くケース等）なのでスキップする。
+            // 正当な未ログイン状態は lifecycle.init() 内の明示的 refresh でのみ発生し、
+            // その場合は isLifecycleBusy ガードを経由しないため影響しない。
+            if (!isAuthenticated && !isLoggedIn) return;
+
+            const defaultPlanCode = isLoggedIn || isAuthenticated ? "FREE" : "GUEST";
             const defaultPlan = plans.find((p) => p.code === defaultPlanCode);
             if (defaultPlan) {
               logWithContext(

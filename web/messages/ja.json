@@ -90,9 +90,7 @@
     "recentHistory": "最近の占い",
     "viewAll": "すべて見る",
     "personalBadge": "パーソナル",
-    "historyEmpty": "まだ占い履歴がありません。占いを始めてみましょう",
-    "historyPlanRequired": "占い履歴はFREEプラン以上で保存できます",
-    "viewPlans": "プランを見る"
+    "historyEmpty": "まだ占い履歴がありません。占いを始めてみましょう"
   },
   "simple": {
     "title": "クイック占い",

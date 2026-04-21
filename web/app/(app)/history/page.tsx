@@ -138,8 +138,8 @@ export default function HistoryPage() {
   }, [fetchReadings]);
 
   const filtered = readings.filter((r) => {
-    if (tab === "quick") return r.category != null;
-    if (tab === "personal") return r.category == null;
+    if (tab === "quick") return !r.customQuestion;
+    if (tab === "personal") return !!r.customQuestion;
     return true;
   });
 

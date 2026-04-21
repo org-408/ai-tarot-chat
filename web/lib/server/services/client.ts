@@ -381,21 +381,20 @@ export class ClientService {
     take = 20,
     skip = 0
   ): Promise<{ readings: Reading[]; total: number }> {
-    const client = await clientRepository.getClientById(clientId);
-    if (!client) throw new Error("Client not found");
-
-    const plan = await planRepository.getPlanById(client.planId);
-    if (!plan) throw new Error("Plan not found");
-
-    if (!plan.hasHistory) {
-      return { readings: [], total: 0 };
-    }
-
     const [readings, total] = await Promise.all([
       readingRepository.getReadingsByClientId(clientId, take, skip),
       readingRepository.countByClientId(clientId),
     ]);
     return { readings, total };
+  }
+
+  async getReadingById(
+    clientId: string,
+    readingId: string
+  ): Promise<Reading | null> {
+    const reading = await readingRepository.getReadingById(readingId);
+    if (!reading || reading.clientId !== clientId) return null;
+    return reading;
   }
 
   async consumeReadingQuota(params: {

@@ -1,11 +1,12 @@
 "use client";
 
 import { useClientStore } from "@/lib/client/stores/client-store";
+import { fetchReadingById } from "@/lib/client/services/client-service";
 import { MessageContent } from "@shared/components/chat/message-content";
-import type { DrawnCard } from "@shared/lib/types";
+import type { DrawnCard, Reading } from "@shared/lib/types";
 import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 
 function formatReadingDate(date: string | Date): string {
@@ -24,17 +25,25 @@ export default function HistoryDetailPage() {
   const id = params.id as string;
   const router = useRouter();
   const t = useTranslations("history");
-  const { readings, isLoadingReadings, fetchReadings } = useClientStore();
+  const { readings } = useClientStore();
+  const [fetched, setFetched] = useState<Reading | null | "loading">("loading");
+
+  const cached = readings.find((r) => r.id === id);
 
   useEffect(() => {
-    if (readings.length === 0 && !isLoadingReadings) {
-      fetchReadings();
+    if (cached) {
+      setFetched(null); // キャッシュヒット時は API fetch 不要
+      return;
     }
-  }, [readings.length, isLoadingReadings, fetchReadings]);
+    fetchReadingById(id)
+      .then((r) => setFetched(r))
+      .catch(() => setFetched(null));
+  }, [id, cached]);
 
-  const reading = readings.find((r) => r.id === id);
+  const reading = cached ?? (fetched !== "loading" ? fetched : null);
+  const isLoading = !cached && fetched === "loading";
 
-  if (!reading && isLoadingReadings) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground">
         <p>{t("loadMore")}</p>
