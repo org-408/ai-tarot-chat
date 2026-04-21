@@ -17,8 +17,8 @@ import type {
 import { useMasterStore } from "./master";
 
 interface SalonState {
-  selectedTarotist: Tarotist;
-  selectedPersonalTarotist: Tarotist;
+  selectedTarotist: Tarotist | null;
+  selectedPersonalTarotist: Tarotist | null;
   selectedCategory: ReadingCategory;
   customQuestion: string;
   selectedSpread: Spread;
@@ -33,8 +33,8 @@ interface SalonState {
   isPersonal: boolean;
   messages: UIMessage[];
   init: () => void;
-  setSelectedTarotist: (tarotist: Tarotist) => void;
-  setSelectedPersonalTarotist: (tarotist: Tarotist) => void;
+  setSelectedTarotist: (tarotist: Tarotist | null) => void;
+  setSelectedPersonalTarotist: (tarotist: Tarotist | null) => void;
   setSelectedCategory: (category: ReadingCategory) => void;
   setCustomQuestion: (question: string) => void;
   setSelectedSpread: (spread: Spread) => void;
@@ -53,12 +53,8 @@ interface SalonState {
 }
 
 // 初期値をマスターデータから取得する
-const initialTarotist: Tarotist = useMasterStore
-  .getState()
-  .masterData.tarotists.find((t) => t.plan?.code === "GUEST")!;
-const initialPersonalTarotist: Tarotist = useMasterStore
-  .getState()
-  .masterData.tarotists.find((t) => t.name === "Ariadne")!;
+// 占い師は未選択（null）スタート。プラン変更時に現プランで使えない占い師は
+// salon-page で null に戻され、ユーザーに再選択を促す。
 const initialCategory: ReadingCategory = useMasterStore
   .getState()
   .masterData.categories.find((c) => c.no === 1)!;
@@ -69,8 +65,8 @@ const initialSpread: Spread = useMasterStore
 export const useSalonStore = create<SalonState>()(
   persist(
     (set) => ({
-      selectedTarotist: initialTarotist,
-      selectedPersonalTarotist: initialPersonalTarotist,
+      selectedTarotist: null,
+      selectedPersonalTarotist: null,
       selectedCategory: initialCategory,
       customQuestion: "",
       selectedSpread: initialSpread,

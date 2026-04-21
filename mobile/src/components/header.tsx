@@ -83,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({
       case "personal":
         return "AIと対話しながら本格タロット占い";
       case "reading":
-        return `占い師: ${selectedTarotist!.name}`;
+        return selectedTarotist ? `占い師: ${selectedTarotist.name}` : "";
       case "plans":
         return "最適なプランを選択してください";
       case "tarotist":

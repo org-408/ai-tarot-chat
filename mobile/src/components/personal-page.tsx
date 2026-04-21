@@ -74,8 +74,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setPhase1Messages([]);
     init();
     setIsPersonal(true); // init() が isPersonal:false をセットするため必ず後に上書き
-    // パーソナル専用占い師が非PREMIUM なら占い師選択画面へ強制遷移
-    if (selectedPersonalTarotist.plan?.code !== "PREMIUM") {
+    // パーソナル専用占い師が未選択 or 非PREMIUM なら占い師選択画面へ強制遷移
+    if (!selectedPersonalTarotist || selectedPersonalTarotist.plan?.code !== "PREMIUM") {
       setSelectedTargetMode("tarotist");
     }
     setChatResetKey((current) => (current === null ? 0 : current + 1));

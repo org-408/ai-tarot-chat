@@ -20,6 +20,7 @@ import type {
 } from "@shared/lib/types";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 
@@ -338,11 +339,32 @@ export default function PersonalPage() {
     setIsLocked,
   } = useSalonStore();
   const { refreshUsage, usage, clearReadings } = useClientStore();
+  const router = useRouter();
 
   useEffect(() => {
     initMaster();
     refreshUsage();
   }, [initMaster, refreshUsage]);
+
+  // プランがパーソナル占い非対応になった → ホームへ退避（選択状態もクリア）
+  useEffect(() => {
+    if (usage == null) return;
+    if (!(usage.plan?.hasPersonal ?? false)) {
+      setPersonalTarotist(null);
+      router.replace("/");
+    }
+  }, [usage, setPersonalTarotist, router]);
+
+  // 現プランで使えない占い師が選択されたままなら未選択に戻す
+  // （PREMIUM 以外はパーソナル占い自体に入れないので基本 hasPersonal=false 側で先に弾かれるが、
+  //   念のため二重ガード）
+  useEffect(() => {
+    const currentPlanNo = usage?.plan?.no;
+    if (currentPlanNo == null || !selectedTarotist?.plan) return;
+    if (selectedTarotist.plan.no > currentPlanNo) {
+      setPersonalTarotist(null);
+    }
+  }, [usage?.plan?.no, selectedTarotist, setPersonalTarotist]);
 
   const handleReadingSaved = useCallback(async () => {
     clearReadings();
