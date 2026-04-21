@@ -5,7 +5,6 @@ import remarkGfm from "remark-gfm";
 
 interface MessageContentProps {
   content: string;
-  isStreaming?: boolean;
 }
 
 /**
@@ -13,8 +12,7 @@ interface MessageContentProps {
  * react-markdown + remark-gfm + remark-breaks を使用
  */
 export const MessageContent = memo<MessageContentProps>(
-  ({ content, isStreaming = false }) => {
-    // ストリーミング中は最後の文字にカーソルを表示
+  ({ content }) => {
     const displayContent = useMemo(() => {
       if (!content) return "";
       return content;
@@ -141,20 +139,10 @@ export const MessageContent = memo<MessageContentProps>(
         >
           {displayContent}
         </ReactMarkdown>
-        {isStreaming && (
-          <span className="inline-block w-1.5 h-4 bg-gray-900 animate-pulse ml-0.5 align-text-bottom" />
-        )}
       </div>
     );
   },
-  (prevProps, nextProps) => {
-    // ストリーミング中は頻繁に更新されるので、contentが同じなら再レンダリングしない
-    // ただし、isStreamingの状態変化は反映する
-    return (
-      prevProps.content === nextProps.content &&
-      prevProps.isStreaming === nextProps.isStreaming
-    );
-  }
+  (prevProps, nextProps) => prevProps.content === nextProps.content,
 );
 
 MessageContent.displayName = "MessageContent";
