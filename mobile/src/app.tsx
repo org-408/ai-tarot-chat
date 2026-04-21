@@ -259,7 +259,19 @@ function App() {
   // 🔥 選択中占い師（handleStartReading で OFFLINE 判定に使用）
   const { selectedTarotist, selectedPersonalTarotist, setSelectedTarotist, setSelectedPersonalTarotist } = useSalon();
 
-  // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移 + 選択占い師リセット
+  // 起動時・プラン変更時: 現プランで使えない占い師を未選択に戻す
+  useEffect(() => {
+    if (!currentPlan) return;
+    if (selectedTarotist?.plan && selectedTarotist.plan.no > currentPlan.no) {
+      setSelectedTarotist(null);
+    }
+    if (selectedPersonalTarotist?.plan && selectedPersonalTarotist.plan.no > currentPlan.no) {
+      setSelectedPersonalTarotist(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlan?.no]);
+
+  // 🔥 プラン失効（ダウングレード）検知 → 通知 + サロン遷移
   useEffect(() => {
     if (!currentPlan) return;
     const prev = prevPlanCodeRef.current;
@@ -276,20 +288,6 @@ function App() {
     console.log(
       `[App] プランダウングレード検知: ${prev} → ${currentPlan.code}`,
     );
-
-    // 新プランで使えなくなった占い師は未選択に戻す
-    if (
-      selectedTarotist?.plan &&
-      selectedTarotist.plan.no > currentPlan.no
-    ) {
-      setSelectedTarotist(null);
-    }
-    if (
-      selectedPersonalTarotist?.plan &&
-      selectedPersonalTarotist.plan.no > currentPlan.no
-    ) {
-      setSelectedPersonalTarotist(null);
-    }
 
     if (isNavigationLocked) {
       // AI 課金中 → ダイアログ（OKを押してからサロンへ）
