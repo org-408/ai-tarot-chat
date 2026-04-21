@@ -56,8 +56,18 @@
 ```
 shared/
   hooks/
-    use-reading-chat.ts        ← 新規。単一セッション hook
+    use-reading-chat.ts        ← 単一セッション hook
     use-chat-session.ts        ← モバイル向けに現状維持（将来削除可）
+  components/
+    tarot/
+      grid-view.tsx            ← モバイル grid-view.tsx を shared 昇格。
+                                  正方形セル、ケルト十字 z-index 3 秒交互入替、
+                                  基本 4×4 グリッド（コンテナ幅/4 を基準にカードを大きく）
+      carousel-view.tsx        ← モバイル carousel-view.tsx を shared 昇格。
+                                  embla swipe + 左右ボタン、Web では大きく中央寄せ
+    chat/
+      chat-view.tsx            ← `autoScrollMode` prop 追加
+                                  ("always" | "if-near-bottom" | "none"、デフォルト "always")
 
 web/
   app/(app)/
@@ -66,8 +76,10 @@ web/
   components/reading/
     two-column-reading-layout.tsx   ← 左右 2 カラム + トグル
     selection-view.tsx              ← クイック/パーソナル共通セレクト
-    chat-column.tsx                 ← 左: 占い師肖像（折畳）+ ChatView
-    spread-reveal-column.tsx        ← 右: UpperViewer + 一気にめくるボタン
+    chat-column.tsx                 ← 左: 占い師肖像（折畳・object-contain 中央寄せ）+ ChatView
+                                       autoScrollMode="if-near-bottom" を指定
+    spread-reveal-column.tsx        ← 右: GridView / CarouselView タブ切替、
+                                       最下部に一気にめくるボタン、カード詳細ダイアログ
     tarotist-carousel-portrait.tsx  ← 既存
   messages/ja.json             ← 翻訳キー追加
 ```
@@ -160,3 +172,44 @@ done             クロージング完了    「もう一度占う」表示
 ## 9. API 契約・DB スキーマ
 
 **変更なし**。[web/app/api/readings/personal/route.ts](../web/app/api/readings/personal/route.ts)・[web/app/api/readings/simple/route.ts](../web/app/api/readings/simple/route.ts) は無変更。`initialLen` のデフォルト (`?? 0`) もそのまま。
+
+---
+
+## 10. 右カラムのスプレッド表示（モバイル方式踏襲）
+
+既存 [shared/components/tarot/upper-viewer.tsx](../shared/components/tarot/upper-viewer.tsx) の簡易 grid（長方形セル）ではなく、モバイルの [grid-view.tsx](../mobile/src/components/grid-view.tsx) の仕様をそのまま shared に昇格したものを使用。
+
+### GridView の特徴
+
+- **正方形セル** (`cellSize = cardHeight`)。横向きカードはセル中心に -90° 回転で配置 → 縦向きカードと衝突しない
+- **ケルト十字 z-index 交互入替**: 3 秒周期で 1 枚目と 2 枚目の z-index が入れ替わり、見やすいアニメーション
+- **基本 4×4 グリッド**: `cellSize` を「コンテナ幅 / 4」基準に決定 → カードが大きく表示される
+- スプレッドの列数／行数が 4 を超える（ケルト十字 5×4 等）場合は `overflow-auto` で**ドラッグスクロール**
+- カードタップで裏返し、タップした表カードは詳細ダイアログ表示
+
+### CarouselView の特徴
+
+モバイルでは「スプレッド表示だとカードが小さくなる救済策」として個別表示を提供している。Web では画面が広いためさらに**大きく・中央寄せ**で 1 枚ずつ表示。
+- embla でスワイプ、左右ボタン、ドットインジケーター
+- `maxCardHeight=520` を上限にコンテナ高さ／幅から最大まで拡張
+- カードタップで裏返し・ダイアログ表示
+
+---
+
+## 11. チャットの自動スクロール挙動（Web 特有）
+
+既存 [chat-view.tsx](../shared/components/chat/chat-view.tsx) は `messages.length` と `status` の変化ごとに `scrollIntoView("smooth")` を呼んでいた。Web で「ユーザーが上に遡って読んでいる最中にストリーミングで下に飛ばされる」問題を防ぐため、`autoScrollMode` prop を追加。
+
+| モード | 挙動 | 利用先 |
+|---|---|---|
+| `"always"`（デフォルト） | メッセージ追加・status 変化のたびに常に最下部へ | モバイル（既存互換） |
+| `"if-near-bottom"` | スクロール位置が最下部から 120px 以内のときのみ追従 | Web |
+| `"none"` | 自動スクロールなし | （特殊用途） |
+
+Web の `ChatColumn` は `autoScrollMode="if-near-bottom"` を指定。モバイル側はデフォルトの `"always"` で既存挙動維持。
+
+---
+
+## 12. 占い師ポートレートの見せ方
+
+左カラム上部の占い師ポートレート表示は、既存クイック占いの UpperViewer プロフィールタブと同じく **`object-contain` + 中央寄せ + padding** で画像全体を自然に表示する。`object-cover` で画面いっぱいに切り出す方式は採用しない（全画面引き伸ばし状態になって見づらい）。

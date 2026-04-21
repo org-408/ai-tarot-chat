@@ -71,31 +71,31 @@ export function ChatColumn({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 占い師肖像（折畳可） */}
+      {/* 占い師肖像（折畳可）。
+          既存クイック占いの UpperViewer プロフィールタブ方式に合わせ、
+          画像アスペクトを保持して中央寄せ（object-contain）。全画面引き伸ばしを避ける。 */}
       <motion.div
         className="flex-shrink-0 overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50"
         animate={{ height: isPortraitCollapsed ? 0 : "28vh" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="h-full p-3">
-          <div className="h-full rounded-2xl overflow-hidden shadow-lg relative">
-            <img
-              src={tarotistImageUrl}
-              alt={tarotistName}
-              className="w-full h-full object-cover"
-              style={{ objectPosition: "center 20%" }}
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-            />
-            <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
-              <p className="font-bold text-base">
-                {tarotistIcon} {tarotistName}
-              </p>
-              {subtitle && (
-                <p className="text-xs opacity-90">{subtitle}</p>
-              )}
-            </div>
+        <div className="h-full w-full flex items-center justify-center p-3 relative">
+          <img
+            src={tarotistImageUrl}
+            alt={tarotistName}
+            className="max-w-full max-h-full object-contain rounded-2xl shadow-lg"
+            style={{ objectPosition: "center 20%" }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+          <div className="absolute left-3 right-3 bottom-3 px-3 py-1.5 bg-black/40 backdrop-blur-sm rounded-full text-white text-center pointer-events-none">
+            <span className="text-sm font-bold">
+              {tarotistIcon} {tarotistName}
+            </span>
+            {subtitle && (
+              <span className="text-xs opacity-90 ml-2">{subtitle}</span>
+            )}
           </div>
         </div>
       </motion.div>
@@ -139,6 +139,7 @@ export function ChatColumn({
           footer={footer}
           sessionEndedLabel={sessionEndedLabel}
           sessionEndedSubLabel={sessionEndedSubLabel}
+          autoScrollMode="if-near-bottom"
         />
       </div>
     </div>
