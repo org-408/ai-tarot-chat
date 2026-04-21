@@ -63,10 +63,13 @@ interface ChatViewProps {
   sessionEndedSubLabel?: string;
 
   /**
-   * 自動スクロール挙動。
-   * - "always" (デフォルト): messages 追加・status 変化のたびに最下部へスクロール（モバイル互換）
-   * - "if-near-bottom": スクロール位置が最下部付近 (< 120px) のときのみ追従。ユーザーが上に遡って読んでいるときは飛ばさない（Web 用）
+   * 自動スクロール挙動。デフォルト "if-near-bottom"。
+   * - "always": messages 追加・status 変化のたびに常に最下部へスクロール
+   * - "if-near-bottom" (デフォルト): スクロール位置が最下部付近 (< 120px) のときのみ追従。ユーザーが上に遡って読んでいるときは飛ばさない
    * - "none": 自動スクロールなし
+   *
+   * 注: モバイル (mobile/src/components/chat-panel.tsx) はこの ChatView を使わず
+   * 独自の chat UI を持つため、このデフォルト値はモバイル挙動に影響しない。
    */
   autoScrollMode?: "always" | "if-near-bottom" | "none";
 }
@@ -106,7 +109,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   tarotistImageUrl,
   tarotistIcon,
   showAvatar = true,
-  autoScrollMode = "always",
+  autoScrollMode = "if-near-bottom",
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);

@@ -200,13 +200,15 @@ done             クロージング完了    「もう一度占う」表示
 
 既存 [chat-view.tsx](../shared/components/chat/chat-view.tsx) は `messages.length` と `status` の変化ごとに `scrollIntoView("smooth")` を呼んでいた。Web で「ユーザーが上に遡って読んでいる最中にストリーミングで下に飛ばされる」問題を防ぐため、`autoScrollMode` prop を追加。
 
-| モード | 挙動 | 利用先 |
-|---|---|---|
-| `"always"`（デフォルト） | メッセージ追加・status 変化のたびに常に最下部へ | モバイル（既存互換） |
-| `"if-near-bottom"` | スクロール位置が最下部から 120px 以内のときのみ追従 | Web |
-| `"none"` | 自動スクロールなし | （特殊用途） |
+| モード | 挙動 |
+|---|---|
+| `"always"` | メッセージ追加・status 変化のたびに常に最下部へ |
+| `"if-near-bottom"`（デフォルト） | スクロール位置が最下部から 120px 以内のときのみ追従 |
+| `"none"` | 自動スクロールなし |
 
-Web の `ChatColumn` は `autoScrollMode="if-near-bottom"` を指定。モバイル側はデフォルトの `"always"` で既存挙動維持。
+### モバイルへの影響について
+
+**モバイルはこの shared `ChatView` を使っていない**。モバイルは [mobile/src/components/chat-panel.tsx](../mobile/src/components/chat-panel.tsx) に独自のチャット UI を持ち、auto-scroll は Phase2 開始時に `hasScrolledForPhase2.current` ガード付きで 1 回だけ発火する設計。よって `autoScrollMode` のデフォルト値を何にしてもモバイル挙動には一切影響しない。実質 Web 専用コンポーネントなので、Web で望ましい挙動 `"if-near-bottom"` をデフォルトにしている。
 
 ---
 
