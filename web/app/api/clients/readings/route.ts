@@ -37,7 +37,9 @@ export async function GET(request: NextRequest) {
       clientId,
       readings,
     });
-    return NextResponse.json(readings);
+    return NextResponse.json(readings, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     logWithContext("error", "占い履歴取得エラー", {
       error,
