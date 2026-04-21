@@ -38,6 +38,15 @@ export async function fetchReadings(
   return res.json();
 }
 
+export async function fetchReadingById(id: string): Promise<Reading | null> {
+  const res = await fetch(`/api/clients/readings/${id}`, {
+    credentials: "include",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("占い履歴の取得に失敗しました");
+  return res.json();
+}
+
 export async function deleteAccount(): Promise<void> {
   const res = await fetch("/api/clients/me", {
     method: "DELETE",

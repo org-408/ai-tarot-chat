@@ -53,7 +53,6 @@ export default function HomeClient() {
 
   const plan = usage?.plan;
   const canPersonal = usage == null || (plan?.hasPersonal ?? false);
-  const hasHistory = plan?.hasHistory ?? true;
   const remainingQuick = usage?.remainingReadings;
   const remainingPersonal = usage?.remainingPersonal;
   const maxQuick = plan?.maxReadings;
@@ -215,7 +214,7 @@ export default function HomeClient() {
                 {t("recentHistory")}
               </h3>
             </div>
-            {hasHistory && readings.length > 0 && (
+            {readings.length > 0 && (
               <Link
                 href="/history"
                 className="text-xs text-purple-600 hover:underline"
@@ -225,21 +224,7 @@ export default function HomeClient() {
             )}
           </div>
 
-          {!hasHistory ? (
-            // プランが履歴保存をサポートしていない (GUEST)
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-5 flex items-center justify-between gap-3 flex-wrap">
-              <p className="text-xs text-gray-500">
-                {t("historyPlanRequired")}
-              </p>
-              <Link
-                href="/plans"
-                className="shrink-0 text-xs font-semibold text-purple-600 hover:underline"
-              >
-                {t("viewPlans")} →
-              </Link>
-            </div>
-          ) : readings.length === 0 ? (
-            // 履歴対応プランだが履歴ゼロ
+          {readings.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-5 text-center">
               <p className="text-xs text-gray-500">{t("historyEmpty")}</p>
             </div>
