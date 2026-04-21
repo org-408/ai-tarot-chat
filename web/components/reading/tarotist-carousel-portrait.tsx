@@ -324,9 +324,10 @@ export function TarotistCarouselPortrait({
                           {tarotist.trait}
                         </p>
 
-                        <p className="text-center text-xs text-gray-800 mb-2 leading-relaxed whitespace-pre-wrap">
-                          {tarotist.bio}
-                        </p>
+                        <p
+                          className="text-center text-xs text-gray-800 mb-2 leading-relaxed whitespace-pre-wrap"
+                          dangerouslySetInnerHTML={{ __html: tarotist.bio ?? "" }}
+                        />
 
                         {tarotist.quality != null && (
                           <div className="text-center text-sm mb-3">

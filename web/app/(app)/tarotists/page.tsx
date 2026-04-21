@@ -67,9 +67,10 @@ function TarotistModal({
             </p>
           )}
           {tarotist.bio && (
-            <p className="text-sm text-gray-700 leading-relaxed mb-6">
-              {tarotist.bio}
-            </p>
+            <p
+              className="text-sm text-gray-700 leading-relaxed mb-6"
+              dangerouslySetInnerHTML={{ __html: tarotist.bio }}
+            />
           )}
 
           <div className="flex gap-3">

@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, RefreshCw } from "lucide-react";
+import { ArrowLeft, ChevronDown, Lock, RefreshCw } from "lucide-react";
 
 type Phase = "tarotist" | "chat" | "reading";
 
@@ -263,6 +263,7 @@ interface PersonalPhase2ViewProps {
   onRefreshToken: () => Promise<string | null>;
   labels: {
     backToHome: string;
+    lockedDuringReading: string;
     phase2Title: string;
     readAgain: string;
     limitReached: string;
@@ -284,8 +285,14 @@ function PersonalPhase2View({
   onRefreshToken,
   labels,
 }: PersonalPhase2ViewProps) {
-  const { drawnCards, isRevealingCompleted, setDrawnCards, setIsRevealingCompleted } =
-    useSalonStore();
+  const {
+    drawnCards,
+    isRevealingCompleted,
+    isLocked,
+    setDrawnCards,
+    setIsRevealingCompleted,
+    setIsLocked,
+  } = useSalonStore();
   const keyboardHeight = useKeyboardHeight();
   const [upperTab, setUpperTab] = useState<UpperViewerTab>("grid");
   const [isTopCollapsed, setIsTopCollapsed] = useState(false);
@@ -326,13 +333,18 @@ function PersonalPhase2View({
     {
       onRefreshUsage,
       onRefreshToken,
-      onUnlock: () => {},
+      onUnlock: () => setIsLocked(false),
     },
   );
 
   const tarotistImageUrl = `/tarotists/${tarotist.name}.png`;
   const phase2Done = phase2Session.phase2Stage === "done";
   const canReadAgain = remainingPersonal === undefined || remainingPersonal > 0;
+
+  // アンマウント時の安全網: 強制離脱・例外時にロックが残らないよう解除
+  useEffect(() => {
+    return () => setIsLocked(false);
+  }, [setIsLocked]);
 
   return (
     <>
@@ -345,14 +357,26 @@ function PersonalPhase2View({
       <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
         {/* ヘッダー */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
-          <Link
-            href="/"
-            onClick={onHeaderBack}
-            className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            {labels.backToHome}
-          </Link>
+          {isLocked ? (
+            <button
+              type="button"
+              disabled
+              title={labels.lockedDuringReading}
+              className="flex items-center gap-1 text-sm text-gray-400 cursor-not-allowed"
+            >
+              <Lock size={14} />
+              {labels.backToHome}
+            </button>
+          ) : (
+            <Link
+              href="/"
+              onClick={onHeaderBack}
+              className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+            >
+              <ArrowLeft size={16} />
+              {labels.backToHome}
+            </Link>
+          )}
           <span className="text-xs text-pink-600 font-medium">{labels.phase2Title}</span>
         </div>
 
@@ -461,6 +485,7 @@ export default function PersonalPage() {
     setPersonalSpread,
     setPersonalCategory,
     resetSession,
+    setIsLocked,
   } = useSalonStore();
   const { refreshUsage, usage, clearReadings } = useClientStore();
 
@@ -503,6 +528,7 @@ export default function PersonalPage() {
   }) => {
     setPersonalSpread(spread);
     setPersonalCategory(category);
+    setIsLocked(true); // Phase2 開始 = AI 課金開始 → ナビゲーションロック
     setPhase("reading");
   };
 
@@ -688,6 +714,7 @@ export default function PersonalPage() {
         onRefreshToken={onRefreshToken}
         labels={{
           backToHome: tCommon("backToHome"),
+          lockedDuringReading: tCommon("lockedDuringReading"),
           phase2Title: t("phase2Title"),
           readAgain: t("readAgain"),
           limitReached: t("limitReached"),
