@@ -1,4 +1,4 @@
-import { SignJWT } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import { getToken } from "next-auth/jwt";
 import createMiddleware from "next-intl/middleware";
 import { type NextRequest, NextResponse } from "next/server";
@@ -72,10 +72,10 @@ export default async function proxy(req: NextRequest) {
 }
 
 async function issueAccessTokenIfNeeded(req: NextRequest, res: NextResponse) {
-  if (req.cookies.get(APP_TOKEN_COOKIE)) return;
-
   const secret = process.env.AUTH_SECRET;
   if (!secret) return;
+
+  const existing = req.cookies.get(APP_TOKEN_COOKIE);
 
   let nextAuthToken;
   try {
@@ -89,10 +89,32 @@ async function issueAccessTokenIfNeeded(req: NextRequest, res: NextResponse) {
     return;
   }
 
-  if (!nextAuthToken?.id || !nextAuthToken?.clientId) return;
+  // NextAuth セッションなし: サインアウト済み or 未サインイン。
+  // 古い access_token が残っていれば削除（別アカウントでのサインイン直後に
+  // 旧ユーザーの access_token を引きずらないため）。
+  if (!nextAuthToken?.id || !nextAuthToken?.clientId) {
+    if (existing) res.cookies.delete(APP_TOKEN_COOKIE);
+    return;
+  }
 
   const userId = nextAuthToken.id as string;
   const clientId = nextAuthToken.clientId as string;
+
+  // 既存 access_token の user.id が NextAuth セッションと一致していればそのまま。
+  // 不一致 / デコード失敗 / 未発行 の場合のみ新規発行する。
+  if (existing) {
+    try {
+      const { payload } = await jwtVerify(
+        existing.value,
+        new TextEncoder().encode(secret)
+      );
+      const tokenUserId = (payload.user as { id?: string } | undefined)?.id;
+      if (tokenUserId === userId) return;
+    } catch {
+      // 不正 / 期限切れ → 再発行に回す
+    }
+  }
+
   const provider = (nextAuthToken.provider as string | undefined) ?? "google";
   const email = (nextAuthToken.email as string | undefined) ?? undefined;
   const name = (nextAuthToken.name as string | undefined) ?? undefined;
