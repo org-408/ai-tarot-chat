@@ -382,10 +382,20 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [isPersonal, status, stop]);
 
   // Phase2 開始時に一番下まで一度だけスクロール
+  // ただし、ユーザーが上に遡って読んでいる（最下部付近にいない）場合は飛ばさない。
+  // shared ChatView の autoScrollMode="if-near-bottom" と同じ思想。
   useEffect(() => {
     if (!isPhase2 || hasScrolledForPhase2.current) return;
     if (messages.length > initialLen) {
       hasScrolledForPhase2.current = true;
+      const scrollContainer = messagesEndRef.current?.parentElement;
+      if (scrollContainer) {
+        const distanceFromBottom =
+          scrollContainer.scrollHeight -
+          scrollContainer.scrollTop -
+          scrollContainer.clientHeight;
+        if (distanceFromBottom > 120) return;
+      }
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [isPhase2, messages.length, initialLen]);

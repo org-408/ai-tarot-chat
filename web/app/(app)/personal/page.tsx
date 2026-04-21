@@ -94,6 +94,10 @@ function PersonalReadingView({
   const [rightVisible, setRightVisible] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
   const [isShuffleDone, setIsShuffleDone] = useState(false);
+  // AI 推薦スプレッド（salon-store に即 commit せず、ユーザー確定まで保持）。
+  // 即 commit すると useReadingChat の deriveStage が "spread-suggest" → "awaiting-draw"
+  // に進んで、スプレッド選択 UI が一瞬で消えてしまうため。
+  const [suggestedSpread, setSuggestedSpread] = useState<Spread | null>(null);
   const onRefreshToken = useCallback(async () => token, [token]);
 
   const {
@@ -125,13 +129,15 @@ function PersonalReadingView({
       onRefreshToken,
       onUnlock: () => setIsLocked(false),
       onSpreadSuggested: (suggestion) => {
-        // AI 推薦スプレッドを salon-store に仮セット（ユーザーが変えれば上書きされる）
+        // AI 推薦をローカル state に保持（salon-store へは commit しない）。
+        // CategorySpreadSelector の initialSpread としてデフォルト選択に反映させる。
+        // ユーザーが「占いを始める」で確定したタイミングで初めて salon-store に書く。
         const matched = masterData.spreads?.find(
           (s) =>
             (suggestion.spreadNo !== undefined && s.no === suggestion.spreadNo) ||
             (suggestion.spreadName && s.name === suggestion.spreadName),
         );
-        if (matched && !selectedSpread) setPersonalSpread(matched);
+        if (matched) setSuggestedSpread(matched);
       },
     },
   );
@@ -249,6 +255,7 @@ function PersonalReadingView({
                       isPersonal
                       remainingCount={remainingPersonal}
                       disabled={false}
+                      initialSpread={suggestedSpread}
                       onStartReading={handleConfirmSpread}
                       labels={{
                         selectSpreadPrompt: labels.confirmSpreadPrompt,

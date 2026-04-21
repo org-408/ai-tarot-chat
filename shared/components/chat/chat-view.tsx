@@ -61,6 +61,17 @@ interface ChatViewProps {
   /** セッション終了バナーのテキスト */
   sessionEndedLabel?: string;
   sessionEndedSubLabel?: string;
+
+  /**
+   * 自動スクロール挙動。デフォルト "if-near-bottom"。
+   * - "always": messages 追加・status 変化のたびに常に最下部へスクロール
+   * - "if-near-bottom" (デフォルト): スクロール位置が最下部付近 (< 120px) のときのみ追従。ユーザーが上に遡って読んでいるときは飛ばさない
+   * - "none": 自動スクロールなし
+   *
+   * 注: モバイル (mobile/src/components/chat-panel.tsx) はこの ChatView を使わず
+   * 独自の chat UI を持つため、このデフォルト値はモバイル挙動に影響しない。
+   */
+  autoScrollMode?: "always" | "if-near-bottom" | "none";
 }
 
 /**
@@ -98,12 +109,22 @@ export const ChatView: React.FC<ChatViewProps> = ({
   tarotistImageUrl,
   tarotistIcon,
   showAvatar = true,
+  autoScrollMode = "if-near-bottom",
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (autoScrollMode === "none") return;
+    if (autoScrollMode === "if-near-bottom") {
+      const c = scrollContainerRef.current;
+      if (!c) return;
+      const distanceFromBottom = c.scrollHeight - c.scrollTop - c.clientHeight;
+      // 下部付近 (< 120px) にいるときだけ追従。ユーザーが上に遡って読んでいるときは飛ばさない
+      if (distanceFromBottom > 120) return;
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, status]);
+  }, [messages.length, status, autoScrollMode]);
 
   const isProcessing = status === "submitted" || status === "streaming";
   const showTypingIndicator =
@@ -124,7 +145,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
   return (
     <div className="w-full h-full flex flex-col relative">
       {/* Messages Area */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-26">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto bg-white px-4 py-6 space-y-6 pb-26"
+      >
         {messages.map((message, index) => (
           <MessageBubble
             key={index}

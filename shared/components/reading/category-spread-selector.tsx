@@ -47,6 +47,12 @@ interface CategorySpreadSelectorProps {
   remainingCount?: number;
   /** 外部から追加で無効化する条件（例: 占い師未選択）。内部の無効化条件と OR で評価 */
   disabled?: boolean;
+  /**
+   * 初期選択スプレッド。指定されていれば availableSpreads[0] の代わりに
+   * これを初期値として使用する。主にパーソナル占いの AI 推薦スプレッドを
+   * デフォルト選択にするため。以降はユーザー操作で自由に変更可能。
+   */
+  initialSpread?: Spread | null;
   /** 占い開始ボタンのコールバック */
   onStartReading: (params: {
     category: ReadingCategory | null;
@@ -69,6 +75,7 @@ export const CategorySpreadSelector: React.FC<
   isPersonal = false,
   remainingCount,
   disabled: externalDisabled = false,
+  initialSpread,
   onStartReading,
   labels = {},
 }) => {
@@ -129,9 +136,16 @@ export const CategorySpreadSelector: React.FC<
   }, [spreads, currentPlan, isPersonal, selectedCategory]);
 
   // スプレッドの初期化・リセット
+  // initialSpread が指定されていて、かつ availableSpreads に含まれていれば
+  // それを初期選択値として使う（AI 推薦のスプレッドをデフォルト表示する用途）。
   useEffect(() => {
     if (!selectedSpread && availableSpreads.length > 0) {
-      setSelectedSpread(availableSpreads[0]);
+      const preferred =
+        initialSpread &&
+        availableSpreads.some((s) => s.id === initialSpread.id)
+          ? availableSpreads.find((s) => s.id === initialSpread.id)!
+          : availableSpreads[0];
+      setSelectedSpread(preferred);
       return;
     }
     if (
@@ -140,7 +154,7 @@ export const CategorySpreadSelector: React.FC<
     ) {
       setSelectedSpread(availableSpreads[0] ?? null);
     }
-  }, [availableSpreads, selectedSpread]);
+  }, [availableSpreads, selectedSpread, initialSpread]);
 
   const isLimitReached =
     remainingCount !== undefined && remainingCount <= 0;
