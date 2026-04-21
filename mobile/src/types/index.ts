@@ -4,6 +4,7 @@ import type { DrawnCard } from "../../../shared/lib/types";
 export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
 
 export type PageType =
+  | "home"
   | "salon"
   | "personal"
   | "reading"

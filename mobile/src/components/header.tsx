@@ -37,6 +37,8 @@ const Header: React.FC<HeaderProps> = ({
   );
   const getHeaderTitle = () => {
     switch (currentPage) {
+      case "home":
+        return "🏠 ホーム";
       case "salon":
       case "reading":
         switch (currentPlan) {
@@ -62,12 +64,14 @@ const Header: React.FC<HeaderProps> = ({
       case "clara":
         return "📖 いつでも占い";
       default:
-        return "🔮 タロット占い";
+        return "🏠 ホーム";
     }
   };
 
   const getSubtitle = () => {
     switch (currentPage) {
+      case "home":
+        return "今日の占いをはじめよう";
       case "salon":
         switch (currentPlan) {
           case "GUEST":

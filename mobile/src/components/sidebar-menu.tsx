@@ -31,6 +31,13 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
 }) => {
   const menuItems: MenuItem[] = [
     {
+      id: "home",
+      label: "ホーム",
+      icon: "🏠",
+      available: true,
+      description: "残り回数・履歴・最近の占い",
+    },
+    {
       id: "salon",
       label: "クイック占い",
       icon: "🔮",
