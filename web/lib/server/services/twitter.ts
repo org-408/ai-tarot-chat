@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { TwitterApi } from "twitter-api-v2";
 
 function getClient(): TwitterApi {
@@ -20,8 +22,26 @@ function getClient(): TwitterApi {
   });
 }
 
-export async function postTweet(content: string): Promise<string> {
+// mediaPath は "/cards-reversed/0_fool.png" のようなパブリックパス。
+// web/public/ 配下のファイルとして解決する。
+async function resolveMediaAbsolutePath(mediaPath: string): Promise<string> {
+  const normalized = mediaPath.startsWith("/") ? mediaPath.slice(1) : mediaPath;
+  return join(process.cwd(), "public", normalized);
+}
+
+export async function postTweet(content: string, mediaPath?: string | null): Promise<string> {
   const client = getClient();
+
+  if (mediaPath) {
+    const absolutePath = await resolveMediaAbsolutePath(mediaPath);
+    const buffer = await readFile(absolutePath);
+    const mediaId = await client.v1.uploadMedia(buffer, { mimeType: "image/png" });
+    const tweet = await client.v2.tweet(content, {
+      media: { media_ids: [mediaId] },
+    });
+    return tweet.data.id;
+  }
+
   const tweet = await client.v2.tweet(content);
   return tweet.data.id;
 }

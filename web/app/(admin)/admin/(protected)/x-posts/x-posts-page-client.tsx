@@ -24,6 +24,7 @@ type XPostItem = {
   scheduledAt: string | null;
   postedAt: string | null;
   isAuto: boolean;
+  mediaPath: string | null;
   createdAt: string;
 };
 
@@ -90,6 +91,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
   const [postType, setPostType] = useState<XPostType>(XPostType.DAILY_CARD);
   const [customPrompt, setCustomPrompt] = useState("");
   const [content, setContent] = useState("");
+  const [mediaPath, setMediaPath] = useState<string | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [composeError, setComposeError] = useState<string | null>(null);
   const [composeSuccess, setComposeSuccess] = useState<string | null>(null);
@@ -131,6 +133,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
   function clearCompose() {
     setCustomPrompt("");
     setContent("");
+    setMediaPath(null);
     setScheduledAt("");
     setComposeError(null);
     setComposeSuccess(null);
@@ -147,6 +150,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
       const res = await generateContentAction(postType, customPrompt.trim() || undefined);
       if (res.ok) {
         setContent(res.content);
+        setMediaPath(res.mediaPath);
       } else {
         setComposeError(res.error);
       }
@@ -165,7 +169,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
     setComposeError(null);
     setComposeSuccess(null);
     startTransition(async () => {
-      const res = await postNewNowAction({ content, postType });
+      const res = await postNewNowAction({ content, postType, mediaPath });
       if (res.ok) {
         setComposeSuccess("投稿しました！");
         clearCompose();
@@ -184,7 +188,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
     setComposeError(null);
     setComposeSuccess(null);
     startTransition(async () => {
-      const res = await createDraftAction({ content, postType });
+      const res = await createDraftAction({ content, postType, mediaPath });
       if (res.ok) {
         setComposeSuccess("下書き保存しました");
         clearCompose();
@@ -211,7 +215,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
     setComposeError(null);
     setComposeSuccess(null);
     startTransition(async () => {
-      const res = await schedulePostAction({ content, postType, scheduledAt });
+      const res = await schedulePostAction({ content, postType, scheduledAt, mediaPath });
       if (res.ok) {
         setComposeSuccess("予約投稿を設定しました");
         clearCompose();
@@ -296,7 +300,7 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {autoPostEnabled
               ? phase === XPostPhase.PRE_LAUNCH
-                ? "毎日 9:00・12:00・18:00 に開発進捗・タロット豆知識を自動投稿します"
+                ? "毎日 9:00・12:00・18:00 に自動投稿します（末尾に /download への誘導を付与）"
                 : "毎日 9:00・12:00・18:00 に今日のタロット・豆知識・アプリ宣伝を自動投稿します"
               : "チェックすると GitHub Actions による定時自動投稿が有効になります"}
           </p>
@@ -332,8 +336,8 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
           </div>
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {phase === XPostPhase.PRE_LAUNCH
-              ? "自動投稿: 開発進捗 (#buildinpublic) + タロット豆知識"
-              : "自動投稿: 今日のタロット + タロット豆知識 + アプリ宣伝"}
+              ? "今日のタロット・豆知識・アプリ宣伝。末尾に /download への事前登録 CTA を付与（画像は今日のタロットに自動添付）"
+              : "今日のタロット・豆知識・アプリ宣伝（画像は今日のタロットに自動添付）"}
           </p>
           {phaseError && <p className="text-xs text-red-500 mt-1 ml-7">{phaseError}</p>}
         </div>
@@ -444,6 +448,31 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
               {charCount} / {MAX_CHARS}
             </div>
           </div>
+
+          {/* Media preview */}
+          {mediaPath && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">
+                添付画像
+                <span className="ml-2 text-xs text-zinc-400 font-normal">投稿時に自動で添付されます</span>
+              </label>
+              <div className="flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={mediaPath}
+                  alt="添付画像プレビュー"
+                  className="w-20 h-32 object-cover rounded-md border shadow-sm"
+                />
+                <button
+                  onClick={() => setMediaPath(null)}
+                  disabled={isPending}
+                  className="text-xs text-zinc-500 hover:text-red-500 underline disabled:opacity-50"
+                >
+                  画像を外す
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Schedule datetime */}
           <div>
@@ -564,22 +593,34 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
                 {posts.map((post) => (
                   <tr key={post.id} className="hover:bg-zinc-50 transition">
                     <td className="px-4 py-3">
-                      <div className="line-clamp-2 text-zinc-700 max-w-xs">{post.content}</div>
-                      {post.error && (
-                        <div className="text-xs text-red-500 mt-1 truncate max-w-xs" title={post.error}>
-                          エラー: {post.error}
+                      <div className="flex gap-3">
+                        {post.mediaPath && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={post.mediaPath}
+                            alt="添付画像"
+                            className="w-10 h-16 object-cover rounded border shadow-sm flex-shrink-0"
+                          />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="line-clamp-2 text-zinc-700 max-w-xs whitespace-pre-wrap">{post.content}</div>
+                          {post.error && (
+                            <div className="text-xs text-red-500 mt-1 truncate max-w-xs" title={post.error}>
+                              エラー: {post.error}
+                            </div>
+                          )}
+                          {post.tweetId && (
+                            <a
+                              href={`https://x.com/i/web/status/${post.tweetId}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-sky-500 hover:underline mt-1 block"
+                            >
+                              X で見る →
+                            </a>
+                          )}
                         </div>
-                      )}
-                      {post.tweetId && (
-                        <a
-                          href={`https://x.com/i/web/status/${post.tweetId}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-sky-500 hover:underline mt-1 block"
-                        >
-                          X で見る →
-                        </a>
-                      )}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLOR[post.postType]}`}>

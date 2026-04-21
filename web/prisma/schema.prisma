@@ -722,6 +722,7 @@ model XPost {
   postedAt    DateTime?
   isAuto      Boolean     @default(false)
   prompt      String?     @db.Text
+  mediaPath   String?     // 添付画像のパブリックパス (例: /cards-reversed/0_fool.png)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

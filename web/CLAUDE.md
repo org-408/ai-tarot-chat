@@ -21,9 +21,26 @@ npm run db:seed      # 初期データ + マスターデータ投入
 npm run db:master    # マスターデータのみ再生成
 npm run db:generate  # Prisma クライアント再生成
 
+# カード画像 (X 自動投稿用の逆位置画像)
+npm run cards:reversed              # 差分生成 (入力より古い出力のみ再生成)
+npm run cards:reversed -- --force   # 強制上書き
+
 # UI コンポーネント追加
 npm run ui:add <component-name>
 ```
+
+### カード画像を追加した場合の手順
+
+新しいタロットカード画像を `mobile/public/cards/` に追加したら、X 投稿に添付する逆位置版（180° 回転済み PNG）を `mobile/public/cards-reversed/` に生成する必要がある。
+
+```bash
+cd web
+npm run cards:reversed    # 不足分だけ自動生成（既存より新しい入力も再生成）
+```
+
+- `cards/` と `cards-reversed/` は `web/public/` からシンボリックリンクされているため、Web 側の変更は不要
+- 既存のモバイル・Web のスプレッド表示は CSS `rotate-180` で表示するため `cards/` のみ使用。`cards-reversed/` は X 投稿の media upload 専用（Twitter API は CSS 変換を反映しないため物理回転画像が必要）
+- 逆位置画像は必ずリポジトリにコミットする（sharp をランタイムに呼ばない方針）
 
 ## API ルート一覧
 
