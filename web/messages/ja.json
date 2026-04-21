@@ -120,13 +120,16 @@
     "grid": "グリッド",
     "carousel": "カルーセル",
     "profile": "プロフィール",
-    "revealAll": "すべてのカードをめくる",
+    "revealAll": "✨ 一気にめくる ✨",
+    "revealPrompt": "全カードをめくって占い結果を確認しましょう！",
     "allRevealed": "すべてのカードが開きました",
     "title": "タロット占い",
     "loadError": "占いの読み込みに失敗しました",
     "tabCards": "カード",
     "tabChat": "チャット",
-    "remainingQuick": "残り{count}回"
+    "remainingQuick": "残り{count}回",
+    "showSpread": "スプレッドを表示",
+    "hideSpread": "スプレッドを隠す"
   },
   "personal": {
     "title": "パーソナル占い",

@@ -1,37 +1,31 @@
 "use client";
 
-import { CategorySpreadSelector } from "@shared/components/reading/category-spread-selector";
-import { ChatView } from "@shared/components/chat/chat-view";
-import { RevealPromptPanel } from "@shared/components/reading/reveal-prompt-panel";
 import { ShuffleDialog } from "@shared/components/reading/shuffle-dialog";
-import { UpperViewer, type UpperViewerTab } from "@shared/components/tarot/upper-viewer";
-import { TarotistCarouselPortrait } from "@/components/reading/tarotist-carousel-portrait";
-import { useChatSession } from "@shared/hooks/use-chat-session";
+import { ChatColumn } from "@/components/reading/chat-column";
+import { SelectionView } from "@/components/reading/selection-view";
+import { SpreadRevealColumn } from "@/components/reading/spread-reveal-column";
+import { TwoColumnReadingLayout } from "@/components/reading/two-column-reading-layout";
+import { useReadingChat } from "@shared/hooks/use-reading-chat";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type {
   MasterData,
+  Plan,
   ReadingCategory,
   Spread,
   Tarotist,
 } from "@shared/lib/types";
-import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, ChevronDown, Lock, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 type Phase = "selection" | "reading";
 
-const SPREAD_VIEW_DISPLAY_MS = 2000;
-
 // ─────────────────────────────────────────────────────────────
-// SimpleReadingView — reading phase を丸ごと分離し key で強制リマウント
-//   これで useChatSession の messages / hasSentInitialMessage / transport が
-//   「もう一度占う」時に完全にリセットされる
+// SimpleReadingView — reading phase 丸ごと分離（key で強制リマウント）
 // ─────────────────────────────────────────────────────────────
 
 interface SimpleReadingViewProps {
@@ -47,10 +41,14 @@ interface SimpleReadingViewProps {
   labels: {
     backToHome: string;
     remainingQuick: string;
-    aiReading: string;
     readAgain: string;
     limitReached: string;
     lockedDuringReading: string;
+    showSpread: string;
+    hideSpread: string;
+    revealAll: string;
+    revealPrompt: string;
+    allRevealed: string;
   };
 }
 
@@ -76,8 +74,7 @@ function SimpleReadingView({
   } = useSalonStore();
 
   const [isShuffleDone, setIsShuffleDone] = useState(false);
-  const [upperTab, setUpperTab] = useState<UpperViewerTab>("grid");
-  const [isTopCollapsed, setIsTopCollapsed] = useState(false);
+  const [rightVisible, setRightVisible] = useState(true);
   const hasDrawnRef = useRef(false);
 
   // カード抽出（一度だけ）
@@ -88,26 +85,22 @@ function SimpleReadingView({
     setDrawnCards(cards);
   }, [masterData, spread, setDrawnCards]);
 
-  const handleShuffleComplete = useCallback(() => {
-    setIsShuffleDone(true);
-  }, []);
-
-  const handleRevealAll = useCallback(() => {
-    setIsRevealingCompleted(true);
-  }, [setIsRevealingCompleted]);
-
   const {
     messages,
     status,
+    inputValue,
+    inputDisabled,
     isMessageComplete,
     error,
+    handleInputChange,
+    handleSend,
+    handleKeyDown,
     handleRetry,
-  } = useChatSession(
+  } = useReadingChat(
     {
       api: "/api/readings/simple",
       token,
       isPersonal: false,
-      isPhase2: false,
       tarotist,
       spread,
       category: category ?? undefined,
@@ -128,13 +121,6 @@ function SimpleReadingView({
     }
   }, [isMessageComplete, error, setIsLocked]);
 
-  // 全カードめくり完了 → SPREAD_VIEW_DISPLAY_MS 後にプロフィールへ
-  useEffect(() => {
-    if (!isRevealingCompleted) return;
-    const timer = setTimeout(() => setUpperTab("profile"), SPREAD_VIEW_DISPLAY_MS);
-    return () => clearTimeout(timer);
-  }, [isRevealingCompleted]);
-
   const tarotistImageUrl = `/tarotists/${tarotist.name}.png`;
   const canReadAgain = remainingQuick === undefined || remainingQuick > 0;
 
@@ -142,123 +128,80 @@ function SimpleReadingView({
     <>
       <ShuffleDialog
         isOpen={!isShuffleDone && drawnCards.length === 0}
-        onComplete={handleShuffleComplete}
+        onComplete={() => setIsShuffleDone(true)}
         cardBackPath="/cards/back.png"
       />
 
-      <div className="flex flex-col h-[100dvh] -m-4 md:-m-6">
-        {/* ヘッダー */}
-        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-purple-100">
-          {isLocked ? (
-            <button
-              type="button"
-              disabled
-              title={labels.lockedDuringReading}
-              className="flex items-center gap-1 text-sm text-gray-400 cursor-not-allowed"
-            >
-              <Lock size={14} />
-              {labels.backToHome}
-            </button>
-          ) : (
-            <Link
-              href="/"
-              onClick={onHeaderBack}
-              className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
-            >
-              <ArrowLeft size={16} />
-              {labels.backToHome}
-            </Link>
-          )}
-          {remainingQuick !== undefined && (
+      <TwoColumnReadingLayout
+        isLocked={isLocked}
+        onHeaderBack={onHeaderBack}
+        backLabel={labels.backToHome}
+        lockedLabel={labels.lockedDuringReading}
+        rightVisible={rightVisible}
+        onToggleRight={() => setRightVisible((v) => !v)}
+        showSpreadLabel={labels.showSpread}
+        hideSpreadLabel={labels.hideSpread}
+        headerRight={
+          remainingQuick !== undefined ? (
             <span className="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded-full">
               {labels.remainingQuick}
             </span>
-          )}
-        </div>
+          ) : null
+        }
+        left={
+          <div className="relative h-full">
+            <ChatColumn
+              tarotistImageUrl={tarotistImageUrl}
+              tarotistName={tarotist.name}
+              tarotistIcon={tarotist.icon}
+              messages={messages}
+              status={status}
+              inputValue={inputValue}
+              onInputChange={handleInputChange}
+              onSend={handleSend}
+              onKeyDown={handleKeyDown}
+              inputDisabled={inputDisabled}
+              isMessageComplete={isMessageComplete}
+              error={error}
+              onRetry={handleRetry}
+            />
 
-        {/* 上半分: UpperViewer (折りたたみ可) */}
-        <motion.div
-          className="flex-shrink-0 overflow-hidden"
-          animate={{ height: isTopCollapsed ? 0 : "45vh" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          {isShuffleDone && drawnCards.length > 0 && (
-            <UpperViewer
+            {/* 占い完了後のアクション */}
+            {isMessageComplete && !error && (
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center z-40 pointer-events-none">
+                {canReadAgain ? (
+                  <button
+                    type="button"
+                    onClick={onReadAgain}
+                    className="pointer-events-auto flex items-center gap-2 px-5 py-3 bg-white shadow-xl rounded-full text-sm font-bold text-purple-600 hover:bg-purple-50 transition-colors"
+                  >
+                    <RefreshCw size={14} />
+                    {labels.readAgain}
+                  </button>
+                ) : (
+                  <div className="pointer-events-auto px-5 py-3 bg-gray-100 rounded-full text-sm font-medium text-gray-400">
+                    {labels.limitReached}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        }
+        right={
+          isShuffleDone && drawnCards.length > 0 ? (
+            <SpreadRevealColumn
               spread={spread}
               drawnCards={drawnCards}
               isRevealingCompleted={isRevealingCompleted}
+              onRevealAll={() => setIsRevealingCompleted(true)}
               onRevealingCompleted={() => setIsRevealingCompleted(true)}
-              tarotistImageUrl={tarotistImageUrl}
-              tarotistName={tarotist.name}
-              cardBasePath="/cards"
-              activeTab={upperTab}
-              onActiveTabChange={setUpperTab}
-              flipCardWidth={72}
-              flipCardHeight={124}
+              revealAllLabel={labels.revealAll}
+              revealPromptLabel={labels.revealPrompt}
+              allRevealedLabel={labels.allRevealed}
             />
-          )}
-        </motion.div>
-
-        {/* アコーディオントグル */}
-        <button
-          type="button"
-          onClick={() => setIsTopCollapsed((v) => !v)}
-          className="flex-shrink-0 w-full h-7 flex items-center justify-center bg-white z-30"
-        >
-          <div className="bg-gray-200/80 rounded-full px-3 py-0.5 flex items-center">
-            <motion.div
-              animate={{ rotate: isTopCollapsed ? 0 : 180 }}
-              transition={{ duration: 0.25 }}
-            >
-              <ChevronDown size={14} className="text-gray-500" />
-            </motion.div>
-          </div>
-        </button>
-
-        {/* 下半分: ChatView (Phase1 input 非表示、Markdown 整形あり、アバターなし) */}
-        <div className="flex-1 overflow-hidden relative">
-          <ChatView
-            messages={messages}
-            status={status}
-            inputValue=""
-            onInputChange={() => {}}
-            onSend={() => {}}
-            inputDisabled={true}
-            isMessageComplete={isMessageComplete}
-            error={error}
-            onRetry={handleRetry}
-            showAvatar={false}
-            footer={
-              isShuffleDone && !isRevealingCompleted && drawnCards.length > 0 ? (
-                <RevealPromptPanel
-                  isAllRevealed={isRevealingCompleted}
-                  onRevealAll={handleRevealAll}
-                />
-              ) : null
-            }
-          />
-
-          {/* 占い完了後のアクション */}
-          {isMessageComplete && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-40 pointer-events-none">
-              {canReadAgain ? (
-                <button
-                  type="button"
-                  onClick={onReadAgain}
-                  className="pointer-events-auto flex items-center gap-2 px-5 py-3 bg-white shadow-xl rounded-full text-sm font-bold text-purple-600 hover:bg-purple-50 transition-colors"
-                >
-                  <RefreshCw size={14} />
-                  {labels.readAgain}
-                </button>
-              ) : (
-                <div className="pointer-events-auto px-5 py-3 bg-gray-100 rounded-full text-sm font-medium text-gray-400">
-                  {labels.limitReached}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
     </>
   );
 }
@@ -271,10 +214,17 @@ export default function SimplePage() {
   const t = useTranslations("simple");
   const tSalon = useTranslations("salon");
   const tCommon = useTranslations("common");
+  const tReading = useTranslations("reading");
   const { data: session } = useSession();
 
-  const { data: masterData, init: initMaster, tarotists, categories, spreads, isLoading } =
-    useMasterStore();
+  const {
+    data: masterData,
+    init: initMaster,
+    tarotists,
+    categories,
+    spreads,
+    isLoading,
+  } = useMasterStore();
   const {
     quickTarotist: selectedTarotist,
     quickSpread: selectedSpread,
@@ -287,9 +237,6 @@ export default function SimplePage() {
   } = useSalonStore();
   const { refreshUsage, usage, clearReadings } = useClientStore();
 
-  // サーバーが Reading を保存したタイミングで呼ぶ。利用回数を再取得しつつ、
-  // 履歴キャッシュも無効化することで、次に /history を開いたときに古いキャッシュが
-  // 一瞬見えてから差し替わる中途半端な表示を防ぐ。
   const handleReadingSaved = useCallback(async () => {
     clearReadings();
     await refreshUsage();
@@ -297,7 +244,6 @@ export default function SimplePage() {
 
   const [phase, setPhase] = useState<Phase>("selection");
   const [readingKey, setReadingKey] = useState(0);
-  // 占い師カルーセルが "portrait"（確定済み）になるまで占い開始ボタンを無効化
   const [tarotistMode, setTarotistMode] = useState<"carousel" | "portrait">(
     selectedTarotist ? "portrait" : "carousel",
   );
@@ -309,7 +255,6 @@ export default function SimplePage() {
     refreshUsage();
   }, [initMaster, refreshUsage]);
 
-  // ページ離脱時にロック解除（安全網）
   useEffect(() => {
     return () => setIsLocked(false);
   }, [setIsLocked]);
@@ -341,11 +286,9 @@ export default function SimplePage() {
   };
 
   const remainingQuick = usage?.remainingReadings;
-  const currentPlan = usage?.plan as Parameters<typeof CategorySpreadSelector>[0]["currentPlan"];
+  const currentPlan = (usage?.plan as Plan | undefined) ?? null;
 
-  // ═════════════════════════════════════════════════════════════
-  // Phase: reading
-  // ═════════════════════════════════════════════════════════════
+  // ─── Phase: reading ─────────────────────────────────────────
   if (
     phase === "reading" &&
     selectedTarotist &&
@@ -370,89 +313,57 @@ export default function SimplePage() {
             remainingQuick !== undefined
               ? tSalon("remainingQuick", { count: remainingQuick })
               : "",
-          aiReading: t("aiReading"),
           readAgain: t("readAgain"),
           limitReached: t("limitReached"),
           lockedDuringReading: tCommon("lockedDuringReading"),
+          showSpread: tReading("showSpread"),
+          hideSpread: tReading("hideSpread"),
+          revealAll: tReading("revealAll"),
+          revealPrompt: tReading("revealPrompt"),
+          allRevealed: tReading("allRevealed"),
         }}
       />
     );
   }
 
-  // ═════════════════════════════════════════════════════════════
-  // Phase: selection
-  // ═════════════════════════════════════════════════════════════
+  // ─── Phase: selection ───────────────────────────────────────
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <Link
-          href="/"
-          className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          {tCommon("backToHome")}
-        </Link>
-        {remainingQuick !== undefined && (
-          <span className="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-100">
-            {tSalon("remainingQuick", { count: remainingQuick })}
-          </span>
-        )}
-      </div>
-
-      <h1 className="text-xl font-bold text-gray-800">{t("title")}</h1>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 rounded-full border-4 border-purple-300 border-t-purple-600 animate-spin" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div
-            className="bg-white/50 rounded-2xl border shadow-sm overflow-hidden"
-            style={{ height: "600px" }}
-          >
-            <TarotistCarouselPortrait
-              tarotists={tarotists}
-              selectedTarotist={selectedTarotist}
-              onSelect={setQuickTarotist}
-              onModeChange={setTarotistMode}
-              currentPlan={
-                (usage?.plan as Parameters<typeof TarotistCarouselPortrait>[0]["currentPlan"]) ??
-                null
-              }
-            />
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border p-4">
-            <CategorySpreadSelector
-              categories={categories}
-              spreads={spreads}
-              currentPlan={currentPlan}
-              isPersonal={false}
-              remainingCount={remainingQuick}
-              disabled={!selectedTarotist || tarotistMode !== "portrait"}
-              onStartReading={handleStartReading}
-              labels={{
-                selectSpreadPrompt: tSalon("selectSpread"),
-                selectCategoryAndSpreadPrompt: tSalon("selectCategoryAndSpread"),
-                categoryLabel: tSalon("categoryLabel"),
-                spreadLabel: tSalon("spreadLabel"),
-                selectPlaceholder: tSalon("selectPlaceholder"),
-                categoryQuestion: tSalon("categoryQuestion"),
-                spreadQuestion: tSalon("spreadQuestion"),
-                spreadSubtitle: tSalon("spreadSubtitle"),
-                startReading: tSalon("startReading"),
-                limitReached: tSalon("limitReached"),
-                remainingText:
-                  remainingQuick !== undefined && remainingQuick > 0
-                    ? tSalon("remainingToday", { count: remainingQuick })
-                    : undefined,
-                disabledMessage: tSalon("selectTarotistFirst"),
-              }}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+    <SelectionView
+      isPersonal={false}
+      tarotists={tarotists}
+      selectedTarotist={selectedTarotist}
+      onSelectTarotist={setQuickTarotist}
+      onTarotistModeChange={setTarotistMode}
+      currentPlan={currentPlan}
+      categories={categories}
+      spreads={spreads}
+      remainingCount={remainingQuick}
+      isLoading={isLoading}
+      onQuickStartReading={handleStartReading}
+      tarotistMode={tarotistMode}
+      title={t("title")}
+      backLabel={tCommon("backToHome")}
+      remainingLabel={
+        remainingQuick !== undefined
+          ? tSalon("remainingQuick", { count: remainingQuick })
+          : undefined
+      }
+      quickLabels={{
+        selectCategoryAndSpreadPrompt: tSalon("selectCategoryAndSpread"),
+        categoryLabel: tSalon("categoryLabel"),
+        spreadLabel: tSalon("spreadLabel"),
+        selectPlaceholder: tSalon("selectPlaceholder"),
+        categoryQuestion: tSalon("categoryQuestion"),
+        spreadQuestion: tSalon("spreadQuestion"),
+        spreadSubtitle: tSalon("spreadSubtitle"),
+        startReading: tSalon("startReading"),
+        limitReached: tSalon("limitReached"),
+        remainingText:
+          remainingQuick !== undefined && remainingQuick > 0
+            ? tSalon("remainingToday", { count: remainingQuick })
+            : undefined,
+        disabledMessage: tSalon("selectTarotistFirst"),
+      }}
+    />
   );
 }
