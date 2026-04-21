@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "料金プラン",
   description:
-    "AI タロット占いの料金プラン一覧。無料のゲストプランから本格的なプレミアムプランまで。いつでも解約可能。",
+    "AI Tarot Chatの料金プラン一覧。無料のゲストプランから本格的なプレミアムプランまで。いつでも解約可能。",
 };
 
 type Plan = {

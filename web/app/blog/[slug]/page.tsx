@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
 
   return {
-    title: `${post.title} — Ariadne AI タロット占い`,
+    title: `${post.title} — Ariadne - AI Tarot Chat`,
     description: post.metaDescription ?? post.excerpt ?? undefined,
     openGraph: {
       title: post.title,
@@ -52,7 +52,8 @@ export default async function BlogPostPage({ params }: Props) {
     keywords: post.tags.join(", "),
     publisher: {
       "@type": "Organization",
-      name: "Ariadne AI タロット占い",
+      name: "Ariadne - AI Tarot Chat",
+      alternateName: "Ariadne AIタロット占い",
       url: baseUrl,
     },
   };
@@ -101,7 +102,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <footer className="mt-12 pt-8 border-t">
         <div className="bg-gradient-to-br from-violet-50 to-sky-50 rounded-2xl p-6 text-center">
-          <p className="text-zinc-600 mb-4">AIタロット占いを試してみませんか？</p>
+          <p className="text-zinc-600 mb-4">AI Tarot Chatを試してみませんか？</p>
           <Link
             href="/"
             className="inline-block bg-violet-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-violet-700 transition"

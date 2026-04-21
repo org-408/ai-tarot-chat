@@ -12,7 +12,7 @@ import { HeroCards } from "@/components/marketing/hero-cards";
 import { CTACards } from "@/components/marketing/cta-cards";
 
 export const metadata: Metadata = {
-  title: "AI タロット占い — AIが読み解くあなたの未来",
+  title: "Ariadne - AI Tarot Chat — AIが読み解くあなたの未来",
   description:
     "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。",
 };
@@ -184,7 +184,7 @@ export default async function LandingPage({ params }: Props) {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              なぜ AI タロット占いなのか
+              なぜ AI Tarot Chat なのか
             </h2>
             <p className="text-slate-600 text-lg max-w-xl mx-auto">
               最先端のAIと伝統のタロットが融合した、まったく新しい占い体験。

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { blogPostRepository } from "@/lib/server/repositories/blog-post";
 
 export const metadata: Metadata = {
-  title: "ブログ — Ariadne AI タロット占い",
+  title: "ブログ — Ariadne - AI Tarot Chat",
   description: "タロット占いの使い方、カードの意味、AI占いの活用法などを解説するAriadneの公式ブログ。",
 };
 

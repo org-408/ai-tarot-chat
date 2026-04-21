@@ -18,8 +18,8 @@ export async function generateMetadata({
 
   return {
     title: {
-      template: "%s | AI タロット占い",
-      default: "AI タロット占い — AIが読み解くあなたの未来",
+      template: "%s | Ariadne - AI Tarot Chat",
+      default: "Ariadne - AI Tarot Chat — AIが読み解くあなたの未来",
     },
     description:
       "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
@@ -32,16 +32,16 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title: "AI タロット占い — AIが読み解くあなたの未来",
+      title: "Ariadne - AI Tarot Chat — AIが読み解くあなたの未来",
       description:
         "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。",
       type: "website",
       locale: ogLocale,
-      images: [{ url: "/api/og", width: 1200, height: 630, alt: "AI タロット占い" }],
+      images: [{ url: "/api/og", width: 1200, height: 630, alt: "Ariadne - AI Tarot Chat" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "AI タロット占い",
+      title: "Ariadne - AI Tarot Chat",
       description:
         "8人の個性豊かなAI占い師と24種以上のスプレッドで、本格的なタロットリーディングを体験しよう",
       images: ["/api/og"],
@@ -61,7 +61,8 @@ export default async function MarketingLayout({ children, params }: Props) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Ariadne AI タロット占い",
+    name: "Ariadne - AI Tarot Chat",
+    alternateName: "Ariadne AIタロット占い",
     url: `${baseUrl}/${locale}`,
     description: "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。",
     applicationCategory: "LifestyleApplication",
@@ -100,8 +101,8 @@ export default async function MarketingLayout({ children, params }: Props) {
                 className="w-7 h-11 object-cover rounded-sm shadow-sm"
                 alt=""
               />
-              <span className="hidden sm:inline">AI タロット占い</span>
-              <span className="sm:hidden">タロット</span>
+              <span className="hidden sm:inline">Ariadne - AI Tarot Chat</span>
+              <span className="sm:hidden">AI Tarot Chat</span>
             </Link>
 
             {/* ナビリンク */}
@@ -147,7 +148,7 @@ export default async function MarketingLayout({ children, params }: Props) {
                   className="w-7 h-11 object-cover rounded-sm shadow-sm"
                   alt=""
                 />
-                <span>AI タロット占い</span>
+                <span>Ariadne - AI Tarot Chat</span>
               </div>
               <p className="text-sm leading-relaxed">
                 8人のAI占い師と共に、

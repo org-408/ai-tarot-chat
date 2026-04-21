@@ -14,7 +14,7 @@ export function Header({ user }: { user?: HeaderUser }) {
       <div className="mx-auto max-w-screen-2xl px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <SidebarToggle />
-          <div className="font-semibold">🔮 AIタロット占い 管理システム</div>
+          <div className="font-semibold">AI Tarot Chat 管理システム</div>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sky-800 bg-sky-100">

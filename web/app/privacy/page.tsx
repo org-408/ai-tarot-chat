@@ -1,11 +1,11 @@
 export const metadata = {
-  title: "プライバシーポリシー | AI タロット占い",
-  description: "AI タロット占いアプリのプライバシーポリシー",
+  title: "プライバシーポリシー | Ariadne - AIタロット占い",
+  description: "Ariadne - AIタロット占いアプリのプライバシーポリシー",
 };
 
 export default function PrivacyPage() {
   const lastUpdated = "2026年3月20日";
-  const appName = "AI タロット占い";
+  const appName = "Ariadne - AIタロット占い";
   const developerName = "Atelier Flow Lab";
   const contactEmail = "support@ariadne-ai.app";
 

@@ -7,7 +7,7 @@ import { ReactNode, Suspense } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI タロット占い",
+  title: "Ariadne - AI Tarot Chat",
   metadataBase: new URL(
     process.env.AUTH_URL ?? "https://ariadne-ai.app"
   ),

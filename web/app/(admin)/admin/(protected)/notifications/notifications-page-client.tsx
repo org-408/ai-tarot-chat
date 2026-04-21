@@ -169,7 +169,7 @@ export function NotificationsPageClient() {
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="例：AI タロット占いアプリがリリースされました"
+                placeholder="例：AI Tarot Chatアプリがリリースされました"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>

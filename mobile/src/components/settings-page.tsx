@@ -281,7 +281,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       <RowGroup>
         <Row
           icon={<span className="text-base">🔮</span>}
-          label="AI タロット占い"
+          label="AI Tarot Chat"
           description={`バージョン ${appVersion}`}
           right={<span className="text-xs text-gray-400">{appVersion}</span>}
         />
