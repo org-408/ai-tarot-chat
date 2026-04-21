@@ -22,6 +22,7 @@ export default async function XPostsPage() {
     scheduledAt: p.scheduledAt?.toISOString() ?? null,
     postedAt: p.postedAt?.toISOString() ?? null,
     isAuto: p.isAuto,
+    mediaPath: p.mediaPath,
     createdAt: p.createdAt.toISOString(),
   }));
 

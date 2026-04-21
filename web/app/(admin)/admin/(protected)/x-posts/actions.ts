@@ -6,11 +6,62 @@ import { xPostRepository, xPostConfigRepository } from "@/lib/server/repositorie
 import * as xPostService from "@/lib/server/services/x-post";
 import { revalidatePath } from "next/cache";
 
+type SerializedXPost = {
+  id: string;
+  content: string;
+  tweetId: string | null;
+  status: XPostStatus;
+  postType: XPostType;
+  error: string | null;
+  scheduledAt: string | null;
+  postedAt: string | null;
+  isAuto: boolean;
+  mediaPath: string | null;
+  createdAt: string;
+};
+
+function serializePost(p: {
+  id: string;
+  content: string;
+  tweetId: string | null;
+  status: XPostStatus;
+  postType: XPostType;
+  error: string | null;
+  scheduledAt: Date | null;
+  postedAt: Date | null;
+  isAuto: boolean;
+  mediaPath: string | null;
+  createdAt: Date;
+}): SerializedXPost {
+  return {
+    id: p.id,
+    content: p.content,
+    tweetId: p.tweetId,
+    status: p.status,
+    postType: p.postType,
+    error: p.error,
+    scheduledAt: p.scheduledAt?.toISOString() ?? null,
+    postedAt: p.postedAt?.toISOString() ?? null,
+    isAuto: p.isAuto,
+    mediaPath: p.mediaPath,
+    createdAt: p.createdAt.toISOString(),
+  };
+}
+
 export async function generateContentAction(type: XPostType, customPrompt?: string) {
   try {
     await assertAdminSession();
-    const content = await xPostService.generateContent(type, customPrompt || undefined);
-    return { ok: true as const, content };
+    const { phase } = await xPostConfigRepository.get();
+    const generated = await xPostService.generateContent(
+      type,
+      phase,
+      customPrompt || undefined,
+    );
+    return {
+      ok: true as const,
+      content: generated.text,
+      mediaPath: generated.mediaPath ?? null,
+    };
   } catch (error) {
     return {
       ok: false as const,
@@ -22,6 +73,7 @@ export async function generateContentAction(type: XPostType, customPrompt?: stri
 export async function createDraftAction(data: {
   content: string;
   postType: XPostType;
+  mediaPath?: string | null;
 }) {
   try {
     await assertAdminSession();
@@ -29,23 +81,10 @@ export async function createDraftAction(data: {
       content: data.content,
       postType: data.postType,
       status: XPostStatus.DRAFT,
+      mediaPath: data.mediaPath ?? null,
     });
     revalidatePath("/admin/x-posts");
-    return {
-      ok: true as const,
-      post: {
-        id: post.id,
-        content: post.content,
-        tweetId: post.tweetId,
-        status: post.status,
-        postType: post.postType,
-        error: post.error,
-        scheduledAt: post.scheduledAt?.toISOString() ?? null,
-        postedAt: post.postedAt?.toISOString() ?? null,
-        isAuto: post.isAuto,
-        createdAt: post.createdAt.toISOString(),
-      },
-    };
+    return { ok: true as const, post: serializePost(post) };
   } catch (error) {
     return {
       ok: false as const,
@@ -58,6 +97,7 @@ export async function schedulePostAction(data: {
   content: string;
   postType: XPostType;
   scheduledAt: string;
+  mediaPath?: string | null;
 }) {
   try {
     await assertAdminSession();
@@ -66,23 +106,10 @@ export async function schedulePostAction(data: {
       postType: data.postType,
       status: XPostStatus.SCHEDULED,
       scheduledAt: new Date(data.scheduledAt),
+      mediaPath: data.mediaPath ?? null,
     });
     revalidatePath("/admin/x-posts");
-    return {
-      ok: true as const,
-      post: {
-        id: post.id,
-        content: post.content,
-        tweetId: post.tweetId,
-        status: post.status,
-        postType: post.postType,
-        error: post.error,
-        scheduledAt: post.scheduledAt?.toISOString() ?? null,
-        postedAt: post.postedAt?.toISOString() ?? null,
-        isAuto: post.isAuto,
-        createdAt: post.createdAt.toISOString(),
-      },
-    };
+    return { ok: true as const, post: serializePost(post) };
   } catch (error) {
     return {
       ok: false as const,
@@ -108,6 +135,7 @@ export async function postNowAction(postId: string) {
 export async function postNewNowAction(data: {
   content: string;
   postType: XPostType;
+  mediaPath?: string | null;
 }) {
   try {
     await assertAdminSession();
@@ -115,6 +143,7 @@ export async function postNewNowAction(data: {
       content: data.content,
       postType: data.postType,
       status: XPostStatus.DRAFT,
+      mediaPath: data.mediaPath ?? null,
     });
     await xPostService.postNow(post.id);
     revalidatePath("/admin/x-posts");
@@ -154,18 +183,7 @@ export async function loadPostsAction(opts: {
     });
     return {
       ok: true as const,
-      posts: posts.map((p) => ({
-        id: p.id,
-        content: p.content,
-        tweetId: p.tweetId,
-        status: p.status,
-        postType: p.postType,
-        error: p.error,
-        scheduledAt: p.scheduledAt?.toISOString() ?? null,
-        postedAt: p.postedAt?.toISOString() ?? null,
-        isAuto: p.isAuto,
-        createdAt: p.createdAt.toISOString(),
-      })),
+      posts: posts.map(serializePost),
     };
   } catch (error) {
     return {

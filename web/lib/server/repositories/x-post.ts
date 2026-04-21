@@ -12,6 +12,7 @@ export type XPostRow = {
   postedAt: Date | null;
   isAuto: boolean;
   prompt: string | null;
+  mediaPath: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -23,6 +24,7 @@ export type CreateXPostInput = {
   scheduledAt?: Date;
   isAuto?: boolean;
   prompt?: string;
+  mediaPath?: string | null;
 };
 
 export type UpdateXPostInput = Partial<{
@@ -34,6 +36,7 @@ export type UpdateXPostInput = Partial<{
   postedAt: Date;
   isAuto: boolean;
   prompt: string;
+  mediaPath: string | null;
 }>;
 
 class XPostRepository extends BaseRepository {
@@ -96,6 +99,7 @@ class XPostRepository extends BaseRepository {
         scheduledAt: data.scheduledAt ?? null,
         isAuto: data.isAuto ?? false,
         prompt: data.prompt ?? null,
+        mediaPath: data.mediaPath ?? null,
       },
     });
   }

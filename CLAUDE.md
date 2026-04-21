@@ -356,3 +356,4 @@ DATABASE_URL="postgresql://..." npm run db:master:production
 - `master-data.ts` は `main` ブランチと `staging` ブランチで内容が異なることがある（正常）
 - DB リセット（`db:reset+`）後は必ず `db:master` を再実行して `master-data.ts` を更新すること
 - マスターデータ（TarotCard 等）を変更した場合も同様に再実行が必要
+- **カード画像を新しく追加した場合**は `npm run cards:reversed`（web ディレクトリ）で X 投稿用の逆位置画像も生成する。詳細は [web/CLAUDE.md](web/CLAUDE.md) の「カード画像を追加した場合の手順」参照

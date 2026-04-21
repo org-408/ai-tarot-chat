@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const type = (body.type ? typeMap[body.type] : undefined)
       ?? phaseTypes[Math.floor(Math.random() * phaseTypes.length)];
 
-    const autoPost = await xPostService.createAutoPost(type);
+    const autoPost = await xPostService.createAutoPost(type, config.phase);
     logger.info("Cron: 自動投稿完了", { id: autoPost.id, type, phase: config.phase, status: autoPost.status });
 
     return NextResponse.json({
