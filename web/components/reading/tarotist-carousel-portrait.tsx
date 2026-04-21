@@ -98,6 +98,9 @@ export function TarotistCarouselPortrait({
     try {
       await purchase(planCode);
       await refreshUsage();
+      // 購入成功 → そのままこの占い師を選択状態にしてポートレートモードへ遷移
+      onSelect(tarotist);
+      setMode("portrait");
     } catch (e) {
       if (!isUserCancelled(e)) console.error(e);
     } finally {
