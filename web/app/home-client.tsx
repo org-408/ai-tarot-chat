@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { History, Sparkles, Zap } from "lucide-react";
+import { History, Sparkles, Star, Zap } from "lucide-react";
 
 const PLAN_POLL_INTERVAL_MS = 1000;
 const PLAN_POLL_MAX_ATTEMPTS = 10;
@@ -202,6 +202,25 @@ export default function HomeClient() {
             </button>
           )}
         </div>
+      </section>
+
+      {/* 占い師を見る */}
+      <section>
+        <Link
+          href="/tarotists"
+          className="group relative bg-white rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex items-center gap-4"
+        >
+          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <Star className="w-5 h-5 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-bold text-gray-900">{t("tarotistsTitle")}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{t("tarotistsDesc")}</p>
+          </div>
+          <span className="text-sm font-semibold text-amber-600 group-hover:underline">
+            {t("viewAll")} →
+          </span>
+        </Link>
       </section>
 
       {/* 最近の占い履歴 */}

@@ -10,9 +10,7 @@ import type {
 import { useSalon } from "../lib/hooks/use-salon";
 import type { UserPlan } from "../types";
 import CategorySpreadSelector from "./category-spread-selector";
-import CurrentPlanView from "./current-plan-view";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
-import UpgradeGuide from "./upgrade-guide";
 
 interface SalonPageProps {
   payload: AppJWTPayload;
@@ -25,7 +23,6 @@ interface SalonPageProps {
 }
 
 const SalonPage: React.FC<SalonPageProps> = ({
-  payload,
   currentPlan,
   masterData,
   usageStats,
@@ -72,16 +69,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   return (
     <div className="main-container">
-      {/* カレントプラン表示 */}
-      {selectedTargetMode === "spread" && (
-        <CurrentPlanView
-          masterData={masterData}
-          currentPlan={currentPlan}
-          payload={payload}
-          usageStats={usageStats}
-        />
-      )}
-
       {/* 占い師選択モード */}
       {selectedTargetMode === "tarotist" ? (
         <TarotistCarouselPortrait
@@ -138,10 +125,6 @@ const SalonPage: React.FC<SalonPageProps> = ({
               <div className="flex-1 overflow-y-auto pb-52">
                 <CategorySpreadSelector
                   handleStartReading={handleStartReading}
-                />
-                <UpgradeGuide
-                  handleChangePlan={handleChangePlan}
-                  isChangingPlan={isChangingPlan}
                 />
               </div>
             </motion.div>

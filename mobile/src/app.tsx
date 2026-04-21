@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import type { Plan } from "../../shared/lib/types";
 import Header from "./components/header";
+import HomePage from "./components/home-page";
 import ReadingPage from "./components/reading-page";
 import SidebarMenu from "./components/sidebar-menu";
 import { useAuth } from "./lib/hooks/use-auth";
@@ -9,6 +10,7 @@ import { useClient } from "./lib/hooks/use-client";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
 import { useSalon } from "./lib/hooks/use-salon";
+import { useAppStore } from "./lib/stores/app";
 import { useSalonStore } from "./lib/stores/salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import { showInterstitialAd } from "./lib/utils/admob";
@@ -133,7 +135,8 @@ function App() {
   // ✅ デバッグモードフラグ（本番は false に設定）
   const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
 
-  const [pageType, setPageType] = useState<PageType>("salon");
+  const [pageType, setPageType] = useState<PageType>("home");
+  const [isPageRestored, setIsPageRestored] = useState(false);
   // パーソナル占い再起動用キー（インクリメントで強制再マウント）
   const [personalPageKey, setPersonalPageKey] = useState(0);
   // プラン失効通知（"toast" | "dialog" | null）
@@ -154,7 +157,7 @@ function App() {
     console.log("[App] Force unlock triggered by long press");
     useSalonStore.getState().init();
     setIsNavigationLocked(false);
-    setPageType("salon");
+    setPageType("home");
     setPersonalPageKey((k) => k + 1);
     setShowForceUnlockToast(true);
   }, []);
@@ -296,11 +299,17 @@ function App() {
     );
 
     if (isNavigationLocked) {
-      // AI 課金中 → ダイアログ（OKを押してからサロンへ）
+      // AI 課金中 → ダイアログ（OK を押してからホームへ）
       setPlanExpiredNotification("dialog");
     } else {
-      // それ以外 → 即サロンへ + トースト
-      setPageType("salon");
+      // 到達可能性チェック: personal は hasPersonal、history は hasHistory が必要
+      const pageStillAccessible =
+        (pageType !== "personal" || currentPlan.hasPersonal) &&
+        (pageType !== "history" || currentPlan.hasHistory);
+
+      if (!pageStillAccessible) {
+        setPageType("home");
+      }
       setPlanExpiredNotification("toast");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -354,7 +363,8 @@ function App() {
       await appLogout();
       console.log("ログアウト成功");
 
-      setPageType("salon");
+      useAppStore.getState().resetLastPageType();
+      setPageType("home");
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -364,7 +374,8 @@ function App() {
   const handleDeleteAccount = async () => {
     await Http.executeRequest({ method: "DELETE", path: "/api/clients/me", requiresAuth: true });
     await appLogout();
-    setPageType("salon");
+    useAppStore.getState().resetLastPageType();
+    setPageType("home");
   };
 
   // 🔥 RevenueCat Customer Center へ移動
@@ -447,6 +458,38 @@ function App() {
     return () => clearInterval(id);
   }, [clientIsReady, refreshUsage]);
 
+  // 🔥 前回の pageType を復元（プラン／認証が揃ってから一度だけ実行）
+  useEffect(() => {
+    if (isPageRestored) return;
+    if (!clientIsReady || !currentPlan) return;
+
+    const stored = useAppStore.getState().lastPageType;
+    let target: PageType = "home";
+
+    if (stored) {
+      if (stored === "reading") {
+        // reading は salon からの遷移専用。途中で中断した場合は salon に戻す
+        target = "salon";
+      } else if (stored === "personal" && !currentPlan.hasPersonal) {
+        target = "home";
+      } else if (stored === "history" && !currentPlan.hasHistory) {
+        target = "home";
+      } else {
+        target = stored;
+      }
+    }
+
+    console.log("[App] 前回画面を復元:", { stored, target });
+    setPageType(target);
+    setIsPageRestored(true);
+  }, [isPageRestored, clientIsReady, currentPlan]);
+
+  // 🔥 pageType の変更を永続化（復元完了後のみ）
+  useEffect(() => {
+    if (!isPageRestored) return;
+    useAppStore.getState().setLastPageType(pageType);
+  }, [pageType, isPageRestored]);
+
   // 占い師プロフィールダイアログ管理
   const [showProfile, setShowProfile] = useState(false);
 
@@ -504,6 +547,23 @@ function App() {
   // ページレンダリング
   const renderPage = () => {
     switch (pageType) {
+      case "home":
+        return (
+          <HomePage
+            payload={payload}
+            currentPlan={currentPlan!}
+            masterData={masterData}
+            usageStats={usageStats}
+            onNavigateToSalon={() => setPageType("salon")}
+            onNavigateToPersonal={() => setPageType("personal")}
+            onNavigateToClara={() => setPageType("clara")}
+            onNavigateToTarotist={() => setPageType("tarotist")}
+            onNavigateToHistory={() => setPageType("history")}
+            onNavigateToReading={() => setPageType("history")}
+            onChangePlan={handleChangePlan}
+            isChangingPlan={isChangingPlan}
+          />
+        );
       case "salon":
         return (
           <SalonPage
@@ -607,13 +667,18 @@ function App() {
         );
       default:
         return (
-          <SalonPage
+          <HomePage
             payload={payload}
             currentPlan={currentPlan!}
             masterData={masterData}
             usageStats={usageStats}
+            onNavigateToSalon={() => setPageType("salon")}
+            onNavigateToPersonal={() => setPageType("personal")}
+            onNavigateToClara={() => setPageType("clara")}
+            onNavigateToTarotist={() => setPageType("tarotist")}
+            onNavigateToHistory={() => setPageType("history")}
+            onNavigateToReading={() => setPageType("history")}
             onChangePlan={handleChangePlan}
-            onStartReading={handleStartReading}
             isChangingPlan={isChangingPlan}
           />
         );
@@ -823,7 +888,7 @@ function App() {
           <PlanExpiredDialog
             onClose={() => {
               setPlanExpiredNotification(null);
-              setPageType("salon");
+              setPageType("home");
             }}
           />
         )}
