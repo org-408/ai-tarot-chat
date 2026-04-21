@@ -126,7 +126,7 @@ export async function GET() {
             ) : (
               <span style={{ fontSize: 56, fontWeight: 400, color: "#87CEEB", marginRight: 10 }}>Ariadne</span>
             )}
-            <span style={{ fontSize: 52, fontWeight: 700, color: "white" }}>- AIタロット占い</span>
+            <span style={{ fontSize: 52, fontWeight: 700, color: "white" }}>- AI Tarot Chat</span>
           </div>
 
           {/* 3枚扇形カード: 左右裏面・中央表面（DOM最後=最前面） */}

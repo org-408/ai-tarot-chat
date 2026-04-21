@@ -1,10 +1,10 @@
 export const metadata = {
-  title: "アカウント削除 | AI タロット占い",
-  description: "AI タロット占いアプリのアカウント削除について",
+  title: "アカウント削除 | Ariadne - AIタロット占い",
+  description: "Ariadne - AIタロット占いアプリのアカウント削除について",
 };
 
 export default function DeleteAccountPage() {
-  const appName = "AI タロット占い";
+  const appName = "Ariadne - AIタロット占い";
   const developerName = "Atelier Flow Lab";
   const contactEmail = "support@ariadne-ai.app";
 

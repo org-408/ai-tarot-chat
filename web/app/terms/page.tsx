@@ -1,11 +1,11 @@
 export const metadata = {
-  title: "利用規約 | AI タロット占い",
-  description: "AI タロット占いアプリの利用規約",
+  title: "利用規約 | Ariadne - AIタロット占い",
+  description: "Ariadne - AIタロット占いアプリの利用規約",
 };
 
 export default function TermsPage() {
   const lastUpdated = "2026年3月20日";
-  const appName = "AI タロット占い";
+  const appName = "Ariadne - AIタロット占い";
   const developerName = "Atelier Flow Lab";
   const contactEmail = "support@ariadne-ai.app";
 

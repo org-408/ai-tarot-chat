@@ -4,7 +4,7 @@ import { NotifyForm } from "@/components/marketing/notify-form";
 export const metadata: Metadata = {
   title: "ダウンロード",
   description:
-    "AI タロット占いをダウンロードしよう。iOS（App Store）・Android（Google Play）対応。近日公開予定です。",
+    "AI Tarot Chatをダウンロードしよう。iOS（App Store）・Android（Google Play）対応。近日公開予定です。",
 };
 
 const platforms = [
@@ -67,7 +67,7 @@ export default function DownloadPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-5xl mb-6">📱</div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-4">
-            AI タロット占いを始めよう
+            AI Tarot Chat を始めよう
           </h1>
           <p className="text-purple-200 text-lg max-w-xl mx-auto">
             iOS・Androidアプリを準備中です。

@@ -91,7 +91,7 @@ function SignInHeroPanel() {
                   Ariadne
                 </h1>
                 <p className="text-2xl font-bold text-violet-200">
-                  AIタロット占い
+                  AI Tarot Chat
                 </p>
               </div>
             </div>
@@ -200,7 +200,7 @@ function MobileSignInLayout({
               <CardFan size="sm" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-3">
-              Ai Tarot Chat
+              AI Tarot Chat
             </h1>
             <p className="text-white/80 text-lg font-medium">
               AIと対話するタロット占い
