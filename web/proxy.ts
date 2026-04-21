@@ -33,7 +33,8 @@ export default async function proxy(req: NextRequest) {
     pathname.startsWith("/history") ||
     pathname.startsWith("/tarotists") ||
     pathname.startsWith("/plans") ||
-    pathname.startsWith("/settings");
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/blog");              // ブログは locale 非依存ルート (app/blog/[slug])
 
   // ✅ リクエストヘッダーを明示的に転送 (Next.js 16 対応)
   const requestHeaders = new Headers(req.headers);

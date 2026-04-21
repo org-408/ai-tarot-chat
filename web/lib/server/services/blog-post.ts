@@ -1,69 +1,118 @@
 import { BlogPostPhase, BlogPostStatus, BlogPostType } from "@/lib/generated/prisma/client";
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { blogPostRepository, type BlogPostRow } from "@/lib/server/repositories/blog-post";
+import { blogPostRepository, blogPostConfigRepository, type BlogPostRow } from "@/lib/server/repositories/blog-post";
 import logger from "@/lib/server/logger/logger";
 
 const APP_URL = process.env.AUTH_URL ?? "https://ariadne-ai.app";
+
+// ローンチ前の誘導先（リリース通知登録ページ）
+const PRE_LAUNCH_CTA_URL = `${APP_URL}/download`;
 
 function getGenerationModel() {
   return anthropic("claude-haiku-4-5");
 }
 
-function generateSlug(title: string): string {
-  const now = Date.now();
-  const base = title
+// slug の正規化: ASCII 英数字とハイフンのみに絞る
+function sanitizeSlug(rawSlug: string): string {
+  return rawSlug
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
-    .slice(0, 50)
+    .slice(0, 60)
     .replace(/^-|-$/g, "");
-  return base ? `${base}-${now}` : `post-${now}`;
+}
+
+// AI が返した英語 slug を正規化して timestamp を付与する。
+// AI が slug を返さない、または sanitize して空になった場合は `post-{timestamp}` にフォールバック。
+function buildSlug(aiSlug: string | null | undefined): string {
+  const timestamp = Date.now();
+  if (aiSlug) {
+    const sanitized = sanitizeSlug(aiSlug);
+    if (sanitized) return `${sanitized}-${timestamp}`;
+  }
+  return `post-${timestamp}`;
 }
 
 export type GenerateBlogPostResult = {
   title: string;
+  slug: string;
   content: string;
   excerpt: string;
   metaDescription: string;
   tags: string[];
 };
 
+// phase と投稿タイプに応じた本文末尾 CTA の指示を組み立てる
+function buildCtaInstruction(type: BlogPostType, phase: BlogPostPhase): string {
+  const isPreLaunch = phase === BlogPostPhase.PRE_LAUNCH;
+
+  if (isPreLaunch) {
+    // PRE_LAUNCH は全投稿タイプで /download へ誘導（BUILD_IN_PUBLIC を除く）
+    if (type === BlogPostType.BUILD_IN_PUBLIC) {
+      return `記事末尾に「Ariadne AIタロット占いは近日公開予定です。開発の進捗は [Ariadne](${APP_URL}) をご覧ください」と自然に添えてください。`;
+    }
+    return `記事末尾に「Ariadne AIタロット占いは近日公開予定です。リリース通知の事前登録はこちらから → ${PRE_LAUNCH_CTA_URL}」という案内を自然な形で含めてください。`;
+  }
+
+  // POST_LAUNCH は各タイプに応じた通常の誘導
+  if (type === BlogPostType.APP_PROMO) {
+    return `末尾に ${APP_URL} からダウンロードできる旨を添えてください。`;
+  }
+  if (type === BlogPostType.TAROT_GUIDE || type === BlogPostType.TAROT_TIP) {
+    return `末尾に「[Ariadne AIタロット占い](${APP_URL}) で実際に試せる」旨を自然に添えてください。`;
+  }
+  return "";
+}
+
 export async function generateBlogContent(
   type: BlogPostType,
+  phase: BlogPostPhase = BlogPostPhase.POST_LAUNCH,
   customPrompt?: string,
 ): Promise<GenerateBlogPostResult> {
   let systemPrompt: string;
   let userPrompt: string;
 
   const jsonSuffix = `最後に必ず記事本文のあとに以下のJSONだけを出力してください:
-{"title": "記事タイトル", "excerpt": "120文字以内の概要", "metaDescription": "160文字以内のSEO用説明", "tags": ["タグ1", "タグ2", "タグ3"]}`;
+{"title": "記事タイトル", "slug": "english-slug-in-kebab-case", "excerpt": "120文字以内の概要", "metaDescription": "160文字以内のSEO用説明", "tags": ["タグ1", "タグ2", "タグ3"]}
+
+slug は ASCII 英小文字・数字・ハイフンのみで 50 文字以内。URL に使うため記事内容を表す英単語を 3〜6 語ハイフン区切りで表現してください（例: "tarot-major-arcana-guide", "how-to-read-tarot-cards"）。`;
+
+  const ctaInstruction = buildCtaInstruction(type, phase);
 
   if (customPrompt) {
     systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のブログライターです。
 SEOに最適化された日本語のブログ記事を書きます。
 記事はMarkdown形式で書いてください。見出し(##, ###)・箇条書き・太字などを適切に使ってください。`;
-    userPrompt = `${customPrompt}\n\n${jsonSuffix}`;
+    userPrompt = `${customPrompt}
+
+${ctaInstruction}
+
+${jsonSuffix}`;
   } else if (type === BlogPostType.TAROT_GUIDE) {
     systemPrompt = `あなたはタロット占いの講師です。初心者〜中級者向けに、タロットカードの意味やスプレッド、読み方のコツを日本語で解説します。
 記事はMarkdown形式・1200〜1800文字程度。見出し(##, ###)・箇条書き・太字を適切に使い、SEOに有効なキーワードを自然に織り込んでください。`;
     userPrompt = `タロットカードの意味・スプレッド・読み方などから1つテーマを選び、初心者にも分かる解説記事を書いてください。
-末尾に「Ariadne AIタロット占い」で実際に試せる旨を自然に添えてください。
+${ctaInstruction}
 
 ${jsonSuffix}`;
   } else if (type === BlogPostType.TAROT_TIP) {
     systemPrompt = `あなたはタロット占いのライターです。タロットに関する豆知識や歴史・文化的背景を日本語で紹介します。
 記事はMarkdown形式・800〜1200文字程度。読者が「へえ！」と思える雑学を複数織り込んでください。`;
     userPrompt = `タロットにまつわる豆知識や歴史・文化的トピックを1つ選び、読み物として楽しい記事を書いてください。
+${ctaInstruction}
 
 ${jsonSuffix}`;
   } else if (type === BlogPostType.APP_PROMO) {
     systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のマーケター兼ライターです。
 アプリの特徴や使い方を日本語のブログ記事として紹介します。押し売りにならない自然な紹介を心がけてください。
 記事はMarkdown形式・1000〜1500文字程度。`;
-    userPrompt = `「Ariadne AIタロット」アプリの魅力を伝える記事を書いてください。AIによる本格的なタロット占い、無料で始められること、複数タロティストから選べることなどを紹介してください。
-末尾に ${APP_URL} からダウンロードできる旨を添えてください。
+    const appPromoUserPrompt = phase === BlogPostPhase.PRE_LAUNCH
+      ? `「Ariadne AIタロット」アプリの魅力を伝えるティザー記事を書いてください。AIによる本格的なタロット占い、複数タロティストから選べることなどを紹介しつつ、近日公開予定であり事前登録を募っている旨を自然に伝えてください。App Store / Google Play のリンクは含めないでください（まだ公開されていません）。`
+      : `「Ariadne AIタロット」アプリの魅力を伝える記事を書いてください。AIによる本格的なタロット占い、無料で始められること、複数タロティストから選べることなどを紹介してください。`;
+    userPrompt = `${appPromoUserPrompt}
+${ctaInstruction}
 
 ${jsonSuffix}`;
   } else if (type === BlogPostType.BUILD_IN_PUBLIC) {
@@ -72,6 +121,7 @@ ${jsonSuffix}`;
 記事はMarkdown形式・1000〜1500文字程度。技術的な内容を親しみやすく伝えてください。`;
     userPrompt = `個人開発で得た学び・工夫・失敗談から1テーマ選び、開発者ブログ記事を書いてください。
 具体的な技術（Next.js / Capacitor / Prisma / AI SDK 等）に触れつつ、読み手に役立つ知見を残してください。
+${ctaInstruction}
 
 ${jsonSuffix}`;
   } else {
@@ -87,7 +137,13 @@ ${jsonSuffix}`;
 
   // JSON部分を抽出
   const jsonMatch = text.match(/\{[\s\S]*"title"[\s\S]*\}/);
-  let meta = { title: "", excerpt: "", metaDescription: "", tags: [] as string[] };
+  let meta: {
+    title?: string;
+    slug?: string;
+    excerpt?: string;
+    metaDescription?: string;
+    tags?: string[];
+  } = {};
   let content = text;
 
   if (jsonMatch) {
@@ -99,12 +155,17 @@ ${jsonSuffix}`;
     }
   }
 
+  const tags = Array.isArray(meta.tags) && meta.tags.length > 0
+    ? meta.tags
+    : ["タロット", "占い", "Ariadne"];
+
   return {
     title: meta.title || "Ariadne ブログ記事",
+    slug: buildSlug(meta.slug),
     content: content || text,
     excerpt: meta.excerpt || text.slice(0, 120),
     metaDescription: meta.metaDescription || text.slice(0, 160),
-    tags: meta.tags.length > 0 ? meta.tags : ["タロット", "占い", "Ariadne"],
+    tags,
   };
 }
 
@@ -144,13 +205,17 @@ export function getAutoPostTypesForPhase(phase: BlogPostPhase): BlogPostType[] {
   return [BlogPostType.TAROT_GUIDE, BlogPostType.TAROT_TIP, BlogPostType.APP_PROMO];
 }
 
-export async function createAutoPost(type: BlogPostType, customPrompt?: string): Promise<BlogPostRow> {
-  const generated = await generateBlogContent(type, customPrompt);
-  const slug = generateSlug(generated.title);
+export async function createAutoPost(
+  type: BlogPostType,
+  phase?: BlogPostPhase,
+  customPrompt?: string,
+): Promise<BlogPostRow> {
+  const resolvedPhase = phase ?? (await blogPostConfigRepository.get()).phase;
+  const generated = await generateBlogContent(type, resolvedPhase, customPrompt);
 
   const saved = await blogPostRepository.create({
     title: generated.title,
-    slug,
+    slug: generated.slug,
     content: generated.content,
     excerpt: generated.excerpt,
     metaDescription: generated.metaDescription,
@@ -162,7 +227,7 @@ export async function createAutoPost(type: BlogPostType, customPrompt?: string):
     publishedAt: new Date(),
   });
 
-  logger.info("ブログ記事自動生成・公開完了", { id: saved.id, title: saved.title, type });
+  logger.info("ブログ記事自動生成・公開完了", { id: saved.id, title: saved.title, type, phase: resolvedPhase });
   return saved;
 }
 

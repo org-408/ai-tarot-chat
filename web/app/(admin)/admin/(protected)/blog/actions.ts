@@ -9,7 +9,12 @@ import { revalidatePath } from "next/cache";
 export async function generateBlogContentAction(type: BlogPostType, customPrompt?: string) {
   try {
     await assertAdminSession();
-    const result = await blogPostService.generateBlogContent(type, customPrompt || undefined);
+    const { phase } = await blogPostConfigRepository.get();
+    const result = await blogPostService.generateBlogContent(
+      type,
+      phase,
+      customPrompt || undefined,
+    );
     return { ok: true as const, ...result };
   } catch (error) {
     return {

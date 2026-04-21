@@ -151,6 +151,7 @@ export function BlogPageClient({ initialPosts, totalCount, initialAutoPostEnable
 
   function fillFromGenerated(result: {
     title: string;
+    slug: string;
     content: string;
     excerpt: string;
     metaDescription: string;
@@ -161,12 +162,8 @@ export function BlogPageClient({ initialPosts, totalCount, initialAutoPostEnable
     setExcerpt(result.excerpt);
     setMetaDescription(result.metaDescription);
     setTags(result.tags.join(", "));
-    const base = result.title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .slice(0, 50);
-    setSlug(base ? `${base}-${Date.now()}` : `post-${Date.now()}`);
+    // AI が生成した英語 slug をそのまま使う（service 側で sanitize + timestamp 付与済み）
+    setSlug(result.slug);
   }
 
   async function handleGenerate() {
