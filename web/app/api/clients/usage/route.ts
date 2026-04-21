@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
       clientId,
       userStats,
     });
-    return NextResponse.json(userStats);
+    return NextResponse.json(userStats, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     logWithContext("error", "ユーザー利用状況取得エラー", {
       error,

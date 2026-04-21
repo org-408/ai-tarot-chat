@@ -19,7 +19,9 @@ export async function GET(
     const reading = await clientService.getReadingById(clientId, id);
     if (!reading) return new Response("not found", { status: 404 });
 
-    return NextResponse.json(reading);
+    return NextResponse.json(reading, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     logWithContext("error", "占い履歴詳細取得エラー", { error, clientId });
     return NextResponse.json(

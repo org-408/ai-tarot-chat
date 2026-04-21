@@ -22,7 +22,10 @@ export interface ReadingsResponse {
 }
 
 export async function fetchUsage(): Promise<UsageStats> {
-  const res = await fetch("/api/clients/usage", { credentials: "include" });
+  const res = await fetch("/api/clients/usage", {
+    credentials: "include",
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("利用状況の取得に失敗しました");
   return res.json();
 }
@@ -33,6 +36,7 @@ export async function fetchReadings(
 ): Promise<ReadingsResponse> {
   const res = await fetch(`/api/clients/readings?take=${take}&skip=${skip}`, {
     credentials: "include",
+    cache: "no-store",
   });
   if (!res.ok) throw new Error("占い履歴の取得に失敗しました");
   return res.json();
@@ -41,6 +45,7 @@ export async function fetchReadings(
 export async function fetchReadingById(id: string): Promise<Reading | null> {
   const res = await fetch(`/api/clients/readings/${id}`, {
     credentials: "include",
+    cache: "no-store",
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error("占い履歴の取得に失敗しました");
