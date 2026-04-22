@@ -303,22 +303,20 @@ export default function SettingsPage() {
         {/* サブスクリプション */}
         {session?.user && (
           <SettingsGroup title={t("subscription")}>
-            {planCode === "STANDARD" || planCode === "PREMIUM" ? (
-              subscriptionStoreLoading ? (
-                <SettingsRow label={t("manageSubscription")} loading={true} />
-              ) : subscriptionStore === "app_store" ? (
-                <SettingsRow
-                  label={t("manageSubscription")}
-                  onClick={() => setAppStoreDialogOpen(true)}
-                />
-              ) : (
-                <SettingsRow
-                  label={t("manageSubscription")}
-                  value={portalLoading ? t("portalLoading") : t("manageSubscriptionDesc")}
-                  onClick={handlePortal}
-                  loading={portalLoading}
-                />
-              )
+            {subscriptionStoreLoading ? (
+              <SettingsRow label={t("manageSubscription")} loading={true} />
+            ) : subscriptionStore === "app_store" ? (
+              <SettingsRow
+                label={t("manageSubscription")}
+                onClick={() => setAppStoreDialogOpen(true)}
+              />
+            ) : subscriptionStore ? (
+              <SettingsRow
+                label={t("manageSubscription")}
+                value={portalLoading ? t("portalLoading") : t("manageSubscriptionDesc")}
+                onClick={handlePortal}
+                loading={portalLoading}
+              />
             ) : (
               <SettingsRow
                 label={t("viewPlans")}
