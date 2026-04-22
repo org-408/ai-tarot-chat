@@ -262,7 +262,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       </div>
 
       {/* 占いを始めるボタン */}
-      <div className="fixed-action-button">
+      <div className="px-1 pb-4 mt-2">
         <button
           className="w-full py-4 bg-gradient-to-r
               from-purple-500 to-pink-500 text-white rounded-xl
