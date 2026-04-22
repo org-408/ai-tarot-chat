@@ -15,6 +15,8 @@ export default defineConfig({
     alias: {
       "@shared": path.resolve(__dirname, "../shared"),
     },
+    // shared/ ディレクトリ配下のファイルも mobile の node_modules の React を参照させる
+    dedupe: ["react", "react-dom", "framer-motion"],
   },
   define: {
     // package.json の version をビルド時定数として埋め込む

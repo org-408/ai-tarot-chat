@@ -1,15 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
-import type { Plan, Tarotist } from "../../lib/types";
+import type { Tarotist } from "../../lib/types";
 
 /** ⭐️ の繰り返し表示 */
 function renderStars(quality: number): string {
   return "⭐️".repeat(quality);
 }
 
+/** canUse 判定に必要なプランの最小型 */
+type PlanLike = { no: number };
+
 export interface TarotistInfoDialogProps {
   tarotist: Tarotist;
   /** 現在のユーザープラン。canUse 判定に使用 */
-  currentPlan?: Plan | null;
+  currentPlan?: PlanLike | null;
   onClose: () => void;
   /**
    * アップグレードボタン押下時のコールバック。
