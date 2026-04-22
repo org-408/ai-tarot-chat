@@ -2,44 +2,21 @@ name: X Auto Post
 
 on:
   schedule:
-    - cron: '0 0 * * *'   # 09:00 JST → 今日のタロット
-    - cron: '0 3 * * *'   # 12:00 JST → タロット豆知識
-    - cron: '0 9 * * *'   # 18:00 JST → アプリ宣伝
+    - cron: '30 22 * * *'   # 07:30 JST (UTC 22:30 前日) → ブログCronの30分後に3投稿まとめて生成
   workflow_dispatch:
-    inputs:
-      type:
-        description: '投稿タイプ (DAILY_CARD / TAROT_TIP / APP_PROMO)'
-        required: false
-        default: 'DAILY_CARD'
 
 jobs:
   post:
     name: Trigger X auto post
     runs-on: ubuntu-latest
     steps:
-      - name: Determine post type
-        id: type
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "type=${{ github.event.inputs.type }}" >> $GITHUB_OUTPUT
-          else
-            HOUR=$(TZ=Asia/Tokyo date +%H)
-            if [ "$HOUR" = "09" ]; then
-              echo "type=DAILY_CARD" >> $GITHUB_OUTPUT
-            elif [ "$HOUR" = "12" ]; then
-              echo "type=TAROT_TIP" >> $GITHUB_OUTPUT
-            else
-              echo "type=APP_PROMO" >> $GITHUB_OUTPUT
-            fi
-          fi
-
       - name: Call X post cron endpoint
         run: |
           STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
             -X POST "${{ secrets.APP_URL }}/api/cron/x-posts" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
-            -d "{\"type\":\"${{ steps.type.outputs.type }}\"}")
+            -d '{}')
           echo "HTTP Status: $STATUS"
           echo "Response:"
           cat /tmp/response.json
