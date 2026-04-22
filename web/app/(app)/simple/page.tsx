@@ -11,6 +11,7 @@ import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useSalonStore } from "@/lib/client/stores/salon-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type {
+  DrawnCard,
   MasterData,
   Plan,
   ReadingCategory,
@@ -52,6 +53,105 @@ interface SimpleReadingViewProps {
   };
 }
 
+interface SimpleReadingChatProps {
+  tarotist: Tarotist;
+  spread: Spread;
+  category: ReadingCategory | null;
+  token: string;
+  drawnCards: DrawnCard[];
+  isRevealingCompleted: boolean;
+  remainingQuick: number | undefined;
+  onReadAgain: () => void;
+  onRefreshUsage: () => Promise<void>;
+  onUnlock: () => void;
+  labels: SimpleReadingViewProps["labels"];
+}
+
+function SimpleReadingChat({
+  tarotist,
+  spread,
+  category,
+  token,
+  drawnCards,
+  isRevealingCompleted,
+  remainingQuick,
+  onReadAgain,
+  onRefreshUsage,
+  onUnlock,
+  labels,
+}: SimpleReadingChatProps) {
+  const {
+    messages,
+    status,
+    inputValue,
+    inputDisabled,
+    isMessageComplete,
+    error,
+    handleInputChange,
+    handleSend,
+    handleKeyDown,
+    handleRetry,
+  } = useReadingChat(
+    {
+      api: "/api/readings/simple",
+      token,
+      isPersonal: false,
+      tarotist,
+      spread,
+      category: category ?? undefined,
+      drawnCards,
+      isRevealingCompleted,
+    },
+    {
+      onRefreshUsage,
+      onRefreshToken: async () => token,
+      onUnlock,
+    },
+  );
+
+  const tarotistImageUrl = `/tarotists/${tarotist.name}.png`;
+  const canReadAgain = remainingQuick === undefined || remainingQuick > 0;
+
+  return (
+    <div className="relative h-full">
+      <ChatColumn
+        tarotistImageUrl={tarotistImageUrl}
+        tarotistName={tarotist.name}
+        tarotistIcon={tarotist.icon}
+        messages={messages}
+        status={status}
+        inputValue={inputValue}
+        onInputChange={handleInputChange}
+        onSend={handleSend}
+        onKeyDown={handleKeyDown}
+        inputDisabled={inputDisabled}
+        isMessageComplete={isMessageComplete}
+        error={error}
+        onRetry={handleRetry}
+      />
+
+      {isMessageComplete && !error && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-40 pointer-events-none">
+          {canReadAgain ? (
+            <button
+              type="button"
+              onClick={onReadAgain}
+              className="pointer-events-auto flex items-center gap-2 px-5 py-3 bg-white shadow-xl rounded-full text-sm font-bold text-purple-600 hover:bg-purple-50 transition-colors"
+            >
+              <RefreshCw size={14} />
+              {labels.readAgain}
+            </button>
+          ) : (
+            <div className="pointer-events-auto px-5 py-3 bg-gray-100 rounded-full text-sm font-medium text-gray-400">
+              {labels.limitReached}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SimpleReadingView({
   tarotist,
   spread,
@@ -85,45 +185,6 @@ function SimpleReadingView({
     setDrawnCards(cards);
   }, [masterData, spread, setDrawnCards]);
 
-  const {
-    messages,
-    status,
-    inputValue,
-    inputDisabled,
-    isMessageComplete,
-    error,
-    handleInputChange,
-    handleSend,
-    handleKeyDown,
-    handleRetry,
-  } = useReadingChat(
-    {
-      api: "/api/readings/simple",
-      token,
-      isPersonal: false,
-      tarotist,
-      spread,
-      category: category ?? undefined,
-      drawnCards,
-      isRevealingCompleted,
-    },
-    {
-      onRefreshUsage,
-      onRefreshToken: async () => token,
-      onUnlock: () => setIsLocked(false),
-    },
-  );
-
-  // メッセージ完了/エラー時はロック解除（安全網）
-  useEffect(() => {
-    if (isMessageComplete || error) {
-      setIsLocked(false);
-    }
-  }, [isMessageComplete, error, setIsLocked]);
-
-  const tarotistImageUrl = `/tarotists/${tarotist.name}.png`;
-  const canReadAgain = remainingQuick === undefined || remainingQuick > 0;
-
   return (
     <>
       <ShuffleDialog
@@ -149,43 +210,24 @@ function SimpleReadingView({
           ) : null
         }
         left={
-          <div className="relative h-full">
-            <ChatColumn
-              tarotistImageUrl={tarotistImageUrl}
-              tarotistName={tarotist.name}
-              tarotistIcon={tarotist.icon}
-              messages={messages}
-              status={status}
-              inputValue={inputValue}
-              onInputChange={handleInputChange}
-              onSend={handleSend}
-              onKeyDown={handleKeyDown}
-              inputDisabled={inputDisabled}
-              isMessageComplete={isMessageComplete}
-              error={error}
-              onRetry={handleRetry}
+          drawnCards.length > 0 ? (
+            <SimpleReadingChat
+              key={`quick-chat-${spread.id}`}
+              tarotist={tarotist}
+              spread={spread}
+              category={category}
+              token={token}
+              drawnCards={drawnCards}
+              isRevealingCompleted={isRevealingCompleted}
+              remainingQuick={remainingQuick}
+              onReadAgain={onReadAgain}
+              onRefreshUsage={onRefreshUsage}
+              onUnlock={() => setIsLocked(false)}
+              labels={labels}
             />
-
-            {/* 占い完了後のアクション */}
-            {isMessageComplete && !error && (
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center z-40 pointer-events-none">
-                {canReadAgain ? (
-                  <button
-                    type="button"
-                    onClick={onReadAgain}
-                    className="pointer-events-auto flex items-center gap-2 px-5 py-3 bg-white shadow-xl rounded-full text-sm font-bold text-purple-600 hover:bg-purple-50 transition-colors"
-                  >
-                    <RefreshCw size={14} />
-                    {labels.readAgain}
-                  </button>
-                ) : (
-                  <div className="pointer-events-auto px-5 py-3 bg-gray-100 rounded-full text-sm font-medium text-gray-400">
-                    {labels.limitReached}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="h-full" />
+          )
         }
         right={
           isShuffleDone && drawnCards.length > 0 ? (
