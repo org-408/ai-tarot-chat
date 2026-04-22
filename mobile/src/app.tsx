@@ -409,6 +409,16 @@ function App() {
     }
   };
 
+  const navigateToHistoryList = useCallback(() => {
+    setHistoryInitialReading(null);
+    setPageType("history");
+  }, []);
+
+  const navigateToHistoryReading = useCallback((reading: Reading) => {
+    setHistoryInitialReading(reading);
+    setPageType("history");
+  }, []);
+
   // 🔥 ページ変更（サイドバー等からの任意ナビゲーション）
   const handlePageChange = (page: PageType) => {
     // AI 課金中はナビゲーションをブロック
@@ -418,6 +428,11 @@ function App() {
       return;
     }
     console.log("ページ変更:", page);
+    if (page === "history") {
+      navigateToHistoryList();
+      return;
+    }
+    setHistoryInitialReading(null);
     setPageType(page);
   };
 
@@ -566,11 +581,8 @@ function App() {
             onNavigateToPersonal={() => setPageType("personal")}
             onNavigateToClara={() => setPageType("clara")}
             onNavigateToTarotist={() => setPageType("tarotist")}
-            onNavigateToHistory={() => setPageType("history")}
-            onNavigateToReading={(reading) => {
-              setHistoryInitialReading(reading);
-              setPageType("history");
-            }}
+            onNavigateToHistory={navigateToHistoryList}
+            onNavigateToReading={navigateToHistoryReading}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
           />
@@ -663,7 +675,12 @@ function App() {
           />
         );
       case "history":
-        return <HistoryPage initialReading={historyInitialReading ?? undefined} />;
+        return (
+          <HistoryPage
+            initialReading={historyInitialReading ?? undefined}
+            onInitialReadingConsumed={() => setHistoryInitialReading(null)}
+          />
+        );
       case "settings":
         return (
           <SettingsPage
@@ -687,11 +704,8 @@ function App() {
             onNavigateToPersonal={() => setPageType("personal")}
             onNavigateToClara={() => setPageType("clara")}
             onNavigateToTarotist={() => setPageType("tarotist")}
-            onNavigateToHistory={() => setPageType("history")}
-            onNavigateToReading={(reading) => {
-              setHistoryInitialReading(reading);
-              setPageType("history");
-            }}
+            onNavigateToHistory={navigateToHistoryList}
+            onNavigateToReading={navigateToHistoryReading}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
           />

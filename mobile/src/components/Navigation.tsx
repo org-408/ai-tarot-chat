@@ -36,7 +36,7 @@ const Navigation: React.FC<NavigationProps> = ({
     },
     {
       id: "history",
-      label: "履歴",
+      label: "占い履歴",
       icon: "📋",
       available: false,
     },
