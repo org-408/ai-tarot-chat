@@ -227,6 +227,8 @@ function PersonalReadingView({
               tarotistImageUrl={tarotistImageUrl}
               tarotistName={tarotist.name}
               tarotistIcon={tarotist.icon}
+              tarotistTitle={tarotist.title}
+              tarotistTrait={tarotist.trait}
               subtitle={subtitle}
               messages={messages}
               status={status}
@@ -256,7 +258,7 @@ function PersonalReadingView({
                       isPersonal
                       remainingCount={remainingPersonal}
                       disabled={false}
-                      initialSpread={suggestedSpread}
+                      initialSpread={suggestedSpread ?? selectedSpread}
                       onStartReading={handleConfirmSpread}
                       labels={{
                         selectSpreadPrompt: labels.confirmSpreadPrompt,

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   Plan,
   ReadingCategory,
@@ -48,6 +48,10 @@ interface CategorySpreadSelectorProps {
   /** 外部から追加で無効化する条件（例: 占い師未選択）。内部の無効化条件と OR で評価 */
   disabled?: boolean;
   /**
+   * 初期選択カテゴリ。保存済みの前回カテゴリ復元などに使う。
+   */
+  initialCategory?: ReadingCategory | null;
+  /**
    * 初期選択スプレッド。指定されていれば availableSpreads[0] の代わりに
    * これを初期値として使用する。主にパーソナル占いの AI 推薦スプレッドを
    * デフォルト選択にするため。以降はユーザー操作で自由に変更可能。
@@ -75,6 +79,7 @@ export const CategorySpreadSelector: React.FC<
   isPersonal = false,
   remainingCount,
   disabled: externalDisabled = false,
+  initialCategory,
   initialSpread,
   onStartReading,
   labels = {},
@@ -97,13 +102,31 @@ export const CategorySpreadSelector: React.FC<
   const [selectedCategory, setSelectedCategory] =
     useState<ReadingCategory | null>(null);
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
+  const didUserSelectCategoryRef = useRef(false);
+  const didUserSelectSpreadRef = useRef(false);
 
   // カテゴリーの初期化
   useEffect(() => {
-    if (!selectedCategory && categories.length > 0) {
+    if (categories.length === 0) {
+      setSelectedCategory(null);
+      return;
+    }
+
+    if (
+      initialCategory &&
+      categories.some((c) => c.id === initialCategory.id) &&
+      (!didUserSelectCategoryRef.current ||
+        !selectedCategory ||
+        selectedCategory.id !== initialCategory.id)
+    ) {
+      setSelectedCategory(initialCategory);
+      return;
+    }
+
+    if (!selectedCategory) {
       setSelectedCategory(categories[0]);
     }
-  }, [categories, selectedCategory]);
+  }, [categories, initialCategory, selectedCategory]);
 
   // 選択カテゴリが一覧から外れたら先頭にリセット
   useEffect(() => {
@@ -111,9 +134,15 @@ export const CategorySpreadSelector: React.FC<
       selectedCategory &&
       !categories.some((c) => c.id === selectedCategory.id)
     ) {
-      setSelectedCategory(categories[0] ?? null);
+      const fallbackCategory =
+        initialCategory &&
+        categories.some((c) => c.id === initialCategory.id)
+          ? initialCategory
+          : (categories[0] ?? null);
+      setSelectedCategory(fallbackCategory);
+      didUserSelectCategoryRef.current = false;
     }
-  }, [categories, selectedCategory]);
+  }, [categories, initialCategory, selectedCategory]);
 
   // 利用可能スプレッドのフィルタリング
   const availableSpreads = useMemo(() => {
@@ -139,20 +168,36 @@ export const CategorySpreadSelector: React.FC<
   // initialSpread が指定されていて、かつ availableSpreads に含まれていれば
   // それを初期選択値として使う（AI 推薦のスプレッドをデフォルト表示する用途）。
   useEffect(() => {
-    if (!selectedSpread && availableSpreads.length > 0) {
-      const preferred =
-        initialSpread &&
-        availableSpreads.some((s) => s.id === initialSpread.id)
-          ? availableSpreads.find((s) => s.id === initialSpread.id)!
-          : availableSpreads[0];
-      setSelectedSpread(preferred);
+    if (availableSpreads.length === 0) {
+      setSelectedSpread(null);
       return;
     }
+
+    const preferredSpread =
+      initialSpread &&
+      availableSpreads.some((s) => s.id === initialSpread.id)
+        ? availableSpreads.find((s) => s.id === initialSpread.id)!
+        : availableSpreads[0];
+
     if (
-      selectedSpread &&
-      !availableSpreads.some((s) => s.id === selectedSpread.id)
+      initialSpread &&
+      preferredSpread.id === initialSpread.id &&
+      (!didUserSelectSpreadRef.current ||
+        !selectedSpread ||
+        selectedSpread.id !== initialSpread.id)
     ) {
-      setSelectedSpread(availableSpreads[0] ?? null);
+      setSelectedSpread(preferredSpread);
+      return;
+    }
+
+    if (!selectedSpread) {
+      setSelectedSpread(preferredSpread);
+      return;
+    }
+
+    if (!availableSpreads.some((s) => s.id === selectedSpread.id)) {
+      setSelectedSpread(preferredSpread);
+      didUserSelectSpreadRef.current = false;
     }
   }, [availableSpreads, selectedSpread, initialSpread]);
 
@@ -185,7 +230,10 @@ export const CategorySpreadSelector: React.FC<
           title={categoryQuestion}
           items={categories.map((c) => ({ ...c, bio: c.description }))}
           selected={selectedCategory}
-          onSelect={setSelectedCategory}
+          onSelect={(category) => {
+            didUserSelectCategoryRef.current = true;
+            setSelectedCategory(category as ReadingCategory);
+          }}
           maxVisibleItems={3}
         />
       ),
@@ -207,7 +255,10 @@ export const CategorySpreadSelector: React.FC<
           subtitle={spreadSubtitle}
           items={availableSpreads}
           selected={selectedSpread}
-          onSelect={(s) => setSelectedSpread(s as Spread)}
+          onSelect={(s) => {
+            didUserSelectSpreadRef.current = true;
+            setSelectedSpread(s as Spread);
+          }}
           maxVisibleItems={3}
         />
       ),

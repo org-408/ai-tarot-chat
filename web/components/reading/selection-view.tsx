@@ -23,6 +23,8 @@ interface SelectionViewProps {
   /** クイック占いで使用 */
   categories?: ReadingCategory[];
   spreads?: Spread[];
+  selectedCategory?: ReadingCategory | null;
+  selectedSpread?: Spread | null;
   /** 残り占い回数 */
   remainingCount?: number;
   isLoading?: boolean;
@@ -80,6 +82,8 @@ export function SelectionView({
   currentPlan,
   categories,
   spreads,
+  selectedCategory,
+  selectedSpread,
   remainingCount,
   isLoading = false,
   onQuickStartReading,
@@ -207,6 +211,8 @@ export function SelectionView({
                 isPersonal={false}
                 remainingCount={remainingCount}
                 disabled={!selectedTarotist || tarotistMode !== "portrait"}
+                initialCategory={selectedCategory}
+                initialSpread={selectedSpread}
                 onStartReading={onQuickStartReading}
                 labels={quickLabels}
               />

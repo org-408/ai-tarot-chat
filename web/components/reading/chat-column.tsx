@@ -10,6 +10,8 @@ interface ChatColumnProps {
   tarotistImageUrl: string;
   tarotistName: string;
   tarotistIcon?: string;
+  tarotistTitle?: string;
+  tarotistTrait?: string;
   subtitle?: string;
   messages: UIMessage[];
   status: "idle" | "submitted" | "streaming" | "error";
@@ -45,6 +47,8 @@ export function ChatColumn({
   tarotistImageUrl,
   tarotistName,
   tarotistIcon,
+  tarotistTitle,
+  tarotistTrait,
   subtitle,
   messages,
   status,
@@ -71,30 +75,42 @@ export function ChatColumn({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 占い師肖像（折畳可）。
-          既存クイック占いの UpperViewer プロフィールタブ方式に合わせ、
-          画像アスペクトを保持して中央寄せ（object-contain）。全画面引き伸ばしを避ける。 */}
+      {/* 占い師肖像（折畳可）。モバイルの portrait 表示に寄せて、
+          下部グラデーション上に名前・肩書き・特徴を配置する。 */}
       <motion.div
         className="flex-shrink-0 overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50"
         animate={{ height: isPortraitCollapsed ? 0 : "28vh" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="h-full w-full flex items-center justify-center p-3 relative">
+        <div className="h-full w-full flex items-center justify-center relative">
           <img
             src={tarotistImageUrl}
             alt={tarotistName}
-            className="max-w-full max-h-full object-contain rounded-2xl shadow-lg"
+            className="w-full h-full object-cover"
             style={{ objectPosition: "center 20%" }}
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
           />
-          <div className="absolute left-3 right-3 bottom-3 px-3 py-1.5 bg-black/40 backdrop-blur-sm rounded-full text-white text-center pointer-events-none">
-            <span className="text-sm font-bold">
-              {tarotistIcon} {tarotistName}
-            </span>
-            {subtitle && (
-              <span className="text-xs opacity-90 ml-2">{subtitle}</span>
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 via-black/35 to-transparent pointer-events-none" />
+          <div className="absolute left-0 right-0 bottom-0 px-4 py-3 text-white pointer-events-none">
+            <div className="flex items-center gap-2">
+              {tarotistIcon && (
+                <span className="text-2xl drop-shadow-lg">{tarotistIcon}</span>
+              )}
+              <span className="text-lg font-bold drop-shadow-lg">
+                {tarotistName}
+              </span>
+            </div>
+            {(tarotistTitle || subtitle) && (
+              <p className="mt-1 text-xs font-medium text-white/90 drop-shadow-lg">
+                {tarotistTitle ?? subtitle}
+              </p>
+            )}
+            {tarotistTrait && (
+              <p className="mt-0.5 text-xs text-white/80 drop-shadow-lg line-clamp-2">
+                {tarotistTrait}
+              </p>
             )}
           </div>
         </div>
