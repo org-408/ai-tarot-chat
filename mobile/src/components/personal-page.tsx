@@ -51,6 +51,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setDrawnCards,
     isRevealingCompleted,
     setIsRevealingCompleted,
+    setSelectedPersonalTarotist,
     setUpperViewerMode,
     setSelectedPersonalTargetMode,
     setIsPersonal,
@@ -221,6 +222,11 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
         <TarotistCarouselPortrait
           masterData={masterData}
           currentPlan={currentPlan}
+          selectedTarotist={selectedPersonalTarotist}
+          onSelectTarotist={setSelectedPersonalTarotist}
+          selectedMode={selectedPersonalTargetMode}
+          onChangeMode={setSelectedPersonalTargetMode}
+          isPersonal
           onChangePlan={onChangePlan}
           isChangingPlan={false}
         />
@@ -243,6 +249,11 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
               <TarotistCarouselPortrait
                 masterData={masterData}
                 currentPlan={currentPlan}
+                selectedTarotist={selectedPersonalTarotist}
+                onSelectTarotist={setSelectedPersonalTarotist}
+                selectedMode={selectedPersonalTargetMode}
+                onChangeMode={setSelectedPersonalTargetMode}
+                isPersonal
               />
             </motion.div>
 

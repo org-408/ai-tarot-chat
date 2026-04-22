@@ -5,7 +5,7 @@ import type {
   Plan,
   Tarotist,
 } from "../../../shared/lib/types";
-import type { UserPlan } from "../types";
+import type { SelectTargetMode, UserPlan } from "../types";
 import ProfileDialog from "./profile-dialog";
 // 新しいコンポーネントをインポート
 import TarotistCarouselEmbla from "./tarotist-carousel-embla";
@@ -30,6 +30,8 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
   );
+  const [selectedMode, setSelectedMode] =
+    useState<SelectTargetMode>("tarotist");
 
   // カルーセルタイプの切り替え（テスト用）
   const [carouselType, setCarouselType] = useState<
@@ -201,6 +203,10 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
         <TarotistCarouselPortrait
           masterData={masterData}
           currentPlan={currentPlan}
+          selectedTarotist={selectedTarotist}
+          onSelectTarotist={setSelectedTarotist}
+          selectedMode={selectedMode}
+          onChangeMode={setSelectedMode}
           onChangePlan={handleChangePlan}
           isChangingPlan={isChangingPlan}
         />
