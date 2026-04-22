@@ -1,6 +1,7 @@
 "use client";
 
-import type { Reading, TarotCard } from "@shared/lib/types";
+import type { Reading, TarotCard, Tarotist } from "@shared/lib/types";
+import { TarotistInfoDialog } from "@shared/components/tarotist/tarotist-info-dialog";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import {
@@ -11,121 +12,161 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 
 type FilterTab = "all" | "quick" | "personal";
 
-function groupByYearMonth(readings: Reading[]) {
-  const groups = new Map<string, Map<string, Reading[]>>();
+// ── ヘルパー ──────────────────────────────────────────────
+
+function formatRelativeDate(date: Date | string): string {
+  const d = new Date(date);
+  const diff = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+  if (diff === 0) return "今日";
+  if (diff === 1) return "昨日";
+  if (diff < 7) return `${diff}日前`;
+  return d.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+}
+
+type YearGroup = {
+  year: string;
+  yearKey: string; // sort key (number string)
+  months: { month: string; monthKey: string; items: Reading[] }[];
+  total: number;
+};
+
+function groupByYearMonth(readings: Reading[]): YearGroup[] {
+  const yearMap = new Map<string, Map<string, Reading[]>>();
   for (const r of readings) {
     const d = new Date(r.createdAt);
-    const year = d.getFullYear().toString();
-    const month = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-    if (!groups.has(year)) groups.set(year, new Map());
-    const yearGroup = groups.get(year)!;
-    if (!yearGroup.has(month)) yearGroup.set(month, []);
-    yearGroup.get(month)!.push(r);
+    const yearKey = d.getFullYear().toString();
+    const monthKey = `${yearKey}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+    if (!yearMap.has(yearKey)) yearMap.set(yearKey, new Map());
+    const monthMap = yearMap.get(yearKey)!;
+    if (!monthMap.has(monthKey)) monthMap.set(monthKey, []);
+    monthMap.get(monthKey)!.push(r);
   }
-  return groups;
+  return Array.from(yearMap.entries())
+    .sort(([a], [b]) => Number(b) - Number(a))
+    .map(([yearKey, monthMap]) => ({
+      year: `${yearKey}年`,
+      yearKey,
+      months: Array.from(monthMap.entries())
+        .sort(([a], [b]) => b.localeCompare(a))
+        .map(([monthKey, items]) => ({
+          month: `${Number(monthKey.split("/")[1])}月`,
+          monthKey,
+          items,
+        })),
+      total: Array.from(monthMap.values()).reduce((s, a) => s + a.length, 0),
+    }));
 }
+
+// ── ReadingCard ────────────────────────────────────────────
 
 function ReadingCard({
   reading,
   cardMap,
+  onTarotistClick,
 }: {
   reading: Reading;
   cardMap: Map<string, TarotCard>;
+  onTarotistClick: (tarotist: Tarotist) => void;
 }) {
-  const drawnCards = hydrateDrawnCards(
-    reading.cards,
-    cardMap,
-  );
+  const drawnCards = hydrateDrawnCards(reading.cards, cardMap);
 
   return (
     <Link href={`/history/${reading.id}`}>
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow cursor-pointer"
-    >
-      <div className="flex items-start gap-3">
-        {/* タロティストアバター */}
-        <div
-          className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
-          style={{ background: reading.tarotist?.primaryColor ?? "#7c3aed" }}
-        >
-          {reading.tarotist?.name ? (
-            <img
-              src={`/tarotists/${reading.tarotist.name}.png`}
-              alt={reading.tarotist.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-            />
-          ) : (
-            <span className="w-full h-full flex items-center justify-center text-white text-sm">
-              {reading.tarotist?.icon ?? "🔮"}
-            </span>
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm text-gray-900">
-              {reading.tarotist?.name ?? "Unknown"}
-            </span>
-            {reading.category == null && (
-              <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
-                パーソナル
+      <motion.div
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-xl border p-4 hover:shadow-md transition-shadow cursor-pointer"
+      >
+        <div className="flex items-start gap-3">
+          {/* タロティストアバター */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (reading.tarotist) onTarotistClick(reading.tarotist);
+            }}
+            className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden hover:ring-2 hover:ring-purple-400 transition-all"
+            style={{ background: reading.tarotist?.primaryColor ?? "#7c3aed" }}
+          >
+            {reading.tarotist?.name ? (
+              <img
+                src={`/tarotists/${reading.tarotist.name}.png`}
+                alt={reading.tarotist.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <span className="w-full h-full flex items-center justify-center text-white text-sm">
+                {reading.tarotist?.icon ?? "✦"}
               </span>
             )}
-            {reading.spread?.name && (
-              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                {reading.spread.name}
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-sm text-gray-900">
+                  {reading.tarotist?.name ?? "Unknown"}
+                </span>
+                {reading.category == null && (
+                  <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
+                    パーソナル
+                  </span>
+                )}
+                {reading.spread?.name && (
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                    {reading.spread.name}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-gray-400 flex-shrink-0">
+                {formatRelativeDate(reading.createdAt)}
               </span>
+            </div>
+
+            {/* カードサムネイル */}
+            {drawnCards.length > 0 && (
+              <div className="flex gap-1 mt-2">
+                {(drawnCards as import("@shared/lib/types").DrawnCard[])
+                  .slice(0, 5)
+                  .map((dc, i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-12 rounded overflow-hidden border border-gray-100 bg-gray-50"
+                    >
+                      <img
+                        src={`/cards/${dc.card?.code ?? "back"}.png`}
+                        alt=""
+                        className={`w-full h-full object-cover ${dc.isReversed ? "rotate-180" : ""}`}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display =
+                            "none";
+                        }}
+                      />
+                    </div>
+                  ))}
+                {drawnCards.length > 5 && (
+                  <div className="w-8 h-12 rounded border border-gray-100 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
+                    +{drawnCards.length - 5}
+                  </div>
+                )}
+              </div>
             )}
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {new Date(reading.createdAt).toLocaleString("ja-JP", {
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-
-          {/* カードサムネイル */}
-          {drawnCards.length > 0 && (
-            <div className="flex gap-1 mt-2">
-              {(drawnCards as import("@shared/lib/types").DrawnCard[]).slice(0, 5).map((dc, i) => (
-                <div
-                  key={i}
-                  className="w-8 h-12 rounded overflow-hidden border border-gray-100 bg-gray-50"
-                >
-                  <img
-                    src={`/cards/${dc.card?.code ?? "back"}.png`}
-                    alt=""
-                    className={`w-full h-full object-cover ${dc.isReversed ? "rotate-180" : ""}`}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display =
-                        "none";
-                    }}
-                  />
-                </div>
-              ))}
-              {drawnCards.length > 5 && (
-                <div className="w-8 h-12 rounded border border-gray-100 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
-                  +{drawnCards.length - 5}
-                </div>
-              )}
-            </div>
-          )}
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
     </Link>
   );
 }
+
+// ── HistoryPage ────────────────────────────────────────────
 
 export default function HistoryPage() {
   const t = useTranslations("history");
@@ -135,6 +176,9 @@ export default function HistoryPage() {
   const initMaster = useMasterStore((state) => state.init);
   const [tab, setTab] = useState<FilterTab>("all");
   const [openYears, setOpenYears] = useState<Set<string>>(new Set());
+  const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
+    null,
+  );
   const cardMap = buildTarotCardMap(masterData);
 
   useEffect(() => {
@@ -152,22 +196,32 @@ export default function HistoryPage() {
   });
 
   const grouped = groupByYearMonth(filtered);
-  const years = Array.from(grouped.keys()).sort((a, b) => Number(b) - Number(a));
 
-  if (years.length > 0 && openYears.size === 0) {
-    setOpenYears(new Set([years[0]]));
-  }
+  // 初回ロード後に最新年を自動で開く
+  useEffect(() => {
+    if (grouped.length > 0 && openYears.size === 0) {
+      setOpenYears(new Set([grouped[0].yearKey]));
+    }
+  // grouped は毎レンダー新規参照のため length をプロキシに使用
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grouped.length]);
 
-  const toggleYear = (year: string) => {
+  const toggleYear = (yearKey: string) => {
     setOpenYears((prev) => {
       const next = new Set(prev);
-      if (next.has(year)) next.delete(year);
-      else next.add(year);
+      if (next.has(yearKey)) next.delete(yearKey);
+      else next.add(yearKey);
       return next;
     });
   };
 
   const hasMore = readings.length < readingsTotal;
+
+  const TABS: { id: FilterTab; label: string }[] = [
+    { id: "all", label: t("all") },
+    { id: "quick", label: t("quick") },
+    { id: "personal", label: t("personal") },
+  ];
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -175,17 +229,17 @@ export default function HistoryPage() {
 
       {/* フィルタータブ */}
       <div className="flex gap-2 mb-6">
-        {(["all", "quick", "personal"] as FilterTab[]).map((tabKey) => (
+        {TABS.map(({ id, label }) => (
           <button
-            key={tabKey}
-            onClick={() => setTab(tabKey)}
+            key={id}
+            onClick={() => setTab(id)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-              tab === tabKey
+              tab === id
                 ? "bg-purple-500 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
-            {t(tabKey)}
+            {label}
           </button>
         ))}
       </div>
@@ -193,48 +247,66 @@ export default function HistoryPage() {
       {/* 履歴リスト */}
       {filtered.length === 0 && !isLoadingReadings ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-4xl mb-3">🔮</p>
+          <div className="w-16 h-24 mx-auto mb-3 rounded overflow-hidden border border-gray-200 bg-gray-100" />
           <p>{t("empty")}</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {years.map((year) => {
-            const isOpen = openYears.has(year);
-            const monthGroups = grouped.get(year)!;
+          {grouped.map(({ year, yearKey, months, total }) => {
+            const isOpen = openYears.has(yearKey);
             return (
-              <div key={year}>
+              <div
+                key={yearKey}
+                className="rounded-2xl overflow-hidden border border-purple-100/60 bg-white shadow-sm"
+              >
+                {/* 年ヘッダー */}
                 <button
-                  onClick={() => toggleYear(year)}
-                  className="flex items-center gap-2 w-full text-left py-2"
+                  onClick={() => toggleYear(yearKey)}
+                  className="flex items-center justify-between w-full px-4 py-3.5 hover:bg-purple-50/40 transition-colors text-left"
                 >
-                  <span className="font-bold text-gray-700">{year}年</span>
-                  <span className="text-gray-400 text-sm">
-                    {isOpen ? "▲" : "▼"}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-gray-800">{year}</span>
+                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {total}件
+                    </span>
+                  </div>
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </motion.div>
                 </button>
-                <AnimatePresence>
+
+                <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
+                      key="content"
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      {Array.from(monthGroups.entries())
-                        .sort(([a], [b]) => b.localeCompare(a))
-                        .map(([month, monthReadings]) => (
-                          <div key={month} className="mb-4 pl-4">
-                            <p className="text-sm font-medium text-gray-500 mb-2">
+                      <div className="border-t border-purple-50 px-3 pb-3 pt-2 space-y-4">
+                        {months.map(({ month, monthKey, items }) => (
+                          <div key={monthKey}>
+                            <p className="text-xs font-semibold text-purple-400 tracking-widest mb-2 px-1">
                               {month}
                             </p>
                             <div className="space-y-2">
-                              {monthReadings.map((r) => (
-                                <ReadingCard key={r.id} reading={r} cardMap={cardMap} />
+                              {items.map((r) => (
+                                <ReadingCard
+                                  key={r.id}
+                                  reading={r}
+                                  cardMap={cardMap}
+                                  onTarotistClick={setSelectedTarotist}
+                                />
                               ))}
                             </div>
                           </div>
                         ))}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -252,10 +324,20 @@ export default function HistoryPage() {
             disabled={isLoadingReadings}
             className="px-6 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
           >
-            {isLoadingReadings ? "読み込み中..." : t("loadMore")}
+            {isLoadingReadings ? t("loadMore") + "..." : t("loadMore")}
           </button>
         </div>
       )}
+
+      {/* タロティストプロフィールダイアログ */}
+      <AnimatePresence>
+        {selectedTarotist && (
+          <TarotistInfoDialog
+            tarotist={selectedTarotist}
+            onClose={() => setSelectedTarotist(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

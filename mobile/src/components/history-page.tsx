@@ -1,13 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import type {
   DrawnCard,
   Reading,
   TarotCard,
   Tarotist,
 } from "../../../shared/lib/types";
+import { TarotistInfoDialog } from "../../../shared/components/tarotist/tarotist-info-dialog";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { removeBannerAd, showBannerAd } from "../lib/utils/admob";
@@ -74,72 +74,6 @@ const TarotistAvatar: React.FC<{
   );
 };
 
-// 占い師プロフィールモーダル
-const TarotistProfileModal: React.FC<{
-  tarotist: Tarotist;
-  onClose: () => void;
-}> = ({ tarotist, onClose }) => {
-  return createPortal(
-    <AnimatePresence>
-      <motion.div
-        key="overlay"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          key="dialog"
-          initial={{ opacity: 0, scale: 0.95, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 8 }}
-          transition={{ type: "spring", damping: 28, stiffness: 300 }}
-          className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="h-52 relative">
-            <img
-              src={`/tarotists/${tarotist.name}.png`}
-              alt={tarotist.title ?? tarotist.name}
-              className="w-full h-full object-cover object-top"
-            />
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/30 flex items-center justify-center"
-            >
-              <X className="w-4 h-4 text-white" />
-            </button>
-          </div>
-          <div className="p-5">
-            <div
-              className="text-2xl font-bold mb-1"
-              style={{
-                fontFamily: "'MonteCarlo', cursive",
-                color: tarotist.accentColor ?? "#7c3aed",
-              }}
-            >
-              {tarotist.icon} {tarotist.name}
-            </div>
-            <div className="text-sm text-gray-500 mb-3">{tarotist.title}</div>
-            {tarotist.trait && (
-              <div
-                className="text-sm font-semibold mb-2"
-                style={{ color: tarotist.accentColor ?? "#7c3aed" }}
-              >
-                {tarotist.trait}
-              </div>
-            )}
-            <div className="text-sm text-gray-700 leading-relaxed">
-              {tarotist.bio}
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>,
-    document.body,
-  );
-};
 
 // 年 → 月 の2階層グループ化
 function groupByYearMonth(readings: Reading[]) {
@@ -528,7 +462,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
       )}
 
       {selectedTarotistProfile && (
-        <TarotistProfileModal
+        <TarotistInfoDialog
           tarotist={selectedTarotistProfile}
           onClose={() => setSelectedTarotistProfile(null)}
         />

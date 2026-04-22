@@ -12,7 +12,7 @@ import {
   renderStars,
 } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
-import ProfileDialog from "./profile-dialog";
+import { TarotistInfoDialog } from "../../../shared/components/tarotist/tarotist-info-dialog";
 
 interface TarotistPageProps {
   payload: AppJWTPayload;
@@ -36,6 +36,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   );
   const availableTarotists = masterData.tarotists || [];
 
+
   const handleChangePlan = (requiredPlan: string) => {
     onChangePlan(requiredPlan as UserPlan);
   };
@@ -44,9 +45,6 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   const currentColors = currentPlan
     ? getPlanColors(currentPlan.code, plans)
     : getPlanColors("GUEST", plans);
-
-  const [showProfileView, setShowProfileView] = useState(false);
-  const [showImageView, setShowImageView] = useState(false);
 
   return (
     <div className="main-container">
@@ -94,9 +92,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   backgroundColor: colors.bg,
                   borderColor: colors.secondary,
                 }}
-                onClick={() => {
-                  setSelectedTarotist(tarotist);
-                }}
+                onClick={() => setSelectedTarotist(tarotist)}
               >
                 {/* プランバッジ */}
                 <div
@@ -218,18 +214,17 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
         </div>
       </div>
 
-      {/* プロフィール拡大ダイアログ & 画像全画面表示ダイアログ */}
+      {/* プロフィールダイアログ */}
       {selectedTarotist && (
-        <ProfileDialog
-          selectedTarotist={selectedTarotist}
-          showProfileView={showProfileView}
-          setShowProfileView={setShowProfileView}
-          showImageView={showImageView}
-          setShowImageView={setShowImageView}
-          hasButton
+        <TarotistInfoDialog
+          tarotist={selectedTarotist}
           currentPlan={currentPlan}
-          onChangePlan={handleChangePlan}
-          isChangingPlan={isChangingPlan}
+          onClose={() => setSelectedTarotist(null)}
+          onUpgrade={(planCode) => {
+            handleChangePlan(planCode);
+            setSelectedTarotist(null);
+          }}
+          isUpgrading={isChangingPlan}
         />
       )}
     </div>

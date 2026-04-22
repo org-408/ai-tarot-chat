@@ -337,6 +337,8 @@ export default function PersonalPage() {
   const {
     personalTarotist: selectedTarotist,
     setPersonalTarotist,
+    setPersonalSpread,
+    setPersonalCategory,
     resetSession,
     setIsLocked,
   } = useSalonStore();
@@ -390,6 +392,9 @@ export default function PersonalPage() {
   const handleStartChat = () => {
     if (!selectedTarotist) return;
     resetSession();
+    // 前セッションの永続化されたスプレッド/カテゴリをクリア（W-1修正）
+    setPersonalSpread(null);
+    setPersonalCategory(null);
     setPhase("chat");
   };
 
