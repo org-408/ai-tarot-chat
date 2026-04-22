@@ -38,7 +38,12 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
   onChangePlan,
   isChangingPlan,
 }) => {
-  const { selectedTargetMode, selectedTarotist } = useSalon();
+  const {
+    selectedTargetMode,
+    selectedTarotist,
+    setSelectedTarotist,
+    setSelectedTargetMode,
+  } = useSalon();
 
   const [upperIndex, setUpperIndex] = useState(0);
   const [lowerIndex, setLowerIndex] = useState(0);
@@ -131,6 +136,10 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
         <TarotistCarouselPortrait
           masterData={masterData}
           currentPlan={currentPlan}
+          selectedTarotist={selectedTarotist}
+          onSelectTarotist={setSelectedTarotist}
+          selectedMode={selectedTargetMode}
+          onChangeMode={setSelectedTargetMode}
           onChangePlan={handleChangePlan}
           isChangingPlan={isChangingPlan}
         />
@@ -153,6 +162,10 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
               <TarotistCarouselPortrait
                 masterData={masterData}
                 currentPlan={currentPlan}
+                selectedTarotist={selectedTarotist}
+                onSelectTarotist={setSelectedTarotist}
+                selectedMode={selectedTargetMode}
+                onChangeMode={setSelectedTargetMode}
                 onChangePlan={onChangePlan}
                 isChangingPlan={isChangingPlan}
               />

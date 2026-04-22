@@ -26,6 +26,9 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
     drawnCards,
     isRevealingCompleted,
     setIsRevealingCompleted,
+    selectedTarotist,
+    selectedPersonalTarotist,
+    isPersonal,
   } = useSalon();
 
   const { upperViewerMode, setUpperViewerMode } = useSalon();
@@ -176,6 +179,13 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
                 ) : (
                   <TarotistCarouselPortrait
                     masterData={masterData}
+                    selectedTarotist={
+                      isPersonal ? selectedPersonalTarotist : selectedTarotist
+                    }
+                    onSelectTarotist={() => {}}
+                    selectedMode="portrait"
+                    onChangeMode={() => {}}
+                    isPersonal={isPersonal}
                     readonly={true}
                   />
                 )

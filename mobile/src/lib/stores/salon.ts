@@ -27,6 +27,7 @@ interface SalonState {
   drawnCards: DrawnCard[];
   isRevealingCompleted: boolean;
   selectedTargetMode: SelectTargetMode;
+  selectedPersonalTargetMode: SelectTargetMode;
   spreadViewerMode: SpreadViewModeType;
   upperViewerMode: UpperViewerModeType;
   lowerViewerMode: LowerViewerModeType;
@@ -45,6 +46,7 @@ interface SalonState {
   setDrawnCards: (cards: DrawnCard[]) => void;
   setIsRevealingCompleted: (completed: boolean) => void;
   setSelectedTargetMode: (mode: SelectTargetMode) => void;
+  setSelectedPersonalTargetMode: (mode: SelectTargetMode) => void;
   setSpreadViewerMode: (mode: SpreadViewModeType) => void;
   setUpperViewerMode: (mode: UpperViewerModeType) => void;
   setLowerViewerMode: (mode: LowerViewerModeType) => void;
@@ -75,6 +77,7 @@ export const useSalonStore = create<SalonState>()(
       drawnCards: [],
       isRevealingCompleted: false,
       selectedTargetMode: "tarotist",
+      selectedPersonalTargetMode: "tarotist",
       spreadViewerMode: "grid",
       upperViewerMode: "profile",
       lowerViewerMode: "selector",
@@ -112,6 +115,8 @@ export const useSalonStore = create<SalonState>()(
       setIsRevealingCompleted: (completed) =>
         set({ isRevealingCompleted: completed }),
       setSelectedTargetMode: (mode) => set({ selectedTargetMode: mode }),
+      setSelectedPersonalTargetMode: (mode) =>
+        set({ selectedPersonalTargetMode: mode }),
       setSpreadViewerMode: (mode) => set({ spreadViewerMode: mode }),
       setUpperViewerMode: (mode) => set({ upperViewerMode: mode }),
       setLowerViewerMode: (mode) => set({ lowerViewerMode: mode }),
@@ -147,6 +152,7 @@ export const useSalonStore = create<SalonState>()(
         lastClaraCategoryId: state.lastClaraCategoryId,
         lastClaraSpreadId: state.lastClaraSpreadId,
         selectedTargetMode: state.selectedTargetMode,
+        selectedPersonalTargetMode: state.selectedPersonalTargetMode,
         spreadViewerMode: state.spreadViewerMode,
         upperViewerMode: state.upperViewerMode,
         lowerViewerMode: state.lowerViewerMode,

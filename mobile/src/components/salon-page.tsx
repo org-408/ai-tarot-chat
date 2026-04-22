@@ -35,6 +35,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
     selectedTarotist,
     selectedCategory,
     selectedSpread,
+    setSelectedTarotist,
+    setSelectedTargetMode,
     init,
   } = useSalon();
 
@@ -74,6 +76,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
         <TarotistCarouselPortrait
           masterData={masterData}
           currentPlan={currentPlan}
+          selectedTarotist={selectedTarotist}
+          onSelectTarotist={setSelectedTarotist}
+          selectedMode={selectedTargetMode}
+          onChangeMode={setSelectedTargetMode}
           onChangePlan={handleChangePlan}
           isChangingPlan={isChangingPlan}
         />
@@ -96,6 +102,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
               <TarotistCarouselPortrait
                 masterData={masterData}
                 currentPlan={currentPlan}
+                selectedTarotist={selectedTarotist}
+                onSelectTarotist={setSelectedTarotist}
+                selectedMode={selectedTargetMode}
+                onChangeMode={setSelectedTargetMode}
               />
             </motion.div>
 
