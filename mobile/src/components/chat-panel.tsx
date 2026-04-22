@@ -60,17 +60,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const {
     selectedTarotist,
     selectedPersonalTarotist,
-    selectedCategory: category,
-    selectedSpread: spread,
+    quickCategory,
+    personalCategory,
+    quickSpread,
+    personalSpread,
     drawnCards,
     isRevealingCompleted,
     isPersonal,
     setCustomQuestion,
-    setSelectedSpread,
+    setPersonalSpread,
   } = useSalon();
 
   // パーソナル占いは専用占い師、クイック占いは選択占い師を使用
   const tarotist = isPersonal ? selectedPersonalTarotist : selectedTarotist;
+  const category = isPersonal ? personalCategory : quickCategory;
+  const spread = isPersonal ? personalSpread : quickSpread;
 
   const { masterData } = useMaster();
 
@@ -357,7 +361,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           );
           console.log("Found spread:", spread);
           if (spread) {
-            setSelectedSpread(spread);
+            setPersonalSpread(spread);
           }
           // もし spread が取得できなくても、そのまま進める
           setShowSelector(true);
@@ -365,7 +369,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPersonal, masterData.spreads, messages, status]);
+  }, [isPersonal, masterData.spreads, messages, setPersonalSpread, status]);
 
   useEffect(() => {
     // Phase2 のストリーミング中に personal モードから外れたときだけ停止する。

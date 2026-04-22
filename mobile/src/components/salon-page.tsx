@@ -33,8 +33,8 @@ const SalonPage: React.FC<SalonPageProps> = ({
   const {
     selectedTargetMode,
     selectedTarotist,
-    selectedCategory,
-    selectedSpread,
+    quickCategory,
+    quickSpread,
     setSelectedTarotist,
     setSelectedTargetMode,
     init,
@@ -62,7 +62,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const handleStartReading = () => {
     console.log("[SalonPage] handleStartReading called");
-    if (!selectedTarotist || !selectedSpread || !selectedCategory) return;
+    if (!selectedTarotist || !quickSpread || !quickCategory) return;
     onStartReading();
   };
 

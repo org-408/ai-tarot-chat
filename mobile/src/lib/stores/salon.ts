@@ -19,9 +19,11 @@ import { useMasterStore } from "./master";
 interface SalonState {
   selectedTarotist: Tarotist | null;
   selectedPersonalTarotist: Tarotist | null;
-  selectedCategory: ReadingCategory;
+  quickCategory: ReadingCategory;
+  personalCategory: ReadingCategory | null;
   customQuestion: string;
-  selectedSpread: Spread;
+  quickSpread: Spread;
+  personalSpread: Spread | null;
   lastClaraCategoryId: string | null;
   lastClaraSpreadId: string | null;
   drawnCards: DrawnCard[];
@@ -36,9 +38,11 @@ interface SalonState {
   init: () => void;
   setSelectedTarotist: (tarotist: Tarotist | null) => void;
   setSelectedPersonalTarotist: (tarotist: Tarotist | null) => void;
-  setSelectedCategory: (category: ReadingCategory) => void;
+  setQuickCategory: (category: ReadingCategory) => void;
+  setPersonalCategory: (category: ReadingCategory | null) => void;
   setCustomQuestion: (question: string) => void;
-  setSelectedSpread: (spread: Spread) => void;
+  setQuickSpread: (spread: Spread) => void;
+  setPersonalSpread: (spread: Spread | null) => void;
   setLastClaraSelection: (
     categoryId: string | null,
     spreadId: string | null
@@ -69,9 +73,11 @@ export const useSalonStore = create<SalonState>()(
     (set) => ({
       selectedTarotist: null,
       selectedPersonalTarotist: null,
-      selectedCategory: initialCategory,
+      quickCategory: initialCategory,
+      personalCategory: null,
       customQuestion: "",
-      selectedSpread: initialSpread,
+      quickSpread: initialSpread,
+      personalSpread: null,
       lastClaraCategoryId: null,
       lastClaraSpreadId: null,
       drawnCards: [],
@@ -85,12 +91,12 @@ export const useSalonStore = create<SalonState>()(
       messages: [],
       init: () => {
         set((state) => ({
-          selectedCategory: state.selectedCategory?.id
-            ? state.selectedCategory
+          quickCategory: state.quickCategory?.id
+            ? state.quickCategory
             : initialCategory,
           customQuestion: "",
-          selectedSpread: state.selectedSpread?.id
-            ? state.selectedSpread
+          quickSpread: state.quickSpread?.id
+            ? state.quickSpread
             : initialSpread,
           drawnCards: [],
           isRevealingCompleted: false,
@@ -103,9 +109,11 @@ export const useSalonStore = create<SalonState>()(
       },
       setSelectedTarotist: (tarotist) => set({ selectedTarotist: tarotist }),
       setSelectedPersonalTarotist: (tarotist) => set({ selectedPersonalTarotist: tarotist }),
-      setSelectedCategory: (category) => set({ selectedCategory: category }),
+      setQuickCategory: (category) => set({ quickCategory: category }),
+      setPersonalCategory: (category) => set({ personalCategory: category }),
       setCustomQuestion: (question) => set({ customQuestion: question }),
-      setSelectedSpread: (spread) => set({ selectedSpread: spread }),
+      setQuickSpread: (spread) => set({ quickSpread: spread }),
+      setPersonalSpread: (spread) => set({ personalSpread: spread }),
       setLastClaraSelection: (categoryId, spreadId) =>
         set({
           lastClaraCategoryId: categoryId,
@@ -125,6 +133,7 @@ export const useSalonStore = create<SalonState>()(
     }),
     {
       name: "salon-storage",
+      version: 2,
       storage: createJSONStorage(() => ({
         getItem: async (name: string) => {
           const value = await storeRepository.get(name);
@@ -138,6 +147,25 @@ export const useSalonStore = create<SalonState>()(
           await storeRepository.delete(name);
         },
       })),
+      migrate: (persistedState: unknown, version) => {
+        const state = persistedState as Record<string, unknown> | null;
+        if (!state) return persistedState as SalonState;
+
+        if (version < 2) {
+          const legacyCategory = state.selectedCategory as ReadingCategory | undefined;
+          const legacySpread = state.selectedSpread as Spread | undefined;
+
+          return {
+            ...state,
+            quickCategory: (state.quickCategory as ReadingCategory | undefined) ?? legacyCategory ?? initialCategory,
+            personalCategory: (state.personalCategory as ReadingCategory | null | undefined) ?? null,
+            quickSpread: (state.quickSpread as Spread | undefined) ?? legacySpread ?? initialSpread,
+            personalSpread: (state.personalSpread as Spread | null | undefined) ?? null,
+          };
+        }
+
+        return state as unknown as SalonState;
+      },
       // セッション固有の状態は永続化しない。
       // isPersonal / drawnCards / isRevealingCompleted / messages は
       // init() でリセットされる揮発性フィールドであり、非同期 hydration が
@@ -146,9 +174,11 @@ export const useSalonStore = create<SalonState>()(
       partialize: (state) => ({
         selectedTarotist: state.selectedTarotist,
         selectedPersonalTarotist: state.selectedPersonalTarotist,
-        selectedCategory: state.selectedCategory,
+        quickCategory: state.quickCategory,
+        personalCategory: state.personalCategory,
         customQuestion: state.customQuestion,
-        selectedSpread: state.selectedSpread,
+        quickSpread: state.quickSpread,
+        personalSpread: state.personalSpread,
         lastClaraCategoryId: state.lastClaraCategoryId,
         lastClaraSpreadId: state.lastClaraSpreadId,
         selectedTargetMode: state.selectedTargetMode,

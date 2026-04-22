@@ -24,15 +24,23 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const { masterData } = useMaster();
   const { currentPlan, remainingReadings, remainingPersonal } = useClient();
   const {
-    selectedCategory,
-    setSelectedCategory,
-    selectedSpread,
-    setSelectedSpread,
+    quickCategory,
+    personalCategory,
+    setQuickCategory,
+    setPersonalCategory,
+    quickSpread,
+    personalSpread,
+    setQuickSpread,
+    setPersonalSpread,
     lastClaraCategoryId,
     lastClaraSpreadId,
     setLastClaraSelection,
     isPersonal,
   } = useSalon();
+  const selectedCategory = isPersonal ? personalCategory : quickCategory;
+  const setSelectedCategory = isPersonal ? setPersonalCategory : setQuickCategory;
+  const selectedSpread = isPersonal ? personalSpread : quickSpread;
+  const setSelectedSpread = isPersonal ? setPersonalSpread : setQuickSpread;
 
   // カテゴリーの取得とフィルタリング
   const availableCategories = useMemo(() => {

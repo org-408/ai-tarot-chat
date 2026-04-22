@@ -159,8 +159,8 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   currentPlan: _currentPlan,
 }) => {
   const {
-    selectedSpread,
-    selectedCategory,
+    quickSpread,
+    quickCategory,
     drawnCards,
     setDrawnCards,
     setIsRevealingCompleted,
@@ -179,13 +179,13 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   // → drawnCards.length === 0 の間 ShuffleDialog が表示される
   useEffect(() => {
     if (phase !== "reading") return;
-    if (!selectedSpread || !selectedCategory) return;
+    if (!quickSpread || !quickCategory) return;
 
-    const drawn = drawRandomCards(masterData, selectedSpread);
+    const drawn = drawRandomCards(masterData, quickSpread);
     setDrawnCards(drawn);
     setIsRevealingCompleted(true); // 全カードを最初からめくれた状態に
     setClaraMessages(
-      buildClaraMessages(drawn, selectedCategory.name, selectedSpread.name),
+      buildClaraMessages(drawn, quickCategory.name, quickSpread.name),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -298,7 +298,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {drawnCards.length > 0 && (
-            <UpperViewer claraMode={true} spread={selectedSpread} />
+            <UpperViewer claraMode={true} spread={quickSpread} />
           )}
         </motion.div>
 
@@ -324,8 +324,8 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
             <ClaraPanel
               messages={claraMessages}
               onBack={handleReset}
-              category={selectedCategory}
-              spread={selectedSpread}
+              category={quickCategory}
+              spread={quickSpread}
             />
           )}
         </div>
