@@ -112,7 +112,7 @@ export function TwoColumnReadingLayout({
             }}
           >
             <motion.div
-              animate={{ rotate: rightIsOpen ? 0 : 180 }}
+              animate={{ rotate: 0 }}
               transition={{ duration: 0.25 }}
             >
               {rightIsOpen ? (

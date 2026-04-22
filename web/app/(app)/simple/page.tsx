@@ -118,6 +118,8 @@ function SimpleReadingChat({
         tarotistImageUrl={tarotistImageUrl}
         tarotistName={tarotist.name}
         tarotistIcon={tarotist.icon}
+        tarotistTitle={tarotist.title}
+        tarotistTrait={tarotist.trait}
         messages={messages}
         status={status}
         inputValue={inputValue}
@@ -388,6 +390,8 @@ export default function SimplePage() {
       currentPlan={currentPlan}
       categories={categories}
       spreads={spreads}
+      selectedCategory={selectedCategory}
+      selectedSpread={selectedSpread}
       remainingCount={remainingQuick}
       isLoading={isLoading}
       onQuickStartReading={handleStartReading}
