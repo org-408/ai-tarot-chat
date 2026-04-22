@@ -236,6 +236,17 @@ class BlogFeatureQueueRepository extends BaseRepository {
     });
   }
 
+  async findAll(status?: FeatureQueueStatus): Promise<BlogFeatureQueueRow[]> {
+    return this.db.blogFeatureQueue.findMany({
+      where: status ? { status } : undefined,
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+  }
+
+  async findById(id: string): Promise<BlogFeatureQueueRow | null> {
+    return this.db.blogFeatureQueue.findUnique({ where: { id } });
+  }
+
   async markPublished(id: string, blogPostId: string): Promise<void> {
     await this.db.blogFeatureQueue.update({
       where: { id },
@@ -248,9 +259,63 @@ class BlogFeatureQueueRepository extends BaseRepository {
   }
 
   async create(description: string, sortOrder?: number): Promise<BlogFeatureQueueRow> {
-    return this.db.blogFeatureQueue.create({
-      data: { description, sortOrder: sortOrder ?? 0 },
+    const maxOrder = await this.db.blogFeatureQueue.aggregate({
+      where: { status: FeatureQueueStatus.PENDING },
+      _max: { sortOrder: true },
     });
+    const nextOrder = sortOrder ?? (maxOrder._max.sortOrder ?? -1) + 1;
+    return this.db.blogFeatureQueue.create({
+      data: { description, sortOrder: nextOrder },
+    });
+  }
+
+  async update(id: string, data: { description?: string; sortOrder?: number }): Promise<BlogFeatureQueueRow> {
+    return this.db.blogFeatureQueue.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.blogFeatureQueue.delete({ where: { id } });
+  }
+
+  async reorder(id: string, direction: "up" | "down"): Promise<void> {
+    const item = await this.db.blogFeatureQueue.findUnique({ where: { id } });
+    if (!item || item.status !== FeatureQueueStatus.PENDING) return;
+
+    const neighbor = await this.db.blogFeatureQueue.findFirst({
+      where: {
+        status: FeatureQueueStatus.PENDING,
+        sortOrder: direction === "up" ? { lt: item.sortOrder } : { gt: item.sortOrder },
+      },
+      orderBy: { sortOrder: direction === "up" ? "desc" : "asc" },
+    });
+    if (!neighbor) return;
+
+    await this.db.$transaction([
+      this.db.blogFeatureQueue.update({ where: { id: item.id }, data: { sortOrder: neighbor.sortOrder } }),
+      this.db.blogFeatureQueue.update({ where: { id: neighbor.id }, data: { sortOrder: item.sortOrder } }),
+    ]);
+  }
+
+  async seedDefaults(): Promise<number> {
+    const defaults = [
+      { description: "タロット占い（クイック占い）— スプレッドを選んでカードを引くだけで、AIがその日のリーディングをお届けします", sortOrder: 0 },
+      { description: "パーソナル占い — 悩みや状況を詳しく入力すると、AIがあなただけのタロットリーディングをチャット形式で丁寧に行います", sortOrder: 1 },
+      { description: "スプレッド選択 — 1枚引きからケルト十字まで、目的に合ったスプレッドを自由に選べます", sortOrder: 2 },
+      { description: "AI占い師キャラクター選択 — 個性の異なる複数のAI占い師から、あなたの好みの占い師を選べます", sortOrder: 3 },
+      { description: "占い履歴 — 過去のリーディングをいつでも見返せます。気になった占いを何度でも確認できます", sortOrder: 4 },
+      { description: "お気に入りスプレッド — よく使うスプレッドをお気に入りに登録して、すぐにアクセスできます", sortOrder: 5 },
+      { description: "逆位置カード — カードの正位置・逆位置によってリーディングが変わります。より深い洞察が得られます", sortOrder: 6 },
+      { description: "カードシャッフル演出 — 占い前にカードをシャッフルする演出で、リーディングに集中できます", sortOrder: 7 },
+      { description: "リーディングカテゴリ選択 — 恋愛・仕事・総合など、占いたいテーマを選んで始められます", sortOrder: 8 },
+      { description: "プラン・サブスクリプション — 無料から始めて、プレミアムにアップグレードするとより多くの占い師・スプレッドが使えます", sortOrder: 9 },
+      { description: "ゲストユーザー利用 — アカウント登録不要でも、すぐにタロット占いを試せます", sortOrder: 10 },
+      { description: "占い師「クラーラ」— 特別なAI占い師クラーラによる、より深いリーディング体験が受けられます", sortOrder: 11 },
+      { description: "Web版でのパーソナル占い — スマートフォンだけでなく、PCブラウザからもパーソナル占いが利用できます。長文の悩みも入力しやすい環境でご利用いただけます", sortOrder: 12 },
+      { description: "Web版のサブスクリプション管理 — PCブラウザからプランのアップグレード・変更・解約が行えます", sortOrder: 13 },
+    ];
+    await this.db.blogFeatureQueue.deleteMany({ where: { status: FeatureQueueStatus.PENDING } });
+    await this.db.blogFeatureQueue.createMany({ data: defaults });
+    return defaults.length;
   }
 
   async countPending(): Promise<number> {
