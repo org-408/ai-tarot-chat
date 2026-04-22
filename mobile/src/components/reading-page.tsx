@@ -22,7 +22,7 @@ interface ReadingPageProps {
 
 const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock }) => {
   const {
-    selectedSpread,
+    quickSpread,
     drawnCards,
     setDrawnCards,
     isRevealingCompleted,
@@ -33,11 +33,11 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
 
   // カードを引く（初回のみ）
   useEffect(() => {
-    if (masterData && selectedSpread) {
-      const cards = drawRandomCards(masterData, selectedSpread);
+    if (masterData && quickSpread) {
+      const cards = drawRandomCards(masterData, quickSpread);
       setDrawnCards(cards);
     }
-  }, [masterData, selectedSpread, setDrawnCards]);
+  }, [masterData, quickSpread, setDrawnCards]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -86,7 +86,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
           animate={{ height: isTopCollapsed ? 0 : "45vh" }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {drawnCards.length > 0 && <UpperViewer spread={selectedSpread} />}
+          {drawnCards.length > 0 && <UpperViewer spread={quickSpread} />}
         </motion.div>
 
         {/* アコーディオントグル */}
@@ -108,8 +108,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
         {/* 下半分 */}
         <div className="flex-1 min-h-0">
           {drawnCards.length > 0 && (
-            <ChatPanel
-              key={`quick-${selectedSpread?.id ?? "none"}`}
+              <ChatPanel
+              key={`quick-${quickSpread?.id ?? "none"}`}
               onBack={handleBack}
               onUnlock={onUnlock}
               remainingCount={remainingReadings}

@@ -46,7 +46,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   const {
     selectedPersonalTargetMode,
     selectedPersonalTarotist,
-    selectedSpread,
+    personalSpread,
     drawnCards,
     setDrawnCards,
     isRevealingCompleted,
@@ -100,11 +100,11 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
 
   // Reading phase 開始時にカードを引く
   useEffect(() => {
-    if (phase === "reading" && masterData && selectedSpread) {
-      const cards = drawRandomCards(masterData, selectedSpread);
+    if (phase === "reading" && masterData && personalSpread) {
+      const cards = drawRandomCards(masterData, personalSpread);
       setDrawnCards(cards);
     }
-  }, [phase, masterData, selectedSpread, setDrawnCards]);
+  }, [phase, masterData, personalSpread, setDrawnCards]);
 
   // カードめくり完了時の処理（めくれたカードが見える時間を確保してからプロフィールへ切替）
   useEffect(() => {
@@ -124,7 +124,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // Phase1 → Phase2 へ（無料プランのみ広告表示 → 閉じてから遷移）
   // Phase2 開始 = AI API 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
-    if (!selectedPersonalTarotist || !selectedSpread) return;
+    if (!selectedPersonalTarotist || !personalSpread) return;
     if (selectedPersonalTarotist.provider === "OFFLINE") {
       onNavigateToClara?.();
       return;
@@ -172,7 +172,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
             animate={{ height: isTopCollapsed ? 0 : "45vh" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {drawnCards.length > 0 && <UpperViewer spread={selectedSpread} />}
+            {drawnCards.length > 0 && personalSpread && (
+              <UpperViewer spread={personalSpread} />
+            )}
           </motion.div>
 
           {/* アコーディオントグル */}
