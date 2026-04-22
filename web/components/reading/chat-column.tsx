@@ -75,43 +75,56 @@ export function ChatColumn({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 占い師肖像（折畳可）。モバイルの portrait 表示に寄せて、
-          下部グラデーション上に名前・肩書き・特徴を配置する。 */}
+      {/* 占い師肖像（折畳可）。モバイルの portrait 表示と同一仕様。
+          高さ 40vh の正方形コンテナを中央寄せで表示する。 */}
       <motion.div
-        className="flex-shrink-0 overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50"
-        animate={{ height: isPortraitCollapsed ? 0 : "28vh" }}
+        className="flex-shrink-0 overflow-hidden"
+        animate={{ height: isPortraitCollapsed ? 0 : "40vh" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <div className="h-full w-full flex items-center justify-center relative">
-          <img
-            src={tarotistImageUrl}
-            alt={tarotistName}
-            className="w-full h-full object-cover"
-            style={{ objectPosition: "center 20%" }}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 via-black/35 to-transparent pointer-events-none" />
-          <div className="absolute left-0 right-0 bottom-0 px-4 py-3 text-white pointer-events-none">
-            <div className="flex items-center gap-2">
-              {tarotistIcon && (
-                <span className="text-2xl drop-shadow-lg">{tarotistIcon}</span>
+        <div className="h-full flex items-center justify-center p-2">
+          <div className="h-full aspect-square rounded-3xl overflow-hidden shadow-xl relative">
+            <img
+              src={tarotistImageUrl}
+              alt={tarotistName}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: "center 20%" }}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+            <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
+              <div className="flex items-center gap-3 mb-2">
+                {tarotistIcon && (
+                  <span className="text-3xl drop-shadow-lg">{tarotistIcon}</span>
+                )}
+                <h2
+                  className="text-2xl font-bold drop-shadow-lg text-white"
+                  style={{
+                    fontFamily: "'MonteCarlo', cursive",
+                    textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  {tarotistName}
+                </h2>
+              </div>
+              {(tarotistTitle || subtitle) && (
+                <p
+                  className="text-sm font-semibold text-white"
+                  style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)" }}
+                >
+                  {tarotistTitle ?? subtitle}
+                </p>
               )}
-              <span className="text-lg font-bold drop-shadow-lg">
-                {tarotistName}
-              </span>
+              {tarotistTrait && (
+                <p
+                  className="mt-0.5 text-base font-semibold text-white"
+                  style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)" }}
+                >
+                  {tarotistTrait}
+                </p>
+              )}
             </div>
-            {(tarotistTitle || subtitle) && (
-              <p className="mt-1 text-xs font-medium text-white/90 drop-shadow-lg">
-                {tarotistTitle ?? subtitle}
-              </p>
-            )}
-            {tarotistTrait && (
-              <p className="mt-0.5 text-xs text-white/80 drop-shadow-lg line-clamp-2">
-                {tarotistTrait}
-              </p>
-            )}
           </div>
         </div>
       </motion.div>
