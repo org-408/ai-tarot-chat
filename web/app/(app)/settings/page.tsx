@@ -179,8 +179,9 @@ export default function SettingsPage() {
   const { usage, refreshUsage } = useClientStore();
   const { theme, setTheme } = useThemePreference();
 
-  const { openManagement, subscriptionStore } = useRevenuecat();
+  const { openManagement, subscriptionStore, subscriptionStoreLoading } = useRevenuecat();
   const [portalLoading, setPortalLoading] = useState(false);
+  const [appStoreDialogOpen, setAppStoreDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -300,19 +301,28 @@ export default function SettingsPage() {
         </SettingsGroup>
 
         {/* サブスクリプション */}
-        {session?.user && (planCode === "STANDARD" || planCode === "PREMIUM") && (
+        {session?.user && (
           <SettingsGroup title={t("subscription")}>
-            {subscriptionStore === "app_store" ? (
-              <SettingsRow
-                label={t("manageSubscription")}
-                value={t("manageViaAppStoreDesc")}
-              />
+            {planCode === "STANDARD" || planCode === "PREMIUM" ? (
+              subscriptionStoreLoading ? (
+                <SettingsRow label={t("manageSubscription")} loading={true} />
+              ) : subscriptionStore === "app_store" ? (
+                <SettingsRow
+                  label={t("manageSubscription")}
+                  onClick={() => setAppStoreDialogOpen(true)}
+                />
+              ) : (
+                <SettingsRow
+                  label={t("manageSubscription")}
+                  value={portalLoading ? t("portalLoading") : t("manageSubscriptionDesc")}
+                  onClick={handlePortal}
+                  loading={portalLoading}
+                />
+              )
             ) : (
               <SettingsRow
-                label={t("manageSubscription")}
-                value={portalLoading ? t("portalLoading") : t("manageSubscriptionDesc")}
-                onClick={handlePortal}
-                loading={portalLoading}
+                label={t("viewPlans")}
+                onClick={() => router.push(`/${locale}/plans`)}
               />
             )}
           </SettingsGroup>
@@ -379,6 +389,32 @@ export default function SettingsPage() {
           </SettingsGroup>
         )}
       </div>
+
+      {/* App Store 管理ダイアログ */}
+      {appStoreDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={() => setAppStoreDialogOpen(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-bold text-foreground mb-3">
+              {t("manageSubscription")}
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              {t("manageViaAppStoreDesc")}
+            </p>
+            <button
+              onClick={() => setAppStoreDialogOpen(false)}
+              className="w-full py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted/50 transition-colors"
+            >
+              {t("close")}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 削除確認ダイアログ */}
       <DeleteAccountDialog

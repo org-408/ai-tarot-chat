@@ -15,12 +15,17 @@ export function useRevenuecat() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const [subscriptionStore, setSubscriptionStore] = useState<string | null>(null);
+  const [subscriptionStoreLoading, setSubscriptionStoreLoading] = useState(true);
 
   // mobile と同じ user.id で RC を初期化（ユーザーが変わっても追従）
   useEffect(() => {
     if (!userId) return;
     configureRC(userId);
-    getActiveSubscriptionStore().then(setSubscriptionStore).catch(() => {});
+    setSubscriptionStoreLoading(true);
+    getActiveSubscriptionStore()
+      .then(setSubscriptionStore)
+      .catch(() => {})
+      .finally(() => setSubscriptionStoreLoading(false));
   }, [userId]);
 
   const purchase = useCallback(
@@ -54,5 +59,5 @@ export function useRevenuecat() {
   const isUserCancelled = (e: unknown): boolean =>
     e instanceof PurchasesError && e.errorCode === ErrorCode.UserCancelledError;
 
-  return { purchase, openManagement, isUserCancelled, subscriptionStore };
+  return { purchase, openManagement, isUserCancelled, subscriptionStore, subscriptionStoreLoading };
 }

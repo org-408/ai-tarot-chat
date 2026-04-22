@@ -223,7 +223,9 @@
     "deleteAccountConfirmDesc": "削除するとすべての占い履歴が失われます。この操作は取り消せません。",
     "deleteAccountConfirm": "削除する",
     "deleteAccountCancel": "キャンセル",
-    "deleteAccountSuccess": "アカウントを削除しました"
+    "deleteAccountSuccess": "アカウントを削除しました",
+    "viewPlans": "プランを確認・購入",
+    "close": "閉じる"
   },
   "tarotist": {
     "title": "占い師一覧",
