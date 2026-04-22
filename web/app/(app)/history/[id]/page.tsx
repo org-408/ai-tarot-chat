@@ -1,6 +1,11 @@
 "use client";
 
 import { useClientStore } from "@/lib/client/stores/client-store";
+import { useMasterStore } from "@/lib/client/stores/master-store";
+import {
+  buildTarotCardMap,
+  hydrateDrawnCards,
+} from "@/lib/client/utils/drawn-card";
 import { fetchReadingById } from "@/lib/client/services/client-service";
 import { MessageContent } from "@shared/components/chat/message-content";
 import type { DrawnCard, Reading } from "@shared/lib/types";
@@ -26,6 +31,8 @@ export default function HistoryDetailPage() {
   const router = useRouter();
   const t = useTranslations("history");
   const { readings } = useClientStore();
+  const masterData = useMasterStore((state) => state.data);
+  const initMaster = useMasterStore((state) => state.init);
   const [fetched, setFetched] = useState<Reading | null | "loading">("loading");
 
   const cached = readings.find((r) => r.id === id);
@@ -39,6 +46,10 @@ export default function HistoryDetailPage() {
       .then((r) => setFetched(r))
       .catch(() => setFetched(null));
   }, [id, cached]);
+
+  useEffect(() => {
+    void initMaster();
+  }, [initMaster]);
 
   const reading = cached ?? (fetched !== "loading" ? fetched : null);
   const isLoading = !cached && fetched === "loading";
@@ -66,7 +77,10 @@ export default function HistoryDetailPage() {
   }
 
   const messages = reading.chatMessages ?? [];
-  const drawnCards = (reading.cards ?? []) as DrawnCard[];
+  const drawnCards = hydrateDrawnCards(
+    reading.cards as DrawnCard[] | undefined,
+    buildTarotCardMap(masterData),
+  );
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col" style={{ height: "calc(100dvh - 120px)" }}>
