@@ -422,16 +422,17 @@ function App() {
   // Clara（OFFLINE占い師）が選択されている場合は "いつでも占い" ページへ
   // 占い開始 = AI 課金開始 → ナビゲーションをロック
   const handleStartReading = async () => {
-    if (selectedTarotist?.provider === "OFFLINE") {
-      setPageType("clara");
-      return;
-    }
-
     const isPaidPlan =
       currentPlan?.code === "STANDARD" || currentPlan?.code === "PREMIUM";
     if (!isPaidPlan) {
       await showInterstitialAd();
     }
+
+    if (selectedTarotist?.provider === "OFFLINE") {
+      setPageType("clara");
+      return;
+    }
+
     setIsNavigationLocked(true); // AI 課金開始 → ナビゲーションロック
     setPageType("reading");
   };
