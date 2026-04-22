@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as blogPostService from "@/lib/server/services/blog-post";
 import { blogPostConfigRepository } from "@/lib/server/repositories/blog-post";
+import { BlogPostType } from "@/lib/generated/prisma/client";
 import logger from "@/lib/server/logger/logger";
 
 // GitHub Actions から定期的に叩かれる Cron エンドポイント
 // Authorization: Bearer <CRON_SECRET> で保護
-// 1日1回実行: DAILY_CARD + TAROT_TIP + BUILD_IN_PUBLIC/APP_PROMO + TAROT_GUIDE の4記事を生成
+// type を指定して1記事ずつ生成・公開（1日4回 × 各タイプ）
+// type 未指定時は全4タイプを一括生成（管理画面・手動実行用）
+
+const VALID_TYPES = Object.values(BlogPostType);
 
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -28,12 +32,21 @@ export async function POST(req: NextRequest) {
     const { published, failed } = await blogPostService.processDue();
     logger.info("Cron: 予約ブログ記事処理完了", { published, failed });
 
-    // 1日4投稿を一括生成
-    const { dailyCard, tarotTip, feature, tarotGuide } = await blogPostService.createDailyBlogPosts(
-      config.phase,
-    );
+    const body = await req.json().catch(() => ({}));
+    const type = body.type as BlogPostType | undefined;
 
-    logger.info("Cron: ブログ自動投稿完了", {
+    if (type) {
+      if (!VALID_TYPES.includes(type)) {
+        return NextResponse.json({ error: `不正な type: ${type}` }, { status: 400 });
+      }
+      const post = await blogPostService.createAutoPost(type, config.phase);
+      logger.info("Cron: ブログ1記事生成完了", { type, id: post.id, status: post.status });
+      return NextResponse.json({ ok: true, scheduled: { published, failed }, post: { id: post.id, type: post.postType, status: post.status } });
+    }
+
+    // type 未指定: 全4記事一括生成
+    const { dailyCard, tarotTip, feature, tarotGuide } = await blogPostService.createDailyBlogPosts(config.phase);
+    logger.info("Cron: ブログ自動投稿完了（全4記事）", {
       dailyCard: { id: dailyCard.id, status: dailyCard.status },
       tarotTip: { id: tarotTip.id, status: tarotTip.status },
       feature: { id: feature.id, type: feature.postType, status: feature.status },

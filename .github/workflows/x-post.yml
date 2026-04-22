@@ -2,21 +2,44 @@ name: X Auto Post
 
 on:
   schedule:
-    - cron: '30 22 * * *'   # 07:30 JST (UTC 22:30 前日) → ブログCronの30分後に3投稿まとめて生成
+    - cron: '30 22 * * *'  # 07:30 JST → DAILY_CARD（ブログ07:00の30分後）
+    - cron: '30 3 * * *'   # 12:30 JST → TAROT_TIP（ブログ12:00の30分後）
+    - cron: '30 9 * * *'   # 18:30 JST → BUILD_IN_PUBLIC / APP_PROMO（ブログ18:00の30分後）
   workflow_dispatch:
+    inputs:
+      type:
+        description: '投稿タイプ (DAILY_CARD / TAROT_TIP / APP_PROMO / BUILD_IN_PUBLIC)'
+        required: false
+        default: 'DAILY_CARD'
 
 jobs:
   post:
     name: Trigger X auto post
     runs-on: ubuntu-latest
     steps:
+      - name: Determine post type
+        id: type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ github.event.inputs.type }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(TZ=Asia/Tokyo date +%H)
+            if [ "$HOUR" = "07" ]; then
+              echo "type=DAILY_CARD" >> $GITHUB_OUTPUT
+            elif [ "$HOUR" = "12" ]; then
+              echo "type=TAROT_TIP" >> $GITHUB_OUTPUT
+            else
+              echo "type=BUILD_IN_PUBLIC" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - name: Call X post cron endpoint
         run: |
           STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
             -X POST "${{ secrets.APP_URL }}/api/cron/x-posts" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
-            -d '{}')
+            -d "{\"type\":\"${{ steps.type.outputs.type }}\"}")
           echo "HTTP Status: $STATUS"
           echo "Response:"
           cat /tmp/response.json

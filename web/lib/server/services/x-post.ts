@@ -269,6 +269,35 @@ async function saveXPost(content: GeneratedContent, type: XPostType): Promise<XP
 }
 
 // ==========================================
+// 1投稿をブログ連動で生成（Cron用・type指定）
+// ==========================================
+export async function createSingleXPost(type: XPostType, phase: XPostPhase): Promise<XPostRow> {
+  const today = new Date();
+  const isPreLaunch = phase === XPostPhase.PRE_LAUNCH;
+
+  const blogTypeMap: Partial<Record<XPostType, BlogPostType>> = {
+    [XPostType.DAILY_CARD]: BlogPostType.DAILY_CARD,
+    [XPostType.TAROT_TIP]: BlogPostType.TAROT_TIP,
+    [XPostType.BUILD_IN_PUBLIC]: BlogPostType.BUILD_IN_PUBLIC,
+    [XPostType.APP_PROMO]: BlogPostType.APP_PROMO,
+  };
+
+  const blogType = blogTypeMap[type];
+  const blogPost = blogType ? await blogPostRepository.findByTypeAndDate(blogType, today) : null;
+
+  const featureXType = isPreLaunch ? XPostType.BUILD_IN_PUBLIC : XPostType.APP_PROMO;
+  const resolvedType = (type === XPostType.BUILD_IN_PUBLIC || type === XPostType.APP_PROMO)
+    ? featureXType
+    : type;
+
+  const content = blogPost
+    ? await generateFromBlogPost(blogPost, resolvedType)
+    : await generateContent(resolvedType, phase);
+
+  return saveXPost(content, resolvedType);
+}
+
+// ==========================================
 // 個別投稿（管理画面・後方互換）
 // ==========================================
 export async function createAutoPost(type: XPostType, phase?: XPostPhase): Promise<XPostRow> {
