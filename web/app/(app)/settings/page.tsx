@@ -179,7 +179,7 @@ export default function SettingsPage() {
   const { usage, refreshUsage } = useClientStore();
   const { theme, setTheme } = useThemePreference();
 
-  const { openManagement } = useRevenuecat();
+  const { openManagement, subscriptionStore } = useRevenuecat();
   const [portalLoading, setPortalLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -302,12 +302,19 @@ export default function SettingsPage() {
         {/* サブスクリプション */}
         {session?.user && (planCode === "STANDARD" || planCode === "PREMIUM") && (
           <SettingsGroup title={t("subscription")}>
-            <SettingsRow
-              label={t("manageSubscription")}
-              value={portalLoading ? t("portalLoading") : t("manageSubscriptionDesc")}
-              onClick={handlePortal}
-              loading={portalLoading}
-            />
+            {subscriptionStore === "app_store" ? (
+              <SettingsRow
+                label={t("manageSubscription")}
+                value={t("manageViaAppStoreDesc")}
+              />
+            ) : (
+              <SettingsRow
+                label={t("manageSubscription")}
+                value={portalLoading ? t("portalLoading") : t("manageSubscriptionDesc")}
+                onClick={handlePortal}
+                loading={portalLoading}
+              />
+            )}
           </SettingsGroup>
         )}
 

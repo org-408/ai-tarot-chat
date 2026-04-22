@@ -186,11 +186,15 @@ const TABS: { id: FilterTab; label: string }[] = [
   { id: "personal", label: "パーソナル" },
 ];
 
-const HistoryPage: React.FC = () => {
+interface HistoryPageProps {
+  initialReading?: Reading;
+}
+
+const HistoryPage: React.FC<HistoryPageProps> = ({ initialReading }) => {
   const { readings, readingsTotal, fetchReadings, error, currentPlan } =
     useClient();
   const { decks } = useMaster();
-  const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
+  const [selectedReading, setSelectedReading] = useState<Reading | null>(initialReading ?? null);
   const [selectedTarotistProfile, setSelectedTarotistProfile] =
     useState<Tarotist | null>(null);
   const [tab, setTab] = useState<FilterTab>("all");
