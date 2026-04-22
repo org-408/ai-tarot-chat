@@ -42,6 +42,7 @@ export type GenerateBlogPostResult = {
   excerpt: string;
   metaDescription: string;
   tags: string[];
+  metaExtracted: boolean;
 };
 
 // phase と投稿タイプに応じた本文末尾 CTA の指示を組み立てる
@@ -116,11 +117,12 @@ ${ctaInstruction}
 
 ${jsonSuffix}`;
   } else if (type === BlogPostType.BUILD_IN_PUBLIC) {
-    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」を個人開発しているエンジニアです。
-開発過程・技術選定・学びを #buildinpublic の文脈で日本語のブログ記事にします。
-記事はMarkdown形式・1000〜1500文字程度。技術的な内容を親しみやすく伝えてください。`;
-    userPrompt = `個人開発で得た学び・工夫・失敗談から1テーマ選び、開発者ブログ記事を書いてください。
-具体的な技術（Next.js / Capacitor / Prisma / AI SDK 等）に触れつつ、読み手に役立つ知見を残してください。
+    systemPrompt = `あなたはAIタロット占いアプリ「Ariadne（アリアドネ）」のブログライターです。
+開発中に追加した新機能・改善点・こだわりポイントを、一般ユーザー向けに分かりやすく紹介する記事を書きます。
+記事はMarkdown形式・1000〜1500文字程度。技術用語は使わず、ユーザー目線で「こんなことができるようになった」「こう使うと便利」という視点で書いてください。`;
+    userPrompt = `Ariadne AIタロット占いの新機能・改善・こだわりを1つテーマに選び、ユーザーが読んで「使ってみたい」と思えるブログ記事を書いてください。
+【テーマ例】新しい占い師キャラクターの特徴、スプレッドの追加、画面・操作感の改善、AI占いの読み解き精度向上など。
+技術的な実装方法ではなく、ユーザーにとってどんな体験が変わるか・どう便利になるかを中心に書いてください。
 ${ctaInstruction}
 
 ${jsonSuffix}`;
@@ -135,8 +137,9 @@ ${jsonSuffix}`;
     maxOutputTokens: 3000,
   });
 
-  // JSON部分を抽出
-  const jsonMatch = text.match(/\{[\s\S]*"title"[\s\S]*\}/);
+  // JSON部分を抽出（末尾の最後のマッチを使うことでコード例の { } に引っかからないようにする）
+  const jsonMatches = [...text.matchAll(/\{[\s\S]*?"title"[\s\S]*?\}/g)];
+  const jsonMatch = jsonMatches.at(-1);
   let meta: {
     title?: string;
     slug?: string;
@@ -145,11 +148,15 @@ ${jsonSuffix}`;
     tags?: string[];
   } = {};
   let content = text;
+  let metaExtracted = false;
 
   if (jsonMatch) {
     try {
       meta = JSON.parse(jsonMatch[0]);
-      content = text.slice(0, text.lastIndexOf(jsonMatch[0])).trim();
+      if (meta.title) {
+        content = text.slice(0, text.lastIndexOf(jsonMatch[0])).trim();
+        metaExtracted = true;
+      }
     } catch {
       // JSON解析失敗時はそのまま
     }
@@ -160,12 +167,13 @@ ${jsonSuffix}`;
     : ["タロット", "占い", "Ariadne"];
 
   return {
-    title: meta.title || "Ariadne ブログ記事",
+    title: meta.title || "下書き記事",
     slug: buildSlug(meta.slug),
     content: content || text,
     excerpt: meta.excerpt || text.slice(0, 120),
     metaDescription: meta.metaDescription || text.slice(0, 160),
     tags,
+    metaExtracted,
   };
 }
 
@@ -213,6 +221,7 @@ export async function createAutoPost(
   const resolvedPhase = phase ?? (await blogPostConfigRepository.get()).phase;
   const generated = await generateBlogContent(type, resolvedPhase, customPrompt);
 
+  const status = generated.metaExtracted ? BlogPostStatus.PUBLISHED : BlogPostStatus.DRAFT;
   const saved = await blogPostRepository.create({
     title: generated.title,
     slug: generated.slug,
@@ -220,14 +229,18 @@ export async function createAutoPost(
     excerpt: generated.excerpt,
     metaDescription: generated.metaDescription,
     tags: generated.tags,
-    status: BlogPostStatus.PUBLISHED,
+    status,
     postType: type,
     isAuto: true,
     prompt: customPrompt,
-    publishedAt: new Date(),
+    publishedAt: generated.metaExtracted ? new Date() : undefined,
   });
 
-  logger.info("ブログ記事自動生成・公開完了", { id: saved.id, title: saved.title, type, phase: resolvedPhase });
+  if (generated.metaExtracted) {
+    logger.info("ブログ記事自動生成・公開完了", { id: saved.id, title: saved.title, type, phase: resolvedPhase });
+  } else {
+    logger.warn("ブログ記事自動生成: メタデータ抽出失敗のためDRAFT保存", { id: saved.id, type, phase: resolvedPhase });
+  }
   return saved;
 }
 
