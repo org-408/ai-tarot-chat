@@ -35,6 +35,7 @@ const HomePage: React.FC<HomePageProps> = ({
   onNavigateToClara,
   onNavigateToTarotist,
   onNavigateToHistory,
+  onNavigateToReading,
   onChangePlan,
   isChangingPlan,
 }) => {
