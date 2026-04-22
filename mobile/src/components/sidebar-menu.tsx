@@ -94,7 +94,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
     },
     {
       id: "history",
-      label: "履歴",
+      label: "占い履歴",
       icon: "📋",
       available: currentPlan !== "GUEST",
       description: "過去の占い結果",

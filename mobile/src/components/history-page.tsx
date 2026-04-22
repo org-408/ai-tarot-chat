@@ -188,13 +188,19 @@ const TABS: { id: FilterTab; label: string }[] = [
 
 interface HistoryPageProps {
   initialReading?: Reading;
+  onInitialReadingConsumed?: () => void;
 }
 
-const HistoryPage: React.FC<HistoryPageProps> = ({ initialReading }) => {
+const HistoryPage: React.FC<HistoryPageProps> = ({
+  initialReading,
+  onInitialReadingConsumed,
+}) => {
   const { readings, readingsTotal, fetchReadings, error, currentPlan } =
     useClient();
   const { decks } = useMaster();
-  const [selectedReading, setSelectedReading] = useState<Reading | null>(initialReading ?? null);
+  const [selectedReading, setSelectedReading] = useState<Reading | null>(
+    initialReading ?? null,
+  );
   const [selectedTarotistProfile, setSelectedTarotistProfile] =
     useState<Tarotist | null>(null);
   const [tab, setTab] = useState<FilterTab>("all");
@@ -222,6 +228,12 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ initialReading }) => {
     setIsLoading(true);
     fetchReadings({ take: TAKE, skip: 0 }).finally(() => setIsLoading(false));
   }, [fetchReadings]);
+
+  useEffect(() => {
+    if (!initialReading) return;
+    setSelectedReading(initialReading);
+    onInitialReadingConsumed?.();
+  }, [initialReading, onInitialReadingConsumed]);
 
   const loadMore = async () => {
     if (isLoading || !hasMore) return;
