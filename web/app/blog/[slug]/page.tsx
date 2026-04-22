@@ -1,33 +1,58 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
+import remarkRehype from "remark-rehype";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeExternalLinks from "rehype-external-links";
+import rehypeStringify from "rehype-stringify";
 import { blogPostRepository } from "@/lib/server/repositories/blog-post";
 import { BlogPostStatus } from "@/lib/generated/prisma/client";
 
-// generateStaticParams を入れた際に CI の DB 未作成でビルドが落ちるのを防ぐ。
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
+
+const BASE_URL = process.env.AUTH_URL ?? "https://ariadne-ai.app";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await blogPostRepository.findBySlug(slug);
   if (!post || post.status !== BlogPostStatus.PUBLISHED) return {};
-  const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
 
   return {
-    title: `${post.title} — Ariadne - AI Tarot Chat`,
+    title: `${post.title} — Ariadne AIタロット占いブログ`,
     description: post.metaDescription ?? post.excerpt ?? undefined,
+    alternates: {
+      canonical: `${BASE_URL}/blog/${post.slug}`,
+      languages: { ja: `${BASE_URL}/blog/${post.slug}` },
+    },
     openGraph: {
       title: post.title,
       description: post.metaDescription ?? post.excerpt ?? undefined,
-      url: `${baseUrl}/blog/${post.slug}`,
+      url: `${BASE_URL}/blog/${post.slug}`,
       type: "article",
       publishedTime: post.publishedAt?.toISOString(),
       tags: post.tags,
-      images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : [],
+      images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : [{ url: `${BASE_URL}/tarotists/Ariadne.png` }],
     },
   };
+}
+
+async function markdownToHtml(md: string): Promise<string> {
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkBreaks)
+    .use(remarkRehype)
+    .use(rehypeSanitize)
+    .use(rehypeExternalLinks, { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] })
+    .use(rehypeStringify)
+    .process(md);
+  return String(result);
 }
 
 export default async function BlogPostPage({ params }: Props) {
@@ -38,7 +63,7 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
+  const htmlContent = await markdownToHtml(post.content);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -47,15 +72,21 @@ export default async function BlogPostPage({ params }: Props) {
     description: post.metaDescription ?? post.excerpt,
     datePublished: post.publishedAt?.toISOString(),
     dateModified: post.updatedAt.toISOString(),
-    url: `${baseUrl}/blog/${post.slug}`,
-    image: post.coverImageUrl,
+    url: `${BASE_URL}/blog/${post.slug}`,
+    image: post.coverImageUrl ?? `${BASE_URL}/tarotists/Ariadne.png`,
     keywords: post.tags.join(", "),
+    author: {
+      "@type": "Organization",
+      name: "Ariadne - AI Tarot Chat",
+      url: BASE_URL,
+    },
     publisher: {
       "@type": "Organization",
       name: "Ariadne - AI Tarot Chat",
       alternateName: "Ariadne AIタロット占い",
-      url: baseUrl,
+      url: BASE_URL,
     },
+    inLanguage: "ja",
   };
 
   return (
@@ -97,7 +128,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <div
         className="prose prose-zinc max-w-none prose-headings:font-bold prose-a:text-sky-600 prose-img:rounded-xl"
-        dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }}
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
 
       <footer className="mt-12 pt-8 border-t">
@@ -113,19 +144,4 @@ export default async function BlogPostPage({ params }: Props) {
       </footer>
     </main>
   );
-}
-
-// シンプルなMarkdown→HTML変換（改行・見出し・太字・箇条書きのみ）
-function markdownToHtml(md: string): string {
-  return md
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/^- (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/^(?!<[h|u|o|l])(.+)$/gm, "<p>$1</p>")
-    .replace(/<p><\/p>/g, "");
 }
