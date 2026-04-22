@@ -1,11 +1,12 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   configureRC,
   purchasePlan,
   getManagementURL,
+  getActiveSubscriptionStore,
   PurchasesError,
   ErrorCode,
 } from "../purchases";
@@ -13,10 +14,13 @@ import {
 export function useRevenuecat() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const [subscriptionStore, setSubscriptionStore] = useState<string | null>(null);
 
   // mobile と同じ user.id で RC を初期化（ユーザーが変わっても追従）
   useEffect(() => {
-    if (userId) configureRC(userId);
+    if (!userId) return;
+    configureRC(userId);
+    getActiveSubscriptionStore().then(setSubscriptionStore).catch(() => {});
   }, [userId]);
 
   const purchase = useCallback(
@@ -50,5 +54,5 @@ export function useRevenuecat() {
   const isUserCancelled = (e: unknown): boolean =>
     e instanceof PurchasesError && e.errorCode === ErrorCode.UserCancelledError;
 
-  return { purchase, openManagement, isUserCancelled };
+  return { purchase, openManagement, isUserCancelled, subscriptionStore };
 }

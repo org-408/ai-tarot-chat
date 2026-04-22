@@ -35,6 +35,7 @@ const HomePage: React.FC<HomePageProps> = ({
   onNavigateToClara,
   onNavigateToTarotist,
   onNavigateToHistory,
+  onNavigateToReading,
   onChangePlan,
   isChangingPlan,
 }) => {
@@ -269,7 +270,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <button
                   key={r.id}
                   type="button"
-                  onClick={onNavigateToHistory}
+                  onClick={() => onNavigateToReading(r)}
                   className="flex-shrink-0 w-36 bg-white rounded-xl border p-3 active:bg-gray-50 text-left"
                 >
                   <div className="flex items-center gap-2 mb-2">

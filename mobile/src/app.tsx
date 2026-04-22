@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
-import type { Plan } from "../../shared/lib/types";
+import type { Plan, Reading } from "../../shared/lib/types";
 import Header from "./components/header";
 import HomePage from "./components/home-page";
 import ReadingPage from "./components/reading-page";
@@ -151,6 +151,7 @@ function App() {
   // クイック占い: 占い結果保存完了まで / パーソナル占い: Phase2 開始〜完了まで
   const [isNavigationLocked, setIsNavigationLocked] = useState(false);
   const [showForceUnlockToast, setShowForceUnlockToast] = useState(false);
+  const [historyInitialReading, setHistoryInitialReading] = useState<Reading | null>(null);
 
   // 🔥 ロック中のメニュー長押しによる強制アンロック（ハング時の救済措置）
   const handleForceUnlock = useCallback(() => {
@@ -396,6 +397,9 @@ function App() {
       // changePlanが全てを処理（サインインが必要な場合も内部で処理）
       await changePlan(getPlan(newPlan)!);
       console.log("プラン変更成功");
+      if (newPlan === "PREMIUM") {
+        setPageType("personal");
+      }
     } catch (err) {
       console.error("プラン変更エラー:", err);
       // エラーは planChangeError で処理されるため、ここでは何もしない
@@ -559,7 +563,10 @@ function App() {
             onNavigateToClara={() => setPageType("clara")}
             onNavigateToTarotist={() => setPageType("tarotist")}
             onNavigateToHistory={() => setPageType("history")}
-            onNavigateToReading={() => setPageType("history")}
+            onNavigateToReading={(reading) => {
+              setHistoryInitialReading(reading);
+              setPageType("history");
+            }}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
           />
@@ -652,7 +659,7 @@ function App() {
           />
         );
       case "history":
-        return <HistoryPage />;
+        return <HistoryPage initialReading={historyInitialReading ?? undefined} />;
       case "settings":
         return (
           <SettingsPage
@@ -677,7 +684,10 @@ function App() {
             onNavigateToClara={() => setPageType("clara")}
             onNavigateToTarotist={() => setPageType("tarotist")}
             onNavigateToHistory={() => setPageType("history")}
-            onNavigateToReading={() => setPageType("history")}
+            onNavigateToReading={(reading) => {
+              setHistoryInitialReading(reading);
+              setPageType("history");
+            }}
             onChangePlan={handleChangePlan}
             isChangingPlan={isChangingPlan}
           />

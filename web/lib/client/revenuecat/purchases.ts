@@ -50,6 +50,19 @@ export async function getManagementURL(): Promise<string | null> {
   return webBillingURL ?? info.managementURL ?? null;
 }
 
+// アクティブなサブスクリプションのストア種別を返す。
+// "app_store" | "play_store" | "rc_billing" | その他 | null（未加入）
+export async function getActiveSubscriptionStore(): Promise<string | null> {
+  const info = await getCustomerInfo();
+  const now = new Date();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const subs = Object.values(info.subscriptionsByProductIdentifier) as any[];
+  const active = subs.find(
+    (s) => s.expiresDate == null || new Date(s.expiresDate) > now,
+  );
+  return active?.store ?? null;
+}
+
 // mobile の getEntitlementIdentifier() と対称
 export function planCodeFromEntitlements(
   active: Record<string, unknown>
