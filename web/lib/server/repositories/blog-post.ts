@@ -1,4 +1,4 @@
-import { BlogPostPhase, BlogPostStatus, BlogPostType } from "@/lib/generated/prisma/client";
+import { BlogPostPhase, BlogPostStatus, BlogPostType, FeatureQueueStatus } from "@/lib/generated/prisma/client";
 import { BaseRepository } from "./base";
 
 export type BlogPostRow = {
@@ -50,6 +50,17 @@ export type UpdateBlogPostInput = Partial<{
   publishedAt: Date | null;
 }>;
 
+export type BlogFeatureQueueRow = {
+  id: string;
+  description: string;
+  status: FeatureQueueStatus;
+  sortOrder: number;
+  publishedAt: Date | null;
+  blogPostId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 class BlogPostRepository extends BaseRepository {
   async findMany(opts: {
     status?: BlogPostStatus;
@@ -91,6 +102,32 @@ class BlogPostRepository extends BaseRepository {
       },
       orderBy: { scheduledAt: "asc" },
     });
+  }
+
+  async findByTypeAndDate(type: BlogPostType, date: Date): Promise<BlogPostRow | null> {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    return this.db.blogPost.findFirst({
+      where: {
+        postType: type,
+        isAuto: true,
+        createdAt: { gte: start, lte: end },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findRecentTitles(type: BlogPostType, limit: number = 30): Promise<string[]> {
+    const posts = await this.db.blogPost.findMany({
+      where: { postType: type, isAuto: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: { title: true },
+    });
+    return posts.map((p) => p.title);
   }
 
   async count(status?: BlogPostStatus): Promise<number> {
@@ -186,4 +223,40 @@ class BlogPostConfigRepository extends BaseRepository {
 }
 
 export const blogPostConfigRepository = new BlogPostConfigRepository();
+
+// ==========================================
+// BlogFeatureQueue (機能紹介ネタキュー)
+// ==========================================
+
+class BlogFeatureQueueRepository extends BaseRepository {
+  async findNextPending(): Promise<BlogFeatureQueueRow | null> {
+    return this.db.blogFeatureQueue.findFirst({
+      where: { status: FeatureQueueStatus.PENDING },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+  }
+
+  async markPublished(id: string, blogPostId: string): Promise<void> {
+    await this.db.blogFeatureQueue.update({
+      where: { id },
+      data: {
+        status: FeatureQueueStatus.PUBLISHED,
+        publishedAt: new Date(),
+        blogPostId,
+      },
+    });
+  }
+
+  async create(description: string, sortOrder?: number): Promise<BlogFeatureQueueRow> {
+    return this.db.blogFeatureQueue.create({
+      data: { description, sortOrder: sortOrder ?? 0 },
+    });
+  }
+
+  async countPending(): Promise<number> {
+    return this.db.blogFeatureQueue.count({ where: { status: FeatureQueueStatus.PENDING } });
+  }
+}
+
+export const blogFeatureQueueRepository = new BlogFeatureQueueRepository();
 export { BlogPostPhase };

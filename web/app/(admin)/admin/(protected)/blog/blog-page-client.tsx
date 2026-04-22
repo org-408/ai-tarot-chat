@@ -48,14 +48,16 @@ const STATUS_COLOR: Record<BlogPostStatus, string> = {
 };
 
 const TYPE_LABEL: Record<BlogPostType, string> = {
+  DAILY_CARD: "今日の一枚",
   TAROT_GUIDE: "タロット解説",
   TAROT_TIP: "タロット豆知識",
   APP_PROMO: "アプリ紹介",
-  BUILD_IN_PUBLIC: "開発進捗",
+  BUILD_IN_PUBLIC: "機能紹介",
   MANUAL: "手動",
 };
 
 const TYPE_COLOR: Record<BlogPostType, string> = {
+  DAILY_CARD: "bg-amber-100 text-amber-700",
   TAROT_GUIDE: "bg-violet-100 text-violet-700",
   TAROT_TIP: "bg-teal-100 text-teal-700",
   APP_PROMO: "bg-orange-100 text-orange-700",
@@ -65,10 +67,11 @@ const TYPE_COLOR: Record<BlogPostType, string> = {
 
 const POST_TYPE_OPTIONS: { value: BlogPostType; label: string }[] = [
   { value: BlogPostType.MANUAL, label: "手動（AI生成なし）" },
+  { value: BlogPostType.DAILY_CARD, label: "今日の一枚" },
   { value: BlogPostType.TAROT_GUIDE, label: "タロット解説" },
   { value: BlogPostType.TAROT_TIP, label: "タロット豆知識" },
   { value: BlogPostType.APP_PROMO, label: "アプリ紹介" },
-  { value: BlogPostType.BUILD_IN_PUBLIC, label: "開発進捗 (#buildinpublic)" },
+  { value: BlogPostType.BUILD_IN_PUBLIC, label: "機能紹介" },
 ];
 
 type Props = {

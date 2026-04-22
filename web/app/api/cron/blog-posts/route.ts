@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BlogPostPhase, BlogPostType } from "@/lib/generated/prisma/client";
 import * as blogPostService from "@/lib/server/services/blog-post";
 import { blogPostConfigRepository } from "@/lib/server/repositories/blog-post";
 import logger from "@/lib/server/logger/logger";
 
 // GitHub Actions から定期的に叩かれる Cron エンドポイント
 // Authorization: Bearer <CRON_SECRET> で保護
-// Body: { type?: BlogPostType } で記事タイプを明示指定、省略時はphaseに基づいて自動選択
+// 1日1回実行: DAILY_CARD + TAROT_TIP + BUILD_IN_PUBLIC/APP_PROMO + TAROT_GUIDE の4記事を生成
 
 export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // 自動公開が有効かチェック
     const config = await blogPostConfigRepository.get();
     if (!config.autoPostEnabled) {
       logger.info("Cron: ブログ自動公開が無効のためスキップ");
@@ -30,28 +28,27 @@ export async function POST(req: NextRequest) {
     const { published, failed } = await blogPostService.processDue();
     logger.info("Cron: 予約ブログ記事処理完了", { published, failed });
 
-    // リクエストボディで指定されたタイプで自動生成
-    let body: { type?: string } = {};
-    try { body = await req.json(); } catch { /* body なし */ }
+    // 1日4投稿を一括生成
+    const { dailyCard, tarotTip, feature, tarotGuide } = await blogPostService.createDailyBlogPosts(
+      config.phase,
+    );
 
-    // 明示指定がなければ、phaseに応じてタイプをランダム選択
-    const phaseTypes = blogPostService.getAutoPostTypesForPhase(config.phase ?? BlogPostPhase.POST_LAUNCH);
-    const typeMap: Record<string, BlogPostType> = {
-      TAROT_GUIDE: BlogPostType.TAROT_GUIDE,
-      TAROT_TIP: BlogPostType.TAROT_TIP,
-      APP_PROMO: BlogPostType.APP_PROMO,
-      BUILD_IN_PUBLIC: BlogPostType.BUILD_IN_PUBLIC,
-    };
-    const type = (body.type ? typeMap[body.type] : undefined)
-      ?? phaseTypes[Math.floor(Math.random() * phaseTypes.length)];
-
-    const autoPost = await blogPostService.createAutoPost(type, config.phase);
-    logger.info("Cron: ブログ自動投稿完了", { id: autoPost.id, type, phase: config.phase, status: autoPost.status });
+    logger.info("Cron: ブログ自動投稿完了", {
+      dailyCard: { id: dailyCard.id, status: dailyCard.status },
+      tarotTip: { id: tarotTip.id, status: tarotTip.status },
+      feature: { id: feature.id, type: feature.postType, status: feature.status },
+      tarotGuide: { id: tarotGuide.id, status: tarotGuide.status },
+    });
 
     return NextResponse.json({
       ok: true,
       scheduled: { published, failed },
-      autoPost: { id: autoPost.id, type: autoPost.postType, status: autoPost.status },
+      posts: {
+        dailyCard: { id: dailyCard.id, status: dailyCard.status },
+        tarotTip: { id: tarotTip.id, status: tarotTip.status },
+        feature: { id: feature.id, type: feature.postType, status: feature.status },
+        tarotGuide: { id: tarotGuide.id, status: tarotGuide.status },
+      },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
