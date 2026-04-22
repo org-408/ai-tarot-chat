@@ -2,11 +2,14 @@ name: Blog Auto Post
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 10:00 JST → 自動で1記事生成・公開
+    - cron: '0 22 * * *'   # 07:00 JST → DAILY_CARD
+    - cron: '0 3 * * *'    # 12:00 JST → TAROT_TIP
+    - cron: '0 6 * * *'    # 15:00 JST → TAROT_GUIDE
+    - cron: '0 9 * * *'    # 18:00 JST → BUILD_IN_PUBLIC / APP_PROMO
   workflow_dispatch:
     inputs:
       type:
-        description: '記事タイプ (TAROT_GUIDE / TAROT_TIP / APP_PROMO / BUILD_IN_PUBLIC)'
+        description: '記事タイプ (DAILY_CARD / TAROT_TIP / TAROT_GUIDE / APP_PROMO / BUILD_IN_PUBLIC)'
         required: false
         default: ''
 
@@ -15,12 +18,27 @@ jobs:
     name: Trigger blog auto post
     runs-on: ubuntu-latest
     steps:
+      - name: Determine post type
+        id: type
+        run: |
+          if [ -n "${{ github.event.inputs.type }}" ]; then
+            echo "type=${{ github.event.inputs.type }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(TZ=Asia/Tokyo date +%H)
+            if [ "$HOUR" = "07" ]; then
+              echo "type=DAILY_CARD" >> $GITHUB_OUTPUT
+            elif [ "$HOUR" = "12" ]; then
+              echo "type=TAROT_TIP" >> $GITHUB_OUTPUT
+            elif [ "$HOUR" = "15" ]; then
+              echo "type=TAROT_GUIDE" >> $GITHUB_OUTPUT
+            else
+              echo "type=BUILD_IN_PUBLIC" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - name: Call blog post cron endpoint
         run: |
-          BODY='{}'
-          if [ -n "${{ github.event.inputs.type }}" ]; then
-            BODY="{\"type\":\"${{ github.event.inputs.type }}\"}"
-          fi
+          BODY="{\"type\":\"${{ steps.type.outputs.type }}\"}"
           STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
             -X POST "${{ secrets.APP_URL }}/api/cron/blog-posts" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \

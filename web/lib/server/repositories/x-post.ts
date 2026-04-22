@@ -13,6 +13,7 @@ export type XPostRow = {
   isAuto: boolean;
   prompt: string | null;
   mediaPath: string | null;
+  linkedBlogPostId: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -25,6 +26,7 @@ export type CreateXPostInput = {
   isAuto?: boolean;
   prompt?: string;
   mediaPath?: string | null;
+  linkedBlogPostId?: string | null;
 };
 
 export type UpdateXPostInput = Partial<{
@@ -90,6 +92,22 @@ class XPostRepository extends BaseRepository {
     return count > 0;
   }
 
+  async findByTypeAndDate(type: XPostType, date: Date): Promise<XPostRow | null> {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    return this.db.xPost.findFirst({
+      where: {
+        postType: type,
+        isAuto: true,
+        createdAt: { gte: start, lte: end },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   async create(data: CreateXPostInput): Promise<XPostRow> {
     return this.db.xPost.create({
       data: {
@@ -100,6 +118,7 @@ class XPostRepository extends BaseRepository {
         isAuto: data.isAuto ?? false,
         prompt: data.prompt ?? null,
         mediaPath: data.mediaPath ?? null,
+        linkedBlogPostId: data.linkedBlogPostId ?? null,
       },
     });
   }
