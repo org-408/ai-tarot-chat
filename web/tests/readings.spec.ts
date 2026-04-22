@@ -208,6 +208,23 @@ async function getAnyTarotCard() {
   return result.rows[0];
 }
 
+async function fetchClientReadings(
+  request: import("@playwright/test").APIRequestContext,
+  token: string
+): Promise<{
+  readings: Array<{ id: string; clientId: string; deviceId: string | null }>;
+  total: number;
+}> {
+  const res = await request.get("/api/clients/readings", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  expect(res.status()).toBe(200);
+  return (await res.json()) as {
+    readings: Array<{ id: string; clientId: string; deviceId: string | null }>;
+    total: number;
+  };
+}
+
 // ─────────────────────────────────────────────
 // テスト
 // ─────────────────────────────────────────────
@@ -701,13 +718,14 @@ test.describe("履歴 API: Client 中心の取得", () => {
     const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
 
     // 通常の API 呼び出しで Reading を保存
-    await callReadingApi(request, "/api/readings/simple", {
+    const saveRes = await callReadingApi(request, "/api/readings/simple", {
       token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
       spread,
       category,
     });
+    expect(saveRes.status()).toBe(200);
 
     // この Reading の deviceId を NULL に書き換え（Web 経路を模擬）
     await pool.query(
@@ -715,16 +733,14 @@ test.describe("履歴 API: Client 中心の取得", () => {
       [premiumClientId]
     );
 
-    // 履歴 API で取得
-    const res = await request.get("/api/clients/readings", {
-      headers: { Authorization: `Bearer ${premiumApiToken}` },
-    });
-    expect(res.status()).toBe(200);
+    await expect
+      .poll(async () => {
+        const body = await fetchClientReadings(request, premiumApiToken);
+        return body.readings.length;
+      })
+      .toBeGreaterThan(0);
 
-    const body = (await res.json()) as {
-      readings: Array<{ id: string; clientId: string; deviceId: string | null }>;
-      total: number;
-    };
+    const body = await fetchClientReadings(request, premiumApiToken);
 
     expect(body.readings.length).toBeGreaterThan(0);
     const latest = body.readings[0];
@@ -736,23 +752,23 @@ test.describe("履歴 API: Client 中心の取得", () => {
   test("deviceId あり Reading も /api/clients/readings で取得できる", async ({ request }) => {
     const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
 
-    await callReadingApi(request, "/api/readings/simple", {
+    const saveRes = await callReadingApi(request, "/api/readings/simple", {
       token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
       spread,
       category,
     });
+    expect(saveRes.status()).toBe(200);
 
-    const res = await request.get("/api/clients/readings", {
-      headers: { Authorization: `Bearer ${premiumApiToken}` },
-    });
-    expect(res.status()).toBe(200);
+    await expect
+      .poll(async () => {
+        const body = await fetchClientReadings(request, premiumApiToken);
+        return body.readings.length;
+      })
+      .toBeGreaterThan(0);
 
-    const body = (await res.json()) as {
-      readings: Array<{ id: string; clientId: string; deviceId: string | null }>;
-      total: number;
-    };
+    const body = await fetchClientReadings(request, premiumApiToken);
 
     expect(body.readings.length).toBeGreaterThan(0);
     const latest = body.readings[0];
