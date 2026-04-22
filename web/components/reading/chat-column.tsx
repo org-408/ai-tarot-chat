@@ -79,6 +79,7 @@ export function ChatColumn({
           高さ 40vh の正方形コンテナを中央寄せで表示する。 */}
       <motion.div
         className="flex-shrink-0 overflow-hidden"
+        initial={{ height: isPortraitCollapsed ? 0 : "40vh" }}
         animate={{ height: isPortraitCollapsed ? 0 : "40vh" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
