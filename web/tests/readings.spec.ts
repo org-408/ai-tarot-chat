@@ -201,6 +201,13 @@ async function getReadingCount(clientId: string) {
   return parseInt(result.rows[0].count, 10);
 }
 
+async function getAnyTarotCard() {
+  const result = await pool.query<{ id: string; code: string }>(
+    `SELECT id, code FROM "TarotCard" ORDER BY "createdAt" ASC LIMIT 1`
+  );
+  return result.rows[0];
+}
+
 // ─────────────────────────────────────────────
 // テスト
 // ─────────────────────────────────────────────
@@ -525,6 +532,101 @@ test.describe("Reading/ChatMessage 所有関係: Web 経路（Device なし）",
     expect(reading).not.toBeNull();
     // 合成 web:xxx は Device テーブルに無いので紐付かず null で保存される
     expect(reading!.deviceId).toBeNull();
+  });
+});
+
+test.describe("Reading 履歴 API: cards の復元に必要な情報を返す", () => {
+  test("一覧 API は cards.card を含む", async ({ request }) => {
+    const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
+    const tarotCard = await getAnyTarotCard();
+
+    await callReadingApi(request, "/api/readings/simple", {
+      token: premiumApiToken,
+      messages: [u("msg_1", "占ってください。")],
+      tarotist,
+      spread,
+      category,
+      drawnCards: [
+        {
+          id: "drawn_1",
+          cardId: tarotCard.id,
+          x: 0,
+          y: 0,
+          order: 0,
+          position: "現在",
+          description: "現在の状況",
+          isHorizontal: false,
+          isReversed: false,
+          keywords: ["test"],
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    });
+
+    const res = await request.get("/api/clients/readings", {
+      headers: { Authorization: `Bearer ${premiumApiToken}` },
+    });
+    expect(res.status()).toBe(200);
+
+    const body = (await res.json()) as {
+      readings: Array<{
+        clientId: string;
+        cards: Array<{ cardId: string; card?: { code?: string } }>;
+      }>;
+      total: number;
+    };
+
+    expect(body.readings.length).toBeGreaterThan(0);
+    expect(body.readings[0].clientId).toBe(premiumClientId);
+    expect(body.readings[0].cards.length).toBeGreaterThan(0);
+    expect(body.readings[0].cards[0].cardId).toBe(tarotCard.id);
+    expect(body.readings[0].cards[0].card?.code).toBe(tarotCard.code);
+  });
+
+  test("詳細 API は cards.card を含む", async ({ request }) => {
+    const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
+    const tarotCard = await getAnyTarotCard();
+
+    await callReadingApi(request, "/api/readings/simple", {
+      token: premiumApiToken,
+      messages: [u("msg_1", "占ってください。")],
+      tarotist,
+      spread,
+      category,
+      drawnCards: [
+        {
+          id: "drawn_1",
+          cardId: tarotCard.id,
+          x: 0,
+          y: 0,
+          order: 0,
+          position: "現在",
+          description: "現在の状況",
+          isHorizontal: false,
+          isReversed: true,
+          keywords: ["test"],
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    });
+
+    const latest = await getLatestReading(premiumClientId);
+    expect(latest).not.toBeNull();
+
+    const res = await request.get(`/api/clients/readings/${latest!.id}`, {
+      headers: { Authorization: `Bearer ${premiumApiToken}` },
+    });
+    expect(res.status()).toBe(200);
+
+    const body = (await res.json()) as {
+      id: string;
+      cards: Array<{ cardId: string; card?: { code?: string } }>;
+    };
+
+    expect(body.id).toBe(latest!.id);
+    expect(body.cards.length).toBeGreaterThan(0);
+    expect(body.cards[0].cardId).toBe(tarotCard.id);
+    expect(body.cards[0].card?.code).toBe(tarotCard.code);
   });
 });
 

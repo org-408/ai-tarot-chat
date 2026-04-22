@@ -1,26 +1,18 @@
 "use client";
 
-import type { Reading } from "@shared/lib/types";
+import type { Reading, TarotCard } from "@shared/lib/types";
 import { useClientStore } from "@/lib/client/stores/client-store";
+import { useMasterStore } from "@/lib/client/stores/master-store";
+import {
+  buildTarotCardMap,
+  hydrateDrawnCards,
+} from "@/lib/client/utils/drawn-card";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 
 type FilterTab = "all" | "quick" | "personal";
-
-function formatDate(
-  date: Date | string,
-  t: ReturnType<typeof useTranslations>
-): string {
-  const d = date instanceof Date ? date : new Date(date);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return t("today");
-  if (diffDays === 1) return t("yesterday");
-  return t("daysAgo", { count: diffDays });
-}
 
 function groupByYearMonth(readings: Reading[]) {
   const groups = new Map<string, Map<string, Reading[]>>();
@@ -36,8 +28,17 @@ function groupByYearMonth(readings: Reading[]) {
   return groups;
 }
 
-function ReadingCard({ reading }: { reading: Reading }) {
-  const drawnCards = reading.cards ?? [];
+function ReadingCard({
+  reading,
+  cardMap,
+}: {
+  reading: Reading;
+  cardMap: Map<string, TarotCard>;
+}) {
+  const drawnCards = hydrateDrawnCards(
+    reading.cards,
+    cardMap,
+  );
 
   return (
     <Link href={`/history/${reading.id}`}>
@@ -130,12 +131,19 @@ export default function HistoryPage() {
   const t = useTranslations("history");
   const { readings, readingsTotal, isLoadingReadings, fetchReadings } =
     useClientStore();
+  const masterData = useMasterStore((state) => state.data);
+  const initMaster = useMasterStore((state) => state.init);
   const [tab, setTab] = useState<FilterTab>("all");
   const [openYears, setOpenYears] = useState<Set<string>>(new Set());
+  const cardMap = buildTarotCardMap(masterData);
 
   useEffect(() => {
     fetchReadings();
   }, [fetchReadings]);
+
+  useEffect(() => {
+    void initMaster();
+  }, [initMaster]);
 
   const filtered = readings.filter((r) => {
     if (tab === "quick") return !r.customQuestion;
@@ -222,7 +230,7 @@ export default function HistoryPage() {
                             </p>
                             <div className="space-y-2">
                               {monthReadings.map((r) => (
-                                <ReadingCard key={r.id} reading={r} />
+                                <ReadingCard key={r.id} reading={r} cardMap={cardMap} />
                               ))}
                             </div>
                           </div>
