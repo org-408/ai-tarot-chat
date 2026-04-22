@@ -366,8 +366,8 @@ export function BlogPageClient({ initialPosts, totalCount, initialAutoPostEnable
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {autoPostEnabled
               ? phase === BlogPostPhase.PRE_LAUNCH
-                ? "毎日 10:00 JST に開発進捗・タロット解説・豆知識を自動生成して公開します"
-                : "毎日 10:00 JST にタロット解説・豆知識・アプリ紹介を自動生成して公開します"
+                ? "毎日 07:00 / 12:00 / 15:00 / 18:00 JST に「今日の一枚・豆知識・タロット解説・機能紹介」の4本を自動生成して公開します"
+                : "毎日 07:00 / 12:00 / 15:00 / 18:00 JST に「今日の一枚・豆知識・タロット解説・アプリ紹介」の4本を自動生成して公開します"
               : "チェックすると GitHub Actions による定時自動公開が有効になります"}
           </p>
           {autoPostError && (
@@ -402,8 +402,8 @@ export function BlogPageClient({ initialPosts, totalCount, initialAutoPostEnable
           </div>
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {phase === BlogPostPhase.PRE_LAUNCH
-              ? "自動公開: 開発進捗 (#buildinpublic) + タロット解説 + 豆知識"
-              : "自動公開: タロット解説 + 豆知識 + アプリ紹介"}
+              ? "自動公開: 今日の一枚 + 豆知識 + タロット解説 + 機能紹介（Ariadne 公式運営トーン）"
+              : "自動公開: 今日の一枚 + 豆知識 + タロット解説 + アプリ紹介（Ariadne 公式運営トーン）"}
           </p>
           {phaseError && <p className="text-xs text-red-500 mt-1 ml-7">{phaseError}</p>}
         </div>
@@ -655,8 +655,9 @@ export function BlogPageClient({ initialPosts, totalCount, initialAutoPostEnable
             <p className="font-medium mb-2">🤖 自動公開について</p>
             <ul className="space-y-1 text-xs text-zinc-500 list-disc list-inside">
               <li>上のトグルを ON にすると GitHub Actions による定時自動公開が有効になります</li>
-              <li>毎日 10:00 JST にフェーズに応じた記事タイプからランダムで1記事生成・公開</li>
-              <li>毎回 AI が内容を自動生成するので同じ記事は繰り返しません</li>
+              <li>07:00 = 今日の一枚 / 12:00 = タロット豆知識 / 15:00 = タロット解説 / 18:00 = 機能紹介（ローンチ前）または アプリ紹介（ローンチ後）（いずれも JST）</li>
+              <li>AI モデルは <code className="bg-zinc-100 px-1 rounded">claude-sonnet-4-6</code>。過去タイトルを参照して内容が重複しないよう生成します</li>
+              <li>同日の X 投稿（07:30 / 12:30 / 18:30）は対応するブログ記事を元に生成され、記事 URL が末尾に添えられます</li>
               <li>GitHub Secrets に <code className="bg-zinc-100 px-1 rounded">APP_URL</code> と <code className="bg-zinc-100 px-1 rounded">CRON_SECRET</code> を設定してください</li>
             </ul>
           </div>

@@ -45,10 +45,10 @@ const STATUS_COLOR: Record<XPostStatus, string> = {
 };
 
 const TYPE_LABEL: Record<XPostType, string> = {
-  DAILY_CARD: "今日のタロット",
-  APP_PROMO: "アプリ宣伝",
+  DAILY_CARD: "今日の一枚",
+  APP_PROMO: "アプリ紹介",
   TAROT_TIP: "タロット豆知識",
-  BUILD_IN_PUBLIC: "開発進捗",
+  BUILD_IN_PUBLIC: "機能紹介",
   MANUAL: "手動",
 };
 
@@ -62,10 +62,10 @@ const TYPE_COLOR: Record<XPostType, string> = {
 
 const POST_TYPE_OPTIONS: { value: XPostType; label: string }[] = [
   { value: XPostType.MANUAL, label: "手動（AI生成なし）" },
-  { value: XPostType.DAILY_CARD, label: "今日のタロット" },
-  { value: XPostType.APP_PROMO, label: "アプリ宣伝" },
+  { value: XPostType.DAILY_CARD, label: "今日の一枚" },
+  { value: XPostType.APP_PROMO, label: "アプリ紹介" },
   { value: XPostType.TAROT_TIP, label: "タロット豆知識" },
-  { value: XPostType.BUILD_IN_PUBLIC, label: "開発進捗 (#buildinpublic)" },
+  { value: XPostType.BUILD_IN_PUBLIC, label: "機能紹介 (#buildinpublic)" },
 ];
 
 const MAX_CHARS = 280;
@@ -300,8 +300,8 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {autoPostEnabled
               ? phase === XPostPhase.PRE_LAUNCH
-                ? "毎日 9:00・12:00・18:00 に自動投稿します（末尾に /download への誘導を付与）"
-                : "毎日 9:00・12:00・18:00 に今日のタロット・豆知識・アプリ宣伝を自動投稿します"
+                ? "毎日 07:30 / 12:30 / 18:30 JST に「今日の一枚・豆知識・機能紹介」を同日のブログ記事と連動して自動投稿します（機能紹介末尾に /download CTA を付与）"
+                : "毎日 07:30 / 12:30 / 18:30 JST に「今日の一枚・豆知識・アプリ紹介」を同日のブログ記事と連動して自動投稿します"
               : "チェックすると GitHub Actions による定時自動投稿が有効になります"}
           </p>
           {autoPostError && (
@@ -336,8 +336,8 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
           </div>
           <p className="text-xs text-zinc-500 mt-1 ml-7">
             {phase === XPostPhase.PRE_LAUNCH
-              ? "今日のタロット・豆知識・アプリ宣伝。末尾に /download への事前登録 CTA を付与（画像は今日のタロットに自動添付）"
-              : "今日のタロット・豆知識・アプリ宣伝（画像は今日のタロットに自動添付）"}
+              ? "今日の一枚 + タロット豆知識 + 機能紹介（Ariadne 公式運営トーン）。機能紹介の末尾に /download 事前登録 CTA を付与。ブログ記事 URL を本文末尾に添付（今日の一枚はカード画像自動添付）"
+              : "今日の一枚 + タロット豆知識 + アプリ紹介（Ariadne 公式運営トーン）。ブログ記事 URL を本文末尾に添付（今日の一枚はカード画像自動添付）"}
           </p>
           {phaseError && <p className="text-xs text-red-500 mt-1 ml-7">{phaseError}</p>}
         </div>
@@ -536,8 +536,9 @@ export function XPostsPageClient({ initialPosts, totalCount, twitterConfigured, 
             <p className="font-medium mb-2">🤖 自動投稿について</p>
             <ul className="space-y-1 text-xs text-zinc-500 list-disc list-inside">
               <li>上のトグルを ON にすると GitHub Actions による定時自動投稿が有効になります</li>
-              <li>9:00 = 今日のタロット / 12:00 = タロット豆知識 / 18:00 = アプリ宣伝（いずれも JST）</li>
-              <li>毎回 AI が内容を自動生成するので同じ文章は繰り返しません</li>
+              <li>07:30 = 今日の一枚 / 12:30 = タロット豆知識 / 18:30 = 機能紹介（ローンチ前）または アプリ紹介（ローンチ後）（いずれも JST）</li>
+              <li>各投稿は同日ブログ（07:00 / 12:00 / 18:00）の 30 分後に発火し、対応するブログ記事を元に 140 文字以内で生成・記事 URL を添付します</li>
+              <li>「今日の一枚」はブログ側で引いたカード画像（正位置／逆位置）を自動で添付します</li>
               <li>GitHub Secrets に <code className="bg-zinc-100 px-1 rounded">APP_URL</code> と <code className="bg-zinc-100 px-1 rounded">CRON_SECRET</code> を設定してください</li>
             </ul>
           </div>
