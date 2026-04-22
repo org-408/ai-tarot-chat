@@ -44,7 +44,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   onNavigateToClara,
 }) => {
   const {
-    selectedTargetMode,
+    selectedPersonalTargetMode,
     selectedPersonalTarotist,
     selectedSpread,
     drawnCards,
@@ -52,7 +52,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     isRevealingCompleted,
     setIsRevealingCompleted,
     setUpperViewerMode,
-    setSelectedTargetMode,
+    setSelectedPersonalTargetMode,
     setIsPersonal,
     init,
   } = useSalon();
@@ -76,12 +76,12 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setIsPersonal(true); // init() が isPersonal:false をセットするため必ず後に上書き
     // パーソナル専用占い師が未選択 or 非PREMIUM なら占い師選択画面へ強制遷移
     if (!selectedPersonalTarotist || selectedPersonalTarotist.plan?.code !== "PREMIUM") {
-      setSelectedTargetMode("tarotist");
+      setSelectedPersonalTargetMode("tarotist");
     }
     setChatResetKey((current) => (current === null ? 0 : current + 1));
     // selectedPersonalTarotist.plan?.code はセッション中の再初期化を防ぐため意図的に除外
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canStartPersonal, init, setIsPersonal, setSelectedTargetMode]);
+  }, [canStartPersonal, init, setIsPersonal, setSelectedPersonalTargetMode]);
 
   // アンマウント時のみ isPersonal をリセット（canStartPersonal 変化時には発火させない）
   useEffect(() => {
@@ -217,7 +217,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   // ===== Chat Phase =====
   return (
     <div className="main-container">
-      {selectedTargetMode === "tarotist" ? (
+      {selectedPersonalTargetMode === "tarotist" ? (
         <TarotistCarouselPortrait
           masterData={masterData}
           currentPlan={currentPlan}

@@ -34,12 +34,19 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     setSelectedPersonalTarotist,
     selectedTargetMode,
     setSelectedTargetMode,
+    selectedPersonalTargetMode,
+    setSelectedPersonalTargetMode,
     isPersonal,
   } = useSalonStore();
 
   // isPersonal に応じて選択状態・更新関数を切り替え
   const activeSelected = isPersonal ? selectedPersonalTarotist : selectedTarotist;
   const setActiveSelected = isPersonal ? setSelectedPersonalTarotist : setSelectedTarotist;
+  // クイック / パーソナルで targetMode も分離して保持する
+  const activeTargetMode = isPersonal ? selectedPersonalTargetMode : selectedTargetMode;
+  const setActiveTargetMode = isPersonal
+    ? setSelectedPersonalTargetMode
+    : setSelectedTargetMode;
 
   // 占い師の取得とフィルタリング
   const availableTarotists = useMemo(() => {
@@ -88,15 +95,15 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
   const handleSelectTarotist = (tarotist: Tarotist) => {
     setActiveSelected(tarotist);
-    setSelectedTargetMode("portrait");
+    setActiveTargetMode("portrait");
   };
 
   // selectModeが変わった時に現在の占い師位置にスクロール
   useEffect(() => {
     if (!emblaApi || !activeSelected) return;
     console.log(
-      "[TarotistPortrait] selectedTargetMode or activeSelected changed",
-      selectedTargetMode,
+      "[TarotistPortrait] activeTargetMode or activeSelected changed",
+      activeTargetMode,
       activeSelected
     );
 
@@ -113,7 +120,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
     if (selectedIndex !== currentIndex) {
       emblaApi.scrollTo(selectedIndex, true); // ← jump=trueで即座に切り替え
     }
-  }, [availableTarotists, emblaApi, selectedTargetMode, activeSelected]);
+  }, [availableTarotists, emblaApi, activeTargetMode, activeSelected]);
 
   if (availableTarotists.length === 0) {
     return (
@@ -134,7 +141,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   };
 
   // チャットモード - 肖像画表示
-  if (selectedTargetMode !== "tarotist" && activeSelected) {
+  if (activeTargetMode !== "tarotist" && activeSelected) {
     const colors = getTarotistColor(activeSelected);
 
     return (
@@ -214,7 +221,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
           {/* 占い師変更ボタン - 右下にひっそり配置 */}
           {!readonly && (
             <button
-              onClick={() => setSelectedTargetMode("tarotist")}
+              onClick={() => setActiveTargetMode("tarotist")}
               className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 transition-all shadow-md"
             >
               占い師を変更

@@ -261,22 +261,25 @@ function App() {
   }, [planChangeError]);
 
   // 🔥 選択中占い師（handleStartReading で OFFLINE 判定に使用）
-  const { selectedTarotist, selectedPersonalTarotist, setSelectedTarotist, setSelectedPersonalTarotist, setSelectedTargetMode } = useSalon();
+  const {
+    selectedTarotist,
+    selectedPersonalTarotist,
+    setSelectedTarotist,
+    setSelectedPersonalTarotist,
+    setSelectedTargetMode,
+    setSelectedPersonalTargetMode,
+  } = useSalon();
 
   // 起動時・プラン変更時: 現プランで使えない占い師を未選択 + 占い師選択モードに戻す
   useEffect(() => {
     if (!currentPlan) return;
-    let cleared = false;
     if (selectedTarotist?.plan && selectedTarotist.plan.no > currentPlan.no) {
       setSelectedTarotist(null);
-      cleared = true;
+      setSelectedTargetMode("tarotist");
     }
     if (selectedPersonalTarotist?.plan && selectedPersonalTarotist.plan.no > currentPlan.no) {
       setSelectedPersonalTarotist(null);
-      cleared = true;
-    }
-    if (cleared) {
-      setSelectedTargetMode("tarotist");
+      setSelectedPersonalTargetMode("tarotist");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlan?.no]);
