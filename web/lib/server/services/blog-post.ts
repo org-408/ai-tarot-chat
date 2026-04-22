@@ -233,7 +233,7 @@ export async function createAutoPost(
     postType: type,
     isAuto: true,
     prompt: customPrompt,
-    publishedAt: generated.metaExtracted ? new Date() : null,
+    publishedAt: generated.metaExtracted ? new Date() : undefined,
   });
 
   if (generated.metaExtracted) {
