@@ -65,7 +65,13 @@
     "revealAll": "Reveal All Cards",
     "allRevealed": "All cards revealed",
     "title": "Tarot Reading",
-    "loadError": "Failed to load reading"
+    "loadError": "Failed to load reading",
+    "tabSpread": "Spread",
+    "tabIndividual": "Individual",
+    "cardDetailPosition": "Position",
+    "cardDetailCard": "Card",
+    "cardDetailKeywords": "Keywords",
+    "cardDetailReversed": "Reversed"
   },
   "personal": {
     "title": "Personal Reading",
