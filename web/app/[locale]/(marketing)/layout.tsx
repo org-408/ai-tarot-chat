@@ -94,7 +94,8 @@ export default async function MarketingLayout({ children, params }: Props) {
             {/* ロゴ */}
             <Link
               href="/"
-              className="flex items-center gap-2 text-lg font-bold text-purple-900"
+              className="flex items-center gap-2 text-lg font-bold"
+              style={{ color: "#87CEEB" }}
             >
               <img
                 src="/cards/back.png"
@@ -142,7 +143,10 @@ export default async function MarketingLayout({ children, params }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* ブランド */}
             <div>
-              <div className="flex items-center gap-2 text-white font-bold text-lg mb-3">
+              <div
+                className="flex items-center gap-2 font-bold text-lg mb-3"
+                style={{ color: "#87CEEB" }}
+              >
                 <img
                   src="/cards/back.png"
                   className="w-7 h-11 object-cover rounded-sm shadow-sm"

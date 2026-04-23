@@ -61,7 +61,7 @@ function pageHtml(title: string, content: string): string {
 <body style="margin:0;padding:0;background:#f5f3ff;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:480px;margin:80px auto;background:#fff;border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(109,40,217,0.1);text-align:center;">
     <div style="font-size:40px;margin-bottom:16px;">🔮</div>
-    <h1 style="color:#1e1b4b;font-size:20px;font-weight:bold;margin:0 0 16px;">Ariadne</h1>
+    <h1 style="color:#87CEEB;font-size:20px;font-weight:bold;margin:0 0 16px;">Ariadne</h1>
     ${content}
     <p style="margin-top:24px;">
       <a href="/" style="color:#7c3aed;font-size:13px;text-decoration:none;">トップページへ戻る</a>

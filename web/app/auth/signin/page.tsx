@@ -86,11 +86,15 @@ function SignInHeroPanel() {
               <CardFan size="md" />
               <div>
                 <h1
-                  className={`text-4xl font-bold text-white leading-tight ${monteCarlo.className}`}
+                  className={`text-4xl font-bold leading-tight ${monteCarlo.className}`}
+                  style={{ color: "#87CEEB" }}
                 >
                   Ariadne
                 </h1>
-                <p className="text-2xl font-bold text-violet-200">
+                <p
+                  className="text-2xl font-bold"
+                  style={{ color: "#87CEEB" }}
+                >
                   AI Tarot Chat
                 </p>
               </div>
@@ -199,9 +203,20 @@ function MobileSignInLayout({
             <div className="flex justify-center mb-6">
               <CardFan size="sm" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent mb-3">
-              AI Tarot Chat
-            </h1>
+            <div className="mb-3">
+              <div
+                className={`text-5xl leading-tight ${monteCarlo.className}`}
+                style={{ color: "#87CEEB" }}
+              >
+                Ariadne
+              </div>
+              <div
+                className="text-xl font-medium mt-1"
+                style={{ color: "#87CEEB" }}
+              >
+                AI Tarot Chat
+              </div>
+            </div>
             <p className="text-white/80 text-lg font-medium">
               AIと対話するタロット占い
             </p>
