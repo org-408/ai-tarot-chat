@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
-import OnboardingOverlay from "../../../shared/components/ui/onboarding-overlay";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type {
   ReadingCategory,
   Spread,
@@ -17,16 +17,23 @@ interface CategorySpreadSelectorProps {
   handleStartReading: () => void;
   claraMode?: boolean; // いつでも占いモード：プラン制限なし・全カテゴリ・全スプレッド
   /**
-   * 「占いを始める」ボタンが画面内に完全に収まった初回タイミングで 1 回だけ呼ばれる。
-   * ボタン直後のセンチネル要素に IntersectionObserver を当てている。
+   * セクション全体が画面内に完全に収まって、かつスクロールが一定時間止まった
+   * タイミングで 1 回だけ呼ばれる。ボタン直後のセンチネル要素に IntersectionObserver
+   * を当てて「完全可視」を検知し、さらに scroll 停止判定で確実に落ち着いてから発火する。
    */
-  onStartButtonVisible?: () => void;
+  onFullyVisible?: () => void;
+  /**
+   * このコンポーネントの最外ルート要素を親に通知する。親側でコーチマークの
+   * ターゲットとして使用するため。null 通知はアンマウント時。
+   */
+  onRootElChange?: (el: HTMLElement | null) => void;
 }
 
 const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   handleStartReading: onHandleStartReading,
   claraMode = false,
-  onStartButtonVisible,
+  onFullyVisible,
+  onRootElChange,
 }) => {
   const { masterData } = useMaster();
   const {
@@ -55,48 +62,91 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const selectedSpread = isPersonal ? personalSpread : quickSpread;
   const setSelectedSpread = isPersonal ? setPersonalSpread : setQuickSpread;
 
+  // コーチマークのターゲット: このコンポーネントの最外 div
+  // 親が描画後にアクセスできるよう、ref callback + state で再レンダリングさせる。
+  const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
+  const rootRefCallback = useCallback(
+    (el: HTMLDivElement | null) => {
+      setRootEl(el);
+      onRootElChange?.(el);
+    },
+    [onRootElChange]
+  );
+
   // オンボーディング: クイック占いの初回表示のみ
   // - いつでも占い（claraMode）: クイックで慣れている前提なので対象外
   // - パーソナル占い（isPersonal）: 別経路で制御
   const shouldShowOnboarding =
     !isPersonal && !claraMode && !quickOnboardedAt;
-  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [coachMarkOpen, setCoachMarkOpen] = useState(false);
   useEffect(() => {
-    if (shouldShowOnboarding) setOverlayVisible(true);
+    if (shouldShowOnboarding) setCoachMarkOpen(true);
   }, [shouldShowOnboarding]);
-  const handleOverlayDismiss = () => {
-    setOverlayVisible(false);
+  const handleCoachMarkDismiss = () => {
+    setCoachMarkOpen(false);
     if (!quickOnboardedAt) {
       // fire-and-forget: 失敗しても UX を止めない
       void markOnboarded("quick");
     }
   };
 
-  // 「占いを始める」ボタン直後のセンチネルを IntersectionObserver で監視し、
-  // 画面内に入った初回タイミングで `onStartButtonVisible` を呼ぶ（パーソナル Stage2 用）。
-  const startButtonSentinelRef = useRef<HTMLDivElement | null>(null);
-  const hasFiredStartVisibleRef = useRef(false);
+  // セクション直後のセンチネルを IntersectionObserver で監視し、
+  // 完全可視 + スクロール停止を両方満たしたタイミングで `onFullyVisible` を呼ぶ。
+  // - threshold: 1.0  → センチネル（= ボタン下端）が完全に viewport 内にある
+  // - settleTimer      → スクロール中は何度もリセット、300ms 静止で発火
+  // 既存仕様: センチネルはボタン直後に配置されているため、センチネルが完全可視
+  //           であればセクション全体のボタン下端まで画面内にある、と見なせる。
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const hasFiredFullyVisibleRef = useRef(false);
   useEffect(() => {
-    if (!onStartButtonVisible) return;
-    const el = startButtonSentinelRef.current;
+    if (!onFullyVisible) return;
+    const el = sentinelRef.current;
     if (!el) return;
+
+    let isIntersecting = false;
+    let settleTimer: number | null = null;
+
+    const scheduleFire = () => {
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        if (isIntersecting && !hasFiredFullyVisibleRef.current) {
+          hasFiredFullyVisibleRef.current = true;
+          onFullyVisible();
+        }
+      }, 300);
+    };
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting && !hasFiredStartVisibleRef.current) {
-            hasFiredStartVisibleRef.current = true;
-            onStartButtonVisible();
-            observer.disconnect();
-            break;
+          isIntersecting = entry.isIntersecting;
+          if (isIntersecting) {
+            scheduleFire();
+          } else if (settleTimer) {
+            clearTimeout(settleTimer);
+            settleTimer = null;
           }
         }
       },
-      { threshold: 0 }
+      { threshold: 1.0 }
     );
     observer.observe(el);
-    return () => observer.disconnect();
-  }, [onStartButtonVisible]);
+
+    // ChatPanel 内の overflow コンテナなど、任意のスクロール元を捉えるため capture phase
+    const onAnyScroll = () => {
+      if (isIntersecting) scheduleFire();
+    };
+    document.addEventListener("scroll", onAnyScroll, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("scroll", onAnyScroll, { capture: true });
+      if (settleTimer) clearTimeout(settleTimer);
+    };
+  }, [onFullyVisible]);
 
   // カテゴリーの取得とフィルタリング
   const availableCategories = useMemo(() => {
@@ -287,7 +337,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   };
 
   return (
-    <>
+    <div ref={rootRefCallback}>
       {/* スワイプヒント */}
       <motion.div
         className="text-center py-4"
@@ -338,21 +388,24 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             : `今日はあと${remaining}回`}
         </div>
 
-        {/* ボタン直後のセンチネル: 画面に収まった瞬間を検知 (onStartButtonVisible 用) */}
+        {/* セクション下端のセンチネル: 完全可視 + スクロール停止を両方満たす検知に使用 */}
         <div
-          ref={startButtonSentinelRef}
+          ref={sentinelRef}
           aria-hidden="true"
           className="h-px w-full pointer-events-none"
         />
       </div>
 
-      <OnboardingOverlay
-        isOpen={overlayVisible}
-        title={"占いたいジャンルとスプレッドを\n選んでください"}
-        note={"スプレッドはタロットカードの配置パターンです。\nジャンルに合わせて選べます。"}
-        onDismiss={handleOverlayDismiss}
+      {/* クイック占い初回のコーチマーク: セクション全体を明るく照らす */}
+      <SpotlightCoachMark
+        isOpen={coachMarkOpen}
+        targetEl={rootEl}
+        title={"占いたいジャンルとスプレッドを選んでください"}
+        note={"スプレッドはタロットカードの配置パターンです。ジャンルに合わせて選べます。"}
+        onDismiss={handleCoachMarkDismiss}
+        openDelayMs={400}
       />
-    </>
+    </div>
   );
 };
 

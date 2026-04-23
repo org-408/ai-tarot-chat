@@ -2,7 +2,7 @@ import type { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import OnboardingOverlay from "../../../shared/components/ui/onboarding-overlay";
+import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type {
   AppJWTPayload,
   MasterData,
@@ -65,8 +65,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
 
   // オンボーディング: 未実施 (personalOnboardedAt===null) の場合のみ 2 段で表示
   //   idle        : まだ ChatPanel の onInputReady が発火していない
-  //   stage1      : 入力案内 (AI 初回メッセージ完了 → 入力欄が使える状態)
-  //   waiting     : Stage1 dismiss 後、「占いを始める」ボタンの出現＋可視化を待機
+  //   stage1      : 入力案内 (AI 初回挨拶完了 → 入力欄が表示された)
+  //   waiting     : Stage1 dismiss 後、スプレッド選択セクションの完全可視化を待機
   //   stage2      : おすすめスプレッド案内 → dismiss でフラグを立てて done
   //   done        : 完了 (既に実施済み or 今セッションで完了)
   type OnboardingStage = "idle" | "stage1" | "waiting" | "stage2" | "done";
@@ -80,6 +80,10 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
       markedRef.current = true;
     }
   }, [personalOnboardedAt]);
+
+  // コーチマークのターゲット DOM（ChatPanel 経由で受け取る）
+  const [inputEl, setInputEl] = useState<HTMLElement | null>(null);
+  const [selectorEl, setSelectorEl] = useState<HTMLElement | null>(null);
 
   const [phase, setPhase] = useState<"chat" | "reading">("chat");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
@@ -117,13 +121,13 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ChatPanel から渡される「入力欄が有効化された」シグナル
+  // ChatPanel から渡される「入力欄が表示された」シグナル
   const handleChatInputReady = () => {
     setOnboardingStage((prev) => (prev === "idle" ? "stage1" : prev));
   };
 
-  // ChatPanel から渡される「占いを始めるボタンが画面に収まった」シグナル
-  const handleStartButtonVisible = () => {
+  // ChatPanel から渡される「スプレッド選択セクションが完全可視+スクロール停止」シグナル
+  const handleSelectorFullyVisible = () => {
     setOnboardingStage((prev) => (prev === "waiting" ? "stage2" : prev));
   };
 
@@ -342,26 +346,30 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
                     onMessagesChange={setPhase1Messages}
                     onBack={() => {}}
                     onInputReady={handleChatInputReady}
-                    onStartButtonVisible={handleStartButtonVisible}
+                    onSelectorFullyVisible={handleSelectorFullyVisible}
+                    onInputElChange={setInputEl}
+                    onSelectorElChange={setSelectorEl}
                   />
                 </div>
               )}
             </motion.div>
           </div>
 
-          {/* オンボーディング Stage1: 入力案内 */}
-          <OnboardingOverlay
+          {/* オンボーディング Stage1: 入力欄をスポットライト */}
+          <SpotlightCoachMark
             isOpen={onboardingStage === "stage1"}
-            title={"お悩みなど占いたい内容を\n入力してください"}
-            note={"恋愛・仕事・悩みなど、\n自由に記入できます。"}
+            targetEl={inputEl}
+            title="お悩みなど占いたい内容を入力してください"
+            note={"恋愛・仕事・悩みなど、自由に記入できます。"}
             onDismiss={handleOnboardingStage1Dismiss}
           />
 
-          {/* オンボーディング Stage2: おすすめスプレッド案内 */}
-          <OnboardingOverlay
+          {/* オンボーディング Stage2: スプレッド選択セクション全体をスポットライト */}
+          <SpotlightCoachMark
             isOpen={onboardingStage === "stage2"}
-            title={"内容に合わせておすすめの\nスプレッドを用意しました"}
-            note={"このまま開始できます。\n別のスプレッドに変更することもできます。"}
+            targetEl={selectorEl}
+            title="おすすめスプレッドはこちらです"
+            note={"別のスプレッドに変更もできます。"}
             onDismiss={handleOnboardingStage2Dismiss}
           />
         </>
