@@ -91,6 +91,12 @@ interface ClaraReadingViewProps {
     revealAll: string;
     revealPrompt: string;
     allRevealed: string;
+    tabSpread: string;
+    tabIndividual: string;
+    cardDetailPosition: string;
+    cardDetailCard: string;
+    cardDetailKeywords: string;
+    cardDetailReversed: string;
   };
 }
 
@@ -200,6 +206,12 @@ function ClaraReadingView({
               revealAllLabel={labels.revealAll}
               revealPromptLabel={labels.revealPrompt}
               allRevealedLabel={labels.allRevealed}
+              gridLabel={labels.tabSpread}
+              carouselLabel={labels.tabIndividual}
+              positionLabel={labels.cardDetailPosition}
+              cardLabel={labels.cardDetailCard}
+              keywordsLabel={labels.cardDetailKeywords}
+              reversedLabel={labels.cardDetailReversed}
             />
           ) : undefined
         }
@@ -308,6 +320,12 @@ export default function ClaraPage() {
           revealAll: tReading("revealAll"),
           revealPrompt: tReading("revealPrompt"),
           allRevealed: tReading("allRevealed"),
+          tabSpread: tReading("tabSpread"),
+          tabIndividual: tReading("tabIndividual"),
+          cardDetailPosition: tReading("cardDetailPosition"),
+          cardDetailCard: tReading("cardDetailCard"),
+          cardDetailKeywords: tReading("cardDetailKeywords"),
+          cardDetailReversed: tReading("cardDetailReversed"),
         }}
       />
     );
