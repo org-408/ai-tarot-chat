@@ -236,14 +236,24 @@ export const useAuthStore = create<AuthState>()(
           });
 
           // currentPlan を同期
-          const currentPlan = await useClientStore.getState().currentPlan;
-          if (currentPlan!.code === "GUEST") {
-            const free = useMasterStore.getState().getPlan("FREE")!;
-            useClientStore.getState().setPlan(free);
-            logWithContext(
-              "info",
-              "[AuthStore] Synchronized client plan to FREE after login"
-            );
+          // ※ subscription._checkRestoreStatus() から呼ばれた場合は lifecycle step2 の
+          //   時点で clientStore / masterStore が未初期化のことがある。
+          //   null セーフにしないと TypeError でログインフローが途中で壊れる。
+          const currentPlan = useClientStore.getState().currentPlan;
+          if (currentPlan?.code === "GUEST") {
+            const free = useMasterStore.getState().getPlan("FREE");
+            if (free) {
+              useClientStore.getState().setPlan(free);
+              logWithContext(
+                "info",
+                "[AuthStore] Synchronized client plan to FREE after login"
+              );
+            } else {
+              logWithContext(
+                "warn",
+                "[AuthStore] Master data not ready, skipping plan sync after login"
+              );
+            }
           }
           const stored = await authService.getStoredPayload();
           set({ token: stored.token });

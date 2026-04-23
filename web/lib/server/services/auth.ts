@@ -497,15 +497,21 @@ export class AuthService {
     const authHeader = request.headers.get("authorization");
     const xAppToken = request.headers.get("x-app-token");
     let token: string | undefined;
+    // モバイル由来（Bearer/X-App-Token）は NextAuth Cookie を持たないため
+    // auth() ベースの OAuth セッション検証をスキップする必要がある。
+    // Web Cookie 由来のときだけ auth() 検証を行う。
+    let isMobileToken = false;
     if (xAppToken) {
       // 1. X-App-Token ヘッダーを優先（Cloudflare による Authorization ストリップ回避）
       token = xAppToken;
+      isMobileToken = true;
     } else if (authHeader) {
       // 2. mobile 検証 (Authorization Bearer)
       if (!authHeader?.startsWith("Bearer ")) {
         throw new Error("認証が必要です");
       }
       token = authHeader.substring(7);
+      isMobileToken = true;
     } else {
       // 3. web 検証 (Cookie)
       token = request.cookies.get("access_token")?.value;
@@ -538,8 +544,11 @@ export class AuthService {
       clientId: clientData.id,
     });
 
-    // OAuth認証時は auth() を呼んで認証期限切れを検出
-    if (payload.user && payload.provider) {
+    // OAuth認証時は auth() を呼んで認証期限切れを検出（Web Cookie 由来のみ）
+    // モバイルは Capacitor Browser で OAuth を行うため NextAuth Cookie を WebView に
+    // 持てず、auth() は常に null を返してしまう。JWT 署名 + DB 整合性で十分なので
+    // モバイル由来トークンではこの検証をスキップする。
+    if (!isMobileToken && payload.user && payload.provider) {
       const session = await auth();
       if (!session?.user?.id || !session?.user?.email) {
         logWithContext("warn", "⚠️ OAuth認証期限切れ検出");

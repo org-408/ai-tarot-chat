@@ -96,7 +96,11 @@ body {
   margin: 0 auto;
   /* background: white; */
   border-radius: 0;
-  height: 100%;
+  /* height: 100% だと Android WebView で子のオーバーフローが親のスクロール領域に寄与せず、
+     設定画面のような長尺ページの末尾が見えなくなる。min-height: 100% なら
+     短いページは従来通り画面を埋めつつ、長いページは自然に高さが伸びて親の
+     .main-content-area の overflow-y: auto でスクロールできる。 */
+  min-height: 100%;
 }
 
 /* タイトルスタイル */
