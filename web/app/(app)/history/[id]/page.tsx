@@ -90,11 +90,7 @@ export default function HistoryDetailPage() {
 
   const uiMessages = toUIMessages(reading.chatMessages ?? []);
 
-  const hasSpread =
-    !!reading.spread &&
-    !!reading.spread.cells &&
-    reading.spread.cells.length > 0 &&
-    drawnCards.length > 0;
+  const hasSpread = !!reading.spread && drawnCards.length > 0;
 
   const tarotist = reading.tarotist;
 
@@ -114,7 +110,6 @@ export default function HistoryDetailPage() {
           onSend={() => {}}
           onKeyDown={() => {}}
           inputDisabled={true}
-          initialPortraitExpanded={false}
         />
       }
       right={
