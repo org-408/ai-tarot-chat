@@ -104,10 +104,14 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="app-header">
-      <div className="header-container">
-        {/* 🔥 ハンバーガーメニューボタン */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+    <header className="app-header relative">
+      {/* ハンバーガーメニューボタン（.header-container の max-width 制限を受けず、
+          常に viewport 左端を基準に配置する。safe-area 分を除いた領域で縦中央揃え） */}
+      <div
+        className="absolute left-4 flex items-center"
+        style={{ top: "var(--safe-top)", bottom: 0 }}
+      >
+        <div className="relative">
           <button
             onClick={onMenuClick}
             disabled={menuDisabled}
@@ -159,7 +163,9 @@ const Header: React.FC<HeaderProps> = ({
             />
           )}
         </div>
+      </div>
 
+      <div className="header-container">
         <div
           onClick={() => {
             setShowProfile(!showProfile);
