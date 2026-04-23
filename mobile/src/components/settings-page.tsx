@@ -115,10 +115,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const [showTutorialToast, setShowTutorialToast] = useState(false);
   const { resetOnboarding } = useClient();
 
-  const handleReplayTutorial = async () => {
-    await resetOnboarding();
+  const handleReplayTutorial = () => {
+    // トーストを先に出してから保存を走らせる（保存完了を待つと体感が遅くなるため）
     setShowTutorialToast(true);
     setTimeout(() => setShowTutorialToast(false), 2500);
+    void resetOnboarding();
   };
 
   // ネイティブ（iOS/Android）では App.getInfo() でバイナリの実バージョンを取得
