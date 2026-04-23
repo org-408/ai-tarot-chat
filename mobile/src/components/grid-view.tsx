@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CARD_ASPECT } from "../../../shared/lib/constants";
+import { CARD_ASPECT, MAX_CARD_HEIGHT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { getCardImagePath } from "../lib/utils/salon";
 
@@ -58,7 +58,8 @@ const GridView: React.FC<GridViewProps> = ({
 
   const cardHeight = Math.min(
     (viewWidth - colGap * maxX) / (maxX + 1),
-    (viewHeight - rowGap * maxY) / (maxY + 1)
+    (viewHeight - rowGap * maxY) / (maxY + 1),
+    MAX_CARD_HEIGHT
   );
   const cardWidth = cardHeight * CARD_ASPECT;
   const cellSize = cardHeight;

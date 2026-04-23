@@ -18,6 +18,13 @@ interface TarotistCarouselPortraitProps {
   /** mode 変化（占い師確定 / 変更要求）を親に通知 */
   onModeChange?: (mode: Mode) => void;
   currentPlan?: Plan | null;
+  /**
+   * 占い師固定モード。true のとき:
+   * - 常に portrait 表示（カルーセル切替不可）
+   * - 「占い師を変更」ボタンを非表示
+   * Clara 専用ページなど、占い師選択を許可しない画面で使用。
+   */
+  locked?: boolean;
 }
 
 const canUse = (tarotist: Tarotist, currentPlan: Plan | null | undefined): boolean => {
@@ -34,6 +41,7 @@ export function TarotistCarouselPortrait({
   onSelect,
   onModeChange,
   currentPlan,
+  locked = false,
 }: TarotistCarouselPortraitProps) {
   const tTarotist = useTranslations("tarotist");
   const tPlans = useTranslations("plans");
@@ -42,7 +50,7 @@ export function TarotistCarouselPortrait({
   const [upgrading, setUpgrading] = useState<string | null>(null);
   // 既に占い師が選択されていればポートレートモードで開く（モバイル同等）
   const [mode, setMode] = useState<Mode>(
-    selectedTarotist ? "portrait" : "carousel",
+    locked || selectedTarotist ? "portrait" : "carousel",
   );
 
   // マウント時の初期 mode と、mode 変化を親に通知
@@ -196,14 +204,16 @@ export function TarotistCarouselPortrait({
               </p>
             </div>
 
-            {/* 占い師を変更ボタン */}
-            <button
-              type="button"
-              onClick={() => setMode("carousel")}
-              className="absolute top-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 text-white transition-all shadow-md backdrop-blur-sm"
-            >
-              占い師を変更
-            </button>
+            {/* 占い師を変更ボタン（locked=true のときは非表示） */}
+            {!locked && (
+              <button
+                type="button"
+                onClick={() => setMode("carousel")}
+                className="absolute top-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 text-white transition-all shadow-md backdrop-blur-sm"
+              >
+                占い師を変更
+              </button>
+            )}
           </div>
         </motion.div>
       </AnimatePresence>

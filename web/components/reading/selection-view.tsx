@@ -37,6 +37,8 @@ interface SelectionViewProps {
   onPersonalStartChat?: () => void;
   /** パーソナル: 選択済タロティストがポートレイトモードに入ったか */
   tarotistMode?: "carousel" | "portrait";
+  /** 占い師固定モード（Clara 専用等）。TarotistCarouselPortrait.locked へ透過 */
+  lockedTarotist?: boolean;
 
   // UI テキスト
   title: string;
@@ -89,6 +91,7 @@ export function SelectionView({
   onQuickStartReading,
   onPersonalStartChat,
   tarotistMode = "carousel",
+  lockedTarotist = false,
   title,
   subtitle,
   backLabel,
@@ -161,6 +164,7 @@ export function SelectionView({
               onSelect={onSelectTarotist}
               onModeChange={onTarotistModeChange}
               currentPlan={currentPlan}
+              locked={lockedTarotist}
             />
           </div>
           <div className="px-1 pb-2">
@@ -199,6 +203,7 @@ export function SelectionView({
               onSelect={onSelectTarotist}
               onModeChange={onTarotistModeChange}
               currentPlan={currentPlan}
+              locked={lockedTarotist}
             />
           </div>
 

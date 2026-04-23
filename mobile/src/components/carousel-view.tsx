@@ -1,11 +1,9 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
-import React, { useCallback, useEffect, useState } from "react";
-import { CARD_ASPECT } from "../../../shared/lib/constants";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CARD_ASPECT, MAX_CARD_HEIGHT } from "../../../shared/lib/constants";
 import type { DrawnCard } from "../../../shared/lib/types";
 import { getCardImagePath } from "../lib/utils/salon";
-
-const VIEW_HEIGHT_MAX = 300;
 
 // カルーセルコンポーネント
 interface CarouselViewProps {
@@ -36,6 +34,29 @@ const CarouselView: React.FC<CarouselViewProps> = ({
   });
 
   const [selectedIndex, setSelectedIndex] = useState(currentIndex);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+        setContainerHeight(containerRef.current.offsetHeight);
+      }
+    };
+    update();
+    let observer: ResizeObserver | undefined;
+    if (containerRef.current && typeof window.ResizeObserver !== "undefined") {
+      observer = new window.ResizeObserver(update);
+      observer.observe(containerRef.current);
+    }
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      if (observer) observer.disconnect();
+    };
+  }, []);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -62,7 +83,19 @@ const CarouselView: React.FC<CarouselViewProps> = ({
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  const cardHeight = VIEW_HEIGHT_MAX - 14 * 2;
+  // カード表示サイズ: コンテナ実寸から算出し、MAX_CARD_HEIGHT（業界標準 120mm 相当）で頭打ち。
+  // iPad のような大画面で過大化することを防ぎ、iPhone では親から 300px 程度が与えられる前提で
+  // 従来どおりに収まる。
+  const DOT_AREA = 40; // ドットインジケーター実測 + 安全
+  const V_PADDING = 8;
+  const H_PADDING = 72; // prev/next ボタン実測 ~36px × 2
+  const availableHeight = Math.max(0, containerHeight - DOT_AREA - V_PADDING);
+  const availableWidth = Math.max(0, containerWidth - H_PADDING);
+  const byWidth = availableWidth > 0 ? availableWidth / CARD_ASPECT : 0;
+  const cardHeight =
+    containerHeight > 0
+      ? Math.min(MAX_CARD_HEIGHT, availableHeight, byWidth) || 0
+      : 0;
   const cardWidth = cardHeight * CARD_ASPECT;
 
   const handleCardInteraction = (card: DrawnCard) => {
@@ -72,8 +105,8 @@ const CarouselView: React.FC<CarouselViewProps> = ({
 
   return (
     <div
+      ref={containerRef}
       className="relative w-full h-full flex flex-col items-center justify-center"
-      style={{ height: `${VIEW_HEIGHT_MAX}px` }}
     >
       {/* メインカルーセル */}
       <div
