@@ -315,15 +315,6 @@ export default function SimplePage() {
     return () => setIsLocked(false);
   }, [setIsLocked]);
 
-  // 現プランで使えない占い師が選択されたままなら未選択に戻す
-  useEffect(() => {
-    const currentPlanNo = usage?.plan?.no;
-    if (currentPlanNo == null || !selectedTarotist?.plan) return;
-    if (selectedTarotist.plan.no > currentPlanNo) {
-      setQuickTarotist(null);
-    }
-  }, [usage?.plan?.no, selectedTarotist, setQuickTarotist]);
-
   const handleStartReading = ({
     category,
     spread,

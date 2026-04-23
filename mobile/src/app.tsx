@@ -264,21 +264,20 @@ function App() {
   const {
     selectedTarotist,
     selectedPersonalTarotist,
-    setSelectedTarotist,
-    setSelectedPersonalTarotist,
     setSelectedTargetMode,
     setSelectedPersonalTargetMode,
   } = useSalon();
 
-  // 起動時・プラン変更時: 現プランで使えない占い師を未選択 + 占い師選択モードに戻す
+  // 起動時・プラン変更時: 現プランで使えない占い師が選択されていれば、
+  //   占い師選択モードに戻してユーザーに再確認を促す（選択状態そのものは保持）。
+  //   再度プランアップ時に前回の選択が復元されるため、解約→再加入で選び直しが不要。
+  //   プラン外タロティストでの実行はサーバ側 PLAN_INSUFFICIENT ガードで弾く。
   useEffect(() => {
     if (!currentPlan) return;
     if (selectedTarotist?.plan && selectedTarotist.plan.no > currentPlan.no) {
-      setSelectedTarotist(null);
       setSelectedTargetMode("tarotist");
     }
     if (selectedPersonalTarotist?.plan && selectedPersonalTarotist.plan.no > currentPlan.no) {
-      setSelectedPersonalTarotist(null);
       setSelectedPersonalTargetMode("tarotist");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
