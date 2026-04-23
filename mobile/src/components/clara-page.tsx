@@ -138,7 +138,7 @@ const ClaraPanel: React.FC<ClaraPanelProps> = ({
         className="absolute bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
         onClick={onBack}
       >
-        <span>← 戻る</span>
+        <span>← もう一度占う</span>
       </motion.button>
     </div>
   );
@@ -193,7 +193,10 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   // カード表示完了後、スプレッドビューを少し見せてから上段をプロフィール表示へ戻す
   useEffect(() => {
     if (isRevealingCompleted) {
-      const t = setTimeout(() => setUpperViewerMode("profile"), SPREAD_VIEW_DISPLAY_MS);
+      const t = setTimeout(
+        () => setUpperViewerMode("profile"),
+        SPREAD_VIEW_DISPLAY_MS,
+      );
       return () => clearTimeout(t);
     }
   }, [isRevealingCompleted, setUpperViewerMode]);
