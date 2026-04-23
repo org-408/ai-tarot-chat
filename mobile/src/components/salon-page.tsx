@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AppJWTPayload,
   MasterData,
@@ -20,6 +20,8 @@ interface SalonPageProps {
   onChangePlan: (plan: UserPlan) => void;
   onStartReading: () => void;
   isChangingPlan: boolean;
+  /** プラン失効ダイアログ/トーストが表示中か（チュートリアル発火ブロック用） */
+  isPlanExpiredShowing: boolean;
 }
 
 const SalonPage: React.FC<SalonPageProps> = ({
@@ -28,6 +30,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   usageStats,
   onChangePlan,
   isChangingPlan,
+  isPlanExpiredShowing,
   onStartReading,
 }) => {
   const {
@@ -68,6 +71,13 @@ const SalonPage: React.FC<SalonPageProps> = ({
 
   const [keyboardHeight] = useState(0);
   const [isTopCollapsed, setIsTopCollapsed] = useState(false);
+
+  // クイック占いチュートリアル（セレクターへのコーチマーク）
+  // サロン画面ライフサイクルで保持することで、占い師選択モード ↔ portrait モードの
+  // 往復による CategorySpreadSelector 再マウントでも再発火しない。
+  const coachShownRef = useRef(false);
+  const [coachMarkOpen, setCoachMarkOpen] = useState(false);
+  const isPlanDialogShowing = isChangingPlan || isPlanExpiredShowing;
 
   return (
     <div className="main-container">
@@ -135,6 +145,10 @@ const SalonPage: React.FC<SalonPageProps> = ({
               <div className="flex-1 overflow-y-auto pb-52">
                 <CategorySpreadSelector
                   handleStartReading={handleStartReading}
+                  isPlanDialogShowing={isPlanDialogShowing}
+                  coachShownRef={coachShownRef}
+                  coachMarkOpen={coachMarkOpen}
+                  setCoachMarkOpen={setCoachMarkOpen}
                 />
               </div>
             </motion.div>

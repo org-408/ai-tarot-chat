@@ -55,6 +55,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
   }, [isRevealingCompleted, setUpperViewerMode]);
 
   const [isTopCollapsed, setIsTopCollapsed] = useState(false);
+  const [shuffleCompleted, setShuffleCompleted] = useState(false);
 
   // ===== オンボーディング (クイック占い 初回のみ) =====
   // idle    : まだスプレッドが描画されていない
@@ -85,11 +86,13 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
 
   // 上半分が描画されたら Stage1 へ
   useEffect(() => {
+    if (quickOnboardedAt) return;              // 防御: 既に完了なら絶対出さない
     if (onboardingStage !== "idle") return;
     if (drawnCards.length === 0) return;
     if (!upperEl) return;
+    if (!shuffleCompleted) return;             // シャッフル演出完了を待つ
     setOnboardingStage("stage1");
-  }, [onboardingStage, drawnCards.length, upperEl]);
+  }, [onboardingStage, drawnCards.length, upperEl, shuffleCompleted, quickOnboardedAt]);
 
   // Stage2 はボタンが mount されてから移行（waiting → stage2）
   useEffect(() => {
@@ -97,17 +100,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
     if (!revealButtonEl) return;
     setOnboardingStage("stage2");
   }, [onboardingStage, revealButtonEl]);
-
-  // 全カードめくり完了後はチュートリアル不要 → 完了扱い
-  useEffect(() => {
-    if (!isRevealingCompleted) return;
-    if (onboardingStage === "done") return;
-    setOnboardingStage("done");
-    if (!markedRef.current && !quickOnboardedAt) {
-      markedRef.current = true;
-      void markOnboarded("quick");
-    }
-  }, [isRevealingCompleted, onboardingStage, quickOnboardedAt, markOnboarded]);
 
   const handleOnboardingStage1Dismiss = () => {
     setOnboardingStage((prev) => (prev === "stage1" ? "waiting" : prev));
@@ -134,6 +126,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
         isOpen={!drawnCards || drawnCards.length === 0}
         onComplete={() => {
           console.log("Shuffle complete!");
+          setShuffleCompleted(true);
         }}
       />
 
