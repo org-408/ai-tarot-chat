@@ -98,6 +98,35 @@ export async function POST(req: NextRequest) {
       drawnCards: DrawnCard[];
     } = await req.json();
 
+    // ✅ プラン整合性チェック: 現プランで使えないタロティストを弾く
+    //   クライアント側で選択状態を保持する設計のため、サーバ側での最終防衛線として必須
+    const client = await clientService.getClientById(clientId);
+    if (!client || !client.plan) {
+      logWithContext("warn", "クライアントまたはプランが見つからない", { clientId });
+      return createReadingErrorResponse({
+        code: "UNAUTHORIZED",
+        message:
+          "アカウント情報の取得に失敗しました。いったん戻って再度お試しください。",
+        status: 401,
+        phase: "simple",
+      });
+    }
+    if (tarotist?.plan && tarotist.plan.no > client.plan.no) {
+      logWithContext("warn", "プラン不足のタロティスト利用を拒否", {
+        clientId,
+        tarotistId: tarotist.id,
+        tarotistPlan: tarotist.plan.code,
+        clientPlan: client.plan.code,
+      });
+      return createReadingErrorResponse({
+        code: "PLAN_INSUFFICIENT",
+        message:
+          "この占い師は現在のプランではご利用いただけません。プランをアップグレードするか、別の占い師をお選びください。",
+        status: 403,
+        phase: "simple",
+      });
+    }
+
     // ── E2E モックモード ──────────────────────────────────────
     // E2E_MOCK_AI=true のとき AI を呼ばず保存ロジックだけ実行してモック SSE を返す
     if (process.env.E2E_MOCK_AI === "true") {

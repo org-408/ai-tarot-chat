@@ -17,6 +17,7 @@ type ReadingRouteErrorOptions = {
 const retryableByCode: Record<ReadingErrorCode, boolean> = {
   UNAUTHORIZED: false,
   LIMIT_REACHED: false,
+  PLAN_INSUFFICIENT: false,
   QUESTION_TOO_SHORT: false,
   QUESTION_TOO_LONG: false,
   MODERATION_BLOCKED: false,

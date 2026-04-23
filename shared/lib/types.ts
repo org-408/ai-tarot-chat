@@ -58,6 +58,7 @@ export type VerificationToken = {
 export type ReadingErrorCode =
   | "UNAUTHORIZED"
   | "LIMIT_REACHED"
+  | "PLAN_INSUFFICIENT"
   | "QUESTION_TOO_SHORT"
   | "QUESTION_TOO_LONG"
   | "MODERATION_BLOCKED"

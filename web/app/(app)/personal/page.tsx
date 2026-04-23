@@ -362,25 +362,15 @@ export default function PersonalPage() {
     refreshUsage();
   }, [initMaster, refreshUsage]);
 
-  // プランがパーソナル占い非対応になった → ホームへ退避（選択状態もクリア）
+  // プランがパーソナル占い非対応になった → ホームへ退避
+  //   選択状態（personalTarotist）は保持。再度 PREMIUM に戻った際に復元される。
+  //   プラン外タロティストでの実行はサーバ側 PLAN_INSUFFICIENT ガードで弾く。
   useEffect(() => {
     if (usage == null) return;
     if (!(usage.plan?.hasPersonal ?? false)) {
-      setPersonalTarotist(null);
       router.replace("/");
     }
-  }, [usage, setPersonalTarotist, router]);
-
-  // 現プランで使えない占い師が選択されたままなら未選択に戻す
-  // （PREMIUM 以外はパーソナル占い自体に入れないので基本 hasPersonal=false 側で先に弾かれるが、
-  //   念のため二重ガード）
-  useEffect(() => {
-    const currentPlanNo = usage?.plan?.no;
-    if (currentPlanNo == null || !selectedTarotist?.plan) return;
-    if (selectedTarotist.plan.no > currentPlanNo) {
-      setPersonalTarotist(null);
-    }
-  }, [usage?.plan?.no, selectedTarotist, setPersonalTarotist]);
+  }, [usage, router]);
 
   const handleReadingSaved = useCallback(async () => {
     clearReadings();
