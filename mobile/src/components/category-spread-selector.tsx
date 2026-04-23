@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import OnboardingOverlay from "../../../shared/components/ui/onboarding-overlay";
 import type {
   ReadingCategory,
@@ -16,11 +16,17 @@ import ScrollableRadioSelector from "./scrollable-radio-selector";
 interface CategorySpreadSelectorProps {
   handleStartReading: () => void;
   claraMode?: boolean; // いつでも占いモード：プラン制限なし・全カテゴリ・全スプレッド
+  /**
+   * 「占いを始める」ボタンが画面内に完全に収まった初回タイミングで 1 回だけ呼ばれる。
+   * ボタン直後のセンチネル要素に IntersectionObserver を当てている。
+   */
+  onStartButtonVisible?: () => void;
 }
 
 const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   handleStartReading: onHandleStartReading,
   claraMode = false,
+  onStartButtonVisible,
 }) => {
   const { masterData } = useMaster();
   const {
@@ -65,6 +71,32 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       void markOnboarded("quick");
     }
   };
+
+  // 「占いを始める」ボタン直後のセンチネルを IntersectionObserver で監視し、
+  // 画面内に入った初回タイミングで `onStartButtonVisible` を呼ぶ（パーソナル Stage2 用）。
+  const startButtonSentinelRef = useRef<HTMLDivElement | null>(null);
+  const hasFiredStartVisibleRef = useRef(false);
+  useEffect(() => {
+    if (!onStartButtonVisible) return;
+    const el = startButtonSentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !hasFiredStartVisibleRef.current) {
+            hasFiredStartVisibleRef.current = true;
+            onStartButtonVisible();
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onStartButtonVisible]);
 
   // カテゴリーの取得とフィルタリング
   const availableCategories = useMemo(() => {
@@ -305,6 +337,13 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             ? "本日の占い回数上限に達しました"
             : `今日はあと${remaining}回`}
         </div>
+
+        {/* ボタン直後のセンチネル: 画面に収まった瞬間を検知 (onStartButtonVisible 用) */}
+        <div
+          ref={startButtonSentinelRef}
+          aria-hidden="true"
+          className="h-px w-full pointer-events-none"
+        />
       </div>
 
       <OnboardingOverlay
