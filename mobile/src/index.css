@@ -58,7 +58,6 @@ body {
 }
 
 .header-container {
-  max-width: 400px;
   margin: 0 auto;
   padding: 0.5rem 1rem;
   text-align: center;
@@ -90,9 +89,12 @@ body {
    .coming-soon-badge
 */
 
-/* メインコンテナ調整 */
+/* メインコンテナ調整
+   幅の制限は設けない。iPhone/Android の通常幅（〜430px）では元から max-width: 400px が
+   ほぼ効いていなかったため見た目はほぼ変わらず、iPad などの大画面では画面幅に追従する。
+   内部コンポーネントは w-full / flex / grid / 比率計算（CARD_ASPECT）/ containerRef 実測で
+   構築されており、親幅が広がっても破綻しない。 */
 .main-container {
-  max-width: 400px;
   margin: 0 auto;
   /* background: white; */
   border-radius: 0;
