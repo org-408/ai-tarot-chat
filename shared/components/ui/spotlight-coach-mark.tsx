@@ -28,7 +28,7 @@ export interface SpotlightCoachMarkProps {
   dimOpacity?: number;
 }
 
-const BUBBLE_MAX_WIDTH = 280;
+const BUBBLE_MAX_WIDTH = 320;
 const BUBBLE_MARGIN = 12;
 const VIEWPORT_MARGIN = 16;
 
@@ -250,21 +250,22 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="fixed z-[10002] px-5 py-4 rounded-2xl bg-white shadow-2xl pointer-events-none"
+            className="fixed z-[10002] px-6 py-5 rounded-2xl bg-white shadow-2xl pointer-events-none"
             style={{
               ...bubblePositionStyle,
               maxWidth: BUBBLE_MAX_WIDTH,
             }}
           >
-            <p className="text-sm font-semibold text-gray-900 leading-relaxed whitespace-pre-line">
+            {/* タイトル: 「占いを始める」ボタン (text-lg font-bold) と同じ大きさに揃える */}
+            <p className="text-lg font-bold text-gray-900 leading-relaxed whitespace-pre-line">
               {title}
             </p>
             {note && (
-              <p className="text-xs text-gray-500 mt-2 leading-relaxed whitespace-pre-line">
+              <p className="text-base text-gray-600 mt-2 leading-relaxed whitespace-pre-line">
                 {note}
               </p>
             )}
-            <p className="mt-3 text-[11px] text-purple-500 tracking-wide">
+            <p className="mt-3 text-sm text-purple-500 tracking-wide">
               画面をタップして閉じる
             </p>
           </motion.div>

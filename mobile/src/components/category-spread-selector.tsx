@@ -93,11 +93,31 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   };
 
   // セクション直後のセンチネルを IntersectionObserver で監視し、
-  // 完全可視 + スクロール停止を両方満たしたタイミングで `onFullyVisible` を呼ぶ。
-  // - threshold: 1.0  → センチネル（= ボタン下端）が完全に viewport 内にある
-  // - settleTimer      → スクロール中は何度もリセット、300ms 静止で発火
+  // 「完全可視」+「スクロール停止（= 対象位置が動いていない）」の両方を満たした
+  // タイミングで `onFullyVisible` を 1 回だけ呼ぶ。
+  //
   // 既存仕様: センチネルはボタン直後に配置されているため、センチネルが完全可視
   //           であればセクション全体のボタン下端まで画面内にある、と見なせる。
+  //
+  // ── なぜ scroll event で debounce しないか ──────────────────────────────
+  // iOS Safari のモメンタム（慣性）スクロールは、ユーザーが指を離してからも
+  // scroll event を 1〜3 秒間発火し続ける。scroll event を使った settle timer では
+  // 「最後の scroll event から Nms」になるため、モメンタム持続時間ぶん
+  // ＋ settle 時間だけ待ち続けることになり UX が著しく遅く感じる。
+  //
+  // ── 代わりに rAF + rect の stability で停止判定する ───────────────────
+  // 毎フレーム getBoundingClientRect().top を取り、前フレームと差が ~0 なら
+  // 「動いていない」とみなす。モメンタム中は毎フレーム top が変化するので発火せず、
+  // モメンタムが物理的に停止した瞬間にすぐ（数フレーム = 数十 ms で）発火する。
+  // これによりユーザーの待ち時間 = モメンタム自体の持続時間のみ、になる。
+  //
+  // ── flash-dismiss 防止の多重ガード ─────────────────────────────────
+  // 実体験で「スクロール中に一瞬表示されて即 dismiss」される事象があった
+  // （最初の実装はこれを 300ms settle で防いでいた）。この実装では以下を併用:
+  //   1) rect 安定検知（ここ）: モメンタム中は発火自体しない
+  //   2) SpotlightCoachMark 側の `pointerActivationDelayMs` (既定 300ms):
+  //      フェードイン中は pointer-events:none で誤 dismiss を弾く保険
+  // 2) だけでは「モメンタム中にも表示してしまう」ため、1) が本命で 2) は保険。
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const hasFiredFullyVisibleRef = useRef(false);
   useEffect(() => {
@@ -106,16 +126,41 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     if (!el) return;
 
     let isIntersecting = false;
-    let settleTimer: number | null = null;
+    let rafId: number | null = null;
+    let lastTop: number | null = null;
+    let stableFrames = 0;
+    // 3 フレーム = 約 50ms 停止を「静止」とみなす。短すぎるとチラつきで誤判定、
+    // 長すぎると発火が遅れる。60fps 基準で 3〜4 フレームが経験的に良い塩梅。
+    const REQUIRED_STABLE_FRAMES = 3;
+    // 浮動小数のジッター吸収しきい値 (px)。iOS の subpixel 描画で
+    // ごく微小な差分が出ることがあるため 0.5px を許容。
+    const STABLE_THRESHOLD_PX = 0.5;
 
-    const scheduleFire = () => {
-      if (settleTimer) clearTimeout(settleTimer);
-      settleTimer = window.setTimeout(() => {
-        if (isIntersecting && !hasFiredFullyVisibleRef.current) {
+    const stopRaf = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      lastTop = null;
+      stableFrames = 0;
+    };
+
+    const tick = () => {
+      rafId = null;
+      if (!isIntersecting || hasFiredFullyVisibleRef.current) return;
+      const r = el.getBoundingClientRect();
+      if (lastTop !== null && Math.abs(r.top - lastTop) < STABLE_THRESHOLD_PX) {
+        stableFrames++;
+        if (stableFrames >= REQUIRED_STABLE_FRAMES) {
           hasFiredFullyVisibleRef.current = true;
           onFullyVisible();
+          return;
         }
-      }, 300);
+      } else {
+        stableFrames = 0;
+      }
+      lastTop = r.top;
+      rafId = requestAnimationFrame(tick);
     };
 
     const observer = new IntersectionObserver(
@@ -123,10 +168,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         for (const entry of entries) {
           isIntersecting = entry.isIntersecting;
           if (isIntersecting) {
-            scheduleFire();
-          } else if (settleTimer) {
-            clearTimeout(settleTimer);
-            settleTimer = null;
+            // 既に rAF ループ稼働中なら何もしない（二重起動防止）
+            if (rafId === null && !hasFiredFullyVisibleRef.current) {
+              lastTop = null;
+              stableFrames = 0;
+              rafId = requestAnimationFrame(tick);
+            }
+          } else {
+            // 不可視になったらループ停止。再度可視になったら再開する。
+            stopRaf();
           }
         }
       },
@@ -134,19 +184,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     );
     observer.observe(el);
 
-    // ChatPanel 内の overflow コンテナなど、任意のスクロール元を捉えるため capture phase
-    const onAnyScroll = () => {
-      if (isIntersecting) scheduleFire();
-    };
-    document.addEventListener("scroll", onAnyScroll, {
-      capture: true,
-      passive: true,
-    });
-
     return () => {
       observer.disconnect();
-      document.removeEventListener("scroll", onAnyScroll, { capture: true });
-      if (settleTimer) clearTimeout(settleTimer);
+      stopRaf();
     };
   }, [onFullyVisible]);
 
