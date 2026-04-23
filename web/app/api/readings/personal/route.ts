@@ -228,8 +228,14 @@ export async function POST(req: NextRequest) {
                 clientId,
                 tarotistId: tarotist.id,
                 tarotist,
-                chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("TAROTIST_ANSWER" as const),
-                role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                chatType:
+                  msg.role === "user"
+                    ? ("USER_QUESTION" as const)
+                    : ("TAROTIST_ANSWER" as const),
+                role:
+                  msg.role === "user"
+                    ? ("USER" as const)
+                    : ("TAROTIST" as const),
                 message: msgTextFn(msg),
               })),
               {
@@ -253,10 +259,17 @@ export async function POST(req: NextRequest) {
               chatMessages,
               incrementUsage: true,
             });
-            logWithContext("info", "E2E モック: パーソナル Phase2 初回保存完了", { clientId });
+            logWithContext(
+              "info",
+              "E2E モック: パーソナル Phase2 初回保存完了",
+              { clientId },
+            );
           } else {
             // Q&A ターン: 既存リーディングを更新
-            const existingReading = await readingRepository.getLatestPersonalReadingForClient(clientId);
+            const existingReading =
+              await readingRepository.getLatestPersonalReadingForClient(
+                clientId,
+              );
             if (existingReading) {
               const firstPhase2AiIdx = clientMessages.findIndex(
                 (m, i) => m.role === "assistant" && i >= (initialLen ?? 0),
@@ -272,7 +285,10 @@ export async function POST(req: NextRequest) {
                       : i === firstPhase2AiIdx
                         ? ("FINAL_READING" as const)
                         : ("TAROTIST_ANSWER" as const),
-                  role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                  role:
+                    msg.role === "user"
+                      ? ("USER" as const)
+                      : ("TAROTIST" as const),
                   message: msgTextFn(msg),
                 })),
                 {
@@ -304,7 +320,10 @@ export async function POST(req: NextRequest) {
             }
           }
         } catch (error) {
-          logWithContext("error", "E2E モック: パーソナル占い保存に失敗", { error, clientId });
+          logWithContext("error", "E2E モック: パーソナル占い保存に失敗", {
+            error,
+            clientId,
+          });
         }
       }
 
@@ -389,7 +408,7 @@ export async function POST(req: NextRequest) {
           .join("\n") +
         `\n\n` +
         `【回答フォーマット】\n` +
-        `【受け止め】\n` +
+        `{受け止め}(以下の内容の受け止め文章のみ回答し「受け止め」というタイトルは不要)\n` +
         `相談者の相談内容を一言で受け止め、これからおすすめのスプレッドをご紹介する旨を、` +
         `${tarotist.name}として自分らしい温かい言葉で2〜3文で伝えてください。\n` +
         `例: 「{相談者の相談テーマ}についてですね。それでは、あなたに合ったスプレッドをいくつかご紹介しますね。」\n` +
@@ -540,11 +559,15 @@ export async function POST(req: NextRequest) {
             });
 
             if (!text.trim() || finishReason === "error") {
-              logWithContext("warn", "パーソナル占い: テキスト空またはエラー終了のためスキップ", {
-                clientId,
-                textLength: text.length,
-                finishReason,
-              });
+              logWithContext(
+                "warn",
+                "パーソナル占い: テキスト空またはエラー終了のためスキップ",
+                {
+                  clientId,
+                  textLength: text.length,
+                  finishReason,
+                },
+              );
               return;
             }
 
@@ -565,8 +588,14 @@ export async function POST(req: NextRequest) {
                     clientId,
                     tarotistId: tarotist.id,
                     tarotist,
-                    chatType: msg.role === "user" ? ("USER_QUESTION" as const) : ("TAROTIST_ANSWER" as const),
-                    role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                    chatType:
+                      msg.role === "user"
+                        ? ("USER_QUESTION" as const)
+                        : ("TAROTIST_ANSWER" as const),
+                    role:
+                      msg.role === "user"
+                        ? ("USER" as const)
+                        : ("TAROTIST" as const),
                     message: msgText(msg),
                   })),
                   {
@@ -590,10 +619,17 @@ export async function POST(req: NextRequest) {
                   chatMessages,
                   incrementUsage: true,
                 });
-                logWithContext("info", "パーソナル占い Phase2 初回鑑定保存完了", { clientId });
+                logWithContext(
+                  "info",
+                  "パーソナル占い Phase2 初回鑑定保存完了",
+                  { clientId },
+                );
               } else {
                 // Q&A ターン: 既存リーディングを更新
-                const existingReading = await readingRepository.getLatestPersonalReadingForClient(clientId);
+                const existingReading =
+                  await readingRepository.getLatestPersonalReadingForClient(
+                    clientId,
+                  );
 
                 const firstPhase2AiIdx = clientMessages.findIndex(
                   (m, i) => m.role === "assistant" && i >= (initialLen ?? 0),
@@ -609,7 +645,10 @@ export async function POST(req: NextRequest) {
                         : i === firstPhase2AiIdx
                           ? ("FINAL_READING" as const)
                           : ("TAROTIST_ANSWER" as const),
-                    role: msg.role === "user" ? ("USER" as const) : ("TAROTIST" as const),
+                    role:
+                      msg.role === "user"
+                        ? ("USER" as const)
+                        : ("TAROTIST" as const),
                     message: msgText(msg),
                   })),
                   {
@@ -624,7 +663,11 @@ export async function POST(req: NextRequest) {
 
                 if (!existingReading) {
                   // フォールバック: 利用回数は Phase2 初回保存で消費済みのため incrementUsage=false
-                  logWithContext("warn", "パーソナル占い Q&A: 既存リーディングが見つからないため新規作成", { clientId });
+                  logWithContext(
+                    "warn",
+                    "パーソナル占い Q&A: 既存リーディングが見つからないため新規作成",
+                    { clientId },
+                  );
                   await clientService.saveReading({
                     clientId,
                     deviceId,
@@ -637,7 +680,11 @@ export async function POST(req: NextRequest) {
                     chatMessages,
                     incrementUsage: false,
                   });
-                  logWithContext("info", "パーソナル占い Q&A フォールバック保存完了", { clientId });
+                  logWithContext(
+                    "info",
+                    "パーソナル占い Q&A フォールバック保存完了",
+                    { clientId },
+                  );
                 } else {
                   await clientService.saveReading({
                     readingId: existingReading.id,
@@ -652,14 +699,18 @@ export async function POST(req: NextRequest) {
                     chatMessages,
                     incrementUsage: false,
                   });
-                  logWithContext("info", "パーソナル占い Q&A 保存完了", { clientId, readingId: existingReading.id });
+                  logWithContext("info", "パーソナル占い Q&A 保存完了", {
+                    clientId,
+                    readingId: existingReading.id,
+                  });
                 }
               }
             } catch (error) {
               logWithContext("error", "パーソナル占い保存に失敗", {
                 error,
                 errorName: error instanceof Error ? error.name : typeof error,
-                errorMessage: error instanceof Error ? error.message : String(error),
+                errorMessage:
+                  error instanceof Error ? error.message : String(error),
                 clientId,
               });
             }
