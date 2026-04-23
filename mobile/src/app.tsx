@@ -602,6 +602,7 @@ function App() {
             onChangePlan={handleChangePlan}
             onStartReading={handleStartReading}
             isChangingPlan={isChangingPlan}
+            isPlanExpiredShowing={planExpiredNotification !== null}
           />
         );
       case "personal":
