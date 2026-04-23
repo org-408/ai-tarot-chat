@@ -116,6 +116,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const { resetOnboarding } = useClient();
 
   const handleReplayTutorial = async () => {
+    // トースト表示中は連打防止（タイムアウトでフラグが落ちるまでロック）
+    if (showTutorialToast) return;
     setShowTutorialToast(true);
     setTimeout(() => setShowTutorialToast(false), 2500);
     await resetOnboarding();
