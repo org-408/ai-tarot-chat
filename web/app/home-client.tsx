@@ -229,14 +229,14 @@ export default function HomeClient() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-gray-500" />
-              <h3 className="font-semibold text-gray-700 text-sm">
+              <h3 className="font-semibold text-gray-700 text-base">
                 {t("recentHistory")}
               </h3>
             </div>
             {readings.length > 0 && (
               <Link
                 href="/history"
-                className="text-xs text-purple-600 hover:underline"
+                className="text-sm text-purple-600 hover:underline"
               >
                 {t("viewAll")}
               </Link>
@@ -245,7 +245,7 @@ export default function HomeClient() {
 
           {readings.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-5 text-center">
-              <p className="text-xs text-gray-500">{t("historyEmpty")}</p>
+              <p className="text-sm text-gray-500">{t("historyEmpty")}</p>
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
@@ -258,10 +258,10 @@ export default function HomeClient() {
                   <Link
                     key={r.id}
                     href={`/history/${r.id}`}
-                    className="flex-shrink-0 w-44 bg-white rounded-xl border p-3 hover:shadow-md transition-shadow"
+                    className="flex-shrink-0 w-48 bg-white rounded-xl border p-3 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border border-purple-100">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border border-purple-100">
                         <img
                           src={`/tarotists/${r.tarotist?.name}.png`}
                           alt=""
@@ -273,32 +273,34 @@ export default function HomeClient() {
                           }}
                         />
                       </div>
-                      <span className="text-xs font-medium text-gray-700 truncate">
+                      <span className="text-sm font-medium text-gray-700 truncate">
                         {r.tarotist?.name ?? "?"}
                       </span>
                     </div>
                     {mainText && (
-                      <p className="text-xs font-medium text-gray-800 line-clamp-2 min-h-[2.5rem] leading-tight">
+                      <p className="text-sm font-medium text-gray-800 truncate leading-tight">
                         {mainText}
                       </p>
                     )}
-                    {r.spread?.name && (
-                      <p className="text-[10px] text-gray-500 truncate mt-1.5">
-                        {r.spread.name}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-[10px] text-gray-400">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                      {r.spread?.name && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                          {r.spread.name}
+                        </span>
+                      )}
+                      {isPersonal && (
+                        <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
+                          {t("personalBadge")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-end mt-1.5">
+                      <span className="text-xs text-gray-400">
                         {new Date(r.createdAt).toLocaleDateString("ja-JP", {
                           month: "short",
                           day: "numeric",
                         })}
                       </span>
-                      {isPersonal && (
-                        <span className="text-[10px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full">
-                          {t("personalBadge")}
-                        </span>
-                      )}
                     </div>
                   </Link>
                 );
