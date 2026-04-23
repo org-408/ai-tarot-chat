@@ -39,10 +39,14 @@ interface ChatPanelProps {
   onMessagesChange?: (messages: UIMessage[]) => void;
   /** 残り利用回数。0 以下の場合はボタンを無効化して「本日の占いは終了しました」を表示 */
   remainingCount?: number;
-  /** AI の初回メッセージが完了し入力欄が有効化された初回タイミングで 1 回だけ呼ばれる */
+  /** AI の初回メッセージが完了し入力欄が表示された初回タイミングで 1 回だけ呼ばれる */
   onInputReady?: () => void;
-  /** パーソナル Phase1 で「占いを始める」ボタンが画面内に完全に収まった初回タイミングで 1 回だけ呼ばれる */
-  onStartButtonVisible?: () => void;
+  /** パーソナル Phase1 でスプレッド選択セクション全体が画面内に完全に収まった初回タイミングで 1 回だけ呼ばれる */
+  onSelectorFullyVisible?: () => void;
+  /** Phase1 入力欄 (textarea) の DOM 要素が変化したタイミングで呼ばれる。コーチマークのターゲット取得用 */
+  onInputElChange?: (el: HTMLElement | null) => void;
+  /** パーソナル Phase1 のスプレッド選択セクション (CategorySpreadSelector) のルート要素を通知する */
+  onSelectorElChange?: (el: HTMLElement | null) => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -54,7 +58,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onMessagesChange,
   remainingCount,
   onInputReady,
-  onStartButtonVisible,
+  onSelectorFullyVisible,
+  onInputElChange,
+  onSelectorElChange,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
@@ -572,24 +578,26 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     status,
   ]);
 
-  // onInputReady: 入力欄が表示されるタイミングと揃えて発火する
-  //
-  // Phase1 入力欄の表示条件（chat-panel.tsx の textarea 側）:
-  //   isPersonal && !isPhase2 && !inputDisabled && !isProcessing
-  // これに「AI 応答が少なくとも 1 件届いた」= AI の初回挨拶完了、を AND する。
-  //
-  // NOTE: 以前は isMessageComplete を流用していたが、これは「戻るボタンを出してよい
-  //       状態」判定用で drawnCards.length > 0 を要求する。パーソナル Phase1 では
-  //       カードを引かないため永遠に false となり、Stage1 overlay が出なかった。
+  // Phase1 入力欄の表示条件（JSX 側と共有する単一の真実源）。
+  // textarea の render 条件と onInputReady の発火条件の基底をここで統一する。
+  const isPhase1InputVisible =
+    isPersonal && !isPhase2 && !inputDisabled && !isProcessing;
+
+  // AI が初回挨拶を済ませた状態か。チュートリアル都合のフラグではなく、
+  // 「AI が話す前にユーザーへ『入力してください』と案内しない」というドメイン要件。
+  // 初期状態では messages に role:"assistant" が無いことを利用している。
+  const hasAiGreeted = messages.some((m) => m.role === "assistant");
+
+  // onInputReady: 入力欄が表示された初回のみ発火
+  // 発火条件 = 入力欄表示条件 AND AI 初回挨拶済み
   const hasFiredInputReadyRef = useRef(false);
   useEffect(() => {
     if (hasFiredInputReadyRef.current) return;
-    const hasAssistantMsg = messages.some((m) => m.role === "assistant");
-    if (hasAssistantMsg && status === "ready" && !inputDisabled && !isProcessing) {
+    if (isPhase1InputVisible && hasAiGreeted) {
       hasFiredInputReadyRef.current = true;
       onInputReady?.();
     }
-  }, [messages, status, inputDisabled, isProcessing, onInputReady]);
+  }, [isPhase1InputVisible, hasAiGreeted, onInputReady]);
 
   // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
   // Phase2 の場合は onFinish から直接 onUnlock を呼ぶため、
@@ -658,7 +666,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           <div className="mt-6">
             <CategorySpreadSelector
               handleStartReading={handleStartReading}
-              onStartButtonVisible={onStartButtonVisible}
+              onFullyVisible={onSelectorFullyVisible}
+              onRootElChange={onSelectorElChange}
             />
           </div>
         )}
@@ -760,7 +769,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       )}
 
       {/* Phase1 入力エリア */}
-      {isPersonal && !isPhase2 && !inputDisabled && !isProcessing && (
+      {isPhase1InputVisible && (
         <motion.div
           className={`px-4 py-3 bg-transparent border-1 shadow${showSelector ? " invisible" : ""}`}
           transition={{
@@ -772,7 +781,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         >
           <div className="relative bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08),0_8px_16px_rgba(0,0,0,0.06)]">
             <textarea
-              ref={textareaRef}
+              ref={(el) => {
+                textareaRef.current = el;
+                onInputElChange?.(el);
+              }}
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
