@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type {
+  OnboardingKey,
   Plan,
   Reading,
   UsageStats,
@@ -58,6 +59,12 @@ interface ClientState {
   setParams: (params: PaginationParams) => { take: number; skip: number };
   setTake: (take: number) => void;
   setSkip: (skip: number) => void;
+
+  // ============================================
+  // アクション: オンボーディング
+  // ============================================
+  markOnboarded: (screen: OnboardingKey) => Promise<void>;
+  resetOnboarding: () => Promise<void>;
 
   // ============================================
   // リセット
@@ -391,6 +398,58 @@ export const useClientStore = create<ClientState>()(
       setSkip: (skip: number) => {
         logWithContext("info", "[ClientStore] Setting skip", { skip });
         set({ skip: skip - (skip % get().take) }); // skip が take の倍数になるように調整
+      },
+
+      // ============================================
+      // オンボーディング
+      // ============================================
+      markOnboarded: async (screen: OnboardingKey) => {
+        logWithContext("info", "[ClientStore] Marking onboarded", { screen });
+        try {
+          const flags = await clientService.setOnboardingFlag(screen, true);
+          const usage = get().usage;
+          if (usage) {
+            set({
+              usage: {
+                ...usage,
+                quickOnboardedAt: flags.quickOnboardedAt,
+                personalOnboardedAt: flags.personalOnboardedAt,
+              },
+            });
+          }
+        } catch (error) {
+          logWithContext("error", "[ClientStore] Failed to mark onboarded", {
+            screen,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          // オンボーディングは UX 補助なので、失敗しても致命扱いしない
+        }
+      },
+
+      resetOnboarding: async () => {
+        logWithContext("info", "[ClientStore] Resetting onboarding flags");
+        try {
+          // 両方クリア
+          const resultQuick = await clientService.setOnboardingFlag("quick", false);
+          const resultPersonal = await clientService.setOnboardingFlag("personal", false);
+          const usage = get().usage;
+          if (usage) {
+            set({
+              usage: {
+                ...usage,
+                quickOnboardedAt: resultQuick.quickOnboardedAt,
+                personalOnboardedAt: resultPersonal.personalOnboardedAt,
+              },
+            });
+          }
+        } catch (error) {
+          logWithContext("error", "[ClientStore] Failed to reset onboarding", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+          set({
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+        }
       },
 
       // ============================================

@@ -126,6 +126,10 @@ model Client {
   provider     String?  // "google", "apple" 何でサインインしたか
   lastLoginAt  DateTime?
 
+  // オンボーディング（初回チュートリアル表示済み日時）
+  quickOnboardedAt    DateTime?
+  personalOnboardedAt DateTime?
+
   // Stripe
   stripeCustomerId String?
 

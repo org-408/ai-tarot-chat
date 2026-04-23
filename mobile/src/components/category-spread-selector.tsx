@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import OnboardingOverlay from "../../../shared/components/ui/onboarding-overlay";
 import type {
   ReadingCategory,
   Spread,
@@ -22,7 +23,13 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   claraMode = false,
 }) => {
   const { masterData } = useMaster();
-  const { currentPlan, remainingReadings, remainingPersonal } = useClient();
+  const {
+    currentPlan,
+    remainingReadings,
+    remainingPersonal,
+    quickOnboardedAt,
+    markOnboarded,
+  } = useClient();
   const {
     quickCategory,
     personalCategory,
@@ -41,6 +48,23 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const setSelectedCategory = isPersonal ? setPersonalCategory : setQuickCategory;
   const selectedSpread = isPersonal ? personalSpread : quickSpread;
   const setSelectedSpread = isPersonal ? setPersonalSpread : setQuickSpread;
+
+  // オンボーディング: クイック占いの初回表示のみ
+  // - いつでも占い（claraMode）: クイックで慣れている前提なので対象外
+  // - パーソナル占い（isPersonal）: 別経路で制御
+  const shouldShowOnboarding =
+    !isPersonal && !claraMode && !quickOnboardedAt;
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  useEffect(() => {
+    if (shouldShowOnboarding) setOverlayVisible(true);
+  }, [shouldShowOnboarding]);
+  const handleOverlayDismiss = () => {
+    setOverlayVisible(false);
+    if (!quickOnboardedAt) {
+      // fire-and-forget: 失敗しても UX を止めない
+      void markOnboarded("quick");
+    }
+  };
 
   // カテゴリーの取得とフィルタリング
   const availableCategories = useMemo(() => {
@@ -282,6 +306,13 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             : `今日はあと${remaining}回`}
         </div>
       </div>
+
+      <OnboardingOverlay
+        isOpen={overlayVisible}
+        title={"占いたいジャンルとスプレッドを\n選んでください"}
+        note={"スプレッドはタロットカードの配置パターンです。\nジャンルに合わせて選べます。"}
+        onDismiss={handleOverlayDismiss}
+      />
     </>
   );
 };

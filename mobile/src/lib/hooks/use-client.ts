@@ -23,6 +23,8 @@ export function useClient() {
     checkAndResetIfNeeded,
     fetchReadings,
     invalidateReadings,
+    markOnboarded,
+    resetOnboarding,
   } = useClientStore();
 
   return {
@@ -41,6 +43,12 @@ export function useClient() {
     error,
 
     // ============================================
+    // オンボーディング
+    // ============================================
+    quickOnboardedAt: usage?.quickOnboardedAt ?? null,
+    personalOnboardedAt: usage?.personalOnboardedAt ?? null,
+
+    // ============================================
     // アクション
     // ============================================
     init,
@@ -49,5 +57,7 @@ export function useClient() {
     checkAndResetIfNeeded,
     fetchReadings,
     invalidateReadings,
+    markOnboarded,
+    resetOnboarding,
   };
 }

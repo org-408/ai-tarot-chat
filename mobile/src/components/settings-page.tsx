@@ -2,6 +2,7 @@ import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import {
   BarChart2,
+  BookOpen,
   ChevronRight,
   ExternalLink,
   LogIn,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import type { Plan } from "../../../shared/lib/types";
+import { useClient } from "../lib/hooks/use-client";
 import UsagePage from "./usage-page";
 
 interface SettingsPageProps {
@@ -110,6 +112,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const [view, setView] = useState<"main" | "usage">("main");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showTutorialToast, setShowTutorialToast] = useState(false);
+  const { resetOnboarding } = useClient();
+
+  const handleReplayTutorial = async () => {
+    await resetOnboarding();
+    setShowTutorialToast(true);
+    setTimeout(() => setShowTutorialToast(false), 2500);
+  };
 
   // ネイティブ（iOS/Android）では App.getInfo() でバイナリの実バージョンを取得
   // Web/開発時は vite.config.ts で埋め込んだ package.json のバージョンにフォールバック
@@ -260,6 +270,24 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           onClick={onManageSubscriptions}
         />
       </RowGroup>
+
+      {/* ── チュートリアル ─────────────── */}
+      <SectionHeader label="チュートリアル" />
+      <RowGroup>
+        <Row
+          icon={<BookOpen size={16} />}
+          label="チュートリアルを再表示"
+          description="各画面の初回ガイドをもう一度表示します"
+          onClick={handleReplayTutorial}
+        />
+      </RowGroup>
+
+      {/* チュートリアルリセット完了トースト */}
+      {showTutorialToast && (
+        <div className="fixed left-1/2 bottom-24 -translate-x-1/2 z-50 bg-gray-900/90 text-white text-xs px-4 py-2 rounded-full shadow-lg">
+          各画面でガイドを再表示します
+        </div>
+      )}
 
       {/* ── 法的情報 ──────────────────── */}
       <SectionHeader label="法的情報" />
