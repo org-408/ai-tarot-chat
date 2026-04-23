@@ -249,41 +249,60 @@ export default function HomeClient() {
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-              {readings.slice(0, 5).map((r: Reading) => (
-                <Link
-                  key={r.id}
-                  href={`/history/${r.id}`}
-                  className="flex-shrink-0 w-36 bg-white rounded-xl border p-3 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border border-purple-100">
-                      <img
-                        src={`/tarotists/${r.tarotist?.name}.png`}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display =
-                            "none";
-                        }}
-                      />
+              {readings.slice(0, 5).map((r: Reading) => {
+                const isPersonal = !!r.customQuestion;
+                const mainText = isPersonal
+                  ? r.customQuestion
+                  : r.category?.name;
+                return (
+                  <Link
+                    key={r.id}
+                    href={`/history/${r.id}`}
+                    className="flex-shrink-0 w-44 bg-white rounded-xl border p-3 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border border-purple-100">
+                        <img
+                          src={`/tarotists/${r.tarotist?.name}.png`}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = "none";
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 truncate">
+                        {r.tarotist?.name ?? "?"}
+                      </span>
                     </div>
-                    <span className="text-xs font-medium text-gray-700 truncate">
-                      {r.tarotist?.name ?? "?"}
-                    </span>
-                  </div>
-                  {r.category == null && (
-                    <span className="text-[10px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full">
-                      {t("personalBadge")}
-                    </span>
-                  )}
-                  <p className="text-[10px] text-gray-400 mt-1">
-                    {new Date(r.createdAt).toLocaleDateString("ja-JP", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </p>
-                </Link>
-              ))}
+                    {mainText && (
+                      <p className="text-xs font-medium text-gray-800 line-clamp-2 min-h-[2.5rem] leading-tight">
+                        {mainText}
+                      </p>
+                    )}
+                    {r.spread?.name && (
+                      <p className="text-[10px] text-gray-500 truncate mt-1.5">
+                        {r.spread.name}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-[10px] text-gray-400">
+                        {new Date(r.createdAt).toLocaleDateString("ja-JP", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                      {isPersonal && (
+                        <span className="text-[10px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full">
+                          {t("personalBadge")}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </section>
