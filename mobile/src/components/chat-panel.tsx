@@ -572,14 +572,24 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     status,
   ]);
 
-  // onInputReady: 入力欄が使える状態になった初回のみ発火
+  // onInputReady: 入力欄が表示されるタイミングと揃えて発火する
+  //
+  // Phase1 入力欄の表示条件（chat-panel.tsx の textarea 側）:
+  //   isPersonal && !isPhase2 && !inputDisabled && !isProcessing
+  // これに「AI 応答が少なくとも 1 件届いた」= AI の初回挨拶完了、を AND する。
+  //
+  // NOTE: 以前は isMessageComplete を流用していたが、これは「戻るボタンを出してよい
+  //       状態」判定用で drawnCards.length > 0 を要求する。パーソナル Phase1 では
+  //       カードを引かないため永遠に false となり、Stage1 overlay が出なかった。
   const hasFiredInputReadyRef = useRef(false);
   useEffect(() => {
-    if (isMessageComplete && !hasFiredInputReadyRef.current) {
+    if (hasFiredInputReadyRef.current) return;
+    const hasAssistantMsg = messages.some((m) => m.role === "assistant");
+    if (hasAssistantMsg && status === "ready" && !inputDisabled && !isProcessing) {
       hasFiredInputReadyRef.current = true;
       onInputReady?.();
     }
-  }, [isMessageComplete, onInputReady]);
+  }, [messages, status, inputDisabled, isProcessing, onInputReady]);
 
   // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
   // Phase2 の場合は onFinish から直接 onUnlock を呼ぶため、
