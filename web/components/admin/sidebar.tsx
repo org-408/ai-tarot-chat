@@ -16,6 +16,8 @@ const NAV = [
   { href: "/admin/x-posts", label: "𝕏 投稿管理" },
   { href: "/admin/blog", label: "📝 ブログ管理" },
   { href: "/admin/blog/feature-queue", label: "📋 機能紹介キュー" },
+  { href: "/admin/ranking", label: "🏆 ランキング管理" },
+  { href: "/admin/feature-flags", label: "🚩 機能フラグ" },
   { href: "/admin/readings", label: "📖 占い履歴" },
   { href: "/admin/reset-history", label: "🔄 リセット履歴" },
   { href: "/admin/log-viewer", label: "📋 ログ管理" },
