@@ -74,7 +74,9 @@ export function AppSidebar() {
               >
                 Ariadne
               </p>
-              <p className="text-xs text-muted-foreground mt-1">AI Tarot Chat</p>
+              <p className="text-xs mt-1" style={{ color: "#87CEEB" }}>
+                AI Tarot Chat
+              </p>
             </div>
           </div>
         </div>

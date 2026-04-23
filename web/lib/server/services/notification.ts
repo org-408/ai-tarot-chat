@@ -31,8 +31,8 @@ function buildEmailHtml(
   <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(109,40,217,0.1);">
     <div style="background:linear-gradient(135deg,#4c1d95,#3730a3);padding:40px 32px;text-align:center;">
       <div style="font-size:48px;margin-bottom:12px;">🔮</div>
-      <h1 style="margin:0;color:#fff;font-size:24px;font-weight:bold;">Ariadne</h1>
-      <p style="margin:8px 0 0;color:#c4b5fd;font-size:14px;">AI タロット占い</p>
+      <h1 style="margin:0;color:#87CEEB;font-size:24px;font-weight:bold;">Ariadne</h1>
+      <p style="margin:8px 0 0;color:#87CEEB;font-size:14px;">AI タロット占い</p>
     </div>
     <div style="padding:32px;">
       <h2 style="color:#1e1b4b;font-size:20px;font-weight:bold;margin:0 0 16px;">${title}</h2>

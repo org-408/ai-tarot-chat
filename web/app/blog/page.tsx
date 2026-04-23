@@ -68,7 +68,10 @@ export default async function BlogListPage() {
 
         <div className="relative mx-auto max-w-4xl px-4 pt-12 pb-6 text-center">
           <h1 className="mb-3 leading-tight">
-            <span className={`${monteCarlo.className} text-5xl sm:text-6xl text-purple-200 block`}>
+            <span
+              className={`${monteCarlo.className} text-5xl sm:text-6xl block`}
+              style={{ color: "#87CEEB" }}
+            >
               Ariadne
             </span>
             <span className="text-2xl sm:text-3xl font-bold block mt-1">

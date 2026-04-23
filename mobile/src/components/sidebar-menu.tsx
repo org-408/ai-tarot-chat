@@ -289,12 +289,18 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 <br />
                 <div className="flex justify-center items-center gap-4">
                   <span
-                    className="text-purple-600 font-bold text-xl"
-                    style={{ fontFamily: "'MonteCarlo', cursive" }}
+                    className="font-bold text-xl"
+                    style={{
+                      fontFamily: "'MonteCarlo', cursive",
+                      color: "#87CEEB",
+                    }}
                   >
                     Ariadne
                   </span>
-                  <span className="text-purple-600 font-semibold">
+                  <span
+                    className="font-semibold"
+                    style={{ color: "#87CEEB" }}
+                  >
                     AI Tarot Chat
                   </span>
                 </div>

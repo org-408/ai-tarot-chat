@@ -58,12 +58,18 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
 
             <div className="mb-4">
               <div
-                className="text-5xl bg-gradient-to-r from-sky-200 to-purple-200 bg-clip-text text-transparent"
-                style={{ fontFamily: "'MonteCarlo', cursive" }}
+                className="text-5xl"
+                style={{
+                  fontFamily: "'MonteCarlo', cursive",
+                  color: "#87CEEB",
+                }}
               >
                 Ariadne
               </div>
-              <div className="text-xl font-medium text-white/80">
+              <div
+                className="text-xl font-medium"
+                style={{ color: "#87CEEB" }}
+              >
                 AI Tarot Chat
               </div>
             </div>
