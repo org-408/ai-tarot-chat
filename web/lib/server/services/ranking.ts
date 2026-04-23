@@ -2,251 +2,298 @@ import { prisma } from "@/lib/server/repositories/database";
 import {
   RankingKind,
   rankingRepository,
-  type RankingEntry,
+  type AggregatedRankingRow,
 } from "@/lib/server/repositories/ranking";
-import {
-  FeatureFlagKeys,
-  featureFlagService,
-} from "@/lib/server/services/feature-flag";
 
 export { RankingKind };
 
-const RANKING_PERIOD_DAYS = 30;
+// 集計の設計方針
+// ---------------------------------------
+// - バケット粒度: 1 時間（= 毎時 cron で直前 1 時間分を集計）
+// - 公開表示期間: 直近 30 日 × 1時間 = 720 バケットの SUM
+// - 集計期間は将来 admin から変更できるようにしても良いが、現状は固定
+const BUCKET_MS = 60 * 60 * 1000; // 1h
+const PUBLIC_PERIOD_DAYS = 30;
 const PUBLIC_LIMIT = 10;
-const AGG_LIMIT = 50; // Snapshot 保存時の最大件数
-const FALLBACK_THRESHOLD = 3; // Snapshot がこれ未満のとき Override で埋める
+const FALLBACK_THRESHOLD = 3;
+const ALL_KINDS: RankingKind[] = [
+  RankingKind.TAROTIST,
+  RankingKind.SPREAD,
+  RankingKind.CATEGORY,
+  RankingKind.CARD,
+  RankingKind.PERSONAL_CATEGORY,
+];
+
+export { ALL_KINDS };
 
 export type RankingItem = {
   rank: number;
   id: string;
   name: string;
   count: number;
-  // 種別固有メタデータ
   icon?: string | null;
   avatarUrl?: string | null;
   cardCount?: number;
-  cardCode?: string; // TarotCard のコード（画像パス解決に使う）
+  cardCode?: string;
 };
 
 export type RankingResponse = {
-  tarotists: RankingItem[] | null;
-  spreads: RankingItem[] | null;
-  categories: RankingItem[] | null;
-  cards: RankingItem[] | null;
-  personalCategories: RankingItem[] | null;
-  generatedAt: string | null; // ISO 8601
+  tarotists: RankingItem[];
+  spreads: RankingItem[];
+  categories: RankingItem[];
+  cards: RankingItem[];
+  personalCategories: RankingItem[];
+  generatedAt: string | null;
   periodDays: number;
 };
 
-export class RankingService {
-  /** 公開ページ用：5種のランキングをまとめて取得 */
-  async getPublicRanking(): Promise<RankingResponse> {
-    const [
-      tarotistEnabled,
-      spreadEnabled,
-      categoryEnabled,
-      cardEnabled,
-      personalCategoryEnabled,
-    ] = await Promise.all([
-      featureFlagService.isEnabled(FeatureFlagKeys.RANKING_TAROTIST_ENABLED),
-      featureFlagService.isEnabled(FeatureFlagKeys.RANKING_SPREAD_ENABLED),
-      featureFlagService.isEnabled(FeatureFlagKeys.RANKING_CATEGORY_ENABLED),
-      featureFlagService.isEnabled(FeatureFlagKeys.RANKING_CARD_ENABLED),
-      featureFlagService.isEnabled(FeatureFlagKeys.RANKING_PERSONAL_CATEGORY_ENABLED),
-    ]);
+/**
+ * periodEnd を「直近の時間境界 00:00」に切り詰めた Date を返す。
+ * 例: 2026-04-23T10:37:12 → 2026-04-23T10:00:00
+ */
+export function truncateToHour(d: Date): Date {
+  const t = new Date(d);
+  t.setUTCMilliseconds(0);
+  t.setUTCSeconds(0);
+  t.setUTCMinutes(0);
+  return t;
+}
 
-    const [tarotists, spreads, categories, cards, personalCategories, latest] =
-      await Promise.all([
-        tarotistEnabled ? this.getList(RankingKind.TAROTIST) : Promise.resolve(null),
-        spreadEnabled ? this.getList(RankingKind.SPREAD) : Promise.resolve(null),
-        categoryEnabled ? this.getList(RankingKind.CATEGORY) : Promise.resolve(null),
-        cardEnabled ? this.getList(RankingKind.CARD) : Promise.resolve(null),
-        personalCategoryEnabled
-          ? this.getList(RankingKind.PERSONAL_CATEGORY)
-          : Promise.resolve(null),
-        this.getLatestGeneratedAt(),
-      ]);
+export class RankingService {
+  // -------- 公開ページ --------
+
+  async getPublicRanking(): Promise<RankingResponse> {
+    const from = new Date(Date.now() - PUBLIC_PERIOD_DAYS * 24 * BUCKET_MS);
+
+    const [tarotists, spreads, categories, cards, personal, latest] = await Promise.all([
+      this.loadKind(RankingKind.TAROTIST, from),
+      this.loadKind(RankingKind.SPREAD, from),
+      this.loadKind(RankingKind.CATEGORY, from),
+      this.loadKind(RankingKind.CARD, from),
+      this.loadKind(RankingKind.PERSONAL_CATEGORY, from),
+      this.getLatestGeneratedAt(),
+    ]);
 
     return {
       tarotists,
       spreads,
       categories,
       cards,
-      personalCategories,
-      generatedAt: latest?.toISOString() ?? null,
-      periodDays: RANKING_PERIOD_DAYS,
+      personalCategories: personal,
+      generatedAt: latest ? latest.toISOString() : null,
+      periodDays: PUBLIC_PERIOD_DAYS,
     };
   }
 
+  private async loadKind(kind: RankingKind, from: Date): Promise<RankingItem[]> {
+    const rows = await rankingRepository.sumOverPeriod(kind, from, PUBLIC_LIMIT);
+    // フォールバック: SUM 結果が薄い場合 Override で穴埋め
+    if (rows.length < FALLBACK_THRESHOLD) {
+      const overrides = await rankingRepository.getActiveOverrides(kind, PUBLIC_LIMIT);
+      const existing = new Set(rows.map((r) => r.targetId));
+      const extras = overrides
+        .filter((o) => !existing.has(o.targetId))
+        .map<AggregatedRankingRow>((o) => ({ targetId: o.targetId, total: 0 }));
+      const merged = [...rows, ...extras].slice(0, PUBLIC_LIMIT);
+      return this.enrich(kind, merged);
+    }
+    return this.enrich(kind, rows);
+  }
+
   private async getLatestGeneratedAt(): Promise<Date | null> {
-    const kinds: RankingKind[] = [
-      RankingKind.TAROTIST,
-      RankingKind.SPREAD,
-      RankingKind.CATEGORY,
-      RankingKind.CARD,
-      RankingKind.PERSONAL_CATEGORY,
-    ];
     const dates = await Promise.all(
-      kinds.map((k) => rankingRepository.getLatestGeneratedAt(k))
+      ALL_KINDS.map((k) => rankingRepository.latestPeriodEnd(k))
     );
     const valid = dates.filter((d): d is Date => d !== null);
     if (valid.length === 0) return null;
     return new Date(Math.max(...valid.map((d) => d.getTime())));
   }
 
-  /** 1種別のランキング構築：Snapshot 優先、しきい値未満なら Override で埋める */
-  private async getList(kind: RankingKind): Promise<RankingItem[]> {
-    const snapshot = await rankingRepository.getLatestSnapshot(kind, PUBLIC_LIMIT);
-    let entries: RankingEntry[] = snapshot;
-
-    if (entries.length < FALLBACK_THRESHOLD) {
-      const overrides = await rankingRepository.getActiveOverrides(kind, PUBLIC_LIMIT);
-      // 既存 Snapshot の targetId を避けつつ、Override を後ろに連結
-      const existingIds = new Set(entries.map((e) => e.targetId));
-      const extraEntries = overrides
-        .filter((o) => !existingIds.has(o.targetId))
-        .map((o, i) => ({
-          targetId: o.targetId,
-          count: 0,
-          rank: entries.length + i + 1,
-        }));
-      entries = [...entries, ...extraEntries].slice(0, PUBLIC_LIMIT);
-    }
-
-    if (entries.length === 0) return [];
-    return this.enrichEntries(kind, entries);
-  }
-
-  /** targetId を実体（名前・アイコン等）に解決する */
-  private async enrichEntries(
+  private async enrich(
     kind: RankingKind,
-    entries: RankingEntry[]
+    rows: AggregatedRankingRow[]
   ): Promise<RankingItem[]> {
-    const ids = entries.map((e) => e.targetId);
+    if (rows.length === 0) return [];
+    const ids = rows.map((r) => r.targetId);
     switch (kind) {
       case RankingKind.TAROTIST: {
-        const rows = await prisma.tarotist.findMany({
+        const entities = await prisma.tarotist.findMany({
           where: { id: { in: ids }, deletedAt: null },
           select: { id: true, name: true, icon: true, avatarUrl: true },
         });
-        const map = new Map(rows.map((r) => [r.id, r]));
-        return entries
-          .filter((e) => map.has(e.targetId))
-          .map((e) => {
-            const r = map.get(e.targetId)!;
+        const map = new Map(entities.map((e) => [e.id, e]));
+        return rows
+          .filter((r) => map.has(r.targetId))
+          .map((r, i) => {
+            const e = map.get(r.targetId)!;
             return {
-              rank: e.rank,
-              id: r.id,
-              name: r.name,
-              count: e.count,
-              icon: r.icon,
-              avatarUrl: r.avatarUrl ?? null,
+              rank: i + 1,
+              id: e.id,
+              name: e.name,
+              count: r.total,
+              icon: e.icon,
+              avatarUrl: e.avatarUrl ?? null,
             };
           });
       }
       case RankingKind.SPREAD: {
-        const rows = await prisma.spread.findMany({
+        const entities = await prisma.spread.findMany({
           where: { id: { in: ids } },
           select: { id: true, name: true, _count: { select: { cells: true } } },
         });
-        const map = new Map(rows.map((r) => [r.id, r]));
-        return entries
-          .filter((e) => map.has(e.targetId))
-          .map((e) => {
-            const r = map.get(e.targetId)!;
+        const map = new Map(entities.map((e) => [e.id, e]));
+        return rows
+          .filter((r) => map.has(r.targetId))
+          .map((r, i) => {
+            const e = map.get(r.targetId)!;
             return {
-              rank: e.rank,
-              id: r.id,
-              name: r.name,
-              count: e.count,
-              cardCount: r._count.cells,
+              rank: i + 1,
+              id: e.id,
+              name: e.name,
+              count: r.total,
+              cardCount: e._count.cells,
             };
           });
       }
       case RankingKind.CATEGORY:
       case RankingKind.PERSONAL_CATEGORY: {
-        const rows = await prisma.readingCategory.findMany({
+        const entities = await prisma.readingCategory.findMany({
           where: { id: { in: ids } },
           select: { id: true, name: true },
         });
-        const map = new Map(rows.map((r) => [r.id, r]));
-        return entries
-          .filter((e) => map.has(e.targetId))
-          .map((e) => {
-            const r = map.get(e.targetId)!;
-            return { rank: e.rank, id: r.id, name: r.name, count: e.count };
+        const map = new Map(entities.map((e) => [e.id, e]));
+        return rows
+          .filter((r) => map.has(r.targetId))
+          .map((r, i) => {
+            const e = map.get(r.targetId)!;
+            return { rank: i + 1, id: e.id, name: e.name, count: r.total };
           });
       }
       case RankingKind.CARD: {
-        const rows = await prisma.tarotCard.findMany({
+        const entities = await prisma.tarotCard.findMany({
           where: { id: { in: ids } },
           select: { id: true, name: true, code: true },
         });
-        const map = new Map(rows.map((r) => [r.id, r]));
-        return entries
-          .filter((e) => map.has(e.targetId))
-          .map((e) => {
-            const r = map.get(e.targetId)!;
+        const map = new Map(entities.map((e) => [e.id, e]));
+        return rows
+          .filter((r) => map.has(r.targetId))
+          .map((r, i) => {
+            const e = map.get(r.targetId)!;
             return {
-              rank: e.rank,
-              id: r.id,
-              name: r.name,
-              count: e.count,
-              cardCode: r.code,
+              rank: i + 1,
+              id: e.id,
+              name: e.name,
+              count: r.total,
+              cardCode: e.code,
             };
           });
       }
     }
   }
 
-  // -------- Cron: 全種別を洗い替え --------
+  // -------- Cron: 1 バケット集計 --------
 
-  async refreshAllSnapshots(): Promise<{
-    kinds: { kind: RankingKind; count: number }[];
-    generatedAt: string;
-  }> {
+  /**
+   * 指定 periodStart のバケット（+ 1時間）を集計して全種別を upsert。
+   * periodStart を省略した場合「直前の時間境界」を採用（例: 10:37 実行 → 09:00-10:00 バケット）
+   */
+  async aggregateBucket(
+    periodStart?: Date
+  ): Promise<{ periodStart: string; periodEnd: string; kinds: { kind: RankingKind; count: number }[] }> {
+    const start = periodStart ?? new Date(truncateToHour(new Date()).getTime() - BUCKET_MS);
+    const end = new Date(start.getTime() + BUCKET_MS);
     const generatedAt = new Date();
-    const results = await Promise.all([
-      this.refreshOne(RankingKind.TAROTIST, generatedAt),
-      this.refreshOne(RankingKind.SPREAD, generatedAt),
-      this.refreshOne(RankingKind.CATEGORY, generatedAt),
-      this.refreshOne(RankingKind.CARD, generatedAt),
-      this.refreshOne(RankingKind.PERSONAL_CATEGORY, generatedAt),
-    ]);
+
+    const results = await Promise.all(
+      ALL_KINDS.map(async (kind) => {
+        const entries = await rankingRepository.aggregateBucket(kind, start, end);
+        await rankingRepository.upsertBucket(kind, start, end, entries, generatedAt);
+        return { kind, count: entries.length };
+      })
+    );
+
     return {
+      periodStart: start.toISOString(),
+      periodEnd: end.toISOString(),
       kinds: results,
-      generatedAt: generatedAt.toISOString(),
     };
   }
 
-  private async refreshOne(
-    kind: RankingKind,
-    generatedAt: Date
-  ): Promise<{ kind: RankingKind; count: number }> {
-    const entries = await this.aggregate(kind);
-    await rankingRepository.replaceSnapshot(kind, entries, generatedAt);
-    return { kind, count: entries.length };
+  // -------- Admin: 期間オペ --------
+
+  /** 期間指定バケット削除 */
+  async deleteBuckets(from: Date, to: Date, kind?: RankingKind) {
+    return rankingRepository.deleteBucketsInRange(from, to, kind);
   }
 
-  private async aggregate(kind: RankingKind): Promise<RankingEntry[]> {
-    switch (kind) {
-      case RankingKind.TAROTIST:
-        return rankingRepository.aggregateTarotist(RANKING_PERIOD_DAYS, AGG_LIMIT);
-      case RankingKind.SPREAD:
-        return rankingRepository.aggregateSpread(RANKING_PERIOD_DAYS, AGG_LIMIT);
-      case RankingKind.CATEGORY:
-        return rankingRepository.aggregateCategory(RANKING_PERIOD_DAYS, AGG_LIMIT);
-      case RankingKind.CARD:
-        return rankingRepository.aggregateCard(RANKING_PERIOD_DAYS, AGG_LIMIT);
-      case RankingKind.PERSONAL_CATEGORY:
-        return rankingRepository.aggregatePersonalCategory(
-          RANKING_PERIOD_DAYS,
-          AGG_LIMIT
-        );
+  /** 期間指定再収集: [from, to) の 1時間刻みバケットを全て集計し直す */
+  async refreshBuckets(from: Date, to: Date): Promise<number> {
+    const start = truncateToHour(from);
+    const end = truncateToHour(to);
+    let processed = 0;
+    for (let t = start.getTime(); t < end.getTime(); t += BUCKET_MS) {
+      await this.aggregateBucket(new Date(t));
+      processed++;
     }
+    return processed;
   }
 
-  // -------- Admin: Override 管理 --------
+  /** バックフィル: [from, to) の中で欠損しているバケットだけ集計 */
+  async backfill(from: Date, to: Date): Promise<{ filled: number; skipped: number }> {
+    const start = truncateToHour(from);
+    const end = truncateToHour(to);
+    let filled = 0;
+    let skipped = 0;
+    // kind ごとに存在バケットを取得して差分を確認
+    const existingByKind = new Map<RankingKind, Set<number>>();
+    for (const kind of ALL_KINDS) {
+      const starts = await rankingRepository.listBucketStartsInRange(kind, start, end);
+      existingByKind.set(kind, new Set(starts.map((d) => d.getTime())));
+    }
+    for (let t = start.getTime(); t < end.getTime(); t += BUCKET_MS) {
+      // どの kind も揃っていれば skip（= 全 kind で存在するバケットはスキップ）
+      const missing = ALL_KINDS.some(
+        (kind) => !(existingByKind.get(kind) ?? new Set()).has(t)
+      );
+      if (!missing) {
+        skipped++;
+        continue;
+      }
+      await this.aggregateBucket(new Date(t));
+      filled++;
+    }
+    return { filled, skipped };
+  }
+
+  /** 種別リセット（全バケット削除） */
+  async resetKind(kind: RankingKind) {
+    return rankingRepository.deleteAllByKind(kind);
+  }
+
+  // -------- Admin: 状態表示 --------
+
+  async getAdminSummary() {
+    const from = new Date(Date.now() - 24 * BUCKET_MS * 7); // 直近7日
+    const result = await Promise.all(
+      ALL_KINDS.map(async (kind) => {
+        const bucketStarts = await rankingRepository.listBucketStartsInRange(
+          kind,
+          from,
+          new Date()
+        );
+        const latest = await rankingRepository.latestPeriodEnd(kind);
+        return {
+          kind,
+          latestPeriodEnd: latest,
+          bucketCount7d: bucketStarts.length,
+          bucketStarts7d: bucketStarts,
+        };
+      })
+    );
+    return result;
+  }
+
+  // -------- Admin: Override passthrough --------
 
   listOverrides(kind?: RankingKind) {
     return rankingRepository.listOverrides(kind);
@@ -265,27 +312,6 @@ export class RankingService {
 
   deleteOverride(id: string) {
     return rankingRepository.deleteOverride(id);
-  }
-
-  // -------- Admin: Snapshot 情報 --------
-
-  async getSnapshotSummary() {
-    const kinds: RankingKind[] = [
-      RankingKind.TAROTIST,
-      RankingKind.SPREAD,
-      RankingKind.CATEGORY,
-      RankingKind.CARD,
-      RankingKind.PERSONAL_CATEGORY,
-    ];
-    return Promise.all(
-      kinds.map(async (kind) => {
-        const latest = await rankingRepository.getLatestGeneratedAt(kind);
-        const entries = latest
-          ? await rankingRepository.getLatestSnapshot(kind, PUBLIC_LIMIT)
-          : [];
-        return { kind, generatedAt: latest, entries };
-      })
-    );
   }
 }
 

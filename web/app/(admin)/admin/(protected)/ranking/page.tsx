@@ -1,13 +1,15 @@
 import { prisma } from "@/lib/server/repositories/database";
 import { rankingService } from "@/lib/server/services/ranking";
+import { rankingConfigService } from "@/lib/server/services/ranking-config";
 import { RankingKind } from "@/lib/generated/prisma/client";
 import { RankingAdminPageClient } from "./ranking-admin-page-client";
 
 export default async function RankingAdminPage() {
-  const [overrides, snapshots, tarotists, spreads, categories, cards] =
+  const [config, summary, overrides, tarotists, spreads, categories, cards] =
     await Promise.all([
+      rankingConfigService.get(),
+      rankingService.getAdminSummary(),
       rankingService.listOverrides(),
-      rankingService.getSnapshotSummary(),
       prisma.tarotist.findMany({
         where: { deletedAt: null },
         select: { id: true, name: true, icon: true },
@@ -30,6 +32,20 @@ export default async function RankingAdminPage() {
 
   return (
     <RankingAdminPageClient
+      config={{
+        collectionEnabled: config.collectionEnabled,
+        publicEnabled: config.publicEnabled,
+        updatedBy: config.updatedBy,
+        updatedAt: config.updatedAt.toISOString(),
+      }}
+      summary={summary.map((s) => ({
+        kind: s.kind,
+        latestPeriodEnd: s.latestPeriodEnd
+          ? s.latestPeriodEnd.toISOString()
+          : null,
+        bucketCount7d: s.bucketCount7d,
+        bucketStarts7d: s.bucketStarts7d.map((d) => d.toISOString()),
+      }))}
       overrides={overrides.map((o) => ({
         id: o.id,
         kind: o.kind,
@@ -39,11 +55,6 @@ export default async function RankingAdminPage() {
         note: o.note,
         updatedBy: o.updatedBy,
         updatedAt: o.updatedAt.toISOString(),
-      }))}
-      snapshots={snapshots.map((s) => ({
-        kind: s.kind,
-        generatedAt: s.generatedAt ? s.generatedAt.toISOString() : null,
-        entries: s.entries,
       }))}
       targets={{
         [RankingKind.TAROTIST]: tarotists.map((t) => ({
