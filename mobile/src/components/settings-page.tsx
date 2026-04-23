@@ -116,9 +116,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const { resetOnboarding } = useClient();
 
   const handleReplayTutorial = async () => {
-    await resetOnboarding();
+    // トースト表示中は連打防止（タイムアウトでフラグが落ちるまでロック）
+    if (showTutorialToast) return;
     setShowTutorialToast(true);
     setTimeout(() => setShowTutorialToast(false), 2500);
+    await resetOnboarding();
   };
 
   // ネイティブ（iOS/Android）では App.getInfo() でバイナリの実バージョンを取得
