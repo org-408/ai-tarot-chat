@@ -73,6 +73,8 @@ function ReadingCard({
   onTarotistClick: (tarotist: Tarotist) => void;
 }) {
   const drawnCards = hydrateDrawnCards(reading.cards, cardMap);
+  const isPersonal = !!reading.customQuestion;
+  const subtitle = isPersonal ? reading.customQuestion : reading.category?.name;
 
   return (
     <Link href={`/history/${reading.id}`}>
@@ -110,25 +112,30 @@ function ReadingCard({
           </button>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-sm text-gray-900">
-                  {reading.tarotist?.name ?? "Unknown"}
-                </span>
-                {reading.category == null && (
-                  <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
-                    パーソナル
-                  </span>
-                )}
-                {reading.spread?.name && (
-                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                    {reading.spread.name}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs text-gray-400 flex-shrink-0">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold text-base text-gray-900 truncate">
+                {reading.tarotist?.name ?? "Unknown"}
+              </span>
+              <span className="text-sm text-gray-400 flex-shrink-0">
                 {formatRelativeDate(reading.createdAt)}
               </span>
+            </div>
+            {subtitle && (
+              <p className="text-sm text-gray-500 line-clamp-1 mt-0.5">
+                {subtitle}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+              {reading.spread?.name && (
+                <span className="text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                  {reading.spread.name}
+                </span>
+              )}
+              {isPersonal && (
+                <span className="text-sm bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
+                  パーソナル
+                </span>
+              )}
             </div>
 
             {/* カードサムネイル */}
@@ -248,7 +255,7 @@ export default function HistoryPage() {
       {filtered.length === 0 && !isLoadingReadings ? (
         <div className="text-center py-16 text-gray-400">
           <div className="w-16 h-24 mx-auto mb-3 rounded overflow-hidden border border-gray-200 bg-gray-100" />
-          <p>{t("empty")}</p>
+          <p className="text-base">{t("empty")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -265,8 +272,10 @@ export default function HistoryPage() {
                   className="flex items-center justify-between w-full px-4 py-3.5 hover:bg-purple-50/40 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-gray-800">{year}</span>
-                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                    <span className="text-lg font-bold text-gray-800">
+                      {year}
+                    </span>
+                    <span className="text-sm text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                       {total}件
                     </span>
                   </div>
@@ -291,7 +300,7 @@ export default function HistoryPage() {
                       <div className="border-t border-purple-50 px-3 pb-3 pt-2 space-y-4">
                         {months.map(({ month, monthKey, items }) => (
                           <div key={monthKey}>
-                            <p className="text-xs font-semibold text-purple-400 tracking-widest mb-2 px-1">
+                            <p className="text-sm font-semibold text-purple-400 tracking-widest mb-2 px-1">
                               {month}
                             </p>
                             <div className="space-y-2">
@@ -322,7 +331,7 @@ export default function HistoryPage() {
           <button
             onClick={() => fetchReadings({ next: true })}
             disabled={isLoadingReadings}
-            className="px-6 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            className="px-6 py-2 bg-white border border-gray-200 rounded-full text-base text-gray-600 hover:bg-gray-50 disabled:opacity-50"
           >
             {isLoadingReadings ? t("loadMore") + "..." : t("loadMore")}
           </button>

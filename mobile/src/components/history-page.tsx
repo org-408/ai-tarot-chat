@@ -216,7 +216,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
       <div className="px-5 pt-5 pb-3">
         <h1 className="text-xl font-bold text-gray-800">占い履歴</h1>
         {all.length > 0 && (
-          <p className="text-xs text-gray-400 mt-0.5">{filtered.length}件</p>
+          <p className="text-sm text-gray-400 mt-0.5">{filtered.length}件</p>
         )}
       </div>
 
@@ -228,7 +228,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all ${
                 tab === t.id
                   ? "bg-white text-purple-700 shadow-sm"
                   : "text-gray-500"
@@ -269,7 +269,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
             <span className="text-2xl">🔮</span>
           </div>
-          <p className="text-gray-500 text-sm text-center">
+          <p className="text-gray-500 text-base text-center">
             {tab === "all"
               ? "まだ占い履歴がありません"
               : tab === "personal"
@@ -295,10 +295,10 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                 className="w-full flex items-center justify-between px-4 py-3.5 active:bg-purple-50/40 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-base font-bold text-gray-800">
+                  <span className="text-lg font-bold text-gray-800">
                     {year}
                   </span>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="text-sm text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
                     {total}件
                   </span>
                 </div>
@@ -324,7 +324,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                     <div className="border-t border-purple-50 px-3 pb-3 pt-2 space-y-4">
                       {months.map(({ month, items }) => (
                         <div key={month}>
-                          <p className="text-[11px] font-semibold text-purple-400 tracking-widest mb-2 px-1">
+                          <p className="text-xs font-semibold text-purple-400 tracking-widest mb-2 px-1">
                             {month}
                           </p>
                           <div className="space-y-2">
@@ -334,7 +334,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                               const cards: DrawnCard[] = r.cards ?? [];
                               const subtitle = isPersonal
                                 ? r.customQuestion
-                                : (r.category?.name ?? r.spread?.name);
+                                : r.category?.name;
 
                               return (
                                 <motion.button
@@ -348,7 +348,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                     <TarotistAvatar
                                       name={name}
                                       tarotistId={r.tarotistId}
-                                      className="w-9 h-9"
+                                      className="w-10 h-10"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         if (r.tarotist)
@@ -359,26 +359,26 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                     />
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-semibold text-gray-800 truncate">
+                                        <span className="text-base font-semibold text-gray-800 truncate">
                                           {name}
                                         </span>
-                                        <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                                        <span className="text-sm text-gray-400 flex-shrink-0 ml-2">
                                           {formatRelativeDate(r.createdAt)}
                                         </span>
                                       </div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {subtitle && (
-                                          <p className="text-xs text-gray-500 line-clamp-1 mt-1">
-                                            {subtitle}
-                                          </p>
-                                        )}
+                                      {subtitle && (
+                                        <p className="text-sm text-gray-500 line-clamp-1 mt-0.5">
+                                          {subtitle}
+                                        </p>
+                                      )}
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                                         {r.spread?.name && (
-                                          <span className="text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
+                                          <span className="text-sm font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
                                             {r.spread.name}
                                           </span>
                                         )}
                                         {isPersonal && (
-                                          <span className="text-xs font-medium text-fuchsia-700 bg-fuchsia-50 px-2 py-0.5 rounded-full border border-fuchsia-100">
+                                          <span className="text-sm font-medium text-fuchsia-700 bg-fuchsia-50 px-2 py-0.5 rounded-full border border-fuchsia-100">
                                             パーソナル
                                           </span>
                                         )}
@@ -410,7 +410,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                             );
                                           })}
                                           {cards.length > 5 && (
-                                            <span className="text-[10px] text-gray-400 ml-0.5">
+                                            <span className="text-xs text-gray-400 ml-0.5">
                                               +{cards.length - 5}
                                             </span>
                                           )}
@@ -440,7 +440,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
             type="button"
             whileTap={{ scale: 0.97 }}
             onClick={loadMore}
-            className="flex items-center gap-2 text-sm text-purple-600 bg-white px-5 py-2.5 rounded-full border border-purple-200 shadow-sm"
+            className="flex items-center gap-2 text-base text-purple-600 bg-white px-5 py-2.5 rounded-full border border-purple-200 shadow-sm"
           >
             <ChevronDown className="w-4 h-4" />
             もっと見る
