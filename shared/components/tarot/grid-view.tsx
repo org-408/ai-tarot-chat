@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CARD_ASPECT } from "../../lib/constants";
+import { CARD_ASPECT, MAX_CARD_HEIGHT } from "../../lib/constants";
 import type { DrawnCard, Spread } from "../../lib/types";
 
 // ─────────────────────────────────────────────────────────────
@@ -66,12 +66,14 @@ export const GridView: React.FC<GridViewProps> = ({
   const colGap = 8;
   const rowGap = 8;
 
-  // モバイルと同一の計算: コンテナ幅・高さをフルに使い実際の列数・行数で割る
+  // モバイルと同一の計算: コンテナ幅・高さをフルに使い実際の列数・行数で割る。
+  // 1〜2 枚スプレッドのように分母が小さいとき、巨大化するのを MAX_CARD_HEIGHT で抑える。
   const cardHeight =
     viewSize.width > 0 && viewSize.height > 0
       ? Math.min(
           (viewSize.width - colGap * maxX) / (maxX + 1),
           (viewSize.height - rowGap * maxY) / (maxY + 1),
+          MAX_CARD_HEIGHT,
         )
       : 0;
   const cardWidth = cardHeight * CARD_ASPECT;

@@ -350,6 +350,7 @@ export default function ClaraPage() {
       isLoading={isLoading || !clara}
       onQuickStartReading={handleStartReading}
       tarotistMode="portrait"
+      lockedTarotist={true}
       title={t("title")}
       subtitle={t("desc")}
       backLabel={tCommon("backToHome")}

@@ -1,7 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CARD_ASPECT } from "../../lib/constants";
+import { CARD_ASPECT, MAX_CARD_HEIGHT } from "../../lib/constants";
 import type { DrawnCard } from "../../lib/types";
 
 // ─────────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ export const CarouselView: React.FC<CarouselViewProps> = ({
   onToggleFlip,
   cardBasePath = "/cards",
   cardBackPath = "/cards/back.png",
-  maxCardHeight = 520,
+  maxCardHeight = MAX_CARD_HEIGHT,
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -99,9 +99,9 @@ export const CarouselView: React.FC<CarouselViewProps> = ({
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   // カード表示サイズ: コンテナ幅・高さから最大まで拡張（ドット等で使う余白を考慮）
-  const DOT_AREA = 60; // ドットインジケーター＋マージン
-  const V_PADDING = 24;
-  const H_PADDING = 100; // 左右ナビゲーションボタン分の余白
+  const DOT_AREA = 40; // ドットインジケーター実測 mt-4(16)+h-2(8)+mb-2(8)=32 + 安全 8
+  const V_PADDING = 8;
+  const H_PADDING = 72; // prev/next ボタン実測 ~36px × 2
   const availableHeight = Math.max(0, containerHeight - DOT_AREA - V_PADDING);
   const availableWidth = Math.max(0, containerWidth - H_PADDING);
   const byHeight = availableHeight;
