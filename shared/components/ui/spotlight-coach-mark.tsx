@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export interface SpotlightCoachMarkProps {
   /** 表示制御 */
@@ -23,6 +24,8 @@ export interface SpotlightCoachMarkProps {
   spotlightPadding?: number;
   /** ハイライト矩形の角丸 (px) */
   spotlightRadius?: number;
+  /** 周囲を暗くする不透明度 (0-1) */
+  dimOpacity?: number;
 }
 
 const BUBBLE_MAX_WIDTH = 280;
@@ -32,8 +35,10 @@ const VIEWPORT_MARGIN = 16;
 /**
  * スポットライト型コーチマーク。
  *
- * 対象要素の周りを視覚的に切り抜き（`box-shadow` トリック）、
- * 近傍に吹き出しメッセージを出す。画面タップで閉じる。
+ * 対象要素の周囲を「上・下・左・右」4 枚の半透明オーバーレイで囲うことで、
+ * 対象だけを明るく残し、それ以外を暗転させて強調する。
+ * `box-shadow` トリックは親要素の stacking context に巻き込まれて
+ * 他 UI の背面に描画されるケースがあったため、描画が明示的な 4 矩形方式 + Portal で body 直下描画とした。
  *
  * スクロール中の誤 dismiss 対策として、表示直後は dismiss 用の pointer events を
  * 無効化する（`pointerActivationDelayMs`）。
@@ -48,10 +53,17 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
   pointerActivationDelayMs = 300,
   spotlightPadding = 8,
   spotlightRadius = 12,
+  dimOpacity = 0.6,
 }) => {
   const [visible, setVisible] = useState(false);
   const [pointerActive, setPointerActive] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // SSR 安全のため、Portal は mount 後にのみ有効化
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // isOpen → openDelayMs 後に表示
   useEffect(() => {
@@ -113,7 +125,19 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
         }
     : {};
 
-  return (
+  if (!mounted) return null;
+
+  // スポットライト（明るく残す領域）の矩形
+  const holeTop = rect ? rect.top - spotlightPadding : 0;
+  const holeLeft = rect ? rect.left - spotlightPadding : 0;
+  const holeRight = rect ? rect.right + spotlightPadding : 0;
+  const holeBottom = rect ? rect.bottom + spotlightPadding : 0;
+  const holeWidth = rect ? rect.width + spotlightPadding * 2 : 0;
+  const holeHeight = rect ? rect.height + spotlightPadding * 2 : 0;
+
+  const dimBg = `rgba(0, 0, 0, ${dimOpacity})`;
+
+  const overlay = (
     <AnimatePresence>
       {visible && targetEl && rect && (
         <>
@@ -124,29 +148,98 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[999]"
+            className="fixed inset-0 z-[9999]"
             style={{ pointerEvents: pointerActive ? "auto" : "none" }}
             onClick={onDismiss}
             role="dialog"
             aria-modal="true"
           />
 
-          {/* 切り抜き（visual のみ、pointer-events は通さない） */}
+          {/* 上の暗幕 */}
           <motion.div
-            key="spotlight"
+            key="dim-top"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
             aria-hidden="true"
-            className="fixed pointer-events-none z-[1000]"
+            className="fixed pointer-events-none z-[10000]"
             style={{
-              top: rect.top - spotlightPadding,
-              left: rect.left - spotlightPadding,
-              width: rect.width + spotlightPadding * 2,
-              height: rect.height + spotlightPadding * 2,
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: Math.max(0, holeTop),
+              background: dimBg,
+            }}
+          />
+          {/* 下の暗幕 */}
+          <motion.div
+            key="dim-bottom"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            aria-hidden="true"
+            className="fixed pointer-events-none z-[10000]"
+            style={{
+              top: holeBottom,
+              left: 0,
+              width: "100vw",
+              height: Math.max(0, viewportH - holeBottom),
+              background: dimBg,
+            }}
+          />
+          {/* 左の暗幕 */}
+          <motion.div
+            key="dim-left"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            aria-hidden="true"
+            className="fixed pointer-events-none z-[10000]"
+            style={{
+              top: holeTop,
+              left: 0,
+              width: Math.max(0, holeLeft),
+              height: holeHeight,
+              background: dimBg,
+            }}
+          />
+          {/* 右の暗幕 */}
+          <motion.div
+            key="dim-right"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            aria-hidden="true"
+            className="fixed pointer-events-none z-[10000]"
+            style={{
+              top: holeTop,
+              left: holeRight,
+              width: Math.max(0, viewportW - holeRight),
+              height: holeHeight,
+              background: dimBg,
+            }}
+          />
+
+          {/* ハイライト枠（対象位置の微かな縁取り。視線誘導用） */}
+          <motion.div
+            key="spotlight-border"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            aria-hidden="true"
+            className="fixed pointer-events-none z-[10001]"
+            style={{
+              top: holeTop,
+              left: holeLeft,
+              width: holeWidth,
+              height: holeHeight,
               borderRadius: spotlightRadius,
-              boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.5)",
+              boxShadow: "0 0 0 2px rgba(255,255,255,0.6), 0 0 20px rgba(255,255,255,0.3)",
             }}
           />
 
@@ -157,7 +250,7 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="fixed z-[1001] px-5 py-4 rounded-2xl bg-white shadow-2xl pointer-events-none"
+            className="fixed z-[10002] px-5 py-4 rounded-2xl bg-white shadow-2xl pointer-events-none"
             style={{
               ...bubblePositionStyle,
               maxWidth: BUBBLE_MAX_WIDTH,
@@ -179,6 +272,8 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(overlay, document.body);
 };
 
 export default SpotlightCoachMark;

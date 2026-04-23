@@ -667,7 +667,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             <CategorySpreadSelector
               handleStartReading={handleStartReading}
               onFullyVisible={onSelectorFullyVisible}
-              onRootElChange={onSelectorElChange}
+              onCoachTargetElChange={onSelectorElChange}
             />
           </div>
         )}

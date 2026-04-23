@@ -23,17 +23,19 @@ interface CategorySpreadSelectorProps {
    */
   onFullyVisible?: () => void;
   /**
-   * このコンポーネントの最外ルート要素を親に通知する。親側でコーチマークの
-   * ターゲットとして使用するため。null 通知はアンマウント時。
+   * コーチマークのスポットライト対象となる「セレクター領域」要素を親に通知する。
+   * セレクター領域 = カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
+   * 「占いを始める」ボタンや利用回数テキストは含めない（強調対象を絞るため）。
+   * null 通知はアンマウント時。
    */
-  onRootElChange?: (el: HTMLElement | null) => void;
+  onCoachTargetElChange?: (el: HTMLElement | null) => void;
 }
 
 const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   handleStartReading: onHandleStartReading,
   claraMode = false,
   onFullyVisible,
-  onRootElChange,
+  onCoachTargetElChange,
 }) => {
   const { masterData } = useMaster();
   const {
@@ -62,15 +64,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const selectedSpread = isPersonal ? personalSpread : quickSpread;
   const setSelectedSpread = isPersonal ? setPersonalSpread : setQuickSpread;
 
-  // コーチマークのターゲット: このコンポーネントの最外 div
-  // 親が描画後にアクセスできるよう、ref callback + state で再レンダリングさせる。
-  const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
-  const rootRefCallback = useCallback(
+  // コーチマークのスポットライト対象: カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
+  // 最外 div にするとボタン・利用回数テキストまで強調範囲に入り、暗幕が画面下半分に回らなくなる。
+  const [selectorAreaEl, setSelectorAreaEl] = useState<HTMLDivElement | null>(null);
+  const selectorAreaRefCallback = useCallback(
     (el: HTMLDivElement | null) => {
-      setRootEl(el);
-      onRootElChange?.(el);
+      setSelectorAreaEl(el);
+      onCoachTargetElChange?.(el);
     },
-    [onRootElChange]
+    [onCoachTargetElChange]
   );
 
   // オンボーディング: クイック占いの初回表示のみ
@@ -337,7 +339,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   };
 
   return (
-    <div ref={rootRefCallback}>
+    <div>
       {/* スワイプヒント */}
       <motion.div
         className="text-center py-4"
@@ -355,16 +357,20 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         </span>
       </motion.div>
 
-      {/* カテゴリー選択アコーディオン */}
-      {(!isPersonal || claraMode) && (
-        <div className="m-1">
-          <Accordion items={categoryItems} />
-        </div>
-      )}
+      {/* コーチマーク強調対象: カテゴリ/スプレッドのアコーディオンだけを囲む。
+          ここにボタンや注釈を入れると暗幕範囲が狭まり強調されなくなる。 */}
+      <div ref={selectorAreaRefCallback}>
+        {/* カテゴリー選択アコーディオン */}
+        {(!isPersonal || claraMode) && (
+          <div className="m-1">
+            <Accordion items={categoryItems} />
+          </div>
+        )}
 
-      {/* スプレッド選択アコーディオン */}
-      <div className="m-1">
-        <Accordion items={spreadItems} />
+        {/* スプレッド選択アコーディオン */}
+        <div className="m-1">
+          <Accordion items={spreadItems} />
+        </div>
       </div>
 
       {/* 占いを始めるボタン */}
@@ -396,10 +402,10 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         />
       </div>
 
-      {/* クイック占い初回のコーチマーク: セクション全体を明るく照らす */}
+      {/* クイック占い初回のコーチマーク: セレクター領域のみ明るく照らす */}
       <SpotlightCoachMark
         isOpen={coachMarkOpen}
-        targetEl={rootEl}
+        targetEl={selectorAreaEl}
         title={"占いたいジャンルとスプレッドを選んでください"}
         note={"スプレッドはタロットカードの配置パターンです。ジャンルに合わせて選べます。"}
         onDismiss={handleCoachMarkDismiss}
