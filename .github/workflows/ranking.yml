@@ -1,0 +1,28 @@
+name: Ranking Aggregation
+
+on:
+  schedule:
+    # 毎時15分に直前1時間分のバケットを集計
+    # ※ 毎時00分は統計 cron (issue #224) 用に開けておく
+    - cron: '15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  aggregate:
+    name: Aggregate ranking bucket
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call ranking cron endpoint
+        run: |
+          STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "${{ secrets.APP_URL }}/api/cron/ranking" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "HTTP Status: $STATUS"
+          echo "Response:"
+          cat /tmp/response.json
+          if [ "$STATUS" != "200" ]; then
+            echo "Error: Unexpected status code $STATUS"
+            exit 1
+          fi

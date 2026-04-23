@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  FeatureFlagKeys,
-  featureFlagService,
-} from "@/lib/server/services/feature-flag";
+import { rankingConfigService } from "@/lib/server/services/ranking-config";
 import { rankingService } from "@/lib/server/services/ranking";
 import { RankingTabs } from "./ranking-tabs";
 
@@ -44,10 +41,8 @@ interface Props {
 }
 
 export default async function RankingPage({ params }: Props) {
-  const enabled = await featureFlagService.isEnabled(
-    FeatureFlagKeys.RANKING_ENABLED
-  );
-  if (!enabled) notFound();
+  const config = await rankingConfigService.get();
+  if (!config.publicEnabled) notFound();
 
   const { locale } = await params;
   const data = await rankingService.getPublicRanking();

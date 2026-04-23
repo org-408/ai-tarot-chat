@@ -3,49 +3,185 @@ import { BaseRepository } from "./base";
 
 export { RankingKind };
 
-export type RankingEntry = {
+export type BucketEntry = {
   targetId: string;
   count: number;
-  rank: number;
+};
+
+export type AggregatedRankingRow = {
+  targetId: string;
+  total: number;
 };
 
 export class RankingRepository extends BaseRepository {
-  // -------- Snapshot read --------
+  // -------- バケット集計（cron） --------
 
-  /** 指定種別の最新スナップショットを取得（上位 limit 件） */
-  async getLatestSnapshot(kind: RankingKind, limit: number): Promise<RankingEntry[]> {
-    const latest = await this.db.rankingSnapshot.findFirst({
-      where: { kind },
-      orderBy: { generatedAt: "desc" },
-      select: { generatedAt: true },
+  /**
+   * 期間内の Reading/DrawnCard を種別ごとに集計して返す。
+   * INSERT は呼び出し側の責務（このメソッドは純粋な集計）。
+   */
+  async aggregateBucket(
+    kind: RankingKind,
+    periodStart: Date,
+    periodEnd: Date
+  ): Promise<BucketEntry[]> {
+    switch (kind) {
+      case RankingKind.TAROTIST: {
+        const rows = await this.db.reading.groupBy({
+          by: ["tarotistId"],
+          where: { createdAt: { gte: periodStart, lt: periodEnd } },
+          _count: { tarotistId: true },
+        });
+        return rows.map((r) => ({ targetId: r.tarotistId, count: r._count.tarotistId }));
+      }
+      case RankingKind.SPREAD: {
+        const rows = await this.db.reading.groupBy({
+          by: ["spreadId"],
+          where: { createdAt: { gte: periodStart, lt: periodEnd } },
+          _count: { spreadId: true },
+        });
+        return rows.map((r) => ({ targetId: r.spreadId, count: r._count.spreadId }));
+      }
+      case RankingKind.CATEGORY: {
+        const rows = await this.db.reading.groupBy({
+          by: ["categoryId"],
+          where: {
+            createdAt: { gte: periodStart, lt: periodEnd },
+            categoryId: { not: null },
+          },
+          _count: { categoryId: true },
+        });
+        return rows
+          .filter((r): r is typeof r & { categoryId: string } => r.categoryId !== null)
+          .map((r) => ({ targetId: r.categoryId, count: r._count.categoryId }));
+      }
+      case RankingKind.PERSONAL_CATEGORY: {
+        const rows = await this.db.reading.groupBy({
+          by: ["categoryId"],
+          where: {
+            createdAt: { gte: periodStart, lt: periodEnd },
+            categoryId: { not: null },
+            customQuestion: { not: null },
+          },
+          _count: { categoryId: true },
+        });
+        return rows
+          .filter((r): r is typeof r & { categoryId: string } => r.categoryId !== null)
+          .map((r) => ({ targetId: r.categoryId, count: r._count.categoryId }));
+      }
+      case RankingKind.CARD: {
+        const rows = await this.db.drawnCard.groupBy({
+          by: ["cardId"],
+          where: { createdAt: { gte: periodStart, lt: periodEnd } },
+          _count: { cardId: true },
+        });
+        return rows.map((r) => ({ targetId: r.cardId, count: r._count.cardId }));
+      }
+    }
+  }
+
+  /** 単一バケットの結果をトランザクションで差し替え（= 削除 → 再挿入）。 */
+  async upsertBucket(
+    kind: RankingKind,
+    periodStart: Date,
+    periodEnd: Date,
+    entries: BucketEntry[],
+    generatedAt: Date
+  ): Promise<void> {
+    await this.transaction(async (tx) => {
+      await tx.rankingSnapshot.deleteMany({
+        where: { kind, periodStart },
+      });
+      if (entries.length === 0) return;
+      await tx.rankingSnapshot.createMany({
+        data: entries.map((e) => ({
+          kind,
+          targetId: e.targetId,
+          count: e.count,
+          periodStart,
+          periodEnd,
+          generatedAt,
+        })),
+      });
     });
-    if (!latest) return [];
-    const rows = await this.db.rankingSnapshot.findMany({
-      where: { kind, generatedAt: latest.generatedAt },
-      orderBy: { rank: "asc" },
+  }
+
+  // -------- 公開側：期間 SUM 取得 --------
+
+  /** 指定期間の SUM を取得して Top N を返す */
+  async sumOverPeriod(
+    kind: RankingKind,
+    from: Date,
+    limit: number
+  ): Promise<AggregatedRankingRow[]> {
+    const rows = await this.db.rankingSnapshot.groupBy({
+      by: ["targetId"],
+      where: { kind, periodStart: { gte: from } },
+      _sum: { count: true },
+      orderBy: { _sum: { count: "desc" } },
       take: limit,
     });
-    return rows.map((r) => ({ targetId: r.targetId, count: r.count, rank: r.rank }));
+    return rows.map((r) => ({ targetId: r.targetId, total: r._sum.count ?? 0 }));
   }
 
-  async getLatestGeneratedAt(kind: RankingKind): Promise<Date | null> {
-    const latest = await this.db.rankingSnapshot.findFirst({
+  async latestPeriodEnd(kind: RankingKind): Promise<Date | null> {
+    const row = await this.db.rankingSnapshot.findFirst({
       where: { kind },
-      orderBy: { generatedAt: "desc" },
-      select: { generatedAt: true },
+      orderBy: { periodEnd: "desc" },
+      select: { periodEnd: true },
     });
-    return latest?.generatedAt ?? null;
+    return row?.periodEnd ?? null;
   }
 
-  // -------- Override read --------
+  // -------- Admin: 期間オペ --------
 
-  async getActiveOverrides(kind: RankingKind, limit: number): Promise<RankingEntry[]> {
-    const rows = await this.db.rankingOverride.findMany({
+  /** 期間内のバケットを削除（kind 指定なしなら全種別） */
+  async deleteBucketsInRange(from: Date, to: Date, kind?: RankingKind) {
+    return this.db.rankingSnapshot.deleteMany({
+      where: {
+        ...(kind ? { kind } : {}),
+        periodStart: { gte: from, lt: to },
+      },
+    });
+  }
+
+  /** 種別の全バケットを削除（リセット） */
+  async deleteAllByKind(kind: RankingKind) {
+    return this.db.rankingSnapshot.deleteMany({ where: { kind } });
+  }
+
+  /** 指定範囲で、存在するバケットの periodStart 一覧を返す（欠損検出用） */
+  async listBucketStartsInRange(
+    kind: RankingKind,
+    from: Date,
+    to: Date
+  ): Promise<Date[]> {
+    const rows = await this.db.rankingSnapshot.findMany({
+      where: { kind, periodStart: { gte: from, lt: to } },
+      select: { periodStart: true },
+      distinct: ["periodStart"],
+      orderBy: { periodStart: "asc" },
+    });
+    return rows.map((r) => r.periodStart);
+  }
+
+  /** 直近バケットを kind ごとに返す（管理画面の状態表示用） */
+  async getRecentBuckets(kind: RankingKind, hours: number) {
+    const from = new Date(Date.now() - hours * 60 * 60 * 1000);
+    return this.db.rankingSnapshot.findMany({
+      where: { kind, periodStart: { gte: from } },
+      orderBy: [{ periodStart: "desc" }, { count: "desc" }],
+    });
+  }
+
+  // -------- Override --------
+
+  async getActiveOverrides(kind: RankingKind, limit: number) {
+    return this.db.rankingOverride.findMany({
       where: { kind, isActive: true },
       orderBy: { rank: "asc" },
       take: limit,
     });
-    return rows.map((r) => ({ targetId: r.targetId, count: 0, rank: r.rank }));
   }
 
   async listOverrides(kind?: RankingKind) {
@@ -85,117 +221,6 @@ export class RankingRepository extends BaseRepository {
   async deleteOverride(id: string) {
     await this.db.rankingOverride.delete({ where: { id } });
   }
-
-  // -------- Snapshot write (cron) --------
-
-  /** 指定種別の Snapshot を洗い替え。古い世代も削除してテーブルを肥大化させない */
-  async replaceSnapshot(
-    kind: RankingKind,
-    entries: RankingEntry[],
-    generatedAt: Date
-  ): Promise<void> {
-    await this.transaction(async (tx) => {
-      await tx.rankingSnapshot.deleteMany({ where: { kind } });
-      if (entries.length === 0) return;
-      await tx.rankingSnapshot.createMany({
-        data: entries.map((e) => ({
-          kind,
-          targetId: e.targetId,
-          count: e.count,
-          rank: e.rank,
-          generatedAt,
-        })),
-      });
-    });
-  }
-
-  // -------- Aggregation (Reading / DrawnCard) --------
-
-  /** 過去 N 日間の集計 */
-  async aggregateTarotist(sinceDays: number, limit: number): Promise<RankingEntry[]> {
-    const since = daysAgo(sinceDays);
-    const rows = await this.db.reading.groupBy({
-      by: ["tarotistId"],
-      where: { createdAt: { gte: since } },
-      _count: { tarotistId: true },
-      orderBy: { _count: { tarotistId: "desc" } },
-      take: limit,
-    });
-    return rows.map((r, i) => ({
-      targetId: r.tarotistId,
-      count: r._count.tarotistId,
-      rank: i + 1,
-    }));
-  }
-
-  async aggregateSpread(sinceDays: number, limit: number): Promise<RankingEntry[]> {
-    const since = daysAgo(sinceDays);
-    const rows = await this.db.reading.groupBy({
-      by: ["spreadId"],
-      where: { createdAt: { gte: since } },
-      _count: { spreadId: true },
-      orderBy: { _count: { spreadId: "desc" } },
-      take: limit,
-    });
-    return rows.map((r, i) => ({
-      targetId: r.spreadId,
-      count: r._count.spreadId,
-      rank: i + 1,
-    }));
-  }
-
-  async aggregateCategory(sinceDays: number, limit: number): Promise<RankingEntry[]> {
-    const since = daysAgo(sinceDays);
-    const rows = await this.db.reading.groupBy({
-      by: ["categoryId"],
-      where: { createdAt: { gte: since }, categoryId: { not: null } },
-      _count: { categoryId: true },
-      orderBy: { _count: { categoryId: "desc" } },
-      take: limit,
-    });
-    return rows
-      .filter((r): r is typeof r & { categoryId: string } => r.categoryId !== null)
-      .map((r, i) => ({ targetId: r.categoryId, count: r._count.categoryId, rank: i + 1 }));
-  }
-
-  async aggregatePersonalCategory(sinceDays: number, limit: number): Promise<RankingEntry[]> {
-    // パーソナル占い: customQuestion が存在するリーディングに限定
-    const since = daysAgo(sinceDays);
-    const rows = await this.db.reading.groupBy({
-      by: ["categoryId"],
-      where: {
-        createdAt: { gte: since },
-        categoryId: { not: null },
-        customQuestion: { not: null },
-      },
-      _count: { categoryId: true },
-      orderBy: { _count: { categoryId: "desc" } },
-      take: limit,
-    });
-    return rows
-      .filter((r): r is typeof r & { categoryId: string } => r.categoryId !== null)
-      .map((r, i) => ({ targetId: r.categoryId, count: r._count.categoryId, rank: i + 1 }));
-  }
-
-  async aggregateCard(sinceDays: number, limit: number): Promise<RankingEntry[]> {
-    const since = daysAgo(sinceDays);
-    const rows = await this.db.drawnCard.groupBy({
-      by: ["cardId"],
-      where: { createdAt: { gte: since } },
-      _count: { cardId: true },
-      orderBy: { _count: { cardId: "desc" } },
-      take: limit,
-    });
-    return rows.map((r, i) => ({
-      targetId: r.cardId,
-      count: r._count.cardId,
-      rank: i + 1,
-    }));
-  }
-}
-
-function daysAgo(days: number): Date {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
 export const rankingRepository = new RankingRepository();

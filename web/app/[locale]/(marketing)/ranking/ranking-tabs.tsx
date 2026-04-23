@@ -15,17 +15,14 @@ const TABS: { key: TabKey; label: string; short: string }[] = [
 ];
 
 export function RankingTabs({ data }: { data: RankingResponse }) {
-  const availableTabs = TABS.filter((t) => data[t.key] !== null);
-  const initial = availableTabs[0]?.key ?? "tarotists";
-  const [active, setActive] = useState<TabKey>(initial);
-
-  const items = data[active] ?? [];
+  const [active, setActive] = useState<TabKey>("tarotists");
+  const items = data[active];
 
   return (
     <div>
       {/* タブ */}
       <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-3">
-        {availableTabs.map((t) => (
+        {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setActive(t.key)}
