@@ -1,15 +1,25 @@
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useCallback } from "react";
 import { useSalon } from "../lib/hooks/use-salon";
 
 interface RevealPromptPanelProps {
   isAllRevealed?: boolean;
+  /** 「一気にめくる」ボタン要素を親に通知する（コーチマークのターゲット取得用） */
+  onRevealButtonElChange?: (el: HTMLElement | null) => void;
 }
 
 export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
   isAllRevealed,
+  onRevealButtonElChange,
 }) => {
   const { setIsRevealingCompleted } = useSalon();
+
+  const buttonRefCallback = useCallback(
+    (el: HTMLButtonElement | null) => {
+      onRevealButtonElChange?.(el);
+    },
+    [onRevealButtonElChange]
+  );
 
   if (isAllRevealed) {
     return null;
@@ -48,6 +58,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
 
         {/* 2行目: ボタン */}
         <button
+          ref={buttonRefCallback}
           onClick={() => {
             if (setIsRevealingCompleted) setIsRevealingCompleted(true);
           }}

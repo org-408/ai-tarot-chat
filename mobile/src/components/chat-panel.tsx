@@ -47,6 +47,8 @@ interface ChatPanelProps {
   onInputElChange?: (el: HTMLElement | null) => void;
   /** パーソナル Phase1 のスプレッド選択セクション (CategorySpreadSelector) のルート要素を通知する */
   onSelectorElChange?: (el: HTMLElement | null) => void;
+  /** クイック占いの「一気にめくる」ボタン要素を通知する（コーチマーク用） */
+  onRevealButtonElChange?: (el: HTMLElement | null) => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -61,6 +63,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onSelectorFullyVisible,
   onInputElChange,
   onSelectorElChange,
+  onRevealButtonElChange,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
@@ -712,7 +715,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       {/* 即答方式のヒント及びボタン表示 */}
       {!isPersonal && (
-        <RevealPromptPanel isAllRevealed={isRevealingCompleted} />
+        <RevealPromptPanel
+          isAllRevealed={isRevealingCompleted}
+          onRevealButtonElChange={onRevealButtonElChange}
+        />
       )}
 
       {/* Back Button - Phase1: 完了後すぐ / Phase2: クロージング完了後のみ */}
