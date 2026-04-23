@@ -108,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({
       {/* ハンバーガーメニューボタン（.header-container の max-width 制限を受けず、
           常に viewport 左端を基準に配置する。safe-area 分を除いた領域で縦中央揃え） */}
       <div
-        className="absolute left-4 flex items-center"
+        className="absolute left-4 flex items-center z-10"
         style={{ top: "var(--safe-top)", bottom: 0 }}
       >
         <div className="relative">
