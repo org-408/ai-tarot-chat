@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type {
   ReadingCategory,
   Spread,
@@ -42,8 +41,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     currentPlan,
     remainingReadings,
     remainingPersonal,
-    quickOnboardedAt,
-    markOnboarded,
   } = useClient();
   const {
     quickCategory,
@@ -66,31 +63,13 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   // コーチマークのスポットライト対象: カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
   // 最外 div にするとボタン・利用回数テキストまで強調範囲に入り、暗幕が画面下半分に回らなくなる。
-  const [selectorAreaEl, setSelectorAreaEl] = useState<HTMLDivElement | null>(null);
+  // パーソナル占いの Stage2 コーチマーク (personal-page.tsx) からのみ参照される。
   const selectorAreaRefCallback = useCallback(
     (el: HTMLDivElement | null) => {
-      setSelectorAreaEl(el);
       onCoachTargetElChange?.(el);
     },
     [onCoachTargetElChange]
   );
-
-  // オンボーディング: クイック占いの初回表示のみ
-  // - いつでも占い（claraMode）: クイックで慣れている前提なので対象外
-  // - パーソナル占い（isPersonal）: 別経路で制御
-  const shouldShowOnboarding =
-    !isPersonal && !claraMode && !quickOnboardedAt;
-  const [coachMarkOpen, setCoachMarkOpen] = useState(false);
-  useEffect(() => {
-    if (shouldShowOnboarding) setCoachMarkOpen(true);
-  }, [shouldShowOnboarding]);
-  const handleCoachMarkDismiss = () => {
-    setCoachMarkOpen(false);
-    if (!quickOnboardedAt) {
-      // fire-and-forget: 失敗しても UX を止めない
-      void markOnboarded("quick");
-    }
-  };
 
   // セクション直後のセンチネルを IntersectionObserver で監視し、
   // 「完全可視」+「スクロール停止（= 対象位置が動いていない）」の両方を満たした
@@ -441,16 +420,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           className="h-px w-full pointer-events-none"
         />
       </div>
-
-      {/* クイック占い初回のコーチマーク: セレクター領域のみ明るく照らす */}
-      <SpotlightCoachMark
-        isOpen={coachMarkOpen}
-        targetEl={selectorAreaEl}
-        title={"占いたいジャンルとスプレッドを選んでください"}
-        note={"スプレッドはタロットカードの配置パターンです。ジャンルに合わせて選べます。"}
-        onDismiss={handleCoachMarkDismiss}
-        openDelayMs={400}
-      />
     </div>
   );
 };
