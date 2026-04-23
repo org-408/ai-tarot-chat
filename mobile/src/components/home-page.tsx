@@ -22,7 +22,10 @@ interface HomePageProps {
   onNavigateToTarotist: () => void;
   onNavigateToHistory: () => void;
   onNavigateToReading: (reading: Reading) => void;
-  onChangePlan: (plan: UserPlan) => void;
+  onChangePlan: (
+    plan: UserPlan,
+    options?: { navigateToPersonal?: boolean },
+  ) => void;
   isChangingPlan: boolean;
 }
 
@@ -162,7 +165,11 @@ const HomePage: React.FC<HomePageProps> = ({
         {/* セカンダリ CTA: パーソナル占い */}
         <button
           type="button"
-          onClick={canPersonal ? onNavigateToPersonal : () => onChangePlan("PREMIUM")}
+          onClick={
+            canPersonal
+              ? onNavigateToPersonal
+              : () => onChangePlan("PREMIUM", { navigateToPersonal: true })
+          }
           disabled={isChangingPlan}
           className="w-full rounded-2xl bg-white border border-pink-100 p-4 active:bg-pink-50 flex items-center gap-3 transition-colors disabled:opacity-50"
         >

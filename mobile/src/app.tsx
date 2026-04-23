@@ -393,14 +393,20 @@ function App() {
   };
 
   // 🔥 プラン変更処理（サインインも含む）
-  const handleChangePlan = async (newPlan: UserPlan) => {
+  // navigateToPersonal=true のときだけ成功後に personal へ自動遷移する。
+  // 呼び出し元が「アップグレード → 即パーソナル占い」を意図している場合のみ true。
+  // salon のタロティストカードなど、現在地に留まりたい呼び出し元は渡さない。
+  const handleChangePlan = async (
+    newPlan: UserPlan,
+    options?: { navigateToPersonal?: boolean },
+  ) => {
     console.log(`プラン変更リクエスト: ${currentPlan?.code} → ${newPlan}`);
 
     try {
       // changePlanが全てを処理（サインインが必要な場合も内部で処理）
       await changePlan(getPlan(newPlan)!);
       console.log("プラン変更成功");
-      if (newPlan === "PREMIUM") {
+      if (newPlan === "PREMIUM" && options?.navigateToPersonal) {
         setPageType("personal");
       }
     } catch (err) {
