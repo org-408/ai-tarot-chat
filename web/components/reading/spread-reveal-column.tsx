@@ -16,11 +16,15 @@ interface SpreadRevealColumnProps {
   isRevealingCompleted: boolean;
   onRevealAll: () => void;
   onRevealingCompleted?: () => void;
-  revealAllLabel?: string;
-  revealPromptLabel?: string;
-  allRevealedLabel?: string;
-  gridLabel?: string;
-  carouselLabel?: string;
+  revealAllLabel: string;
+  revealPromptLabel: string;
+  allRevealedLabel: string;
+  gridLabel: string;
+  carouselLabel: string;
+  positionLabel: string;
+  cardLabel: string;
+  keywordsLabel: string;
+  reversedLabel: string;
 }
 
 /**
@@ -36,11 +40,15 @@ export function SpreadRevealColumn({
   isRevealingCompleted,
   onRevealAll,
   onRevealingCompleted,
-  revealAllLabel = "✨ 一気にめくる ✨",
-  revealPromptLabel = "全カードをめくって占い結果を確認しましょう！",
-  allRevealedLabel = "すべてのカードが開きました",
-  gridLabel = "スプレッド",
-  carouselLabel = "個別カード",
+  revealAllLabel,
+  revealPromptLabel,
+  allRevealedLabel,
+  gridLabel,
+  carouselLabel,
+  positionLabel,
+  cardLabel,
+  keywordsLabel,
+  reversedLabel,
 }: SpreadRevealColumnProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
@@ -198,7 +206,7 @@ export function SpreadRevealColumn({
                   {selectedCard.order}
                 </div>
                 <h3 className="text-base font-bold text-purple-900">
-                  位置の意味: {selectedCard.position}
+                  {positionLabel}: {selectedCard.position}
                 </h3>
               </div>
               {selectedCard.description && (
@@ -224,16 +232,16 @@ export function SpreadRevealColumn({
                 </div>
               </div>
               <div className="text-sm text-gray-700 mb-2">
-                カード:{" "}
+                {cardLabel}:{" "}
                 <span className="font-semibold">
                   {selectedCard.card?.name}
                 </span>
                 {selectedCard.isReversed && (
-                  <span className="text-red-600 ml-2">(逆位置)</span>
+                  <span className="text-red-600 ml-2">({reversedLabel})</span>
                 )}
               </div>
               <div className="text-xs text-gray-600">
-                キーワード:{" "}
+                {keywordsLabel}:{" "}
                 {selectedCard.isReversed
                   ? selectedCard.card?.reversedKeywords.join("、")
                   : selectedCard.card?.uprightKeywords.join("、")}

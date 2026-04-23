@@ -122,8 +122,12 @@ export default function HistoryDetailPage() {
             revealAllLabel={tReading("revealAll")}
             revealPromptLabel={tReading("revealPrompt")}
             allRevealedLabel={tReading("allRevealed")}
-            gridLabel={tReading("tabCards")}
-            carouselLabel={tReading("carousel")}
+            gridLabel={tReading("tabSpread")}
+            carouselLabel={tReading("tabIndividual")}
+            positionLabel={tReading("cardDetailPosition")}
+            cardLabel={tReading("cardDetailCard")}
+            keywordsLabel={tReading("cardDetailKeywords")}
+            reversedLabel={tReading("cardDetailReversed")}
           />
         ) : undefined
       }

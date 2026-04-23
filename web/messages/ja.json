@@ -127,6 +127,12 @@
     "loadError": "占いの読み込みに失敗しました",
     "tabCards": "カード",
     "tabChat": "チャット",
+    "tabSpread": "スプレッド",
+    "tabIndividual": "個別カード",
+    "cardDetailPosition": "位置の意味",
+    "cardDetailCard": "カード",
+    "cardDetailKeywords": "キーワード",
+    "cardDetailReversed": "逆位置",
     "remainingQuick": "残り{count}回",
     "showSpread": "スプレッドを表示",
     "hideSpread": "スプレッドを隠す"
