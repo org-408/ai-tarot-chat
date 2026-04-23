@@ -64,12 +64,14 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   const canStartPersonal = debugMode || remainingPersonal > 0;
 
   // オンボーディング: 未実施 (personalOnboardedAt===null) の場合のみ 2 段で表示
-  //   Stage1: 入力案内 (chat フェーズ開始時)
-  //   Stage1 dismiss → waiting: personalSpread が AI から提示されるまで待機
-  //   Stage2: おすすめスプレッド案内 → dismiss でフラグを立てて done
-  type OnboardingStage = "stage1" | "waiting" | "stage2" | "done";
+  //   idle        : まだ ChatPanel の onInputReady が発火していない
+  //   stage1      : 入力案内 (AI 初回メッセージ完了 → 入力欄が使える状態)
+  //   waiting     : Stage1 dismiss 後、「占いを始める」ボタンの出現＋可視化を待機
+  //   stage2      : おすすめスプレッド案内 → dismiss でフラグを立てて done
+  //   done        : 完了 (既に実施済み or 今セッションで完了)
+  type OnboardingStage = "idle" | "stage1" | "waiting" | "stage2" | "done";
   const [onboardingStage, setOnboardingStage] = useState<OnboardingStage>(
-    personalOnboardedAt ? "done" : "stage1"
+    personalOnboardedAt ? "done" : "idle"
   );
   const markedRef = useRef(false);
   useEffect(() => {
@@ -115,12 +117,15 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Stage1 dismiss 後: AI が personalSpread を提示したら Stage2 を出す
-  useEffect(() => {
-    if (onboardingStage === "waiting" && personalSpread) {
-      setOnboardingStage("stage2");
-    }
-  }, [onboardingStage, personalSpread]);
+  // ChatPanel から渡される「入力欄が有効化された」シグナル
+  const handleChatInputReady = () => {
+    setOnboardingStage((prev) => (prev === "idle" ? "stage1" : prev));
+  };
+
+  // ChatPanel から渡される「占いを始めるボタンが画面に収まった」シグナル
+  const handleStartButtonVisible = () => {
+    setOnboardingStage((prev) => (prev === "waiting" ? "stage2" : prev));
+  };
 
   const handleOnboardingStage1Dismiss = () => {
     setOnboardingStage((prev) => (prev === "stage1" ? "waiting" : prev));
@@ -336,6 +341,8 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
                     handleStartReading={handleStartReading}
                     onMessagesChange={setPhase1Messages}
                     onBack={() => {}}
+                    onInputReady={handleChatInputReady}
+                    onStartButtonVisible={handleStartButtonVisible}
                   />
                 </div>
               )}
@@ -345,7 +352,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
           {/* オンボーディング Stage1: 入力案内 */}
           <OnboardingOverlay
             isOpen={onboardingStage === "stage1"}
-            title={"占いたい内容を具体的に\n入力してください"}
+            title={"お悩みなど占いたい内容を\n入力してください"}
             note={"恋愛・仕事・悩みなど、\n自由に記入できます。"}
             onDismiss={handleOnboardingStage1Dismiss}
           />

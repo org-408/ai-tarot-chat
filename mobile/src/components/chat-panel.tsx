@@ -39,6 +39,10 @@ interface ChatPanelProps {
   onMessagesChange?: (messages: UIMessage[]) => void;
   /** 残り利用回数。0 以下の場合はボタンを無効化して「本日の占いは終了しました」を表示 */
   remainingCount?: number;
+  /** AI の初回メッセージが完了し入力欄が有効化された初回タイミングで 1 回だけ呼ばれる */
+  onInputReady?: () => void;
+  /** パーソナル Phase1 で「占いを始める」ボタンが画面内に完全に収まった初回タイミングで 1 回だけ呼ばれる */
+  onStartButtonVisible?: () => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -49,6 +53,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   initialMessages,
   onMessagesChange,
   remainingCount,
+  onInputReady,
+  onStartButtonVisible,
 }) => {
   const domain = import.meta.env.VITE_BFF_URL;
 
@@ -566,6 +572,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     status,
   ]);
 
+  // onInputReady: 入力欄が使える状態になった初回のみ発火
+  const hasFiredInputReadyRef = useRef(false);
+  useEffect(() => {
+    if (isMessageComplete && !hasFiredInputReadyRef.current) {
+      hasFiredInputReadyRef.current = true;
+      onInputReady?.();
+    }
+  }, [isMessageComplete, onInputReady]);
+
   // 戻るボタンが表示できる状態 = AI 課金終了 → ナビゲーションロックを解除
   // Phase2 の場合は onFinish から直接 onUnlock を呼ぶため、
   // この effect では非 Phase2 またはエラー時のみ解除する。
@@ -631,7 +646,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         {/* スプレッド選択画面を表示 */}
         {showSelector && handleStartReading && isPersonal && (
           <div className="mt-6">
-            <CategorySpreadSelector handleStartReading={handleStartReading} />
+            <CategorySpreadSelector
+              handleStartReading={handleStartReading}
+              onStartButtonVisible={onStartButtonVisible}
+            />
           </div>
         )}
 
