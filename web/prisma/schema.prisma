@@ -823,3 +823,59 @@ model BlogFeatureQueue {
   @@index([status, sortOrder])
   @@map("blog_feature_queue")
 }
+
+// ==========================================
+// Feature Flag / Ranking 関連モデル
+// ==========================================
+
+// 汎用 ON/OFF フラグ。管理画面から切替可能
+model FeatureFlag {
+  key         String   @id
+  enabled     Boolean  @default(false)
+  description String?  @db.Text
+  updatedBy   String?  // 変更者のメール等（監査）
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@map("feature_flags")
+}
+
+// ランキング種別
+enum RankingKind {
+  TAROTIST           // 占い師ランキング
+  SPREAD             // スプレッドランキング
+  CATEGORY           // カテゴリ（ジャンル）ランキング（全リーディング）
+  CARD               // 引かれたカードランキング
+  PERSONAL_CATEGORY  // パーソナル占いのテーマランキング
+}
+
+// 事前集計スナップショット — cron で洗い替え、公開 API はここを読む
+model RankingSnapshot {
+  id          String      @id @default(cuid())
+  kind        RankingKind
+  targetId    String      // Tarotist.id / Spread.id / ReadingCategory.id / TarotCard.id
+  count       Int
+  rank        Int
+  generatedAt DateTime
+
+  @@unique([kind, targetId, generatedAt])
+  @@index([kind, generatedAt, rank])
+  @@map("ranking_snapshots")
+}
+
+// 編集部選出・手動ピン留め — Snapshot 不足時のフォールバック
+model RankingOverride {
+  id        String      @id @default(cuid())
+  kind      RankingKind
+  targetId  String
+  rank      Int         // 表示順（小さい順）
+  isActive  Boolean     @default(true)
+  note      String?     @db.Text // 運営メモ
+  updatedBy String?
+  updatedAt DateTime    @updatedAt
+  createdAt DateTime    @default(now())
+
+  @@unique([kind, targetId])
+  @@index([kind, isActive, rank])
+  @@map("ranking_overrides")
+}
