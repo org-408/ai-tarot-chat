@@ -1,7 +1,8 @@
 import type { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import OnboardingOverlay from "../../../shared/components/ui/onboarding-overlay";
 import type {
   AppJWTPayload,
   MasterData,
@@ -58,9 +59,25 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     init,
   } = useSalon();
 
-  const { remainingPersonal } = useClient();
+  const { remainingPersonal, personalOnboardedAt, markOnboarded } = useClient();
   const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
   const canStartPersonal = debugMode || remainingPersonal > 0;
+
+  // オンボーディング: 未実施 (personalOnboardedAt===null) の場合のみ 2 段で表示
+  //   Stage1: 入力案内 (chat フェーズ開始時)
+  //   Stage1 dismiss → waiting: personalSpread が AI から提示されるまで待機
+  //   Stage2: おすすめスプレッド案内 → dismiss でフラグを立てて done
+  type OnboardingStage = "stage1" | "waiting" | "stage2" | "done";
+  const [onboardingStage, setOnboardingStage] = useState<OnboardingStage>(
+    personalOnboardedAt ? "done" : "stage1"
+  );
+  const markedRef = useRef(false);
+  useEffect(() => {
+    if (personalOnboardedAt) {
+      setOnboardingStage("done");
+      markedRef.current = true;
+    }
+  }, [personalOnboardedAt]);
 
   const [phase, setPhase] = useState<"chat" | "reading">("chat");
   const [phase1Messages, setPhase1Messages] = useState<UIMessage[]>([]);
@@ -97,6 +114,24 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Stage1 dismiss 後: AI が personalSpread を提示したら Stage2 を出す
+  useEffect(() => {
+    if (onboardingStage === "waiting" && personalSpread) {
+      setOnboardingStage("stage2");
+    }
+  }, [onboardingStage, personalSpread]);
+
+  const handleOnboardingStage1Dismiss = () => {
+    setOnboardingStage((prev) => (prev === "stage1" ? "waiting" : prev));
+  };
+  const handleOnboardingStage2Dismiss = () => {
+    setOnboardingStage("done");
+    if (!markedRef.current) {
+      markedRef.current = true;
+      void markOnboarded("personal");
+    }
+  };
 
   // Reading phase 開始時にカードを引く
   useEffect(() => {
@@ -306,6 +341,22 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
               )}
             </motion.div>
           </div>
+
+          {/* オンボーディング Stage1: 入力案内 */}
+          <OnboardingOverlay
+            isOpen={onboardingStage === "stage1"}
+            title={"占いたい内容を具体的に\n入力してください"}
+            note={"恋愛・仕事・悩みなど、\n自由に記入できます。"}
+            onDismiss={handleOnboardingStage1Dismiss}
+          />
+
+          {/* オンボーディング Stage2: おすすめスプレッド案内 */}
+          <OnboardingOverlay
+            isOpen={onboardingStage === "stage2"}
+            title={"内容に合わせておすすめの\nスプレッドを用意しました"}
+            note={"このまま開始できます。\n別のスプレッドに変更することもできます。"}
+            onDismiss={handleOnboardingStage2Dismiss}
+          />
         </>
       )}
     </div>

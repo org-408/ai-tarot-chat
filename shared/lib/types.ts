@@ -133,6 +133,10 @@ export type Client = {
   provider?: string | null; // "google", "apple" 何でサインインしたか
   lastLoginAt?: Date | null;
 
+  // オンボーディング（初回チュートリアル表示済み日時）
+  quickOnboardedAt?: Date | null;
+  personalOnboardedAt?: Date | null;
+
   // Stripe
   stripeCustomerId?: string | null;
 
@@ -644,6 +648,16 @@ export type UsageStats = {
   // 最終占い日
   lastReadingDate?: Date | null;
   lastPersonalReadingDate?: Date | null;
+  // オンボーディング表示済み日時（未設定 = 未表示）
+  quickOnboardedAt?: Date | null;
+  personalOnboardedAt?: Date | null;
+};
+
+export type OnboardingKey = "quick" | "personal";
+
+export type OnboardingFlags = {
+  quickOnboardedAt: Date | null;
+  personalOnboardedAt: Date | null;
 };
 
 export type SaveReadingResponse = {

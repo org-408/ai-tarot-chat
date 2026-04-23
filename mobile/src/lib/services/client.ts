@@ -1,4 +1,6 @@
 import type {
+  OnboardingFlags,
+  OnboardingKey,
   Reading,
   UsageStats,
 } from "../../../../shared/lib/types";
@@ -106,6 +108,41 @@ export class ClientService {
     } catch (error) {
       logWithContext("error", "[ClientService] Failed to change plan", {
         newPlanCode,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  // ============================================
+  // Onboarding 関連
+  // ============================================
+
+  /**
+   * オンボーディングフラグを更新する
+   */
+  async setOnboardingFlag(
+    screen: OnboardingKey,
+    completed: boolean
+  ): Promise<OnboardingFlags> {
+    logWithContext("info", "[ClientService] Setting onboarding flag", {
+      screen,
+      completed,
+    });
+    try {
+      const result = await apiClient.post<OnboardingFlags>(
+        "/api/clients/onboarding",
+        { screen, completed }
+      );
+      logWithContext("info", "[ClientService] Onboarding flag updated", {
+        screen,
+        completed,
+      });
+      return result;
+    } catch (error) {
+      logWithContext("error", "[ClientService] Failed to update onboarding flag", {
+        screen,
+        completed,
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

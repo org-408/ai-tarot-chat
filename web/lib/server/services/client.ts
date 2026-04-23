@@ -128,9 +128,31 @@ export class ClientService {
           ),
           lastReadingDate: client.lastReadingDate,
           lastPersonalReadingDate: client.lastPersonalReadingDate,
+          quickOnboardedAt: client.quickOnboardedAt ?? null,
+          personalOnboardedAt: client.personalOnboardedAt ?? null,
         };
       }
     );
+  }
+
+  async setOnboardingFlag(
+    clientId: string,
+    screen: "quick" | "personal",
+    completed: boolean
+  ): Promise<{ quickOnboardedAt: Date | null; personalOnboardedAt: Date | null }> {
+    const field = screen === "quick" ? "quickOnboardedAt" : "personalOnboardedAt";
+    const updated = await clientRepository.updateClient(clientId, {
+      [field]: completed ? new Date() : null,
+    });
+    logWithContext("info", "[ClientService] Onboarding flag updated", {
+      clientId,
+      screen,
+      completed,
+    });
+    return {
+      quickOnboardedAt: updated.quickOnboardedAt ?? null,
+      personalOnboardedAt: updated.personalOnboardedAt ?? null,
+    };
   }
 
   async getClientById(clientId: string) {
