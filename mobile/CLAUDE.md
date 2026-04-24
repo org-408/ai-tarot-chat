@@ -23,7 +23,7 @@ npx cap run android    # Android エミュレーターで実行
 ## アプリ情報
 
 - **アプリ ID**: `com.atelierflowlab.aitarotchat`
-- **アプリ名**: AI Tarot Chat
+- **アプリ名**: Ariadne - AI Reflection Dialogue
 - **Web ディレクトリ**: `dist/`
 
 ## ディレクトリ構成

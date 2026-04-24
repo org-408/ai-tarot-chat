@@ -161,7 +161,7 @@
     "upgradeToPlan": "Upgrade to {plan}"
   },
   "auth": {
-    "signInTitle": "AI Tarot Chat",
+    "signInTitle": "AI Reflection Dialogue",
     "signInSubtitle": "Tarot readings with AI dialogue",
     "signInDescription": "Sign in to experience deep readings with our tarotists",
     "secureAuth": "Secure Auth",

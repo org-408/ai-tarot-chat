@@ -95,7 +95,7 @@ function SignInHeroPanel() {
                   className="text-2xl font-bold"
                   style={{ color: "#87CEEB" }}
                 >
-                  AI Tarot Chat
+                  AI Reflection Dialogue
                 </p>
               </div>
             </div>
@@ -214,7 +214,7 @@ function MobileSignInLayout({
                 className="text-xl font-medium mt-1"
                 style={{ color: "#87CEEB" }}
               >
-                AI Tarot Chat
+                AI Reflection Dialogue
               </div>
             </div>
             <p className="text-white/80 text-lg font-medium">
