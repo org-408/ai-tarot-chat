@@ -264,7 +264,7 @@ grep -rln "占い" web/app/\(app\)/
 - 内容構成:
   1. ヘッダー: `サポート`
   2. **FAQ セクション**: [web/app/[locale]/(marketing)/pricing/page.tsx:330-351](../web/app/[locale]/\(marketing\)/pricing/page.tsx) の 5 項目（無料プラン・解約・アップグレード・オフライン・同期）をそのまま流用
-  3. **お問い合わせセクション**: 連絡先メールアドレスの `mailto:` リンク（実アドレスはユーザーに確認、または既存の admin 用メールを流用）
+  3. **お問い合わせセクション**: 連絡先メールアドレスの `mailto:` リンク → **`support@ariadne-ai.app`**
   4. フッター: プライバシーポリシー・利用規約へのリンク
 
 **スタイル**: 既存の [web/app/privacy/page.tsx](../web/app/privacy/page.tsx) を参考にシンプルに
@@ -278,7 +278,6 @@ export const metadata: Metadata = {
 ```
 
 **注意**:
-- メールアドレスが未確定ならプレースホルダ `support@example.com` で置き、PR コメントで確認を促す
 - pricing ページの FAQ を重複コピーする形で OK（共通化は今回スコープ外）
 
 ---

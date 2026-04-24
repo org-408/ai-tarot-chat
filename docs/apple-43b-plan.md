@@ -263,7 +263,7 @@ Thank you for your consideration.
 - 内容:
   - タイトル: `サポート`
   - FAQ セクション（[web/app/[locale]/(marketing)/pricing/page.tsx:330-351](../web/app/[locale]/(marketing)/pricing/page.tsx) の 5 項目を流用）
-  - お問い合わせ連絡先（メールアドレスの `mailto:` リンク 1 行）
+  - お問い合わせ連絡先: **`support@ariadne-ai.app`**（`mailto:` リンクで配置）
   - プライバシー / 利用規約へのリンク
 - App Store Connect の Support URL を `/delete-account` → `/support` に更新
 - 退会 URL は App Privacy → **Account Deletion URL** フィールドに移設
