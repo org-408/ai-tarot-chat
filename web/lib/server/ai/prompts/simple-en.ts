@@ -14,11 +14,9 @@ import type {
   Spread,
   Tarotist,
 } from "@/../shared/lib/types";
-import {
-  getCategoryNameEn,
-  getSpreadLabelEn,
-} from "./master-labels-en";
-import { getEnglishPersona } from "./tarotist-personas-en";
+import { getCategoryEn } from "@/lib/server/i18n/translations/categories-en";
+import { getSpreadEn } from "@/lib/server/i18n/translations/spreads-en";
+import { getTarotistEn } from "@/lib/server/i18n/translations/tarotists-en";
 
 function formatDrawnCards(drawnCards: DrawnCard[]): string {
   return drawnCards
@@ -41,13 +39,18 @@ export function buildSimpleSystemPromptEn(args: {
 }): string {
   const { tarotist, spread, category, drawnCards } = args;
 
-  const persona = getEnglishPersona(tarotist.name);
+  const persona = tarotist.i18n?.en ?? getTarotistEn(tarotist.name);
   const title = persona?.title ?? tarotist.title;
   const trait = persona?.trait ?? tarotist.trait;
   const bio = persona?.bio ?? tarotist.bio;
 
-  const categoryNameEn = getCategoryNameEn(category);
-  const spreadLabel = getSpreadLabelEn(spread);
+  const categoryEn = category?.i18n?.en ?? getCategoryEn(category?.no);
+  const categoryNameEn = categoryEn?.name ?? category?.name ?? "general topic";
+  const spreadEn = spread?.i18n?.en ?? getSpreadEn(spread?.code);
+  const spreadLabel = {
+    name: spreadEn?.name ?? spread?.name ?? "tarot spread",
+    guide: spreadEn?.guide ?? spread?.guide ?? "",
+  };
   const cellsCount = spread.cells?.length ?? 0;
 
   const cardContext =

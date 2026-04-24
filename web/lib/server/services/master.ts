@@ -2,6 +2,7 @@ import type {
   MasterData,
   MasterDataUpdateResponse,
 } from "@/../shared/lib/types";
+import { applyEnTranslations } from "@/lib/server/i18n/apply-translations";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { masterConfigRepository } from "@/lib/server/repositories";
 import {
@@ -41,7 +42,7 @@ export class MasterService {
         tarotistService.getAllTarotists(),
       ]);
 
-    return {
+    return applyEnTranslations({
       version,
       plans,
       levels,
@@ -49,7 +50,7 @@ export class MasterService {
       spreads,
       decks,
       tarotists,
-    };
+    });
   }
 
   /**

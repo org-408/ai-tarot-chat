@@ -12,8 +12,19 @@
  */
 
 import type { DrawnCard, Spread, Tarotist } from "@/../shared/lib/types";
-import { getSpreadLabelEn } from "./master-labels-en";
-import { getEnglishPersona } from "./tarotist-personas-en";
+import { getCategoryEn } from "@/lib/server/i18n/translations/categories-en";
+import { getSpreadEn } from "@/lib/server/i18n/translations/spreads-en";
+import { getTarotistEn } from "@/lib/server/i18n/translations/tarotists-en";
+
+function spreadLabelOf(
+  spread: { code?: string; name?: string; guide?: string | null; i18n?: { en?: { name: string; guide: string } } } | null | undefined,
+): { name: string; guide: string } {
+  const en = spread?.i18n?.en ?? getSpreadEn(spread?.code);
+  return {
+    name: en?.name ?? spread?.name ?? "tarot spread",
+    guide: en?.guide ?? spread?.guide ?? "",
+  };
+}
 
 function formatDrawnCards(drawnCards: DrawnCard[]): string {
   return drawnCards
@@ -29,7 +40,7 @@ function formatDrawnCards(drawnCards: DrawnCard[]): string {
 }
 
 function buildTarotistBase(tarotist: Tarotist): string {
-  const persona = getEnglishPersona(tarotist.name);
+  const persona = tarotist.i18n?.en ?? getTarotistEn(tarotist.name);
   const title = persona?.title ?? tarotist.title;
   const trait = persona?.trait ?? tarotist.trait;
   const bio = persona?.bio ?? tarotist.bio;
@@ -65,7 +76,7 @@ export function buildPersonalSystemPromptEn(args: {
   } = args;
 
   const base = buildTarotistBase(tarotist);
-  const spreadLabel = getSpreadLabelEn(spread);
+  const spreadLabel = spreadLabelOf(spread);
   const drawnCardsText = drawnCards.length > 0 ? formatDrawnCards(drawnCards) : "";
 
   // ────────────────────────────────────────────────
@@ -89,31 +100,15 @@ export function buildPersonalSystemPromptEn(args: {
   if (messagesLength <= 3) {
     const spreadList = spreadsForPhase1_2
       .map((s) => {
-        const label = getSpreadLabelEn(s);
+        const label = spreadLabelOf(s);
         const cats =
           s.categories && s.categories.length > 0
             ? s.categories
                 .map((stc) => {
                   const cat = stc.category;
                   if (!cat) return undefined;
-                  if (typeof cat.no === "number") {
-                    // Use English category labels through the existing mapping
-                    // via a lightweight import-free inline lookup. Fall back to
-                    // the raw JA name if the number isn't mapped.
-                    const map: Record<number, string> = {
-                      1: "Love",
-                      2: "Work",
-                      3: "Today's guidance",
-                      4: "Studies",
-                      5: "Wellness",
-                      6: "Money",
-                      7: "Relationships",
-                      8: "Inner self",
-                      9: "Spiritual growth",
-                    };
-                    return map[cat.no] ?? cat.name;
-                  }
-                  return cat.name;
+                  const en = cat.i18n?.en ?? getCategoryEn(cat.no);
+                  return en?.name ?? cat.name;
                 })
                 .filter(Boolean)
                 .join(", ")

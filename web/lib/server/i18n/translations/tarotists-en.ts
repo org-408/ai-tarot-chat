@@ -1,26 +1,21 @@
 /**
- * Phase 2.1 — Tarotist ペルソナの英語版。
+ * Phase 2.1 — Tarotist の英語翻訳 (title / trait / bio)。
+ * キー: Tarotist.name (言語非依存)
  *
- * 現在 `Tarotist` テーブルには language カラムがない (段階 2 で追加予定)。
- * それまでのつなぎとして、英語リクエスト時にペルソナを差し替える。
- * キーは `Tarotist.name` (言語非依存)。
- *
- * Apple 4.3(b) 対応として、以下の NG ワードを含まない文言とする:
- *   fortune / fortune-telling / predict / prediction / horoscope /
- *   destiny / fate / zodiac
- *
- * 「占い」という機能は "tarot reading" として、「占い師」は
- * "tarot reader" として表現する。トーンは「reflection / guidance /
- * insight」寄りに調整する。
+ * Apple 4.3(b) 対応:
+ *   - NG ワード (fortune / fortune-telling / predict / horoscope /
+ *     destiny / fate / zodiac) を含まない
+ *   - 「占い師」は "tarot reader" とする
+ *   - トーンは "reflection / guidance / insight"
  */
 
-export type TarotistPersonaEn = {
+export type TarotistEn = {
   title: string;
   trait: string;
   bio: string;
 };
 
-const TAROTIST_PERSONAS_EN: Record<string, TarotistPersonaEn> = {
+export const TAROTIST_EN: Record<string, TarotistEn> = {
   Lily: {
     title: "Aspiring tarot reader",
     trait: "Energetic, concise, friendly",
@@ -63,7 +58,7 @@ const TAROTIST_PERSONAS_EN: Record<string, TarotistPersonaEn> = {
   },
 };
 
-export function getEnglishPersona(name: string | undefined | null): TarotistPersonaEn | null {
+export function getTarotistEn(name: string | null | undefined): TarotistEn | null {
   if (!name) return null;
-  return TAROTIST_PERSONAS_EN[name] ?? null;
+  return TAROTIST_EN[name] ?? null;
 }

@@ -236,6 +236,8 @@ export type SpreadLevel = {
   createdAt: Date;
   updatedAt: Date;
   spreads?: Spread[];
+  // Phase 2.1 — サーバーが en 翻訳を付与。クライアントで現在言語に応じて解決する
+  i18n?: { en?: { name: string; description: string } };
 };
 
 // スプレッドの型
@@ -256,6 +258,8 @@ export type Spread = {
   categories?: SpreadToCategory[];
   reading?: Reading[];
   favoriteSpreads?: FavoriteSpread[];
+  // Phase 2.1 — en 翻訳
+  i18n?: { en?: { name: string; guide: string } };
 };
 
 // スプレッドセルの型
@@ -269,6 +273,8 @@ export type SpreadCell = {
   isHorizontal: boolean; // 横向きかどうか
   spreadId: string;
   spread?: Spread;
+  // Phase 2.1 — en 翻訳
+  i18n?: { en?: { position: string; description: string } };
 };
 
 // カテゴリモデル
@@ -281,6 +287,8 @@ export type ReadingCategory = {
   updatedAt: Date;
   spreads?: SpreadToCategory[];
   reading?: Reading[];
+  // Phase 2.1 — en 翻訳
+  i18n?: { en?: { name: string; description: string } };
 };
 
 // スプレッドとカテゴリの中間テーブル
@@ -319,6 +327,8 @@ export type Plan = {
   clients?: Client[];
   spreads?: Spread[];
   planChangeHistories?: PlanChangeHistory[];
+  // Phase 2.1 — en 翻訳
+  i18n?: { en?: { name: string; description: string; features: string[] } };
 };
 
 // プラン履歴モデル
@@ -373,6 +383,8 @@ export type Tarotist = {
   // 関連
   readings?: Reading[];
   chatMessages?: ChatMessage[];
+  // Phase 2.1 — en 翻訳 (title / trait / bio)
+  i18n?: { en?: { title: string; trait: string; bio: string } };
 };
 
 // リーディング履歴モデル

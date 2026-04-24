@@ -1,7 +1,49 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import type { TarotDeck } from "../../../../shared/lib/types";
+import type {
+  Plan,
+  ReadingCategory,
+  Spread,
+  SpreadCell,
+  SpreadLevel,
+  TarotDeck,
+  Tarotist,
+} from "../../../../shared/lib/types";
 import { useMasterStore } from "../stores/master";
+
+/**
+ * i18n.en フィールドが付与されたレコードを現在言語で解決する。
+ * `lang === "en"` かつ `record.i18n.en` があれば、EN フィールドで上書き。
+ * 元の JA フィールドは i18n.en に格納されているが、本関数は「表示用のオブジェクト」を返すため
+ * 直接の field アクセス (record.name 等) が EN になる。
+ */
+function resolveCategory(c: ReadingCategory, lang: string): ReadingCategory {
+  if (lang === "en" && c.i18n?.en) return { ...c, ...c.i18n.en };
+  return c;
+}
+function resolvePlan(p: Plan, lang: string): Plan {
+  if (lang === "en" && p.i18n?.en) return { ...p, ...p.i18n.en };
+  return p;
+}
+function resolveSpreadLevel(l: SpreadLevel, lang: string): SpreadLevel {
+  if (lang === "en" && l.i18n?.en) return { ...l, ...l.i18n.en };
+  return l;
+}
+function resolveSpreadCell(cell: SpreadCell, lang: string): SpreadCell {
+  if (lang === "en" && cell.i18n?.en) return { ...cell, ...cell.i18n.en };
+  return cell;
+}
+function resolveSpread(s: Spread, lang: string): Spread {
+  const cells = s.cells?.map((c) => resolveSpreadCell(c, lang));
+  if (lang === "en" && s.i18n?.en) {
+    return { ...s, ...s.i18n.en, ...(cells ? { cells } : {}) };
+  }
+  return cells ? { ...s, cells } : s;
+}
+function resolveTarotist(t: Tarotist, lang: string): Tarotist {
+  if (lang === "en" && t.i18n?.en) return { ...t, ...t.i18n.en };
+  return t;
+}
 
 /**
  * マスターデータフック
@@ -42,21 +84,45 @@ export function useMaster() {
     return filtered.length > 0 ? filtered : allDecks;
   }, [allDecks, currentLang]);
 
+  const plans = useMemo<Plan[]>(
+    () => (masterData?.plans ?? []).map((p) => resolvePlan(p, currentLang)),
+    [masterData?.plans, currentLang],
+  );
+  const categories = useMemo<ReadingCategory[]>(
+    () =>
+      (masterData?.categories ?? []).map((c) => resolveCategory(c, currentLang)),
+    [masterData?.categories, currentLang],
+  );
+  const levels = useMemo<SpreadLevel[]>(
+    () =>
+      (masterData?.levels ?? []).map((l) => resolveSpreadLevel(l, currentLang)),
+    [masterData?.levels, currentLang],
+  );
+  const spreads = useMemo<Spread[]>(
+    () => (masterData?.spreads ?? []).map((s) => resolveSpread(s, currentLang)),
+    [masterData?.spreads, currentLang],
+  );
+  const tarotists = useMemo<Tarotist[]>(
+    () =>
+      (masterData?.tarotists ?? []).map((t) => resolveTarotist(t, currentLang)),
+    [masterData?.tarotists, currentLang],
+  );
+
   return {
     // 状態
     isReady,
     isLoading,
     error,
 
-    // データ
+    // データ (現在言語で解決済み)
     masterData,
     decks,
     allDecks,
-    spreads: masterData?.spreads || [],
-    categories: masterData?.categories || [],
-    levels: masterData?.levels || [],
-    plans: masterData?.plans || [],
-    tarotists: masterData?.tarotists || [],
+    spreads,
+    categories,
+    levels,
+    plans,
+    tarotists,
     version: masterData?.version || null,
 
     // アクション（主にリフレッシュやバージョンチェック用）
