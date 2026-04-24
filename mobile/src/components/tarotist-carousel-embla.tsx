@@ -1,6 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 
@@ -32,6 +33,7 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
   isChangingPlan,
   onSelectTarotist,
 }) => {
+  const { t } = useTranslation();
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "center",
@@ -145,7 +147,9 @@ const TarotistCarouselEmbla: React.FC<TarotistCarouselEmblaProps> = ({
                           >
                             <div className="text-6xl mb-2">🔒</div>
                             <div className="text-white text-sm font-bold bg-black/50 px-3 py-1 rounded-full">
-                              {tarotist.plan?.name}プラン
+                              {t("plans.planBadgeSuffix", {
+                                label: tarotist.plan?.name ?? "",
+                              })}
                             </div>
                           </motion.div>
                         </div>

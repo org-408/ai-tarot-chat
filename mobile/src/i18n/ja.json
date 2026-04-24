@@ -190,6 +190,7 @@
     "displayPremium": "プレミアムプラン",
     "displayUnset": "未設定プラン",
     "planBadgeSuffix": "{{label}}プラン",
+    "planRequiredSuffix": "{{label}}プラン必要",
     "notSupportedByPlan": "未対応プラン",
     "unlimited": "無制限",
     "pageTitle": "💎 プラン選択",

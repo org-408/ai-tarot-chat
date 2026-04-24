@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
 import { canUseTarotist, renderStars } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
@@ -30,6 +31,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
   onChangePlan = () => {},
   isChangingPlan,
 }) => {
+  const { t } = useTranslation();
   const handleChangePlan = (requiredPlan: UserPlan) => {
     onChangePlan(requiredPlan);
   };
@@ -57,7 +59,9 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                   backgroundColor: selectedTarotist.plan!.accentColor,
                 }}
               >
-                {selectedTarotist.plan!.name}プラン
+                {t("plans.planBadgeSuffix", {
+                  label: selectedTarotist.plan!.name,
+                })}
               </div>
             </div>
 
