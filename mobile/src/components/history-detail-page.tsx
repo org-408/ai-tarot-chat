@@ -44,11 +44,21 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
     : reading.spread ?? null;
 
   // salon ストアに読み込みデータをセット（ClaraPage と同じパターン）
+  // DrawnCard.position / description は保存時点の言語版なので、resolvedSpread.cells
+  // から order で引き直して現在言語の position / description を上書きする。
   useEffect(() => {
-    const cards = (reading.cards ?? []).map((dc) => ({
-      ...dc,
-      card: dc.card ?? cardMap.get(dc.cardId),
-    }));
+    const cellByOrder = new Map(
+      (resolvedSpread?.cells ?? []).map((c) => [c.order, c]),
+    );
+    const cards = (reading.cards ?? []).map((dc) => {
+      const cell = cellByOrder.get(dc.order);
+      return {
+        ...dc,
+        card: dc.card ?? cardMap.get(dc.cardId),
+        position: cell?.position ?? dc.position,
+        description: cell?.description ?? dc.description,
+      };
+    });
     setDrawnCards(cards);
     setIsRevealingCompleted(true);
     setUpperViewerMode("profile");
@@ -59,7 +69,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
       setUpperViewerMode("grid");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reading.id]);
+  }, [reading.id, resolvedSpread]);
 
   return (
     <div className="main-container">
