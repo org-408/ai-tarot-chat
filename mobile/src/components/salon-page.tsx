@@ -87,11 +87,14 @@ const SalonPage: React.FC<SalonPageProps> = ({
         // .main-container は min-height: 100% なので、子の height: 100% が
         // 解決できず、カルーセル内部のスワイプヒント/ドットインジケーターが
         // viewport からはみ出していたため揃える。
+        // bottom は --safe-bottom（iOS: env()、Android: MainActivity で注入）で
+        // ホームバー/ジェスチャバーを避け、最下部のドットインジケーターが
+        // タップできなくなる問題を防ぐ。
         <div
           className="fixed left-0 right-0 flex flex-col"
           style={{
             top: "calc(50px + env(safe-area-inset-top))",
-            bottom: 0,
+            bottom: "var(--safe-bottom)",
           }}
         >
           <TarotistCarouselPortrait
