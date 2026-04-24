@@ -294,8 +294,17 @@ Thank you for your consideration.
 - X / ブログ記事本体（SEO 保護）
 - `web/app/blog/` 配下の記事
 - 管理画面 `web/app/(admin)/`
-- Web ランディングの英語化（Japan ロケール向けで正当化可能、スコープ外）
 - マスターデータ（カード意味文等）
+
+### Web ランディング / サインインページの扱い
+
+`ariadne-ai.app/` は **実質的に `/auth/signin` を兼ねるマーケティング入口** として機能する（未認証アクセスはサインインページへリダイレクト）。App Store Connect の Marketing URL は `ariadne-ai.app/` のまま、内部で多言語化する方針を採る。
+
+- **サインインページ** (`web/app/auth/signin/page.tsx`) は現状 JA 直書き → **内部翻訳切替** (`useTranslations` + Accept-Language / `NEXT_LOCALE` cookie) を追加
+- **独立マーケティング LP** (`web/app/[locale]/(marketing)/page.tsx` 配下) は next-intl の土台既に完動 (middleware / routing / `messages/{ja,en}.json`)。コンテンツが JA 直書きなだけ → `useTranslations` 移行 + `en.json` に翻訳追加で完了
+- **Marketing URL は `ariadne-ai.app/` のまま**（変更不要）。Accept-Language が en のアクセスはサインインページが EN 表示される
+
+> 当初 "英語化はスコープ外" としていたが、アプリ内 UI + AI プロンプト + Privacy/Terms が EN 化される整合性から、サインイン + `[locale]/(marketing)/` の翻訳も同時に行うことにした (2026-04-24)。実装コストは「JA 直書き → `useTranslations` + `en.json` 追加」で既存土台を活用できるため低い。
 
 ---
 
@@ -453,8 +462,7 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 2. 音声モード（OpenAI TTS でキャラ別ボイス）
 3. AI 自由対話モード（カード無しで直接対話）
 4. iOS Widget
-5. Web ランディングの英語化
-6. 新規ウェルカムオンボーディング画面
+5. 新規ウェルカムオンボーディング画面
 
 ---
 
@@ -465,6 +473,5 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 - ❌ 音声モード / iOS Widget / スプラッシュ再設計
 - ❌ マルチ AI プロバイダ有効化
 - ❌ 管理画面 `(admin)/` の変更
-- ❌ Web ランディングの英語化
 - ❌ Web 版 `(app)/` の i18n 化（日本語の軽いテキストスイープのみ）
 - ❌ カテゴリ別カード意味文・マスターデータの書き換え
