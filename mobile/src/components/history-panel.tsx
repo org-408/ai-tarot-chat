@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { ChatMessage, ReadingCategory, Spread } from "../../../shared/lib/types";
 import { MessageContent } from "./message-content";
 
@@ -32,6 +33,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   createdAt,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -52,14 +54,18 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
           <div className="space-y-2">
             {customQuestion ? (
               <div className="rounded-xl border border-purple-100 bg-purple-50/60 px-3 py-2.5">
-                <p className="text-xs text-purple-500 font-medium mb-1">ご質問</p>
+                <p className="text-xs text-purple-500 font-medium mb-1">
+                  {t("history.yourQuestion")}
+                </p>
                 <p className="text-xs text-gray-700 leading-relaxed">{customQuestion}</p>
               </div>
             ) : (
               <>
                 {category && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400 font-medium">占い内容</span>
+                    <span className="text-xs text-gray-400 font-medium">
+                      {t("reading.readingContent")}
+                    </span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
                       {category.name}
                     </span>
@@ -68,7 +74,9 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                 {spread && (
                   <div className="rounded-xl border border-purple-100 bg-purple-50/60 px-3 py-2.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-xs text-purple-500 font-medium">🃏 スプレッド</span>
+                      <span className="text-xs text-purple-500 font-medium">
+                        {t("reading.spreadLabel")}
+                      </span>
                       <span className="text-xs font-bold text-purple-800">{spread.name}</span>
                     </div>
                     {spread.guide && (

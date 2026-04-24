@@ -2,6 +2,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
@@ -20,6 +21,7 @@ interface UpperViewerProps {
 
 // メインコンポーネント
 const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTarotistName, spread }) => {
+  const { t } = useTranslation();
   const offlineName = profileTarotistName ?? (claraMode ? "Clara" : null);
   const { masterData } = useMaster();
   const {
@@ -254,7 +256,7 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
                       👆
                     </motion.div>
                     <span className="font-medium whitespace-nowrap">
-                      タップで裏返し
+                      {t("reading.hintTapFlip")}
                     </span>
                   </div>
                   <div className="w-px h-2.5 bg-gray-400/40" />
@@ -271,7 +273,7 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
                       👈👉
                     </motion.div>
                     <span className="font-medium whitespace-nowrap">
-                      スワイプで切替
+                      {t("reading.hintSwipeSwitch")}
                     </span>
                   </div>
                 </div>
@@ -292,10 +294,10 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
             }`}
           >
             {mode === "profile"
-              ? "占い師表示"
+              ? t("reading.viewModeProfile")
               : mode === "grid"
-              ? "スプレッド表示"
-              : "個別カード表示"}
+              ? t("reading.viewModeGrid")
+              : t("reading.viewModeCarousel")}
           </button>
         ))}
       </div>
@@ -328,7 +330,9 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
                   {selectedCard.order}
                 </div>
                 <h3 className="text-base font-bold text-purple-900">
-                  位置の意味: {selectedCard.position}
+                  {t("reading.positionMeaning", {
+                    position: selectedCard.position,
+                  })}
                 </h3>
               </div>
               {selectedCard.description && (
@@ -354,17 +358,23 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
                 </div>
               </div>
               <div className="text-sm text-gray-700 mb-2">
-                カード:{" "}
+                {t("reading.cardLabel")}{" "}
                 <span className="font-semibold">{selectedCard.card!.name}</span>
                 {selectedCard.isReversed && (
-                  <span className="text-red-600 ml-2">(逆位置)</span>
+                  <span className="text-red-600 ml-2">
+                    {t("reading.reversedSuffix")}
+                  </span>
                 )}
               </div>
               <div className="text-xs text-gray-600 mb-4">
-                キーワード:{" "}
+                {t("reading.keywordsLabel")}{" "}
                 {selectedCard.isReversed
-                  ? selectedCard.card!.reversedKeywords.join("、")
-                  : selectedCard.card!.uprightKeywords.join("、")}
+                  ? selectedCard.card!.reversedKeywords.join(
+                      t("common.listSeparator"),
+                    )
+                  : selectedCard.card!.uprightKeywords.join(
+                      t("common.listSeparator"),
+                    )}
               </div>
             </motion.div>
           </motion.div>

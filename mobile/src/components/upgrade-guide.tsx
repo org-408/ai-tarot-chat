@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Plan } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
@@ -14,6 +15,7 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
   handleChangePlan,
   isChangingPlan,
 }) => {
+  const { t } = useTranslation();
   const { masterData } = useMaster();
   const { currentPlan } = useClient();
 
@@ -23,7 +25,6 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
     ?.filter((p: Plan) => p.no > (currentPlan?.no || 0))
     .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
-  // Accordionのitems配列を作成
   const accordionItems: AccordionItem[] = upgradablePlans.map((plan) => {
     const colors = getPlanColors(plan.code, masterData.plans);
     const icon =
@@ -32,12 +33,14 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
     return {
       id: plan.code,
       title: plan.name,
-      subtitle: `¥${plan.price.toLocaleString()}/月 - ${plan.description}`,
+      subtitle: t("plans.priceSubtitle", {
+        price: plan.price.toLocaleString(),
+        description: plan.description,
+      }),
       icon,
       colors,
       content: (
         <>
-          {/* 機能リスト */}
           <div className="space-y-1">
             {plan.features?.map((feature, i) => (
               <div
@@ -50,7 +53,6 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
             ))}
           </div>
 
-          {/* アップグレードボタン */}
           <button
             onClick={() => handleChangePlan(plan.code as UserPlan)}
             disabled={isChangingPlan}
@@ -58,10 +60,13 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
             style={{ backgroundColor: colors.accent }}
           >
             {isChangingPlan
-              ? "処理中..."
+              ? t("plans.processing")
               : isGuest && plan.code === "FREE"
-              ? "無料でユーザー登録"
-              : `${plan.name}を始める  (¥${plan.price.toLocaleString()}/月)`}
+              ? t("plans.freeRegister")
+              : t("plans.startPlan", {
+                  plan: plan.name,
+                  price: plan.price.toLocaleString(),
+                })}
           </button>
         </>
       ),
@@ -72,17 +77,16 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
     <div className="mt-6 space-y-3">
       {currentPlan.code !== "PREMIUM" && (
         <div className="text-center text-sm text-gray-800 mb-3">
-          💡 もっと詳しく占うなら
+          {t("plans.upgradeHeadline")}
           {upgradablePlans && upgradablePlans.length > 0 && (
             <div className="mt-1 space-y-3">
               <div className="text-xs text-center text-gray-800">
                 💡{" "}
                 {isGuest
-                  ? "無料登録でもっと楽しむ。本格プランもご用意"
-                  : "さらに上位プランへアップグレード"}
+                  ? t("plans.upgradeHintGuest")
+                  : t("plans.upgradeHintOther")}
               </div>
 
-              {/* Accordionコンポーネント使用 */}
               <Accordion items={accordionItems} />
             </div>
           )}

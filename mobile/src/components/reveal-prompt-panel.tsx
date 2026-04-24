@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useSalon } from "../lib/hooks/use-salon";
 
 interface RevealPromptPanelProps {
@@ -12,6 +13,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
   isAllRevealed,
   onRevealButtonElChange,
 }) => {
+  const { t } = useTranslation();
   const { setIsRevealingCompleted } = useSalon();
 
   const buttonRefCallback = useCallback(
@@ -52,7 +54,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
           }}
         >
           <p className="text-sm text-gray-600">
-            全カードをめくって占い結果を確認しましょう！
+            {t("reading.revealPrompt")}
           </p>
         </motion.div>
 
@@ -65,7 +67,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
           disabled={isAllRevealed}
           className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold shadow-2xl hover:from-purple-600 hover:to-pink-600 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
-          <span>✨ 一気にめくる ✨</span>
+          <span>{t("reading.revealAllButton")}</span>
         </button>
       </div>
     </motion.div>

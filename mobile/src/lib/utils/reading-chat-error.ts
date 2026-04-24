@@ -3,6 +3,7 @@ import type {
   ReadingErrorPhase,
   ReadingErrorResponse,
 } from "../../../../shared/lib/types";
+import i18n from "../../i18n";
 
 export class ReadingChatError extends Error {
   readonly status: number;
@@ -66,7 +67,7 @@ export async function createReadingChatErrorFromResponse(response: Response) {
 
   const message =
     (await response.text().catch(() => "")) ||
-    "占いリクエストの処理に失敗しました。";
+    i18n.t("error.readingRequestFailed");
 
   return new ReadingChatError({
     message,

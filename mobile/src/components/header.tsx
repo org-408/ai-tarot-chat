@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useSalon } from "../lib/hooks/use-salon";
 import { useForceLongPress } from "../lib/hooks/use-force-unlock";
 import type { PageType, UserPlan } from "../types";
@@ -21,6 +22,7 @@ const Header: React.FC<HeaderProps> = ({
   showProfile,
   setShowProfile,
 }) => {
+  const { t } = useTranslation();
   const { selectedTarotist, isPersonal } = useSalon();
 
   const { handlers: longPressHandlers, progress, isHolding } = useForceLongPress(
@@ -32,72 +34,75 @@ const Header: React.FC<HeaderProps> = ({
   const RADIUS = 14;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
-  console.log(
-    `[Header] currentPlan: ${currentPlan}, currentPage: ${currentPage}`
-  );
   const getHeaderTitle = () => {
     switch (currentPage) {
       case "home":
-        return "🏠 ホーム";
+        return t("header.home");
       case "salon":
       case "reading":
         switch (currentPlan) {
           case "FREE":
-            return "🔮 タロット占い";
+            return t("header.salonFree");
           case "STANDARD":
-            return "⭐ 本格タロット占い";
+            return t("header.salonStandard");
           case "PREMIUM":
-            return isPersonal ? "🤖 パーソナル占い" : "本格タロット占い";
+            return isPersonal
+              ? t("header.personalPremium")
+              : t("header.salonPremium");
           default:
-            return "🔮 タロット占い";
+            return t("header.salonDefault");
         }
       case "personal":
-        return "✨ パーソナル占い";
+        return t("header.personal");
       case "plans":
-        return "💎 プラン選択";
+        return t("header.plans");
       case "tarotist":
-        return "🔮 タロット占い師";
+        return t("header.tarotist");
       case "history":
-        return "📋 占い履歴";
+        return t("header.history");
       case "settings":
-        return "⚙️ 設定";
+        return t("header.settings");
       case "clara":
-        return "📖 いつでも占い";
+        return t("header.clara");
       default:
-        return "🏠 ホーム";
+        return t("header.home");
     }
   };
 
   const getSubtitle = () => {
     switch (currentPage) {
       case "home":
-        return "今日の占いをはじめよう";
+        return t("header.homeSubtitle");
       case "salon":
         switch (currentPlan) {
           case "GUEST":
-            return "お試しでタロット占い";
+            return t("header.salonSubtitleGuest");
           case "FREE":
-            return "お気軽なタロット占い";
+            return t("header.salonSubtitleFree");
           case "STANDARD":
           case "PREMIUM":
-            return "本格的なタロット占い";
+            return t("header.salonSubtitlePaid");
           default:
             return "";
         }
       case "personal":
-        return "AIと対話しながら本格タロット占い";
+        return t("header.personalSubtitle");
       case "reading":
-        return selectedTarotist ? `占い師: ${selectedTarotist.name}` : "";
+        return selectedTarotist
+          ? t("header.readingSubtitleWithName", {
+              name: selectedTarotist.name,
+            })
+          : "";
       case "plans":
-        return "最適なプランを選択してください";
+        return t("header.plansSubtitle");
       case "tarotist":
-        return "あなたに合った占い師を見つけよう";
+        return t("header.tarotistSubtitle");
       case "history":
-        return "過去の占い結果を確認";
+        return t("header.historySubtitle");
       case "settings":
-        return "アプリの設定を管理";
+        return t("header.settingsSubtitle");
       case "clara":
-        return "Clara と一緒にオフライン占い";
+        return t("header.claraSubtitle");
       default:
         return "";
     }
@@ -116,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({
             onClick={onMenuClick}
             disabled={menuDisabled}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            aria-label="メニューを開く"
+            aria-label={t("header.openMenu")}
           >
             <svg
               className="w-6 h-6 text-white"

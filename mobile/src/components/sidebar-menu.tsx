@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import type { PageType } from "../types";
 
 interface SidebarMenuProps {
@@ -29,83 +30,72 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   userEmail,
   isOffline = false,
 }) => {
+  const { t } = useTranslation();
+  const offlineRestrictLabel = t("nav.offlineRestricted");
   const menuItems: MenuItem[] = [
     {
       id: "home",
-      label: "ホーム",
+      label: t("nav.home"),
       icon: "🏠",
       available: true,
-      description: "残り回数・履歴・最近の占い",
+      description: t("nav.homeDesc"),
     },
     {
       id: "salon",
-      label: "クイック占い",
-      icon: "🔮",
+      label: t("nav.quickReading"),
+      icon: "✨",
       available: !isOffline,
-      description: "タロット占いを始める",
-      requiredPlanLabel: isOffline ? "オフライン時は使用不可" : undefined,
+      description: t("nav.quickReadingDesc"),
+      requiredPlanLabel: isOffline ? offlineRestrictLabel : undefined,
     },
     {
       id: "personal",
-      label: "パーソナル占い",
-      icon: "✨",
+      label: t("nav.dialogueReading"),
+      icon: "💬",
       available: !isOffline && currentPlan === "PREMIUM",
-      description: "AIと対話しながら占う",
+      description: t("nav.dialogueReadingDesc"),
       requiredPlanLabel: isOffline
-        ? "オフライン時は使用不可"
+        ? offlineRestrictLabel
         : currentPlan !== "PREMIUM"
-          ? "プレミアム限定"
+          ? t("home.premiumOnly")
           : undefined,
     },
     {
       id: "clara",
-      label: "いつでも占い",
+      label: t("nav.offlineReading"),
       icon: "📖",
       available: true,
-      description: "Clara とオフラインで占う",
+      description: t("home.offlineDesc"),
     },
     {
       id: "tarotist",
-      label: "占い師",
+      label: t("nav.tarotists"),
       icon: "👩",
       available: true,
-      description: "占い師を見る",
+      description: t("nav.tarotistsDesc"),
     },
-    // {
-    //   id: "tarotistSwipe",
-    //   label: "占い師選択",
-    //   icon: "👱‍♀️",
-    //   available: true,
-    //   description: "スワイプで占い師を選ぶ",
-    // },
-    // {
-    //   id: "swipeableDemo",
-    //   label: "新サロンページ",
-    //   icon: "👱‍♀️",
-    //   available: true,
-    //   description: "サロン・占い統合デモ",
-    // },
     {
       id: "plans",
-      label: "プラン",
+      label: t("nav.plans"),
       icon: "💎",
       available: true,
-      description: "プランを変更する",
+      description: t("nav.plansDesc"),
     },
     {
       id: "history",
-      label: "占い履歴",
+      label: t("nav.history"),
       icon: "📋",
       available: currentPlan !== "GUEST",
-      description: "過去の占い結果",
-      requiredPlanLabel: currentPlan === "GUEST" ? "無料登録が必要" : undefined,
+      description: t("nav.historyDesc"),
+      requiredPlanLabel:
+        currentPlan === "GUEST" ? t("nav.requiresFreeAccount") : undefined,
     },
     {
       id: "settings",
-      label: "設定",
+      label: t("nav.settings"),
       icon: "⚙️",
       available: true,
-      description: "アプリ設定",
+      description: t("nav.settingsDesc"),
     },
   ];
 
@@ -119,15 +109,15 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   const getPlanBadge = () => {
     switch (currentPlan) {
       case "GUEST":
-        return { label: "ゲスト", color: "bg-gray-500" };
+        return { label: t("plans.badgeGuest"), color: "bg-gray-500" };
       case "FREE":
-        return { label: "無料", color: "bg-green-500" };
+        return { label: t("plans.badgeFree"), color: "bg-green-500" };
       case "STANDARD":
-        return { label: "スタンダード", color: "bg-blue-500" };
+        return { label: t("plans.badgeStandard"), color: "bg-blue-500" };
       case "PREMIUM":
-        return { label: "プレミアム", color: "bg-purple-500" };
+        return { label: t("plans.badgePremium"), color: "bg-purple-500" };
       default:
-        return { label: "未設定", color: "bg-gray-500" };
+        return { label: t("plans.badgeUnset"), color: "bg-gray-500" };
     }
   };
 
@@ -185,7 +175,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 <div
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${planBadge.color} text-white`}
                 >
-                  {planBadge.label}プラン
+                  {t("plans.planBadgeSuffix", { label: planBadge.label })}
                 </div>
               </div>
 
@@ -193,6 +183,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  aria-label={t("common.close")}
                 >
                   <svg
                     className="w-6 h-6"
@@ -275,7 +266,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                       </span>
                     ) : (
                       <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                        準備中
+                        {t("nav.comingSoon")}
                       </span>
                     ))}
                 </motion.button>
@@ -285,7 +276,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
             {/* 🔥 フッター */}
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
               <div className="text-xs text-gray-500 text-center">
-                タロット占いアプリ
+                {t("nav.footerTagline")}
                 <br />
                 <div className="flex justify-center items-center gap-4">
                   <span

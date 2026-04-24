@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Plan, Reading } from "../../shared/lib/types";
 import Header from "./components/header";
 import HomePage from "./components/home-page";
@@ -49,6 +50,7 @@ const DebugMenu = lazy(() =>
 // ─────────────────────────────────────────────
 
 const PlanExpiredToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { t } = useTranslation();
   useEffect(() => {
     const t = setTimeout(onClose, 3000);
     return () => clearTimeout(t);
@@ -62,7 +64,7 @@ const PlanExpiredToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       className="fixed top-28 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-orange-500 text-white px-4 py-2.5 rounded-2xl shadow-lg text-sm font-medium whitespace-nowrap"
     >
       <span>⚠️</span>
-      <span>プランが変更されました。ご利用のプランをご確認ください。</span>
+      <span>{t("plans.planExpiredToast")}</span>
     </motion.div>
   );
 };
@@ -72,6 +74,7 @@ const PlanExpiredToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 // ─────────────────────────────────────────────
 
 const ForceUnlockToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { t } = useTranslation();
   useEffect(() => {
     const t = setTimeout(onClose, 2500);
     return () => clearTimeout(t);
@@ -85,54 +88,61 @@ const ForceUnlockToast: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       className="fixed top-28 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-amber-500 text-white px-4 py-2.5 rounded-2xl shadow-lg text-sm font-medium whitespace-nowrap"
     >
       <span>🔓</span>
-      <span>ナビゲーションを強制解除しました</span>
+      <span>{t("error.forceUnlockedToast")}</span>
     </motion.div>
   );
 };
 
-const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-6"
-  >
+const PlanExpiredDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { t } = useTranslation();
+  return (
     <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.9, opacity: 0 }}
-      className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm flex flex-col items-center gap-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-6"
     >
-      <div className="text-4xl">⚠️</div>
-      <div className="text-center">
-        <p className="font-bold text-gray-800 text-lg mb-1">
-          プランが変更されました
-        </p>
-        <p className="text-sm text-gray-500 leading-relaxed">
-          ご利用のプランが変更されたため、占いを終了します。
-          <br />
-          プランの詳細はプラン画面でご確認ください。
-        </p>
-      </div>
-      <button
-        onClick={onClose}
-        className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl active:opacity-80"
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm flex flex-col items-center gap-4"
       >
-        OK
-      </button>
+        <div className="text-4xl">⚠️</div>
+        <div className="text-center">
+          <p className="font-bold text-gray-800 text-lg mb-1">
+            {t("plans.planChangedTitle")}
+          </p>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {t("plans.planChangedBody1")}
+            <br />
+            {t("plans.planChangedBody2")}
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl active:opacity-80"
+        >
+          {t("common.ok")}
+        </button>
+      </motion.div>
     </motion.div>
-  </motion.div>
-);
+  );
+};
 
-const PageFallback: React.FC = () => (
-  <div className="flex min-h-full items-center justify-center px-6 py-12">
-    <div className="rounded-2xl bg-white/85 px-5 py-3 text-sm font-medium text-gray-600 shadow-lg backdrop-blur-sm">
-      読み込み中...
+const PageFallback: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex min-h-full items-center justify-center px-6 py-12">
+      <div className="rounded-2xl bg-white/85 px-5 py-3 text-sm font-medium text-gray-600 shadow-lg backdrop-blur-sm">
+        {t("common.loading")}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
+  const { t } = useTranslation();
   // ✅ デバッグモードフラグ（本番は false に設定）
   const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
 
@@ -540,21 +550,21 @@ function App() {
         message={
           isDebugEnabled
             ? !languageIsReady
-              ? "言語を初期化中..."
+              ? t("splash.initLanguage")
               : !isInitialized
                 ? getStepLabel()
                 : !authIsReady
-                  ? "認証情報を確認中... (1/4)"
+                  ? t("splash.checkingAuth")
                   : !clientIsReady
-                    ? "利用状況を取得中... (3/4)"
+                    ? t("splash.fetchingUsage")
                     : !masterIsReady
-                      ? "データを読み込み中... (4/4)"
+                      ? t("splash.loadingData")
                       : !usageStats
-                        ? "利用状況を取得中... (3/4)"
+                        ? t("splash.fetchingUsage")
                         : !payload
-                          ? "認証情報を確認中... (1/4)"
-                          : "準備完了"
-            : "読み込み中..."
+                          ? t("splash.checkingAuth")
+                          : t("splash.ready")
+            : t("common.loading")
         }
       />
     );
@@ -566,13 +576,13 @@ function App() {
       <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 to-indigo-900">
         <div className="text-center text-white">
           <div className="text-6xl mb-4">⚠️</div>
-          <div className="text-xl font-bold mb-2">初期化エラー</div>
-          <div className="text-sm opacity-80">アプリの初期化に失敗しました</div>
+          <div className="text-xl font-bold mb-2">{t("error.initTitle")}</div>
+          <div className="text-sm opacity-80">{t("error.initBody")}</div>
           <button
             onClick={() => window.location.reload()}
             className="mt-6 px-6 py-2 bg-white text-purple-900 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            再読み込み
+            {t("common.reload")}
           </button>
         </div>
       </div>
@@ -844,13 +854,13 @@ function App() {
                 className="relative z-10"
               >
                 <div className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                  プラン変更中
+                  {t("plans.changingPlanTitle")}
                 </div>
                 <div className="text-sm text-gray-600 text-center leading-relaxed">
-                  プランの切り替えを行っています
+                  {t("plans.changingPlanBody")}
                   <br />
                   <span className="text-purple-500 font-medium">
-                    このままお待ちください
+                    {t("plans.changingPlanWait")}
                   </span>
                 </div>
               </motion.div>
@@ -890,22 +900,20 @@ function App() {
       {/* ✅ 完全オフライン警告 */}
       {offlineMode === "full" && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
-          ⚠️ オフライン - 初回起動にはネット接続が必要です
+          ⚠️ {t("error.offlineFirstLaunch")}
         </div>
       )}
       {/* 🔥 日付変更通知 */}
       {dateChanged && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white p-2 rounded-full text-xs shadow-lg">
-          ✨ 新しい日になりました!
+          ✨ {t("common.newDayStarted")}
         </div>
       )}
       {/* 🔥 エラー通知 */}
       {error && (
         <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
           ⚠️{" "}
-          {isDebugEnabled
-            ? error.message
-            : "エラーが発生しました。しばらく経ってからもう一度お試しください。"}
+          {isDebugEnabled ? error.message : t("error.genericRetryLater")}
         </div>
       )}
 

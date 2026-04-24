@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CARD_ASPECT } from "../../../shared/lib/constants";
 
 interface ShuffleDialogProps {
@@ -15,6 +16,7 @@ const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
   cardCount = 78,
   maxCycles = 10,
 }) => {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"shuffle" | "gather">("shuffle");
   const [internalOpen, setInternalOpen] = useState(false);
   const cycleCountRef = useRef(0);
@@ -117,8 +119,8 @@ const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
               }}
             >
               {phase === "shuffle"
-                ? "カードをシャッフル中..."
-                : "運命を読み取っています..."}
+                ? t("reading.shuffling")
+                : t("reading.preparingReading")}
             </motion.div>
 
             <div

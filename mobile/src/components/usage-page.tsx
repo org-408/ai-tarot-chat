@@ -1,5 +1,6 @@
 import { BarChart2, ChevronLeft } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useClient } from "../lib/hooks/use-client";
 
 interface UsagePageProps {
@@ -7,6 +8,7 @@ interface UsagePageProps {
 }
 
 const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
+  const { t } = useTranslation();
   const { usage, refreshUsage } = useClient();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,12 +21,12 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
 
   const rows = [
     {
-      label: "クイック占い",
+      label: t("home.quickReading"),
       used: usage?.dailyReadingsCount ?? 0,
       max: plan?.maxReadings ?? 0,
     },
     {
-      label: "パーソナル占い",
+      label: t("home.dialogueReading"),
       used: usage?.dailyPersonalCount ?? 0,
       max: plan?.maxPersonal ?? 0,
       disabled: !plan?.hasPersonal,
@@ -38,10 +40,13 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
         <button
           onClick={onBack}
           className="w-8 h-8 flex items-center justify-center rounded-full active:bg-gray-100"
+          aria-label={t("common.back")}
         >
           <ChevronLeft size={20} className="text-gray-600" />
         </button>
-        <h1 className="text-base font-semibold text-gray-900">利用回数</h1>
+        <h1 className="text-base font-semibold text-gray-900">
+          {t("settings.sectionUsage")}
+        </h1>
       </div>
 
       {isLoading ? (
@@ -71,7 +76,9 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
           {/* プラン */}
           {plan && (
             <div className="mx-4 mb-4 px-4 py-3 bg-purple-50 rounded-xl border border-purple-100">
-              <p className="text-xs text-purple-500 font-medium">現在のプラン</p>
+              <p className="text-xs text-purple-500 font-medium">
+                {t("plans.currentPlan")}
+              </p>
               <p className="text-sm font-semibold text-purple-800 mt-0.5">{plan.name}</p>
             </div>
           )}
@@ -79,7 +86,7 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
           {/* 利用回数 */}
           <div className="px-4 pt-2 pb-1">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              本日の利用状況
+              {t("settings.todayUsageStatus")}
             </p>
           </div>
           <div className="mx-4 rounded-xl overflow-hidden shadow-sm border border-gray-100">
@@ -97,9 +104,13 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
                   </div>
                   <p className="text-sm font-semibold text-gray-700">
                     {row.disabled ? (
-                      <span className="text-xs text-gray-400">未対応プラン</span>
+                      <span className="text-xs text-gray-400">
+                        {t("plans.notSupportedByPlan")}
+                      </span>
                     ) : row.max === 0 ? (
-                      <span className="text-xs text-gray-400">無制限</span>
+                      <span className="text-xs text-gray-400">
+                        {t("plans.unlimited")}
+                      </span>
                     ) : (
                       <span>
                         <span className="text-purple-600">{row.used}</span>
@@ -121,7 +132,7 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
           </div>
 
           <p className="mx-4 mt-3 text-xs text-gray-400">
-            ※ 利用回数は日本時間の午前0時にリセットされます。
+            {t("settings.usageResetNotice")}
           </p>
         </>
       )}

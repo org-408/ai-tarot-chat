@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type {
   ReadingCategory,
@@ -48,6 +49,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   coachMarkOpen = false,
   setCoachMarkOpen,
 }) => {
+  const { t } = useTranslation();
   const { masterData } = useMaster();
   const {
     currentPlan,
@@ -246,12 +248,14 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const categoryItems: AccordionItem[] = [
     {
       id: "category",
-      title: `ジャンル: ${selectedCategory?.name || "選択してください"}`,
+      title: t("reading.categoryTitle", {
+        name: selectedCategory?.name || t("reading.pleaseSelect"),
+      }),
       subtitle: selectedCategory ? selectedCategory.description : undefined,
       icon: "🎴",
       content: (
         <ScrollableRadioSelector
-          title="どのジャンルを占いますか?"
+          title={t("reading.pickCategory")}
           items={availableCategories}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
@@ -305,16 +309,20 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   const spreadItems: AccordionItem[] = [
     {
       id: "spread",
-      title: `スプレッド: ${selectedSpread?.name || "選択してください"}`,
+      title: t("reading.spreadTitle", {
+        name: selectedSpread?.name || t("reading.pleaseSelect"),
+      }),
       subtitle: selectedSpread
         ? selectedSpread.guide ||
-          `使用するタロットカード枚数：${selectedSpread.cells?.length || 0}枚`
+          t("reading.spreadCardCount", {
+            count: selectedSpread.cells?.length || 0,
+          })
         : undefined,
       icon: "🎯",
       content: (
         <ScrollableRadioSelector
-          title="どのスプレッドで占いますか？"
-          subtitle="(カテゴリごとに選択肢が変わります)"
+          title={t("reading.pickSpread")}
+          subtitle={t("reading.pickSpreadNote")}
           items={availableSpreads}
           selected={selectedSpread}
           onSelect={setSelectedSpread}
@@ -417,8 +425,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
         >
           {!isPersonal
-            ? `占うジャンルとスプレッドを選んでください`
-            : `スプレッドを選んでください`}
+            ? t("reading.pickCategoryAndSpread")
+            : t("reading.pickSpreadOnly")}
         </span>
       </motion.div>
 
@@ -448,15 +456,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           onClick={handleStartReading}
           disabled={isDisabled}
         >
-          {"✨ 占いを始める ✨"}
+          {t("reading.startReading")}
         </button>
 
         <div className="text-center text-xs text-black bg-purple-200 bg-opacity-50 rounded-lg px-2 py-1 mt-2 backdrop-blur-sm">
           {claraMode
-            ? "📖 Clara といつでも占えます"
+            ? t("reading.claraAlways")
             : isLimitReached
-            ? "本日の占い回数上限に達しました"
-            : `今日はあと${remaining}回`}
+            ? t("reading.dailyLimitReached")
+            : t("reading.remainingToday", { count: remaining ?? 0 })}
         </div>
 
         {/* セクション下端のセンチネル: 完全可視 + スクロール停止を両方満たす検知に使用 */}
@@ -471,8 +479,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       <SpotlightCoachMark
         isOpen={coachMarkOpen}
         targetEl={selectorAreaEl}
-        title={"占いたいジャンルとスプレッドを選んでください"}
-        note={"スプレッドはタロットカードの配置パターンです。ジャンルに合わせて選べます。"}
+        title={t("reading.coachTitle")}
+        note={t("reading.coachNote")}
         onDismiss={handleQuickCoachDismiss}
         openDelayMs={400}
       />

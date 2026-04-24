@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Suspense, lazy, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DEFAULT_MASTER_DATA } from "./assets/master-data";
 
 const DebugMenu = lazy(() =>
@@ -13,6 +14,7 @@ type TarotSplashScreenProps = {
 };
 
 const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
+  const { t } = useTranslation();
   // 星のランダム位置生成
   const stars = Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -220,7 +222,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
             </div>
 
             <p className="text-white/80 text-xl font-medium">
-              AIと対話するタロット占い
+              {t("splash.tagline", "AIと対話するタロットリーディング")}
             </p>
 
             {/* 装飾的な区切り線 */}
@@ -241,8 +243,10 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
 
         {/* サブテキスト */}
         <div className="text-center mt-6 text-white/50 text-sm">
-          <p>数千年の叡智と最新AI技術の融合</p>
-          <p className="mt-1">あなただけの運命を照らします</p>
+          <p>{t("splash.sub1", "古代の叡智とAIテクノロジーの融合")}</p>
+          <p className="mt-1">
+            {t("splash.sub2", "あなただけのリーディング体験を")}
+          </p>
         </div>
       </div>
     </div>
