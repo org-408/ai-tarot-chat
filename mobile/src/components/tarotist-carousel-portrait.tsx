@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MasterData, Plan, Tarotist } from "../../../shared/lib/types";
+import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import {
   canUseTarotist,
   getTarotistColor,
@@ -323,7 +324,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                           }}
                         >
                           {tarotist.provider !== "OFFLINE"
-                            ? tarotist.plan?.name || "GUEST"
+                            ? getPlanBadgeLabel(tarotist.plan?.code, t, tarotist.plan?.name)
                             : t("tarotist.anytime")}
                         </div>
 
@@ -445,7 +446,11 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                                 {isChangingPlan
                                   ? t("plans.authenticating")
                                   : t("plans.upgradeTo", {
-                                      plan: tarotist.plan?.name,
+                                      plan: getPlanDisplayName(
+                                        tarotist.plan?.code,
+                                        t,
+                                        tarotist.plan?.name,
+                                      ),
                                     })}
                               </motion.button>
                             )}

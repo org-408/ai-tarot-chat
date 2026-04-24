@@ -5,6 +5,7 @@ import type {
   Plan,
   PlanInput,
 } from "../../../shared/lib/types";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 
 interface PlansPageProps {
@@ -65,7 +66,9 @@ const PlansPage: React.FC<PlansPageProps> = ({
         }}
       >
         <div className="text-sm text-gray-600">{t("plans.currentStatus")}</div>
-        <div className="font-bold text-lg">{planData[planCode].name}</div>
+        <div className="font-bold text-lg">
+          {getPlanDisplayName(planCode, t, planData[planCode].name)}
+        </div>
         <div className="text-sm text-gray-500">¥{planData[planCode].price}</div>
         {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
@@ -120,7 +123,9 @@ const PlansPage: React.FC<PlansPageProps> = ({
             {/* プランヘッダー */}
             <div className="flex justify-between items-start mb-3">
               <div>
-                <div className="font-bold text-lg">{plan.name}</div>
+                <div className="font-bold text-lg">
+                  {getPlanDisplayName(planKey, t, plan.name)}
+                </div>
                 <div className="text-sm text-gray-600">{plan.description}</div>
               </div>
               <div className="text-right">

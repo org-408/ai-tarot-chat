@@ -184,6 +184,11 @@
     "badgeStandard": "スタンダード",
     "badgePremium": "プレミアム",
     "badgeUnset": "未設定",
+    "displayGuest": "ゲストプラン",
+    "displayFree": "無料プラン",
+    "displayStandard": "スタンダードプラン",
+    "displayPremium": "プレミアムプラン",
+    "displayUnset": "未設定プラン",
     "planBadgeSuffix": "{{label}}プラン",
     "notSupportedByPlan": "未対応プラン",
     "unlimited": "無制限",
@@ -232,11 +237,7 @@
     "deleteAccountConfirmTitle": "アカウントを削除しますか?",
     "deleteAccountConfirmBody": "セッション履歴などすべてのデータが削除されます。この操作は取り消せません。",
     "deleting": "削除中...",
-    "deleteAction": "削除する",
-    "planGuest": "ゲスト(未登録)",
-    "planFree": "無料プラン",
-    "planStandard": "スタンダードプラン",
-    "planPremium": "プレミアムプラン"
+    "deleteAction": "削除する"
   },
   "home": {
     "welcomeNamed": "おかえりなさい、{{name}}さん",

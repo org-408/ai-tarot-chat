@@ -184,6 +184,11 @@
     "badgeStandard": "Standard",
     "badgePremium": "Premium",
     "badgeUnset": "Not set",
+    "displayGuest": "Guest plan",
+    "displayFree": "Free plan",
+    "displayStandard": "Standard plan",
+    "displayPremium": "Premium plan",
+    "displayUnset": "Unset plan",
     "planBadgeSuffix": "{{label}}",
     "notSupportedByPlan": "Not supported on this plan",
     "unlimited": "Unlimited",
@@ -232,11 +237,7 @@
     "deleteAccountConfirmTitle": "Delete your account?",
     "deleteAccountConfirmBody": "All data, including session history, will be deleted. This can't be undone.",
     "deleting": "Deleting...",
-    "deleteAction": "Delete",
-    "planGuest": "Guest (unregistered)",
-    "planFree": "Free plan",
-    "planStandard": "Standard plan",
-    "planPremium": "Premium plan"
+    "deleteAction": "Delete"
   },
   "home": {
     "welcomeNamed": "Welcome back, {{name}}",

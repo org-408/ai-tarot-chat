@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { Plan } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 import { getPlanColors } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 import Accordion, { type AccordionItem } from "./accordion";
@@ -30,9 +31,10 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
     const icon =
       plan.code === "PREMIUM" ? "👑" : plan.code === "STANDARD" ? "💎" : "🆓";
 
+    const displayName = getPlanDisplayName(plan.code, t, plan.name);
     return {
       id: plan.code,
-      title: plan.name,
+      title: displayName,
       subtitle: t("plans.priceSubtitle", {
         price: plan.price.toLocaleString(),
         description: plan.description,
@@ -64,7 +66,7 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
               : isGuest && plan.code === "FREE"
               ? t("plans.freeRegister")
               : t("plans.startPlan", {
-                  plan: plan.name,
+                  plan: displayName,
                   price: plan.price.toLocaleString(),
                 })}
           </button>

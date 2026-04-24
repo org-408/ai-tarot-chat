@@ -2,6 +2,7 @@ import { BarChart2, ChevronLeft } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useClient } from "../lib/hooks/use-client";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 
 interface UsagePageProps {
   onBack: () => void;
@@ -79,7 +80,9 @@ const UsagePage: React.FC<UsagePageProps> = ({ onBack }) => {
               <p className="text-xs text-purple-500 font-medium">
                 {t("plans.currentPlan")}
               </p>
-              <p className="text-sm font-semibold text-purple-800 mt-0.5">{plan.name}</p>
+              <p className="text-sm font-semibold text-purple-800 mt-0.5">
+                {getPlanDisplayName(plan.code, t, plan.name)}
+              </p>
             </div>
           )}
 

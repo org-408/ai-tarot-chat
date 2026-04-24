@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { getPlanBadgeLabel } from "../lib/utils/plan-display";
 import type { PageType } from "../types";
 
 interface SidebarMenuProps {
@@ -106,22 +107,16 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
     }
   };
 
-  const getPlanBadge = () => {
-    switch (currentPlan) {
-      case "GUEST":
-        return { label: t("plans.badgeGuest"), color: "bg-gray-500" };
-      case "FREE":
-        return { label: t("plans.badgeFree"), color: "bg-green-500" };
-      case "STANDARD":
-        return { label: t("plans.badgeStandard"), color: "bg-blue-500" };
-      case "PREMIUM":
-        return { label: t("plans.badgePremium"), color: "bg-purple-500" };
-      default:
-        return { label: t("plans.badgeUnset"), color: "bg-gray-500" };
-    }
+  const PLAN_BADGE_COLOR: Record<string, string> = {
+    GUEST: "bg-gray-500",
+    FREE: "bg-green-500",
+    STANDARD: "bg-blue-500",
+    PREMIUM: "bg-purple-500",
   };
-
-  const planBadge = getPlanBadge();
+  const planBadge = {
+    label: getPlanBadgeLabel(currentPlan, t),
+    color: PLAN_BADGE_COLOR[currentPlan] ?? "bg-gray-500",
+  };
 
   return (
     <AnimatePresence>

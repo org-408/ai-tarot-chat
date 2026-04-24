@@ -12,6 +12,7 @@ import {
   getTarotistColor,
   renderStars,
 } from "../lib/utils/salon";
+import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 import { TarotistInfoDialog } from "../../../shared/components/tarotist/tarotist-info-dialog";
 
@@ -66,7 +67,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           className="font-bold text-lg"
           style={{ color: currentColors.accent }}
         >
-          {currentPlan.name}
+          {getPlanDisplayName(currentPlan.code, t, currentPlan.name)}
         </div>
         {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
@@ -103,7 +104,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                 >
                   {tarotist.provider === "OFFLINE"
                     ? t("tarotist.offline")
-                    : tarotist.plan!.name}
+                    : getPlanBadgeLabel(tarotist.plan!.code, t, tarotist.plan!.name)}
                 </div>
 
                 <div className="flex gap-4">
@@ -170,7 +171,11 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     {tarotist.provider !== "OFFLINE" && requiresUpgrade ? (
                       <div className="text-xs text-gray-500 text-center">
                         {t("tarotist.requiresPlan", {
-                          plan: tarotist.plan!.name,
+                          plan: getPlanDisplayName(
+                            tarotist.plan!.code,
+                            t,
+                            tarotist.plan!.name,
+                          ),
                         })}
                       </div>
                     ) : (
@@ -198,7 +203,13 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   >
                     {isChangingPlan
                       ? t("plans.authenticating")
-                      : t("plans.upgradeTo", { plan: tarotist.plan!.name })}
+                      : t("plans.upgradeTo", {
+                          plan: getPlanDisplayName(
+                            tarotist.plan!.code,
+                            t,
+                            tarotist.plan!.name,
+                          ),
+                        })}
                   </button>
                 )}
               </div>

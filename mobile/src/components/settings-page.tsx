@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import type { Plan } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useLanguage } from "../lib/hooks/use-language";
+import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import type { SupportedLang } from "../i18n";
 import UsagePage from "./usage-page";
 
@@ -155,37 +156,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
 
-  const planLabel = () => {
-    switch (currentPlan.code) {
-      case "GUEST":
-        return t("settings.planGuest");
-      case "FREE":
-        return t("settings.planFree");
-      case "STANDARD":
-        return t("settings.planStandard");
-      case "PREMIUM":
-        return t("settings.planPremium");
-      default:
-        return currentPlan.name;
-    }
-  };
-
-  // プランバッジは master data 由来の currentPlan.name (日本語固定) を使うと
-  // 英語 UI でも「フリー」等が表示されてしまうため、code から i18n キーで引く。
-  const planBadgeLabel = () => {
-    switch (currentPlan.code) {
-      case "GUEST":
-        return t("plans.badgeGuest");
-      case "FREE":
-        return t("plans.badgeFree");
-      case "STANDARD":
-        return t("plans.badgeStandard");
-      case "PREMIUM":
-        return t("plans.badgePremium");
-      default:
-        return currentPlan.name;
-    }
-  };
+  const planLabel = () => getPlanDisplayName(currentPlan.code, t, currentPlan.name);
+  const planBadgeLabel = () => getPlanBadgeLabel(currentPlan.code, t, currentPlan.name);
 
   if (view === "usage") {
     return <UsagePage onBack={() => setView("main")} />;
