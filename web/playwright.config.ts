@@ -59,6 +59,17 @@ export default defineConfig({
         browserName: "chromium",
       },
     },
+    // ── プラン変更遷移ルール静的検査 ──
+    // docs/plan-change-navigation-spec.md と .claude/rules/plan-change-navigation.md
+    // に基づいて、ファイル内容を grep ベースで検査する。browser は使用しないが、
+    // 既存の test:e2e パイプラインに合流させるため project として定義している。
+    {
+      name: "plan-change-navigation",
+      testMatch: "**/plan-change-navigation.spec.ts",
+      use: {
+        browserName: "chromium",
+      },
+    },
   ],
 
   // CI では next build 済みの前提で next start を起動
