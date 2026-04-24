@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ChatMessage, Reading, TarotCard } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
@@ -35,7 +35,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
   const messages: ChatMessage[] = reading.chatMessages ?? [];
 
   // 履歴データは保存時点の言語版。UI 現在言語に引き直す。
-  const { spreadById, categoryById } = useMaster();
+  const { spreadById, categoryById, decks } = useMaster();
   const resolvedCategory = reading.categoryId
     ? categoryById.get(reading.categoryId) ?? reading.category ?? null
     : reading.category ?? null;
@@ -43,18 +43,33 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
     ? spreadById.get(reading.spreadId) ?? reading.spread ?? null
     : reading.spread ?? null;
 
+  // TarotCard は @@unique([code, language]) で言語ごとに別レコード。
+  // DrawnCard.cardId は保存時言語の id を指すため、現在言語の row に引き直すには
+  // code (言語非依存) をキーにする。useMaster().decks は現在言語でフィルタ済み。
+  const cardByCode = useMemo(
+    () =>
+      new Map(
+        decks.flatMap((d) => d.cards ?? []).map((c) => [c.code, c]),
+      ),
+    [decks],
+  );
+
   // salon ストアに読み込みデータをセット（ClaraPage と同じパターン）
-  // DrawnCard.position / description は保存時点の言語版なので、resolvedSpread.cells
-  // から order で引き直して現在言語の position / description を上書きする。
+  // DrawnCard.position / description / card は保存時点の言語版なので、
+  // resolvedSpread.cells と現在言語 deck から引き直して上書きする。
   useEffect(() => {
     const cellByOrder = new Map(
       (resolvedSpread?.cells ?? []).map((c) => [c.order, c]),
     );
     const cards = (reading.cards ?? []).map((dc) => {
       const cell = cellByOrder.get(dc.order);
+      const saved = dc.card ?? cardMap.get(dc.cardId);
+      const resolvedCard = saved?.code
+        ? cardByCode.get(saved.code) ?? saved
+        : saved;
       return {
         ...dc,
-        card: dc.card ?? cardMap.get(dc.cardId),
+        card: resolvedCard,
         position: cell?.position ?? dc.position,
         description: cell?.description ?? dc.description,
       };
@@ -69,7 +84,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
       setUpperViewerMode("grid");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reading.id, resolvedSpread]);
+  }, [reading.id, resolvedSpread, cardByCode]);
 
   return (
     <div className="main-container">
