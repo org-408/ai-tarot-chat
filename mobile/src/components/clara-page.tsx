@@ -10,6 +10,7 @@ import type {
   Spread,
 } from "../../../shared/lib/types";
 import i18n from "../i18n";
+import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import { drawRandomCards } from "../lib/utils/salon";
 import CategorySpreadSelector from "./category-spread-selector";
@@ -24,13 +25,13 @@ import UpperViewer from "./upper-viewer";
 /** スプレッドビューを表示してからプロフィールへ切り替えるまでの時間 (ms) */
 const SPREAD_VIEW_DISPLAY_MS = 2000;
 
-// カテゴリ名 → meaning キー変換テーブル。
-// カテゴリ名はマスターデータ側が日本語で送出するため、キーも日本語で一致させる。
-const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
-  恋愛: "love",
-  仕事: "career",
-  健康: "health",
-  金運: "money",
+// ReadingCategory.no → meaning キー変換テーブル (言語非依存)
+// 1: 恋愛 (Love), 2: 仕事 (Work), 5: 健康 (Wellness), 6: 金運 (Money)
+const CATEGORY_NO_TO_MEANING_KEY: Record<number, string> = {
+  1: "love",
+  2: "career",
+  5: "health",
+  6: "money",
 };
 
 // ─────────────────────────────────────────────
@@ -39,14 +40,14 @@ const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
 
 function buildClaraMessages(
   drawnCards: DrawnCard[],
-  categoryName: string,
-  spreadName: string,
+  category: ReadingCategory,
+  spread: Spread,
 ): string[] {
-  const meaningKey = CATEGORY_TO_MEANING_KEY[categoryName] ?? "love";
+  const meaningKey = CATEGORY_NO_TO_MEANING_KEY[category.no] ?? "love";
 
   const introMessage = i18n.t("clara.intro", {
-    category: categoryName,
-    spread: spreadName,
+    category: category.name,
+    spread: spread.name,
   });
 
   const cardMessages = drawnCards.map((dc) => {
@@ -178,7 +179,13 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   } = useSalon();
 
   // Clara は masterData から直接取得（ストアの selectedTarotist は変更しない）
-  const clara = masterData.tarotists?.find((t) => t.provider === "OFFLINE");
+  // 現在言語に解決された tarotists / categories / spreads を取得
+  const {
+    tarotists: resolvedTarotists,
+    categories: resolvedCategories,
+    spreads: resolvedSpreads,
+  } = useMaster();
+  const clara = resolvedTarotists?.find((t) => t.provider === "OFFLINE");
 
   const [phase, setPhase] = useState<"select" | "reading">("select");
   const [claraMessages, setClaraMessages] = useState<string[]>([]);
@@ -190,11 +197,17 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     if (phase !== "reading") return;
     if (!quickSpread || !quickCategory) return;
 
-    const drawn = drawRandomCards(masterData, quickSpread);
+    // 現在言語に解決済みの category/spread を使う (salon store の quick* は
+    // 初期化時点の言語版で、lang 切替後も更新されないため)
+    const resolvedCategory =
+      resolvedCategories.find((c) => c.id === quickCategory.id) ?? quickCategory;
+    const resolvedSpread =
+      resolvedSpreads.find((s) => s.id === quickSpread.id) ?? quickSpread;
+    const drawn = drawRandomCards(masterData, resolvedSpread);
     setDrawnCards(drawn);
     setIsRevealingCompleted(true); // 全カードを最初からめくれた状態に
     setClaraMessages(
-      buildClaraMessages(drawn, quickCategory.name, quickSpread.name),
+      buildClaraMessages(drawn, resolvedCategory, resolvedSpread),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);

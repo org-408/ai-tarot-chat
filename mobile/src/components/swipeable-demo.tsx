@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useMaster } from "../lib/hooks/use-master";
 import type {
   AppJWTPayload,
   DrawnCard,
@@ -49,34 +50,40 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
   const [upperIndex, setUpperIndex] = useState(0);
   const [lowerIndex, setLowerIndex] = useState(0);
 
+  // 現在言語に解決済みの collections を使用 (masterData prop は raw)
+  const {
+    categories: resolvedCategories,
+    spreads: resolvedSpreads,
+  } = useMaster();
+
   // カテゴリ
   const availableCategories = useMemo(() => {
-    return (masterData.categories || []).map((cat) => ({
+    return (resolvedCategories || []).map((cat) => ({
       ...cat,
       bio: cat.description,
     }));
-  }, [masterData]);
+  }, [resolvedCategories]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategory, setSelectedCategory] =
     useState<ReadingCategory | null>(availableCategories[0] || null);
 
-  // スプレッド
+  // スプレッド。カテゴリ一致判定は言語非依存の id で行う
   const availableSpreads = useMemo(() => {
     if (!selectedCategory) return [];
-    return (masterData.spreads || [])
+    return (resolvedSpreads || [])
       .filter((spread) => {
         if (!spread.plan || !spread.categories) return false;
-        const spreadCategories = spread.categories.map(
-          (stc) => stc.category?.name
-        );
+        const spreadCategoryIds = spread.categories
+          .map((stc) => stc.categoryId ?? stc.category?.id)
+          .filter(Boolean);
         return (
           currentPlan.no >= spread.plan.no &&
-          spreadCategories.includes(selectedCategory.name)
+          spreadCategoryIds.includes(selectedCategory.id)
         );
       })
       .map((spread) => ({ ...spread, bio: spread.guide }));
-  }, [masterData, selectedCategory, currentPlan]);
+  }, [resolvedSpreads, selectedCategory, currentPlan]);
 
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
 

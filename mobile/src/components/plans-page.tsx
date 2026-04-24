@@ -5,6 +5,7 @@ import type {
   Plan,
   PlanInput,
 } from "../../../shared/lib/types";
+import { useMaster } from "../lib/hooks/use-master";
 import { getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 
@@ -24,8 +25,10 @@ const PlansPage: React.FC<PlansPageProps> = ({
   isChangingPlan,
 }) => {
   const { t } = useTranslation();
+  // 現在言語に解決済みの plans (name / description / features が EN 時は英語) を使用
+  const { plans: resolvedPlans } = useMaster();
   const planCode = currentPlan.code || "GUEST";
-  const planData = masterData.plans.reduce((acc, plan) => {
+  const planData = resolvedPlans.reduce((acc, plan) => {
     acc[plan.code as UserPlan] = {
       no: plan.no,
       code: plan.code,

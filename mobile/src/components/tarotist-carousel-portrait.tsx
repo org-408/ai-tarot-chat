@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MasterData, Plan, Tarotist } from "../../../shared/lib/types";
+import { useMaster } from "../lib/hooks/use-master";
 import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import {
   canUseTarotist,
@@ -39,15 +40,17 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   readonly = false,
 }) => {
   const { t } = useTranslation();
-  // 占い師の取得とフィルタリング
+  // 現在言語に解決済みのタロティストを使用
+  const { tarotists: resolvedTarotists } = useMaster();
+  // 占い師の取得とフィルタリング (plan.code は言語非依存なので resolved/raw どちらでも OK)
   const availableTarotists = useMemo(() => {
-    if (!masterData.tarotists) return [];
+    if (!resolvedTarotists) return [];
 
-    return masterData.tarotists.filter((tarotist: Tarotist) => {
+    return resolvedTarotists.filter((tarotist: Tarotist) => {
       if (isPersonal && tarotist.plan?.code !== "PREMIUM") return false;
       return !!tarotist;
     });
-  }, [masterData, isPersonal]);
+  }, [resolvedTarotists, isPersonal]);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,

@@ -13,27 +13,29 @@ export interface OfflineCardReading {
   keywords: string[];
 }
 
-// decks.cards.meanings の category キー（4種類）に直接対応するカテゴリ名
-// これが「いつでも占い」で選択できるカテゴリの定義
-export const CLARA_CATEGORY_NAMES = ["恋愛", "仕事", "健康", "金運"] as const;
+// decks.cards.meanings の category キー（4種類）に直接対応するカテゴリの定義。
+// ReadingCategory.no でキーする (言語非依存)。
+//   1: 恋愛 (Love), 2: 仕事 (Work), 5: 健康 (Wellness), 6: 金運 (Money)
+export const CLARA_CATEGORY_NOS = [1, 2, 5, 6] as const;
 
-// カテゴリ名 → CardMeaning.category キーのマッピング（直接対応のみ）
-const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
-  恋愛: "love",
-  仕事: "career",
-  健康: "health",
-  金運: "money",
+// ReadingCategory.no → CardMeaning.category キーのマッピング
+const CATEGORY_NO_TO_MEANING_KEY: Record<number, string> = {
+  1: "love",
+  2: "career",
+  5: "health",
+  6: "money",
 };
 
 /**
- * カードとカテゴリから意味テキストを取得する
+ * カードとカテゴリから意味テキストを取得する。
+ * `categoryNo` は ReadingCategory.no (言語非依存) を渡す。
  */
 export function getOfflineMeaningText(
   card: TarotCard,
   isReversed: boolean,
-  categoryName: string
+  categoryNo: number,
 ): string {
-  const meaningKey = CATEGORY_TO_MEANING_KEY[categoryName] ?? "love";
+  const meaningKey = CATEGORY_NO_TO_MEANING_KEY[categoryNo] ?? "love";
 
   const meanings: CardMeaning[] = card.meanings ?? [];
   const matched = meanings.find((m) => m.category === meaningKey);
@@ -50,15 +52,16 @@ export function getOfflineMeaningText(
 
 /**
  * 引いたカードからオフライン占い結果を生成する
+ * `categoryNo` は ReadingCategory.no (言語非依存)
  */
 export function generateOfflineReading(
-  categoryName: string,
-  drawnCards: DrawnCard[]
+  categoryNo: number,
+  drawnCards: DrawnCard[],
 ): OfflineCardReading[] {
   return drawnCards.map((drawnCard) => {
     const card = drawnCard.card!;
     const isReversed = drawnCard.isReversed ?? false;
-    const meaningText = getOfflineMeaningText(card, isReversed, categoryName);
+    const meaningText = getOfflineMeaningText(card, isReversed, categoryNo);
 
     return {
       card,

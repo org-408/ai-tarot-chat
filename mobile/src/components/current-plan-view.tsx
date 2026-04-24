@@ -1,9 +1,11 @@
+import { useMemo } from "react";
 import type {
   AppJWTPayload,
   MasterData,
   Plan,
   UsageStats,
 } from "../../../shared/lib/types";
+import { useMaster } from "../lib/hooks/use-master";
 import { getPlanColors } from "../lib/utils/salon";
 
 interface CurrentPlanViewProps {
@@ -19,6 +21,13 @@ const CurrentPlanView: React.FC<CurrentPlanViewProps> = ({
   payload,
   usageStats,
 }) => {
+  // currentPlan は client store 由来で保存時点の言語版。現在言語に解決する。
+  const { plans: resolvedPlans } = useMaster();
+  const resolvedPlan = useMemo(
+    () =>
+      resolvedPlans.find((p) => p.code === currentPlan?.code) ?? currentPlan,
+    [resolvedPlans, currentPlan],
+  );
   const getPlanIcon = () => {
     switch (currentPlan!.code) {
       case "PREMIUM":
@@ -50,7 +59,7 @@ const CurrentPlanView: React.FC<CurrentPlanViewProps> = ({
       >
         <div className="text-center">
           <div className="font-bold" style={{ color: currentColors.accent }}>
-            {getPlanIcon()} {currentPlan?.name}
+            {getPlanIcon()} {resolvedPlan?.name}
           </div>
           <div className="text-sm text-gray-600">
             {user ? `認証済み: ${user.email}` : "未登録・ゲストモード"}
