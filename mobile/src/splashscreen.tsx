@@ -217,7 +217,7 @@ const TarotSplashScreen: React.FC<TarotSplashScreenProps> = ({ message }) => {
                 className="text-xl font-medium"
                 style={{ color: "#87CEEB" }}
               >
-                AI Tarot Chat
+                AI Reflection Dialogue
               </div>
             </div>
 

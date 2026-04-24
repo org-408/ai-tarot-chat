@@ -67,7 +67,7 @@
     "upgradeAction": "プランを見る"
   },
   "home": {
-    "title": "AI Tarot Chat",
+    "title": "AI Reflection Dialogue",
     "subtitle": "今日のお告げを聞いてみましょう",
     "todayUsage": "今日の残り回数",
     "countUnit": "回",
@@ -246,7 +246,7 @@
     "upgradeToPlan": "{plan}にアップグレード"
   },
   "auth": {
-    "signInTitle": "AI Tarot Chat",
+    "signInTitle": "AI Reflection Dialogue",
     "signInSubtitle": "AIと対話するタロット占い",
     "signInDescription": "サインインして占い師たちと深いリーディングを体験しましょう",
     "secureAuth": "安全な認証",

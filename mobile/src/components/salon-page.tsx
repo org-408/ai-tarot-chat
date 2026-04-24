@@ -83,16 +83,28 @@ const SalonPage: React.FC<SalonPageProps> = ({
     <div className="main-container">
       {/* 占い師選択モード */}
       {selectedTargetMode === "tarotist" ? (
-        <TarotistCarouselPortrait
-          masterData={masterData}
-          currentPlan={currentPlan}
-          selectedTarotist={selectedTarotist}
-          onSelectTarotist={setSelectedTarotist}
-          selectedMode={selectedTargetMode}
-          onChangeMode={setSelectedTargetMode}
-          onChangePlan={handleChangePlan}
-          isChangingPlan={isChangingPlan}
-        />
+        // portrait モードと同じ fixed ラッパーで viewport 全高を明示する。
+        // .main-container は min-height: 100% なので、子の height: 100% が
+        // 解決できず、カルーセル内部のスワイプヒント/ドットインジケーターが
+        // viewport からはみ出していたため揃える。
+        <div
+          className="fixed left-0 right-0 flex flex-col"
+          style={{
+            top: "calc(50px + env(safe-area-inset-top))",
+            bottom: 0,
+          }}
+        >
+          <TarotistCarouselPortrait
+            masterData={masterData}
+            currentPlan={currentPlan}
+            selectedTarotist={selectedTarotist}
+            onSelectTarotist={setSelectedTarotist}
+            selectedMode={selectedTargetMode}
+            onChangeMode={setSelectedTargetMode}
+            onChangePlan={handleChangePlan}
+            isChangingPlan={isChangingPlan}
+          />
+        </div>
       ) : (
         <>
           {/* 上下統合ラッパー */}

@@ -287,7 +287,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     className="font-semibold"
                     style={{ color: "#87CEEB" }}
                   >
-                    AI Tarot Chat
+                    AI Reflection Dialogue
                   </span>
                 </div>
               </div>

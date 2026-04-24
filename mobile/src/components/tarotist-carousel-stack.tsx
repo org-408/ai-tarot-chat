@@ -5,6 +5,7 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
 import type { UserPlan } from "../types";
 
@@ -188,6 +189,7 @@ const TinderCard: React.FC<{
   onPrev,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -314,7 +316,9 @@ const TinderCard: React.FC<{
               >
                 <div className="text-7xl mb-3">🔒</div>
                 <div className="text-white text-sm font-bold bg-black/60 px-4 py-1.5 rounded-full">
-                  {tarotist.plan?.name}プラン必要
+                  {t("plans.planRequiredSuffix", {
+                    label: tarotist.plan?.name ?? "",
+                  })}
                 </div>
               </motion.div>
             </div>

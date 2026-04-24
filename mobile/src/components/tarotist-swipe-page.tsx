@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   AppJWTPayload,
   MasterData,
@@ -28,6 +29,7 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   onChangePlan,
   isChangingPlan,
 }) => {
+  const { t } = useTranslation();
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
   );
@@ -119,7 +121,7 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   return (
     <div className="main-container">
       {/* ヘッダー */}
-      <div className="page-title pt-3">🔮 タロット占い師</div>
+      <div className="page-title pt-3">{t("tarotist.pageTitle")}</div>
 
       {/* 現在の状態表示 */}
       <div
