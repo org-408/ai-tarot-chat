@@ -301,7 +301,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             .filter(Boolean);
           const targetCategoryId = selectedCategory?.id ?? "";
           if (claraMode) {
-            // claraMode: カテゴリー一致のみ確認（プラン制限なし）
+            // claraMode: 未リリースプラン (plan.isActive=false) のスプレッドは除外。
+            // 現在プラン以下には絞らず、全リリース済みスプレッドを予行演習として開放。
+            if (!spread.plan?.isActive) return false;
             return spreadCategoryIds.includes(targetCategoryId);
           }
           if (!spread.plan || !currentPlan) return false;
