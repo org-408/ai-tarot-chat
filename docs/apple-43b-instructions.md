@@ -433,6 +433,23 @@ grep -rn "AIタロット占い" .
   - `auth.signinTitle` / `auth.signinDescription`
   - `auth.signinWithGoogle` / `auth.signinWithApple`
   - `auth.termsAgreement` / `auth.privacyAgreement`（5-6-4 の Privacy/Terms リンクと同期）
+  - `auth.viewServiceDetails` / `auth.viewPricing`（マーケ LP 誘導リンクのテキスト）
+
+**サインイン内マーケ LP リンクの locale 動的化（重要）**:
+
+[web/app/auth/signin/page.tsx:152](../web/app/auth/signin/page.tsx) と [同:280](../web/app/auth/signin/page.tsx) には現在マーケ LP への導線リンクが 2 箇所あるが **`href="/ja"` / `href="/ja/pricing"` のハードコード**。サインインページが「サインイン + マーケ誘導」を兼ねる設計なので、現在 locale（`NEXT_LOCALE` cookie → `Accept-Language` → `defaultLocale`）に応じた動的 href に変更する:
+
+```tsx
+// Before
+<Link href="/ja">サービスの詳細・料金を見る</Link>
+<Link href="/ja/pricing">料金プランを見る</Link>
+
+// After
+<Link href={`/${locale}`}>{t("auth.viewServiceDetails")}</Link>
+<Link href={`/${locale}/pricing`}>{t("auth.viewPricing")}</Link>
+```
+
+これを怠ると EN 審査員が EN サインインから JA マーケ LP に飛ばされるので必須。
 
 **EN 文言は Apple 4.3(b) NG ワード禁止** (`fortune` / `predict` / `horoscope` / `destiny` / `fate` / `zodiac`)。計画書 §8 のトーン統一ルールに従う。
 

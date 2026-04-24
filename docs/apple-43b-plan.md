@@ -317,8 +317,9 @@ Thank you for your consideration.
 `ariadne-ai.app/` は **実質的に `/auth/signin` を兼ねるマーケティング入口** として機能する（未認証アクセスはサインインページへリダイレクト）。App Store Connect の Marketing URL は `ariadne-ai.app/` のまま、内部で多言語化する方針を採る。
 
 - **サインインページ** (`web/app/auth/signin/page.tsx`) は現状 JA 直書き → **内部翻訳切替** (`useTranslations` + Accept-Language / `NEXT_LOCALE` cookie) を追加
+  - **併せて**: サインイン内のマーケ LP 誘導リンク（現状 `href="/ja"` / `href="/ja/pricing"` ハードコード）を `/${locale}` / `/${locale}/pricing` に動的化。サインインが「サインイン + マーケ誘導」を兼ねる設計
 - **独立マーケティング LP** (`web/app/[locale]/(marketing)/page.tsx` 配下) は next-intl の土台既に完動 (middleware / routing / `messages/{ja,en}.json`)。コンテンツが JA 直書きなだけ → `useTranslations` 移行 + `en.json` に翻訳追加で完了
-- **Marketing URL は `ariadne-ai.app/` のまま**（変更不要）。Accept-Language が en のアクセスはサインインページが EN 表示される
+- **Marketing URL は `ariadne-ai.app/` のまま**（変更不要）。Accept-Language が en のアクセスはサインインページが EN 表示、かつ内部リンクで `/en` LP に遷移できる
 
 > 当初 "英語化はスコープ外" としていたが、アプリ内 UI + AI プロンプト + Privacy/Terms が EN 化される整合性から、サインイン + `[locale]/(marketing)/` の翻訳も同時に行うことにした (2026-04-24)。実装コストは「JA 直書き → `useTranslations` + `en.json` 追加」で既存土台を活用できるため低い。
 
