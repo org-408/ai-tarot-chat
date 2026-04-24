@@ -259,6 +259,8 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 
 ### Phase 5: Web 側修正（Day 2 後半、2〜3 時間）
 
+> **追補（2026-04-25）**: 本 Phase 5 のルーティング方針は `[locale]` セグメント統一に改訂された（Issue #234 Task 5-6 / 5-7）。併せて後方互換リダイレクト（Task 5-8）とモバイル → Web locale 伝播（Task 5-9）が追加されている。以下の手順は当初検討のまま残しているが、実装前に必ず [Issue #234 body](https://github.com/org-408/ai-tarot-chat/issues/234) を確認し、矛盾する箇所は Issue 側を優先すること。
+
 #### タスク 5-1: Privacy / Terms
 
 [web/app/privacy/page.tsx](../web/app/privacy/page.tsx) と [web/app/terms/page.tsx](../web/app/terms/page.tsx) を計画書 **§9 Privacy / Terms 置換** の表に従って修正。
@@ -277,7 +279,7 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 
 #### タスク 5-4: Web 版 `(app)/` の軽いスイープ
 
-Web 版は公開済み。[web/app/(app)/](../web/app/\(app\)/) 配下で**日本語のみ**「占い → リーディング」置換（i18n 化はしない）:
+Web 版は**プレローンチ段階**（公開前）。[web/app/(app)/](../web/app/\(app\)/) は **4.3b スコープ外**のため、日本語のみ「占い → リーディング」置換（i18n 化はしない、ロジック変更なし）:
 
 ```bash
 # 対象ファイルの特定
@@ -314,6 +316,8 @@ export const metadata: Metadata = {
 - pricing ページの FAQ を重複コピーする形で OK（共通化は今回スコープ外）
 
 #### タスク 5-6: Privacy / Terms の多言語化（#234 Phase 5）
+
+> **追補（2026-04-25）**: 当初の `?lang=` クエリ方式は **`[locale]` セグメント方式（`/[locale]/privacy`）に改訂**。以下 5-6-1〜5-6-7 は初期検討のまま残しているため、実装時は [Issue #234 Task 5-6](https://github.com/org-408/ai-tarot-chat/issues/234) を優先参照すること。
 
 **目的**: 英語 UI のユーザーが Privacy / Terms リンクを踏んだ際に英語本文を表示する。Apple 4.3(b) の NG ワード（fortune / predict / horoscope / destiny / fate / zodiac）を EN 本文から排除する。
 
@@ -414,6 +418,8 @@ grep -rn "AIタロット占い" .
 
 #### タスク 5-7: Web サインイン + マーケティングページの多言語化
 
+> **追補（2026-04-25）**: 「ルーティング構造の変更は不要」の前提は誤り。**サインインページを `web/app/[locale]/auth/signin/` に移設する**方針に改訂された（`NextIntlClientProvider` ラップ方式は廃案）。以下 5-7-1〜5-7-4 は初期検討のまま残しているため、実装時は [Issue #234 Task 5-7](https://github.com/org-408/ai-tarot-chat/issues/234) を優先参照すること。
+
 **目的**: Apple Marketing URL (`ariadne-ai.app/`) は未認証時 `/auth/signin` にリダイレクトされる設計なので、サインインページが実質的ランディング。審査員が en-US 環境で踏んでも英語で着地させる。併せて `[locale]/(marketing)/` 配下の独立 LP も EN 化。
 
 **前提**:
@@ -490,6 +496,29 @@ grep -rniE "fortune|predict|horoscope|destiny|fate|zodiac" app/auth/ app/\[local
 # - /en → 英語 LP、/ja → 日本語 LP
 # - Mobile の Privacy/Terms リンク（5-6-3）が現在言語で飛ぶ
 ```
+
+#### タスク 5-8: 旧 URL の後方互換リダイレクト（2026-04-25 追加）
+
+詳細は [Issue #234 Task 5-8](https://github.com/org-408/ai-tarot-chat/issues/234) を参照。
+
+**要点**:
+- Task 5-6 / 5-7 で `privacy` / `terms` / `auth/signin` を `[locale]/` 下に移設するため、旧 URL（App Store Connect 登録済み、SNS・ブログ被リンク、旧バージョンモバイルアプリからの動線）が 404 にならないようリダイレクトを用意
+- `web/proxy.ts` の `skipIntl` からこれらのパスを外せば next-intl middleware が `localePrefix: "always"` デフォルトで `/privacy` → `/ja/privacy` 相当のリダイレクトを処理する想定
+- 効かないケース（`/auth/signin` 等）は `web/proxy.ts` で手動 307 リダイレクトを追加
+- 検証: `curl -I .../privacy` / `.../terms` / `.../auth/signin` がそれぞれ `/ja/...` にリダイレクトされる、`Accept-Language: en-US` 付与時は `/en/...` へ
+
+#### タスク 5-9: モバイル → Web サインインへの locale 伝播（2026-04-25 追加）
+
+詳細は [Issue #234 Task 5-9](https://github.com/org-408/ai-tarot-chat/issues/234) を参照。
+
+**要点**:
+- モバイルアプリでユーザーが手動で EN を選択している場合、OS の Accept-Language は JA のままなので Web サインインが JA 表示になる問題
+- 解決: モバイルから Web サインインを開く URL を `/${lang}/auth/signin?isMobile=true` としてパスに lang を乗せる
+- 変更対象:
+  - `mobile/src/lib/services/auth.ts:137` の `signInWithWeb()` URL 組み立て（引数で `lang: "ja" | "en"` を受け取る形に）
+  - `mobile/src/lib/stores/auth.ts:226` 呼び出し元で `useLanguage()` 経由の現在言語を渡す（Store のシグネチャ変更）
+  - プラン変更起点のサインイン（`mobile/src/components/lower-viewer.tsx` / `home-page.tsx` 等）も Store 経由なので一括対応
+- Privacy / Terms のリンクは Task 5-6-3 で同様のパス方式に改訂済みのため、このタスクでは追加作業なし
 
 ---
 

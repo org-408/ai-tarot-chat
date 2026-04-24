@@ -1,5 +1,7 @@
 # Apple 4.3(b) リジェクト対応 計画書（v6.1 確定版）
 
+> **追補（2026-04-25）**: Phase 5 のルーティング方針を `[locale]` セグメント統一に改訂（Issue #234 Task 5-6 / 5-7 / 5-8 / 5-9）。§7 の旧記述（\`/privacy\` フラット、\`?lang=\` クエリ方式など）は項目として残すが、実施時は Issue #234 body を優先参照すること。
+
 ## 0. 概要
 
 ### 目的
@@ -303,7 +305,7 @@ Thank you for your consideration.
 - [web/app/terms/page.tsx](../web/app/terms/page.tsx) : 同上
 - [web/app/page.tsx](../web/app/page.tsx) + [web/app/home-client.tsx](../web/app/home-client.tsx) : 見出し・CTA・紹介文を「リーディング / セッション / 対話」寄せに薄める。ブログリンクをフッターのみに弱化
 - [web/app/auth/](../web/app/auth/) : タイトル・見出しの「占い」を軽く薄める
-- [web/app/(app)/](../web/app/\(app\)/) : **公開済みのため軽いテキストスイープを実施**。i18n 化はしない、日本語のみ「占い」→「リーディング」置換
+- [web/app/(app)/](../web/app/\(app\)/) : **プレローンチ段階・4.3b スコープ外**。日本語のみ「占い」→「リーディング」の軽いテキストスイープを実施（i18n 化はしない、ロジック変更なし）
 - **`web/app/support/page.tsx` 新規作成**: サポートページ（FAQ + お問い合わせ連絡先）。§6 参照
 
 ### 変更しないもの
@@ -313,6 +315,8 @@ Thank you for your consideration.
 - マスターデータ（カード意味文等）
 
 ### Web ランディング / サインインページの扱い
+
+> **追補（2026-04-25）**: 下記の「`useTranslations` + Accept-Language / `NEXT_LOCALE` cookie に乗せる」方針は、**`[locale]` セグメント方式（`/ja/auth/signin` / `/en/auth/signin` への移設）に改訂**された。モバイル → Web への locale 伝播はパスで行う（Issue #234 Task 5-7 / 5-9）。以下の記述は初期検討の経緯として残す。
 
 `ariadne-ai.app/` は **実質的に `/auth/signin` を兼ねるマーケティング入口** として機能する（未認証アクセスはサインインページへリダイレクト）。App Store Connect の Marketing URL は `ariadne-ai.app/` のまま、内部で多言語化する方針を採る。
 
@@ -465,7 +469,7 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 | 4 | マルチ AI 実態問題 | 中 | 1 回目は主張に含めず温存 |
 | 5 | 初回体験 | 低 | 構造的解決済み |
 | 6 | 英語翻訳品質（NG ワード残り） | 低 | NG リスト + grep + QA |
-| 7 | Web 版 `(app)/` 公開済み | 低〜中 | 軽いテキストスイープで対応 |
+| 7 | Web 版 `(app)/` の扱い | 低〜中 | **プレローンチ段階のため 4.3b スコープ外**。JA 文言のみ軽くスイープ（i18n 化なし） |
 | 8 | i18n 実装工数超過 | 中 | スコープ厳守 |
 | 9 | Support URL の UX（4.3(b) 無関係） | 低 | 将来的にサポートページ新設を検討 |
 
