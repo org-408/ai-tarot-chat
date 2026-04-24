@@ -340,6 +340,45 @@ export class SubscriptionService {
   }
 
   /**
+   * 各プランのロケール通貨でフォーマット済み価格文字列を取得
+   * 例: `{ STANDARD: "¥480", PREMIUM: "$9.99" }`
+   *
+   * ストア(App Store / Play)から返る `priceString` をそのまま返すので、
+   * ユーザーのロケール/ストアフロントに応じて通貨記号と数値が切り替わる。
+   * Web プラットフォームや Offerings 取得失敗時は空 Map を返す(呼び出し側が DB price にフォールバック可能)。
+   */
+  async getFormattedPrices(): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+
+    if (Capacitor.getPlatform() === "web") {
+      return result;
+    }
+
+    try {
+      const offering = await this.getOfferings();
+      for (const planCode of ["STANDARD", "PREMIUM"] as const) {
+        const identifier = getPackageIdentifier(planCode);
+        const pkg = offering.availablePackages.find(
+          (p) => p.identifier === identifier,
+        );
+        if (pkg?.product.priceString) {
+          result.set(planCode, pkg.product.priceString);
+        }
+      }
+      return result;
+    } catch (error) {
+      logWithContext(
+        "warn",
+        "[SubscriptionService] Failed to fetch formatted prices",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
+      return result;
+    }
+  }
+
+  /**
    * 購入のリストア ＝ 購入を復元するために用意しておく
    */
   async restorePurchases(): Promise<CustomerInfo> {

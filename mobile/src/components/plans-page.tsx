@@ -6,7 +6,9 @@ import type {
   PlanInput,
 } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
+import { usePlanPrices } from "../lib/hooks/use-plan-prices";
 import { getPlanDisplayName } from "../lib/utils/plan-display";
+import { formatPlanPrice } from "../lib/utils/plan-price";
 import type { UserPlan } from "../types";
 
 interface PlansPageProps {
@@ -30,6 +32,8 @@ const PlansPage: React.FC<PlansPageProps> = ({
   const { t } = useTranslation();
   // 現在言語に解決済みの plans (name / description / features が EN 時は英語) を使用
   const { plans: resolvedPlans } = useMaster();
+  // RevenueCat から取得したロケール通貨フォーマット済み価格 (例: ¥480 / $9.99)
+  const formattedPrices = usePlanPrices();
   const planCode = currentPlan.code || "GUEST";
   const planData = resolvedPlans.reduce((acc, plan) => {
     acc[plan.code as UserPlan] = {
@@ -77,7 +81,14 @@ const PlansPage: React.FC<PlansPageProps> = ({
         <div className="font-bold text-lg">
           {getPlanDisplayName(planCode, t, planData[planCode].name)}
         </div>
-        <div className="text-sm text-gray-500">¥{planData[planCode].price}</div>
+        <div className="text-sm text-gray-500">
+          {formatPlanPrice(
+            planCode,
+            planData[planCode].price,
+            formattedPrices,
+            t,
+          )}
+        </div>
         {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
             ⚠️ {t("auth.unauthenticatedNoticeShort")}
@@ -137,7 +148,14 @@ const PlansPage: React.FC<PlansPageProps> = ({
                 <div className="text-sm text-gray-600">{plan.description}</div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-xl">¥{plan.price}</div>
+                <div className="font-bold text-xl">
+                  {formatPlanPrice(
+                    planKey as string,
+                    plan.price,
+                    formattedPrices,
+                    t,
+                  )}
+                </div>
                 {planCode === planKey && (
                   <div
                     className="text-xs font-bold"

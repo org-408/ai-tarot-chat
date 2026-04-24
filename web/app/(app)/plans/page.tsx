@@ -11,7 +11,7 @@ export default function PlansPage() {
   const t = useTranslations("plans");
   const { init: initMaster, plans, isLoading } = useMasterStore();
   const { usage, refreshUsage } = useClientStore();
-  const { purchase, isUserCancelled } = useRevenuecat();
+  const { purchase, isUserCancelled, formattedPrices } = useRevenuecat();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,7 +126,8 @@ export default function PlansPage() {
               <p className="text-2xl font-bold mb-1">
                 {plan.price ? (
                   <>
-                    ¥{plan.price.toLocaleString()}
+                    {formattedPrices.get(plan.code) ??
+                      `¥${plan.price.toLocaleString()}`}
                     <span className="text-sm font-normal text-gray-500">
                       /{t("perMonth")}
                     </span>
