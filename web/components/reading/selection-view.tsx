@@ -134,20 +134,15 @@ export function SelectionView({
       <h1 className="text-xl font-bold text-gray-800">{title}</h1>
       {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
 
-      {/* パーソナル: プラン不足時のガード */}
-      {isPersonal && personalLabels && !personalLabels.canPersonal ? (
-        <div className="text-center py-12">
-          <p className="text-sm text-gray-400 mb-4">
-            {personalLabels.premiumOnly}
-          </p>
-          <Link
-            href="/plans"
-            className="inline-block px-5 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 shadow hover:opacity-90 transition-opacity"
-          >
-            {personalLabels.upgradeAction}
-          </Link>
-        </div>
-      ) : isLoading ? (
+      {/*
+        ⚠️ プラン不足時の「/plans へのアップグレードリンク」は意図的に削除した。
+        /personal ページは usage.plan.hasPersonal=false のとき app/(app)/personal/page.tsx
+        の effect で home へ redirect されるため、このガードは dead code。
+        また、Web はアップグレードの導線をモバイルと揃える方針（「Fail 時も現在地維持」
+        「別画面に飛ばさない」）のため、Link による /plans 遷移は行わない。
+        詳細: docs/plan-change-navigation-spec.md 3 章 W4 / .claude/rules/plan-change-navigation.md
+      */}
+      {isLoading ? (
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 rounded-full border-4 border-purple-300 border-t-purple-600 animate-spin" />
         </div>

@@ -24,6 +24,7 @@ export default function HomeClient() {
   const { refreshUsage, usage, readings, fetchReadings } = useClientStore();
   const { purchase, isUserCancelled } = useRevenuecat();
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
   useEffect(() => {
     initMaster();
@@ -33,6 +34,7 @@ export default function HomeClient() {
 
   const handleUpgrade = async () => {
     setIsUpgrading(true);
+    setUpgradeError(null);
     try {
       await purchase("PREMIUM");
       // プラン反映をポーリングで確認（RC webhook 遅延対策）
@@ -43,8 +45,10 @@ export default function HomeClient() {
       }
       router.push("/personal");
     } catch (e) {
+      // キャンセルはサイレント。失敗は現在地(/)維持のままインラインエラー表示。
+      // 詳細: docs/plan-change-navigation-spec.md 2-2 a / .claude/rules/plan-change-navigation.md
       if (!isUserCancelled(e)) {
-        window.location.href = "/plans";
+        setUpgradeError(tPlans("checkoutError"));
       }
     } finally {
       setIsUpgrading(false);
@@ -68,6 +72,14 @@ export default function HomeClient() {
             line2: tPlans("changingPlanLine2"),
           }}
         />
+      )}
+      {upgradeError && (
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3 text-center"
+          role="alert"
+        >
+          {upgradeError}
+        </div>
       )}
       {/* タイトル */}
       <div>

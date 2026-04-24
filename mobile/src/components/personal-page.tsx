@@ -23,7 +23,10 @@ interface PersonalPageProps {
   payload: AppJWTPayload;
   currentPlan: Plan;
   masterData: MasterData;
-  onChangePlan: (plan: UserPlan) => void;
+  onChangePlan: (
+    plan: UserPlan,
+    options?: { onSuccess?: "history" | "personal" | "stay" | "portrait" },
+  ) => void;
   onBack: () => void;
   /** Phase2 開始時（AI API 課金開始）にナビゲーションをロックする */
   onStartReading: () => void;

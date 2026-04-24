@@ -13,7 +13,10 @@ interface PlansPageProps {
   payload: AppJWTPayload;
   currentPlan: Plan;
   masterData: MasterData;
-  onChangePlan: (plan: UserPlan) => void;
+  onChangePlan: (
+    plan: UserPlan,
+    options?: { onSuccess?: "history" | "personal" | "stay" | "portrait" },
+  ) => void;
   isChangingPlan: boolean;
 }
 
@@ -51,7 +54,9 @@ const PlansPage: React.FC<PlansPageProps> = ({
   }, {} as Record<string, PlanInput & { popular: boolean; primaryColor?: string; secondaryColor?: string; accentColor?: string }>);
 
   const handlePlanChange = (planCode: UserPlan) => {
-    onChangePlan(planCode);
+    // /plans ページは能動的にプランを選ぶ場所なので、成功時も現在地維持。
+    // 詳細: docs/plan-change-navigation-spec.md 2-3 / .claude/rules/plan-change-navigation.md
+    onChangePlan(planCode, { onSuccess: "stay" });
   };
 
   return (

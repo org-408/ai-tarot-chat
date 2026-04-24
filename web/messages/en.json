@@ -131,6 +131,7 @@
     "manageSubscription": "Manage Subscription",
     "manageSubscriptionDesc": "Cancel, invoices, payment methods",
     "portalLoading": "Opening portal...",
+    "portalUnavailable": "Could not open the subscription management page. Please try again later.",
     "display": "Display",
     "language": "Language",
     "theme": "Theme",

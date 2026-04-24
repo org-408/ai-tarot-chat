@@ -21,7 +21,10 @@ interface TarotistPageProps {
   payload: AppJWTPayload;
   currentPlan: Plan;
   masterData: MasterData;
-  onChangePlan: (plan: UserPlan) => void;
+  onChangePlan: (
+    plan: UserPlan,
+    options?: { onSuccess?: "history" | "personal" | "stay" | "portrait" },
+  ) => void;
   isChangingPlan: boolean;
   onNavigateToClara?: () => void;
 }
@@ -44,7 +47,9 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
 
 
   const handleChangePlan = (requiredPlan: string) => {
-    onChangePlan(requiredPlan as UserPlan);
+    // サイドバーの占い師一覧は閲覧用途。成功時も現在地維持。
+    // 詳細: docs/plan-change-navigation-spec.md 2-3 / .claude/rules/plan-change-navigation.md
+    onChangePlan(requiredPlan as UserPlan, { onSuccess: "stay" });
   };
 
   const currentColors = currentPlan

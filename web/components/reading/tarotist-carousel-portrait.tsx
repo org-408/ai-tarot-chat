@@ -48,6 +48,7 @@ export function TarotistCarouselPortrait({
   const { purchase, isUserCancelled } = useRevenuecat();
   const { refreshUsage } = useClientStore();
   const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
   // 既に占い師が選択されていればポートレートモードで開く（モバイル同等）
   const [mode, setMode] = useState<Mode>(
     locked || selectedTarotist ? "portrait" : "carousel",
@@ -103,6 +104,7 @@ export function TarotistCarouselPortrait({
     const planCode = tarotist.plan?.code;
     if (planCode !== "STANDARD" && planCode !== "PREMIUM") return;
     setUpgrading(tarotist.id);
+    setUpgradeError(null);
     try {
       await purchase(planCode);
       await refreshUsage();
@@ -110,7 +112,11 @@ export function TarotistCarouselPortrait({
       onSelect(tarotist);
       setMode("portrait");
     } catch (e) {
-      if (!isUserCancelled(e)) console.error(e);
+      // キャンセルはサイレント。失敗は carousel モード維持で UI 通知を出す。
+      // 詳細: docs/plan-change-navigation-spec.md 2-1 / .claude/rules/plan-change-navigation.md
+      if (!isUserCancelled(e)) {
+        setUpgradeError(tPlans("checkoutError"));
+      }
     } finally {
       setUpgrading(null);
     }
@@ -134,6 +140,16 @@ export function TarotistCarouselPortrait({
         }}
       />
     ) : null;
+
+  const upgradeErrorBanner = upgradeError ? (
+    <div
+      className="absolute top-3 left-1/2 -translate-x-1/2 z-30 max-w-[90%] rounded-xl border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2 shadow-lg"
+      role="alert"
+      onClick={() => setUpgradeError(null)}
+    >
+      {upgradeError}
+    </div>
+  ) : null;
 
   // ── ポートレートモード ──
   if (mode === "portrait" && selectedTarotist) {
@@ -224,6 +240,7 @@ export function TarotistCarouselPortrait({
   return (
     <>
     {purchaseOverlay}
+    {upgradeErrorBanner}
     <AnimatePresence mode="wait">
       <motion.div
         key="carousel"

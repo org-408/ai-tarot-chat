@@ -6,6 +6,7 @@ import i18n from "../../i18n";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { HttpError, isNetworkError } from "../utils/api-client";
+import { PurchaseCancelledError } from "../utils/purchase-cancelled-error";
 import { useAuthStore } from "./auth";
 
 // ✅ 初期化ステップの定義（デバッグ用）
@@ -1102,17 +1103,19 @@ export const useLifecycleStore = create<LifecycleState>()(
                   }
                 );
                 // 購入がキャンセルした場合の処理
+                //
+                // ⚠️ 重要: キャンセルは「失敗」と区別するため、planChangeError を
+                //   set せず PurchaseCancelledError を throw する。呼び出し側は
+                //   `instanceof PurchaseCancelledError` で判別してサイレントに扱う。
+                //   詳細は .claude/rules/plan-change-navigation.md 参照。
                 if (subscriptionStore.purchaseError?.includes("キャンセル")) {
                   logWithContext(
                     "info",
                     "[Lifecycle] Purchase cancelled by user"
                   );
                   useSubscriptionStore.getState().setLifecycleBusy(false);
-                  set({
-                    isChangingPlan: false,
-                    planChangeError: i18n.t("error.purchaseCancelled"),
-                  });
-                  return;
+                  set({ isChangingPlan: false, planChangeError: null });
+                  throw new PurchaseCancelledError();
                 }
                 throw purchaseError;
               }
@@ -1158,6 +1161,15 @@ export const useLifecycleStore = create<LifecycleState>()(
             newPlan: newPlan.code,
           });
         } catch (error) {
+          // キャンセルは失敗と区別する: planChangeError を set せず、
+          // 呼び出し側で `instanceof PurchaseCancelledError` 判別のため re-throw する。
+          // 詳細は .claude/rules/plan-change-navigation.md 参照。
+          if (error instanceof PurchaseCancelledError) {
+            useSubscriptionStore.getState().setLifecycleBusy(false);
+            set({ isChangingPlan: false, planChangeError: null });
+            throw error;
+          }
+
           const errorMessage =
             error instanceof Error ? error.message : String(error);
 
@@ -1170,6 +1182,7 @@ export const useLifecycleStore = create<LifecycleState>()(
             isChangingPlan: false,
             planChangeError: `プラン変更に失敗しました: ${errorMessage}`,
           });
+          throw error;
         }
       },
 
