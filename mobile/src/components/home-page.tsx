@@ -9,6 +9,7 @@ import type {
   UsageStats,
 } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
+import { useMaster } from "../lib/hooks/use-master";
 import type { UserPlan } from "../types";
 import UpgradeGuide from "./upgrade-guide";
 
@@ -55,6 +56,8 @@ const HomePage: React.FC<HomePageProps> = ({
   const remainingPersonal = usageStats.remainingPersonal;
   const maxQuick = currentPlan.maxReadings;
   const maxPersonal = currentPlan.maxPersonal;
+  // 履歴カードに表示する spread / category は保存時点の言語版なので現在言語に解決する
+  const { spreadById, categoryById } = useMaster();
 
   useEffect(() => {
     if (hasHistory) {
@@ -278,9 +281,16 @@ const HomePage: React.FC<HomePageProps> = ({
             >
               {readings.slice(0, 5).map((r: Reading) => {
                 const isPersonal = !!r.customQuestion;
+                // 保存時点と UI 現在言語が異なる場合に備え、id から現在言語版を引き直す
+                const resolvedCategory = r.categoryId
+                  ? categoryById.get(r.categoryId) ?? r.category
+                  : r.category;
+                const resolvedSpread = r.spreadId
+                  ? spreadById.get(r.spreadId) ?? r.spread
+                  : r.spread;
                 const mainText = isPersonal
                   ? r.customQuestion
-                  : r.category?.name;
+                  : resolvedCategory?.name;
                 return (
                   <button
                     key={r.id}
@@ -311,9 +321,9 @@ const HomePage: React.FC<HomePageProps> = ({
                       </p>
                     )}
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                      {r.spread?.name && (
+                      {resolvedSpread?.name && (
                         <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                          {r.spread.name}
+                          {resolvedSpread.name}
                         </span>
                       )}
                       {isPersonal && (

@@ -135,7 +135,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   ];
   const { readings, readingsTotal, fetchReadings, error, currentPlan } =
     useClient();
-  const { allDecks } = useMaster();
+  const { allDecks, spreadById, categoryById, tarotistById } = useMaster();
   const [selectedReading, setSelectedReading] = useState<Reading | null>(
     initialReading ?? null,
   );
@@ -344,9 +344,16 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                 r.tarotist?.name ?? t("history.unknownTarotist");
                               const isPersonal = !!r.customQuestion;
                               const cards: DrawnCard[] = r.cards ?? [];
+                              // 保存時点と UI 現在言語が異なる場合に備え、id から現在言語版を引き直す
+                              const resolvedCategory = r.categoryId
+                                ? categoryById.get(r.categoryId) ?? r.category
+                                : r.category;
+                              const resolvedSpread = r.spreadId
+                                ? spreadById.get(r.spreadId) ?? r.spread
+                                : r.spread;
                               const subtitle = isPersonal
                                 ? r.customQuestion
-                                : r.category?.name;
+                                : resolvedCategory?.name;
 
                               return (
                                 <motion.button
@@ -363,9 +370,13 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                       className="w-10 h-10"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (r.tarotist)
+                                        const resolvedTarotist = r.tarotistId
+                                          ? tarotistById.get(r.tarotistId) ??
+                                            r.tarotist
+                                          : r.tarotist;
+                                        if (resolvedTarotist)
                                           setSelectedTarotistProfile(
-                                            r.tarotist,
+                                            resolvedTarotist,
                                           );
                                       }}
                                     />
@@ -384,9 +395,9 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                         </p>
                                       )}
                                       <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                        {r.spread?.name && (
+                                        {resolvedSpread?.name && (
                                           <span className="text-sm font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
-                                            {r.spread.name}
+                                            {resolvedSpread.name}
                                           </span>
                                         )}
                                         {isPersonal && (

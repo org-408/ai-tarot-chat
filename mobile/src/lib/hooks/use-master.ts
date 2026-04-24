@@ -108,6 +108,22 @@ export function useMaster() {
     [masterData?.tarotists, currentLang],
   );
 
+  // 履歴表示などで「保存時点の言語版オブジェクト」を現在言語に引き直す用。
+  // 主キーは id (言語非依存)。resolved collections から逆引きし、見つからなければ
+  // undefined を返す (呼び出し側で元オブジェクトへフォールバックする)。
+  const spreadById = useMemo(
+    () => new Map(spreads.map((s) => [s.id, s])),
+    [spreads],
+  );
+  const categoryById = useMemo(
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories],
+  );
+  const tarotistById = useMemo(
+    () => new Map(tarotists.map((t) => [t.id, t])),
+    [tarotists],
+  );
+
   return {
     // 状態
     isReady,
@@ -124,6 +140,11 @@ export function useMaster() {
     plans,
     tarotists,
     version: masterData?.version || null,
+
+    // id からの現在言語解決 (履歴表示などで利用)
+    spreadById,
+    categoryById,
+    tarotistById,
 
     // アクション（主にリフレッシュやバージョンチェック用）
     refresh,
