@@ -2,7 +2,9 @@ import { useTranslation } from "react-i18next";
 import type { Plan } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
+import { usePlanPrices } from "../lib/hooks/use-plan-prices";
 import { getPlanDisplayName } from "../lib/utils/plan-display";
+import { formatPlanPrice } from "../lib/utils/plan-price";
 import { getPlanColors } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 import Accordion, { type AccordionItem } from "./accordion";
@@ -21,6 +23,8 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
   // EN モードで英語になる)
   const { plans: resolvedPlans } = useMaster();
   const { currentPlan } = useClient();
+  // RevenueCat のロケール通貨フォーマット済み価格 (例: ¥480 / $9.99)
+  const formattedPrices = usePlanPrices();
 
   const isGuest = currentPlan!.code === "GUEST";
 
@@ -34,11 +38,17 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
       plan.code === "PREMIUM" ? "👑" : plan.code === "STANDARD" ? "💎" : "🆓";
 
     const displayName = getPlanDisplayName(plan.code, t, plan.name);
+    const priceDisplay = formatPlanPrice(
+      plan.code,
+      plan.price,
+      formattedPrices,
+      t,
+    );
     return {
       id: plan.code,
       title: displayName,
       subtitle: t("plans.priceSubtitle", {
-        price: plan.price.toLocaleString(),
+        price: priceDisplay,
         description: plan.description,
       }),
       icon,
@@ -69,7 +79,7 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
               ? t("plans.freeRegister")
               : t("plans.startPlan", {
                   plan: displayName,
-                  price: plan.price.toLocaleString(),
+                  price: priceDisplay,
                 })}
           </button>
         </>

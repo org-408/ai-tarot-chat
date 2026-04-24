@@ -7,6 +7,7 @@ import {
   purchasePlan,
   getManagementURL,
   getActiveSubscriptionStore,
+  getFormattedPrices,
   PurchasesError,
   ErrorCode,
 } from "../purchases";
@@ -16,6 +17,9 @@ export function useRevenuecat() {
   const userId = session?.user?.id;
   const [subscriptionStore, setSubscriptionStore] = useState<string | null>(null);
   const [subscriptionStoreLoading, setSubscriptionStoreLoading] = useState(true);
+  const [formattedPrices, setFormattedPrices] = useState<Map<string, string>>(
+    new Map(),
+  );
 
   // mobile と同じ user.id で RC を初期化（ユーザーが変わっても追従）
   useEffect(() => {
@@ -26,6 +30,8 @@ export function useRevenuecat() {
       .then(setSubscriptionStore)
       .catch(() => {})
       .finally(() => setSubscriptionStoreLoading(false));
+    // Offerings からロケール通貨フォーマット済み価格を取得（失敗時は空 Map）
+    getFormattedPrices().then(setFormattedPrices);
   }, [userId]);
 
   const purchase = useCallback(
@@ -59,5 +65,12 @@ export function useRevenuecat() {
   const isUserCancelled = (e: unknown): boolean =>
     e instanceof PurchasesError && e.errorCode === ErrorCode.UserCancelledError;
 
-  return { purchase, openManagement, isUserCancelled, subscriptionStore, subscriptionStoreLoading };
+  return {
+    purchase,
+    openManagement,
+    isUserCancelled,
+    subscriptionStore,
+    subscriptionStoreLoading,
+    formattedPrices,
+  };
 }
