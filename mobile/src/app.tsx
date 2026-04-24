@@ -7,6 +7,7 @@ import ReadingPage from "./components/reading-page";
 import SidebarMenu from "./components/sidebar-menu";
 import { useAuth } from "./lib/hooks/use-auth";
 import { useClient } from "./lib/hooks/use-client";
+import { useLanguage } from "./lib/hooks/use-language";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
 import { useSalon } from "./lib/hooks/use-salon";
@@ -134,6 +135,9 @@ const PageFallback: React.FC = () => (
 function App() {
   // ✅ デバッグモードフラグ（本番は false に設定）
   const isDebugEnabled = import.meta.env.VITE_DEBUG_MODE === "true";
+
+  // 🌐 言語 / i18n 初期化（端末言語 or ユーザー設定で ja/en を決定）
+  const { isReady: languageIsReady } = useLanguage();
 
   const [pageType, setPageType] = useState<PageType>("home");
   const [isPageRestored, setIsPageRestored] = useState(false);
@@ -523,6 +527,7 @@ function App() {
 
   // 初期化中またはデータロード中
   if (
+    !languageIsReady ||
     !isInitialized ||
     !authIsReady ||
     !clientIsReady ||
@@ -534,19 +539,21 @@ function App() {
       <TarotSplashScreen
         message={
           isDebugEnabled
-            ? !isInitialized
-              ? getStepLabel()
-              : !authIsReady
-                ? "認証情報を確認中... (1/4)"
-                : !clientIsReady
-                  ? "利用状況を取得中... (3/4)"
-                  : !masterIsReady
-                    ? "データを読み込み中... (4/4)"
-                    : !usageStats
-                      ? "利用状況を取得中... (3/4)"
-                      : !payload
-                        ? "認証情報を確認中... (1/4)"
-                        : "準備完了"
+            ? !languageIsReady
+              ? "言語を初期化中..."
+              : !isInitialized
+                ? getStepLabel()
+                : !authIsReady
+                  ? "認証情報を確認中... (1/4)"
+                  : !clientIsReady
+                    ? "利用状況を取得中... (3/4)"
+                    : !masterIsReady
+                      ? "データを読み込み中... (4/4)"
+                      : !usageStats
+                        ? "利用状況を取得中... (3/4)"
+                        : !payload
+                          ? "認証情報を確認中... (1/4)"
+                          : "準備完了"
             : "読み込み中..."
         }
       />
