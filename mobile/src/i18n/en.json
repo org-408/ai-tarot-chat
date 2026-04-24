@@ -129,7 +129,8 @@
     "selectPersona": "Select this persona",
     "previousPersona": "Previous persona",
     "nextPersona": "Next persona",
-    "showPersonaIndex": "Show persona {{index}}"
+    "showPersonaIndex": "Show persona {{index}}",
+    "profileCanUse": "✓ Available with your plan"
   },
   "history": {
     "pageTitle": "Session History",

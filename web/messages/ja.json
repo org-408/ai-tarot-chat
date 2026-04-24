@@ -193,7 +193,15 @@
     "processing": "処理中...",
     "changingPlanTitle": "プラン変更中",
     "changingPlanLine1": "プランの切り替えを行っています",
-    "changingPlanLine2": "このままお待ちください"
+    "changingPlanLine2": "このままお待ちください",
+    "badgeGuest": "ゲスト",
+    "badgeFree": "無料",
+    "badgeStandard": "スタンダード",
+    "badgePremium": "プレミアム",
+    "displayGuest": "ゲストプラン",
+    "displayFree": "無料プラン",
+    "displayStandard": "スタンダードプラン",
+    "displayPremium": "プレミアムプラン"
   },
   "settings": {
     "title": "設定",
@@ -244,7 +252,10 @@
     "alwaysAvailable": "いつでも",
     "getReading": "占ってもらう",
     "processing": "処理中...",
-    "upgradeToPlan": "{plan}にアップグレード"
+    "upgradeToPlan": "{plan}にアップグレード",
+    "recommendation": "おすすめ度",
+    "canUse": "✓ この占い師は利用可能です",
+    "authenticating": "認証中..."
   },
   "auth": {
     "signInTitle": "AI Reflection Dialogue",

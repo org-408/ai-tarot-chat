@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 
 interface TarotistCarouselStackProps {
@@ -409,8 +410,14 @@ const TinderCard: React.FC<{
               whileTap={{ scale: 0.98 }}
             >
               {isChangingPlan
-                ? "認証中..."
-                : `${tarotist.plan?.name}にアップグレード`}
+                ? t("plans.authenticating")
+                : t("plans.upgradeTo", {
+                    plan: getPlanDisplayName(
+                      tarotist.plan?.code,
+                      t,
+                      tarotist.plan?.name,
+                    ),
+                  })}
             </motion.button>
           )}
 

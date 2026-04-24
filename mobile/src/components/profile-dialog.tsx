@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 import { canUseTarotist, renderStars } from "../lib/utils/salon";
 import type { UserPlan } from "../types";
 
@@ -136,8 +137,14 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                   }}
                 >
                   {isChangingPlan
-                    ? "認証中..."
-                    : `${selectedTarotist.plan!.name}にアップグレード`}
+                    ? t("plans.authenticating")
+                    : t("plans.upgradeTo", {
+                        plan: getPlanDisplayName(
+                          selectedTarotist.plan!.code,
+                          t,
+                          selectedTarotist.plan!.name,
+                        ),
+                      })}
                 </button>
               ) : (
                 <div

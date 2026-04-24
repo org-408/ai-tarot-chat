@@ -249,6 +249,24 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
             setSelectedTarotist(null);
           }}
           isUpgrading={isChangingPlan}
+          labels={{
+            planBadge: getPlanDisplayName(
+              selectedTarotist.plan?.code,
+              t,
+              selectedTarotist.plan?.name,
+            ),
+            recommendation: t("tarotist.recommendLevel"),
+            canUse: t("tarotist.profileCanUse"),
+            upgradeButton: t("plans.upgradeTo", {
+              plan: getPlanDisplayName(
+                selectedTarotist.plan?.code,
+                t,
+                selectedTarotist.plan?.name,
+              ),
+            }),
+            authenticating: t("plans.authenticating"),
+            close: t("common.close"),
+          }}
         />
       )}
     </div>

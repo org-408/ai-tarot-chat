@@ -8,6 +8,7 @@ import {
   buildTarotCardMap,
   hydrateDrawnCards,
 } from "@/lib/client/utils/drawn-card";
+import { getPlanDisplayName } from "@/lib/utils/plan-display";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -177,6 +178,9 @@ function ReadingCard({
 
 export default function HistoryPage() {
   const t = useTranslations("history");
+  const tTarotist = useTranslations("tarotist");
+  const tPlans = useTranslations("plans");
+  const tCommon = useTranslations("common");
   const { readings, readingsTotal, isLoadingReadings, fetchReadings } =
     useClientStore();
   const masterData = useMasterStore((state) => state.data);
@@ -344,6 +348,24 @@ export default function HistoryPage() {
           <TarotistInfoDialog
             tarotist={selectedTarotist}
             onClose={() => setSelectedTarotist(null)}
+            labels={{
+              planBadge: getPlanDisplayName(
+                selectedTarotist.plan?.code,
+                tPlans,
+                selectedTarotist.plan?.name,
+              ),
+              recommendation: tTarotist("recommendation"),
+              canUse: tTarotist("canUse"),
+              upgradeButton: tTarotist("upgradeToPlan", {
+                plan: getPlanDisplayName(
+                  selectedTarotist.plan?.code,
+                  tPlans,
+                  selectedTarotist.plan?.name,
+                ),
+              }),
+              authenticating: tTarotist("authenticating"),
+              close: tCommon("close"),
+            }}
           />
         )}
       </AnimatePresence>
