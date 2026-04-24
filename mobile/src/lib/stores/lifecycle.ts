@@ -2,6 +2,7 @@ import { App as CapacitorApp } from "@capacitor/app";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Plan } from "../../../../shared/lib/types";
+import i18n from "../../i18n";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { HttpError, isNetworkError } from "../utils/api-client";
@@ -218,7 +219,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                     lastError: {
                       step: "auth",
                       error: new Error(
-                        "初回起動時はインターネット接続が必要です"
+                        i18n.t("error.offlineFirstLaunchRequired")
                       ),
                       timestamp: new Date(),
                     },
@@ -1002,7 +1003,7 @@ export const useLifecycleStore = create<LifecycleState>()(
         if (newPlan.code === "GUEST") {
           logWithContext("warn", "[Lifecycle] Cannot change to GUEST plan");
           set({
-            planChangeError: "GUESTプランへの変更はできません",
+            planChangeError: i18n.t("error.cannotChangeToGuest"),
           });
           return;
         }
@@ -1035,7 +1036,7 @@ export const useLifecycleStore = create<LifecycleState>()(
               "error",
               "[Lifecycle] Auth payload missing after login"
             );
-            throw new Error("認証情報が取得できません");
+            throw new Error(i18n.t("error.authInfoUnavailable"));
           }
 
           if (!subscriptionStore.isLoggedIn) {
@@ -1048,7 +1049,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                   authPayload: payload,
                 }
               );
-              throw new Error("ユーザー情報が取得できません");
+              throw new Error(i18n.t("error.userInfoUnavailable"));
             }
 
             info = await subscriptionStore.login(userId);
@@ -1057,7 +1058,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                 "error",
                 "[Lifecycle] Subscription info missing after login"
               );
-              throw new Error("サブスクリプション情報が取得できません");
+              throw new Error(i18n.t("error.subscriptionInfoUnavailable"));
             }
             logWithContext("info", "[Lifecycle] Logging into subscription", {
               userId,
@@ -1076,7 +1077,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                 "error",
                 "[Lifecycle] CustomerInfo missing for purchase"
               );
-              throw new Error("サブスクリプション情報が取得できません");
+              throw new Error(i18n.t("error.subscriptionInfoUnavailable"));
             }
             const hasEntitlement =
               customerInfo.entitlements.active[targetEntitlement];
@@ -1109,7 +1110,7 @@ export const useLifecycleStore = create<LifecycleState>()(
                   useSubscriptionStore.getState().setLifecycleBusy(false);
                   set({
                     isChangingPlan: false,
-                    planChangeError: "購入がキャンセルされました",
+                    planChangeError: i18n.t("error.purchaseCancelled"),
                   });
                   return;
                 }
@@ -1197,16 +1198,16 @@ export const useLifecycleStore = create<LifecycleState>()(
       getStepLabel: () => {
         const step = get().currentStep;
         const labels: Record<LifecycleStep, string> = {
-          idle: "起動中...",
-          rcConfigure: "サービスを準備中...", // Step 0: RC.configure()
-          auth: "認証情報を確認中... (1/4)", // Step 1: authStore.init()
-          subscription: "プランを確認中... (2/4)", // Step 2: subscriptionStore.init() + RC.logIn()
-          client: "利用状況を取得中... (3/4)", // Step 3: clientStore.init()
-          master: "データを読み込み中... (4/4)", // Step 4: masterStore.init()
-          complete: "準備完了",
-          login: "ログイン中...",
-          logout: "ログアウト中...",
-          changePlan: "プラン変更中...",
+          idle: i18n.t("lifecycle.stepIdle"),
+          rcConfigure: i18n.t("lifecycle.stepRcConfigure"),
+          auth: i18n.t("lifecycle.stepAuth"),
+          subscription: i18n.t("lifecycle.stepSubscription"),
+          client: i18n.t("lifecycle.stepClient"),
+          master: i18n.t("lifecycle.stepMaster"),
+          complete: i18n.t("lifecycle.stepComplete"),
+          login: i18n.t("lifecycle.stepLogin"),
+          logout: i18n.t("lifecycle.stepLogout"),
+          changePlan: i18n.t("lifecycle.stepChangePlan"),
         };
         return labels[step];
       },
@@ -1214,9 +1215,9 @@ export const useLifecycleStore = create<LifecycleState>()(
       getOfflineModeLabel: () => {
         const mode = get().offlineMode;
         const labels = {
-          none: "オンライン",
-          limited: "制限モード (キャッシュ使用)",
-          full: "オフライン (初回起動不可)",
+          none: i18n.t("lifecycle.offlineNone"),
+          limited: i18n.t("lifecycle.offlineLimited"),
+          full: i18n.t("lifecycle.offlineFull"),
         };
         return labels[mode];
       },

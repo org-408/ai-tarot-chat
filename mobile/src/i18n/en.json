@@ -13,7 +13,8 @@
     "no": "No",
     "reload": "Reload",
     "newDayStarted": "A new day has begun!",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "scrollForMore": "↕️ Scroll to see more options"
   },
   "nav": {
     "home": "Home",
@@ -89,7 +90,9 @@
     "keywordsLabel": "Keywords:",
     "reversedSuffix": "(Reversed)",
     "shuffling": "Shuffling the cards...",
-    "preparingReading": "Preparing your reflection..."
+    "preparingReading": "Preparing your reflection...",
+    "positionFallback": "Position {{n}}",
+    "positionDescriptionFallback": "This card represents position {{position}}"
   },
   "salon": {},
   "personal": {
@@ -303,6 +306,40 @@
     "initTitle": "Initialization error",
     "initBody": "The app failed to initialize",
     "offlineFirstLaunch": "Offline - an internet connection is required for first launch",
-    "genericRetryLater": "Something went wrong. Please try again later."
+    "offlineFirstLaunchRequired": "An internet connection is required for first launch",
+    "genericRetryLater": "Something went wrong. Please try again later.",
+    "cannotChangeToGuest": "Cannot change to the Guest plan",
+    "purchaseCancelled": "The purchase was cancelled",
+    "authInfoUnavailable": "Couldn't retrieve authentication info",
+    "userInfoUnavailable": "Couldn't retrieve user info",
+    "subscriptionInfoUnavailable": "Couldn't retrieve subscription info",
+    "deviceRegistrationFailed": "Device registration failed",
+    "invalidCallbackUrl": "Invalid callback URL",
+    "authCancelled": "Authentication was cancelled",
+    "authTimeout": "Authentication timed out",
+    "authFailed": "Authentication failed",
+    "authTokenUnavailable": "Couldn't obtain an authentication token",
+    "deviceIdMissing": "Device ID is missing",
+    "tokenExchangeFailed": "Token exchange failed",
+    "invalidTokenReturned": "Invalid token returned"
+  },
+  "subscription": {
+    "pastPurchaseFoundTitle": "Previous purchase found",
+    "pastPurchaseFoundBody": "Your subscription can be restored — please sign in."
+  },
+  "lifecycle": {
+    "stepIdle": "Starting up...",
+    "stepRcConfigure": "Preparing service...",
+    "stepAuth": "Checking credentials... (1/4)",
+    "stepSubscription": "Checking plan... (2/4)",
+    "stepClient": "Fetching usage... (3/4)",
+    "stepMaster": "Loading data... (4/4)",
+    "stepComplete": "Ready",
+    "stepLogin": "Signing in...",
+    "stepLogout": "Signing out...",
+    "stepChangePlan": "Changing plan...",
+    "offlineNone": "Online",
+    "offlineLimited": "Limited mode (cache)",
+    "offlineFull": "Offline (first launch unavailable)"
   }
 }

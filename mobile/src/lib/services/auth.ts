@@ -3,6 +3,7 @@ import { Browser } from "@capacitor/browser";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { Device } from "@capacitor/device";
 import type { AppJWTPayload } from "../../../../shared/lib/types";
+import i18n from "../../i18n";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { apiClient } from "../utils/api-client";
@@ -107,7 +108,7 @@ export class AuthService {
       );
 
       if (!result || "error" in result) {
-        throw new Error("デバイス登録に失敗しました");
+        throw new Error(i18n.t("error.deviceRegistrationFailed"));
       }
 
       const { token } = result;
@@ -181,7 +182,7 @@ export class AuthService {
               });
               isResolved = true;
               cleanup();
-              reject(new Error("不正なコールバックURLです"));
+              reject(new Error(i18n.t("error.invalidCallbackUrl")));
               return;
             }
 
@@ -209,7 +210,7 @@ export class AuthService {
 
             isResolved = true;
             cleanup();
-            reject(new Error("ユーザーが認証をキャンセルしました"));
+            reject(new Error(i18n.t("error.authCancelled")));
           }).then((listener) => {
             browserFinishedListener = listener;
           });
@@ -222,7 +223,7 @@ export class AuthService {
 
             isResolved = true;
             cleanup();
-            reject(new Error("認証タイムアウト"));
+            reject(new Error(i18n.t("error.authTimeout")));
           }, 120000);
 
           // ブラウザを開く
@@ -237,19 +238,19 @@ export class AuthService {
       );
 
       if (!auth || "error" in auth) {
-        throw new Error("認証に失敗しました");
+        throw new Error(i18n.t("error.authFailed"));
       }
 
       const callbackUrl = new URL(auth.callbackUrl);
       const ticket = callbackUrl.searchParams.get("ticket");
 
       if (!ticket) {
-        throw new Error("認証トークンが取得できませんでした");
+        throw new Error(i18n.t("error.authTokenUnavailable"));
       }
 
       const deviceId = await this.getDeviceId();
       if (!deviceId) {
-        throw new Error("デバイスIDが存在しません");
+        throw new Error(i18n.t("error.deviceIdMissing"));
       }
 
       const result = await apiClient.post<{ token: string }>(
@@ -258,7 +259,7 @@ export class AuthService {
       );
 
       if (!result || "error" in result) {
-        throw new Error("トークン交換に失敗しました");
+        throw new Error(i18n.t("error.tokenExchangeFailed"));
       }
 
       const { token } = result;
@@ -271,7 +272,7 @@ export class AuthService {
         !payload.user ||
         !payload.user.id
       ) {
-        throw new Error("不正なトークンが返却されました");
+        throw new Error(i18n.t("error.invalidTokenReturned"));
       }
 
       logWithContext("info", "[AuthService] OAuth signin successful", {
@@ -376,7 +377,7 @@ export class AuthService {
     const payload = await decodeJWT<AppJWTPayload>(token, JWT_SECRET);
 
     if (!payload || !payload.deviceId) {
-      throw new Error("不正なトークンが返却されました");
+      throw new Error(i18n.t("error.invalidTokenReturned"));
     }
 
     return payload;

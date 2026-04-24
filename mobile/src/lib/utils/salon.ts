@@ -7,6 +7,7 @@ import type {
   TarotCard,
   Tarotist,
 } from "../../../../shared/lib/types";
+import i18n from "../../i18n";
 import { TEMP_CARDS } from "./cards";
 
 export const canUseTarotist = (targetPlan: Plan, currentPlan: Plan) => {
@@ -70,17 +71,21 @@ export const drawRandomCards = (
     const card = selected[index];
     const isReversed = Math.random() > 0.5;
 
+    const positionFallback = i18n.t("reading.positionFallback", {
+      n: index + 1,
+    });
+    const positionLabel = cell.position || positionFallback;
     return {
       id: `${card.code}-${index}`,
       x: cell.x,
       y: cell.y,
       order: cell.order || index,
-      position: cell.position || `位置${index + 1}`,
+      position: positionLabel,
       description:
         cell.description ||
-        `このカードの位置は${
-          cell.position || `位置${index + 1}`
-        }を示しています`,
+        i18n.t("reading.positionDescriptionFallback", {
+          position: positionLabel,
+        }),
       isHorizontal: cell.isHorizontal,
       isReversed,
       card,

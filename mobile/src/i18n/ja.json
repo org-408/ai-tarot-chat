@@ -13,7 +13,8 @@
     "no": "いいえ",
     "reload": "再読み込み",
     "newDayStarted": "新しい日になりました!",
-    "listSeparator": "、"
+    "listSeparator": "、",
+    "scrollForMore": "↕️ スクロールして他の選択肢を見る"
   },
   "nav": {
     "home": "ホーム",
@@ -89,7 +90,9 @@
     "keywordsLabel": "キーワード:",
     "reversedSuffix": "(逆位置)",
     "shuffling": "カードをシャッフル中...",
-    "preparingReading": "メッセージを読み取っています..."
+    "preparingReading": "メッセージを読み取っています...",
+    "positionFallback": "位置{{n}}",
+    "positionDescriptionFallback": "このカードの位置は{{position}}を示しています"
   },
   "salon": {},
   "personal": {
@@ -303,6 +306,40 @@
     "initTitle": "初期化エラー",
     "initBody": "アプリの初期化に失敗しました",
     "offlineFirstLaunch": "オフライン - 初回起動にはネット接続が必要です",
-    "genericRetryLater": "エラーが発生しました。しばらく経ってからもう一度お試しください。"
+    "offlineFirstLaunchRequired": "初回起動時はインターネット接続が必要です",
+    "genericRetryLater": "エラーが発生しました。しばらく経ってからもう一度お試しください。",
+    "cannotChangeToGuest": "ゲストプランへの変更はできません",
+    "purchaseCancelled": "購入がキャンセルされました",
+    "authInfoUnavailable": "認証情報が取得できません",
+    "userInfoUnavailable": "ユーザー情報が取得できません",
+    "subscriptionInfoUnavailable": "サブスクリプション情報が取得できません",
+    "deviceRegistrationFailed": "デバイス登録に失敗しました",
+    "invalidCallbackUrl": "不正なコールバックURLです",
+    "authCancelled": "ユーザーが認証をキャンセルしました",
+    "authTimeout": "認証タイムアウト",
+    "authFailed": "認証に失敗しました",
+    "authTokenUnavailable": "認証トークンが取得できませんでした",
+    "deviceIdMissing": "デバイスIDが存在しません",
+    "tokenExchangeFailed": "トークン交換に失敗しました",
+    "invalidTokenReturned": "不正なトークンが返却されました"
+  },
+  "subscription": {
+    "pastPurchaseFoundTitle": "過去の購入が見つかりました",
+    "pastPurchaseFoundBody": "課金情報が復元されますので、サインインしてください。"
+  },
+  "lifecycle": {
+    "stepIdle": "起動中...",
+    "stepRcConfigure": "サービスを準備中...",
+    "stepAuth": "認証情報を確認中... (1/4)",
+    "stepSubscription": "プランを確認中... (2/4)",
+    "stepClient": "利用状況を取得中... (3/4)",
+    "stepMaster": "データを読み込み中... (4/4)",
+    "stepComplete": "準備完了",
+    "stepLogin": "ログイン中...",
+    "stepLogout": "ログアウト中...",
+    "stepChangePlan": "プラン変更中...",
+    "offlineNone": "オンライン",
+    "offlineLimited": "制限モード (キャッシュ使用)",
+    "offlineFull": "オフライン (初回起動不可)"
   }
 }
