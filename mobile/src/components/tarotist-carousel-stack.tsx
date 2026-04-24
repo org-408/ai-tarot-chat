@@ -35,7 +35,6 @@ const TarotistCarouselStack: React.FC<TarotistCarouselStackProps> = ({
   isChangingPlan,
   onSelectTarotist,
 }) => {
-  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (availableTarotists.length === 0) {
@@ -190,6 +189,7 @@ const TinderCard: React.FC<{
   onPrev,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
