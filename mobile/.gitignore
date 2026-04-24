@@ -39,3 +39,9 @@ GoogleService-Info.plist
 google-services.json
 
 src/assets/master-data.ts
+
+# Playwright
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/

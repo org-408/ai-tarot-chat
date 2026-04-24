@@ -141,8 +141,24 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Apple 4.3(b) 対策: i18n 翻訳キーの整合性と NG ワード検査。
+      # - コード ↔ ja.json/en.json のキー対称性
+      # - en.json に日本語が混入していない (翻訳漏れ)
+      # - en.json/ja.json に Apple NG ワード (fortune/predict/horoscope 等) がない
+      - name: i18n audit
+        run: npm run lint:i18n
+
       - name: Type check
         run: npx tsc -b
 
       - name: Build
         run: npm run build
+
+      # 日英ロケールでの UI smoke test。Vite dev server の WebView と Capacitor
+      # ネイティブ WebView は UI 層としてほぼ等価なので、4.3(b) 対策としては
+      # ブラウザ上での検証で十分カバーできる。
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: E2E smoke test (ja + en, NG ワード検出)
+        run: npx playwright test

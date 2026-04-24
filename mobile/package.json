@@ -8,6 +8,8 @@
     "build": "cp src/assets/master-data-production.ts src/assets/master-data.ts && tsc -b && vite build",
     "build:staging": "cp src/assets/master-data-staging.ts src/assets/master-data.ts && tsc -b && vite build --mode staging",
     "lint": "eslint .",
+    "lint:i18n": "node scripts/i18n-audit.mjs",
+    "test:e2e": "playwright test",
     "preview": "vite preview",
     "ui:add": "npx shadcn@latest add ",
     "reset": "ts-node scripts/reset-app.ts",
@@ -58,6 +60,7 @@
   "devDependencies": {
     "@capacitor/cli": "^8.2.0",
     "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
