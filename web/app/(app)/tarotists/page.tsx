@@ -4,22 +4,45 @@ import type { Tarotist } from "@shared/lib/types";
 import { TarotistInfoDialog } from "@shared/components/tarotist/tarotist-info-dialog";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
+import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function TarotistsPage() {
   const t = useTranslations("tarotist");
-  const router = useRouter();
+  const tPlans = useTranslations("plans");
   const [selected, setSelected] = useState<Tarotist | null>(null);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const { init: initMaster, tarotists, isLoading } = useMasterStore();
   const { usage, refreshUsage } = useClientStore();
+  const { purchase, isUserCancelled } = useRevenuecat();
 
   useEffect(() => {
     initMaster();
     refreshUsage();
   }, [initMaster, refreshUsage]);
+
+  // 占い師一覧は閲覧用途のため、アップグレードボタンはその場で purchase() を呼ぶ。
+  // Success/Cancel/Fail いずれの場合も /tarotists 維持（ダイアログは成功時のみ閉じる）。
+  // 詳細: docs/plan-change-navigation-spec.md 2-3 / .claude/rules/plan-change-navigation.md
+  const handleUpgrade = async (planCode: string) => {
+    if (planCode !== "STANDARD" && planCode !== "PREMIUM") return;
+    setIsUpgrading(true);
+    setUpgradeError(null);
+    try {
+      await purchase(planCode);
+      await refreshUsage();
+      setSelected(null);
+    } catch (e) {
+      if (!isUserCancelled(e)) {
+        setUpgradeError(tPlans("checkoutError"));
+      }
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -117,16 +140,23 @@ export default function TarotistsPage() {
         </div>
       </div>
 
+      {upgradeError && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3 shadow-lg"
+          role="alert"
+        >
+          {upgradeError}
+        </div>
+      )}
+
       <AnimatePresence>
         {selected && (
           <TarotistInfoDialog
             tarotist={selected}
             currentPlan={usage?.plan ?? null}
             onClose={() => setSelected(null)}
-            onUpgrade={() => {
-              setSelected(null);
-              router.push("/plans");
-            }}
+            onUpgrade={handleUpgrade}
+            isUpgrading={isUpgrading}
           />
         )}
       </AnimatePresence>

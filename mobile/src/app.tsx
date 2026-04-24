@@ -17,6 +17,7 @@ import { useSalonStore } from "./lib/stores/salon";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import { showInterstitialAd } from "./lib/utils/admob";
 import { Http } from "./lib/utils/http";
+import { PurchaseCancelledError } from "./lib/utils/purchase-cancelled-error";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
@@ -406,25 +407,53 @@ function App() {
   };
 
   // 🔥 プラン変更処理（サインインも含む）
-  // navigateToPersonal=true のときだけ成功後に personal へ自動遷移する。
-  // 呼び出し元が「アップグレード → 即パーソナル占い」を意図している場合のみ true。
-  // salon のタロティストカードなど、現在地に留まりたい呼び出し元は渡さない。
+  //
+  // 仕様: docs/plan-change-navigation-spec.md
+  // ルール: .claude/rules/plan-change-navigation.md
+  //
+  // options.onSuccess で成功後の遷移先を指定する。省略時のデフォルトは
+  //   FREE → "history"（履歴機能解放が目的のため）
+  //   PREMIUM → "personal"（パーソナル占い解放が目的のため）
+  //   STANDARD → "stay"（現在地維持）
+  // 呼び出し元が明示した onSuccess が最優先。
+  //
+  //   "history"   → setPageType("history")
+  //   "personal"  → setPageType("personal")
+  //   "stay"      → 現在地維持（何もしない）
+  //   "portrait"  → 現在地維持（モード切替は子コンポーネント側で行う）
+  //
+  // キャンセル時は PurchaseCancelledError が throw されるため silent に終了する。
+  // 失敗時は planChangeError state が lifecycle 側で set されてトースト表示される。
   const handleChangePlan = async (
     newPlan: UserPlan,
-    options?: { navigateToPersonal?: boolean },
+    options?: {
+      onSuccess?: "history" | "personal" | "stay" | "portrait";
+    },
   ) => {
     console.log(`プラン変更リクエスト: ${currentPlan?.code} → ${newPlan}`);
 
     try {
-      // changePlanが全てを処理（サインインが必要な場合も内部で処理）
       await changePlan(getPlan(newPlan)!);
       console.log("プラン変更成功");
-      if (newPlan === "PREMIUM" && options?.navigateToPersonal) {
-        setPageType("personal");
-      }
+
+      const fallback =
+        newPlan === "FREE"
+          ? "history"
+          : newPlan === "PREMIUM"
+            ? "personal"
+            : "stay";
+      const target = options?.onSuccess ?? fallback;
+      if (target === "personal") setPageType("personal");
+      else if (target === "history") setPageType("history");
+      // "stay" / "portrait" はここでは何もしない
     } catch (err) {
+      // キャンセルはサイレント（エラー通知も遷移もなし）
+      if (err instanceof PurchaseCancelledError) {
+        console.log("プラン変更キャンセル");
+        return;
+      }
       console.error("プラン変更エラー:", err);
-      // エラーは planChangeError で処理されるため、ここでは何もしない
+      // 失敗は planChangeError で処理されるため、ここでは何もしない
     }
   };
 

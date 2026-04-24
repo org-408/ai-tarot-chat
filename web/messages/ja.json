@@ -214,6 +214,7 @@
     "manageSubscriptionDesc": "解約・請求書・支払い方法の変更",
     "manageViaAppStoreDesc": "iPhoneの設定 › Apple ID › サブスクリプションから管理してください",
     "portalLoading": "ポータルを開いています...",
+    "portalUnavailable": "購読管理ページを開けませんでした。しばらくしてから再度お試しください。",
     "display": "表示設定",
     "language": "言語",
     "theme": "テーマ",

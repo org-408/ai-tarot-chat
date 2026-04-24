@@ -17,7 +17,10 @@ interface SalonPageProps {
   currentPlan: Plan;
   masterData: MasterData;
   usageStats: UsageStats;
-  onChangePlan: (plan: UserPlan) => void;
+  onChangePlan: (
+    plan: UserPlan,
+    options?: { onSuccess?: "history" | "personal" | "stay" | "portrait" },
+  ) => void;
   onStartReading: () => void;
   isChangingPlan: boolean;
   /** プラン失効ダイアログ/トーストが表示中か（チュートリアル発火ブロック用） */
@@ -60,7 +63,11 @@ const SalonPage: React.FC<SalonPageProps> = ({
   }, [masterData, usageStats]);
 
   const handleChangePlan = (targetPlan: UserPlan) => {
-    onChangePlan(targetPlan);
+    // 占い師選択モードからのアップグレード → 成功時は portrait モードに切替（その占い師で占う状態へ）。
+    // モード切替は TarotistCarouselPortrait 内の handleSelectTarotist で行うため、
+    // 親の handleChangePlan 側では遷移しない。Cancel/Fail は tarotist モード維持。
+    // 詳細: docs/plan-change-navigation-spec.md 2-1 / .claude/rules/plan-change-navigation.md
+    onChangePlan(targetPlan, { onSuccess: "portrait" });
   };
 
   const handleStartReading = () => {

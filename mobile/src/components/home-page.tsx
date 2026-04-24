@@ -26,7 +26,7 @@ interface HomePageProps {
   onNavigateToReading: (reading: Reading) => void;
   onChangePlan: (
     plan: UserPlan,
-    options?: { navigateToPersonal?: boolean },
+    options?: { onSuccess?: "history" | "personal" | "stay" | "portrait" },
   ) => void;
   isChangingPlan: boolean;
 }
@@ -176,7 +176,9 @@ const HomePage: React.FC<HomePageProps> = ({
           onClick={
             canPersonal
               ? onNavigateToPersonal
-              : () => onChangePlan("PREMIUM", { navigateToPersonal: true })
+              : // PREMIUM のデフォルト遷移先が personal なので明示は不要だが、
+                // 意図を明確にするため onSuccess: "personal" を渡す。
+                () => onChangePlan("PREMIUM", { onSuccess: "personal" })
           }
           disabled={isChangingPlan}
           className="w-full rounded-2xl bg-white border border-pink-100 p-4 active:bg-pink-50 flex items-center gap-3 transition-colors disabled:opacity-50"
@@ -348,10 +350,18 @@ const HomePage: React.FC<HomePageProps> = ({
         </section>
 
         {/* アップグレード誘導（非 PREMIUM 時） */}
+        {/*
+          ホーム最下部の UpgradeGuide は閲覧目的で置かれているため、
+          成功時もキャンセル・失敗時もホームに留まる仕様。
+          FREE/STANDARD/PREMIUM いずれを選んでも遷移しないよう stay を強制。
+          詳細: docs/plan-change-navigation-spec.md 2-2 c / .claude/rules/plan-change-navigation.md
+        */}
         {!isPremium && (
           <section className="pt-2">
             <UpgradeGuide
-              handleChangePlan={onChangePlan}
+              handleChangePlan={(plan) =>
+                onChangePlan(plan, { onSuccess: "stay" })
+              }
               isChangingPlan={isChangingPlan}
             />
           </section>

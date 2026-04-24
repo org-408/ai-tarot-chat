@@ -181,6 +181,7 @@ export default function SettingsPage() {
 
   const { openManagement, subscriptionStore, subscriptionStoreLoading } = useRevenuecat();
   const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
   const [appStoreDialogOpen, setAppStoreDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -202,13 +203,18 @@ export default function SettingsPage() {
   const planBadgeClass = planColors[planCode] ?? planColors.FREE;
 
   // ── RC サブスク管理 ──
+  //
+  // Web Billing Portal の URL が取れない場合、以前は /plans へフォールバックしていたが、
+  // 「購読管理したい」ユーザーを「購入」ページへ飛ばすのは意味的に不一致のため、
+  // 現在地維持でインラインエラーを表示する方針に変更した。
+  // 詳細: docs/plan-change-navigation-spec.md 3 章 W5 / .claude/rules/plan-change-navigation.md
   const handlePortal = async () => {
     setPortalLoading(true);
+    setPortalError(null);
     try {
       await openManagement();
     } catch {
-      // management URL が取れない場合はプランページへ
-      router.push("/plans");
+      setPortalError(t("portalUnavailable"));
     } finally {
       setPortalLoading(false);
     }
@@ -320,8 +326,13 @@ export default function SettingsPage() {
             ) : (
               <SettingsRow
                 label={t("viewPlans")}
-                onClick={() => router.push(`/${locale}/plans`)}
+                onClick={() => router.push("/plans")}
               />
+            )}
+            {portalError && (
+              <div className="px-4 py-2 text-xs text-red-600" role="alert">
+                {portalError}
+              </div>
             )}
           </SettingsGroup>
         )}
