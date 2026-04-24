@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useMaster } from "../lib/hooks/use-master";
 import type {
   AppJWTPayload,
   DrawnCard,
@@ -48,34 +50,40 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
   const [upperIndex, setUpperIndex] = useState(0);
   const [lowerIndex, setLowerIndex] = useState(0);
 
+  // 現在言語に解決済みの collections を使用 (masterData prop は raw)
+  const {
+    categories: resolvedCategories,
+    spreads: resolvedSpreads,
+  } = useMaster();
+
   // カテゴリ
   const availableCategories = useMemo(() => {
-    return (masterData.categories || []).map((cat) => ({
+    return (resolvedCategories || []).map((cat) => ({
       ...cat,
       bio: cat.description,
     }));
-  }, [masterData]);
+  }, [resolvedCategories]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategory, setSelectedCategory] =
     useState<ReadingCategory | null>(availableCategories[0] || null);
 
-  // スプレッド
+  // スプレッド。カテゴリ一致判定は言語非依存の id で行う
   const availableSpreads = useMemo(() => {
     if (!selectedCategory) return [];
-    return (masterData.spreads || [])
+    return (resolvedSpreads || [])
       .filter((spread) => {
         if (!spread.plan || !spread.categories) return false;
-        const spreadCategories = spread.categories.map(
-          (stc) => stc.category?.name
-        );
+        const spreadCategoryIds = spread.categories
+          .map((stc) => stc.categoryId ?? stc.category?.id)
+          .filter(Boolean);
         return (
           currentPlan.no >= spread.plan.no &&
-          spreadCategories.includes(selectedCategory.name)
+          spreadCategoryIds.includes(selectedCategory.id)
         );
       })
       .map((spread) => ({ ...spread, bio: spread.guide }));
-  }, [masterData, selectedCategory, currentPlan]);
+  }, [resolvedSpreads, selectedCategory, currentPlan]);
 
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
 
@@ -90,9 +98,16 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [isRevealingComplete, setIsRevealingComplete] = useState(false);
 
+  const { i18n: i18nInstance } = useTranslation();
+  const currentLang = i18nInstance.language?.startsWith("en") ? "en" : "ja";
+
   useEffect(() => {
-    if (selectedSpread && masterData.decks?.[0]?.cards) {
-      const cards = masterData.decks[0].cards;
+    const langDecks = (masterData.decks ?? []).filter(
+      (d) => !d.language || d.language === currentLang,
+    );
+    const deck = langDecks[0] ?? masterData.decks?.[0];
+    if (selectedSpread && deck?.cards) {
+      const cards = deck.cards;
       const shuffled = [...cards].sort(() => Math.random() - 0.5);
       const drawn: DrawnCard[] = (selectedSpread.cells || []).map(
         (cell, index) => {
@@ -117,7 +132,7 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
       setDrawnCards(drawn);
       setFlippedCards(new Set());
     }
-  }, [selectedSpread, masterData]);
+  }, [selectedSpread, masterData, currentLang]);
 
   useEffect(() => {
     if (flippedCards.size > 0 && flippedCards.size === drawnCards.length) {

@@ -2,6 +2,7 @@
 
 import { DrawnCard, Spread, Tarotist } from "@/../shared/lib/types";
 import { experimentalProviders } from "@/lib/server/ai/models";
+import { buildPersonalSystemPromptEn } from "@/lib/server/ai/prompts/personal-en";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { readingRepository } from "@/lib/server/repositories";
 import { clientService, spreadService } from "@/lib/server/services";
@@ -95,6 +96,7 @@ export async function POST(req: NextRequest) {
       drawnCards,
       isEndingEarly,
       initialLen,
+      language: rawLanguage,
     }: {
       messages: UIMessage[];
       tarotist: Tarotist;
@@ -103,7 +105,9 @@ export async function POST(req: NextRequest) {
       drawnCards: DrawnCard[];
       isEndingEarly?: boolean;
       initialLen?: number;
+      language?: string;
     } = await req.json();
+    const language = rawLanguage === "en" ? "en" : "ja";
     const customQuestion =
       clientMessages.length >= 2
         ? clientMessages[2].parts
@@ -404,7 +408,19 @@ export async function POST(req: NextRequest) {
     // ─────────────────────────────────────────────────────────────────
     let system: string;
 
-    if (clientMessages.length <= 1) {
+    if (language === "en") {
+      system = buildPersonalSystemPromptEn({
+        tarotist,
+        spread,
+        drawnCards,
+        customQuestion,
+        messagesLength: clientMessages.length,
+        spreadsForPhase1_2: spreads,
+        isEndingEarly: isEarlyEnd,
+        phase2QuestionIndex,
+        isLastQuestion,
+      });
+    } else if (clientMessages.length <= 1) {
       // ──────────────────────────────────────────
       // Phase1-1: 挨拶 + 占いたいことをヒアリング
       // ──────────────────────────────────────────
@@ -556,6 +572,7 @@ export async function POST(req: NextRequest) {
       phase,
       debugMode,
       provider,
+      language,
     });
 
     const messages: Awaited<ReturnType<typeof convertToModelMessages>> =

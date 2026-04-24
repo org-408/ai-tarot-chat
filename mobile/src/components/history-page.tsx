@@ -135,7 +135,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   ];
   const { readings, readingsTotal, fetchReadings, error, currentPlan } =
     useClient();
-  const { decks } = useMaster();
+  const { allDecks, spreadById, categoryById, tarotistById } = useMaster();
   const [selectedReading, setSelectedReading] = useState<Reading | null>(
     initialReading ?? null,
   );
@@ -146,8 +146,11 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const initialLoadDone = useRef(false);
 
+  // 履歴に保存された DrawnCard.cardId は作成時点の言語の TarotCard.id を
+  // 参照している。UI 言語を切り替えた後でも履歴画像が引けるよう、
+  // 全言語分の deck からカードを集約してマップを作る。
   const cardMap = new Map<string, TarotCard>(
-    (decks[0]?.cards ?? []).map((c) => [c.id, c]),
+    allDecks.flatMap((d) => d.cards ?? []).map((c) => [c.id, c]),
   );
 
   const all = dedup(readings);
@@ -341,9 +344,16 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                 r.tarotist?.name ?? t("history.unknownTarotist");
                               const isPersonal = !!r.customQuestion;
                               const cards: DrawnCard[] = r.cards ?? [];
+                              // 保存時点と UI 現在言語が異なる場合に備え、id から現在言語版を引き直す
+                              const resolvedCategory = r.categoryId
+                                ? categoryById.get(r.categoryId) ?? r.category
+                                : r.category;
+                              const resolvedSpread = r.spreadId
+                                ? spreadById.get(r.spreadId) ?? r.spread
+                                : r.spread;
                               const subtitle = isPersonal
                                 ? r.customQuestion
-                                : r.category?.name;
+                                : resolvedCategory?.name;
 
                               return (
                                 <motion.button
@@ -360,9 +370,13 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                       className="w-10 h-10"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (r.tarotist)
+                                        const resolvedTarotist = r.tarotistId
+                                          ? tarotistById.get(r.tarotistId) ??
+                                            r.tarotist
+                                          : r.tarotist;
+                                        if (resolvedTarotist)
                                           setSelectedTarotistProfile(
-                                            r.tarotist,
+                                            resolvedTarotist,
                                           );
                                       }}
                                     />
@@ -381,9 +395,9 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                         </p>
                                       )}
                                       <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                        {r.spread?.name && (
+                                        {resolvedSpread?.name && (
                                           <span className="text-sm font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
-                                            {r.spread.name}
+                                            {resolvedSpread.name}
                                           </span>
                                         )}
                                         {isPersonal && (

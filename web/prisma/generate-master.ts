@@ -1,4 +1,11 @@
 // apps/web/lib/scripts/generate-master-data.ts
+//
+// 責務: DB の現在のマスターデータから mobile/src/assets/master-data.ts を
+//       再生成する「バンドルファイル生成」のみ。
+//
+// MasterConfig の version bump は責務外。モバイルクライアントに再取得を
+// 促す「version bump」は Admin UI (`/admin/master-config`) から実行する。
+// これによりデプロイ運用と mobile app リリース運用を分離できる。
 import { masterService } from "@/lib/server/services/master";
 import fs from "fs";
 import path from "path";
@@ -59,7 +66,7 @@ function toTypeScriptLiteral(obj: unknown, indent = 0): string {
 async function generateMasterData() {
   console.log("🔨 Generating master data...");
 
-  // Prismaから全マスターデータ取得
+  // Prismaから全マスターデータ取得 (現在の MasterConfig.MASTER_VERSION を含む)
   const masterData = await masterService.getAllMasterData();
 
   // TypeScript構文に変換

@@ -12,6 +12,7 @@ import {
   getTarotistColor,
   renderStars,
 } from "../lib/utils/salon";
+import { useMaster } from "../lib/hooks/use-master";
 import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 import { TarotistInfoDialog } from "../../../shared/components/tarotist/tarotist-info-dialog";
@@ -28,23 +29,24 @@ interface TarotistPageProps {
 const TarotistPage: React.FC<TarotistPageProps> = ({
   payload,
   currentPlan,
-  masterData,
+  masterData: _masterData,
   onChangePlan,
   isChangingPlan,
   onNavigateToClara: _onNavigateToClara,
 }) => {
   const { t } = useTranslation();
+  // 現在言語に解決済みのマスターデータを使用 (prop masterData は raw)
+  const { tarotists: availableTarotistsAll, plans } = useMaster();
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
   );
-  const availableTarotists = masterData.tarotists || [];
+  const availableTarotists = availableTarotistsAll || [];
 
 
   const handleChangePlan = (requiredPlan: string) => {
     onChangePlan(requiredPlan as UserPlan);
   };
 
-  const plans = masterData.plans || [];
   const currentColors = currentPlan
     ? getPlanColors(currentPlan.code, plans)
     : getPlanColors("GUEST", plans);

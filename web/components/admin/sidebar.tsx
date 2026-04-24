@@ -19,6 +19,7 @@ const NAV = [
   { href: "/admin/ranking", label: "🏆 ランキング管理" },
   { href: "/admin/readings", label: "📖 占い履歴" },
   { href: "/admin/reset-history", label: "🔄 リセット履歴" },
+  { href: "/admin/master-config", label: "⚙️ マスター管理" },
   { href: "/admin/log-viewer", label: "📋 ログ管理" },
 ];
 

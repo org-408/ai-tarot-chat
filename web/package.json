@@ -25,6 +25,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "lint:prompts": "node scripts/audit-ai-prompts.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

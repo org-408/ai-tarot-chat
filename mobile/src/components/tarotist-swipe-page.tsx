@@ -5,6 +5,7 @@ import type {
   Plan,
   Tarotist,
 } from "../../../shared/lib/types";
+import { useMaster } from "../lib/hooks/use-master";
 import type { SelectTargetMode, UserPlan } from "../types";
 import ProfileDialog from "./profile-dialog";
 // 新しいコンポーネントをインポート
@@ -38,8 +39,10 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
     "embla" | "stack" | "portrait"
   >("embla");
 
+  // 現在言語に解決済みのタロティストを使用 (masterData prop は raw)
+  const { tarotists: resolvedTarotists, plans: resolvedPlans } = useMaster();
   const availableTarotists =
-    masterData.tarotists!.filter(
+    resolvedTarotists.filter(
       (tarotist) => tarotist.plan!.code !== "OFFLINE"
     ) || [];
 
@@ -62,7 +65,7 @@ const TarotistSwipePage: React.FC<TarotistSwipePageProps> = ({
   };
 
   const getPlanColors = (planCode: string) => {
-    const plan = masterData.plans.find((p: Plan) => p.code === planCode);
+    const plan = resolvedPlans.find((p: Plan) => p.code === planCode);
     if (
       !plan ||
       !plan.primaryColor ||

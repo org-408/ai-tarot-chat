@@ -14,15 +14,22 @@ interface HistoryPanelProps {
   onClose: () => void;
 }
 
-function formatReadingDate(date: string | Date): string {
+/**
+ * 履歴詳細のチャット画面上部に出すタイムスタンプ。
+ * UI 言語に合わせて日時フォーマットを切り替える。
+ *   JA: "2026年4月24日 15:30"
+ *   EN: "Apr 24, 2026, 3:30 PM"
+ */
+function formatReadingDate(date: string | Date, lang: string): string {
   const d = date instanceof Date ? date : new Date(date);
-  const y = d.getFullYear();
-  const mo = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const h = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  const s = String(d.getSeconds()).padStart(2, "0");
-  return `${y}/${mo}/${day} ${h}:${mi}:${s}`;
+  const locale = lang === "ja" ? "ja-JP" : "en-US";
+  return d.toLocaleString(locale, {
+    year: "numeric",
+    month: lang === "ja" ? "long" : "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export const HistoryPanel: React.FC<HistoryPanelProps> = ({
@@ -33,7 +40,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   createdAt,
   onClose,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -44,7 +51,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
         {createdAt && (
           <div className="flex justify-center">
             <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
-              {formatReadingDate(createdAt)}
+              {formatReadingDate(createdAt, i18n.language)}
             </span>
           </div>
         )}

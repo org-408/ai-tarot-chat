@@ -17,17 +17,19 @@ const UpgradeGuide: React.FC<UpgradeGuideProps> = ({
   isChangingPlan,
 }) => {
   const { t } = useTranslation();
-  const { masterData } = useMaster();
+  // 現在言語で解決された plans を使用 (display 用の name/description/features が
+  // EN モードで英語になる)
+  const { plans: resolvedPlans } = useMaster();
   const { currentPlan } = useClient();
 
   const isGuest = currentPlan!.code === "GUEST";
 
-  const upgradablePlans = masterData!.plans
+  const upgradablePlans = resolvedPlans
     ?.filter((p: Plan) => p.no > (currentPlan?.no || 0))
     .sort((a: { no: number }, b: { no: number }) => a.no - b.no);
 
   const accordionItems: AccordionItem[] = upgradablePlans.map((plan) => {
-    const colors = getPlanColors(plan.code, masterData.plans);
+    const colors = getPlanColors(plan.code, resolvedPlans);
     const icon =
       plan.code === "PREMIUM" ? "👑" : plan.code === "STANDARD" ? "💎" : "🆓";
 

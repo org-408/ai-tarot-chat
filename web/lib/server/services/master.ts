@@ -2,6 +2,7 @@ import type {
   MasterData,
   MasterDataUpdateResponse,
 } from "@/../shared/lib/types";
+import { applyEnTranslations } from "@/lib/server/i18n/apply-translations";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { masterConfigRepository } from "@/lib/server/repositories";
 import {
@@ -25,6 +26,9 @@ export class MasterService {
   /**
    * 全マスタデータを一括取得
    * 読み取り専用のため、トランザクションは不要
+   *
+   * decks は Phase 2.1 以降、ja/en 両方を返す。クライアント側で
+   * 現在のロケールに応じてフィルタする (mobile/src/lib/hooks/use-master.ts)。
    */
   async getAllMasterData(): Promise<MasterData> {
     const [version, plans, levels, categories, spreads, decks, tarotists] =
@@ -34,11 +38,11 @@ export class MasterService {
         spreadService.getAllSpreadLevels(),
         spreadService.getAllReadingCategories(),
         spreadService.getAllSpreads(),
-        tarotService.getAllDecks(),
+        tarotService.getAllDecks(true),
         tarotistService.getAllTarotists(),
       ]);
 
-    return {
+    return applyEnTranslations({
       version,
       plans,
       levels,
@@ -46,7 +50,7 @@ export class MasterService {
       spreads,
       decks,
       tarotists,
-    };
+    });
   }
 
   /**

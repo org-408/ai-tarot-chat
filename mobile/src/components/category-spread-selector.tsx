@@ -10,7 +10,7 @@ import type {
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
-import { CLARA_CATEGORY_NAMES } from "../lib/utils/offline-reading";
+import { CLARA_CATEGORY_NOS } from "../lib/utils/offline-reading";
 import Accordion, { type AccordionItem } from "./accordion";
 import ScrollableRadioSelector from "./scrollable-radio-selector";
 
@@ -50,7 +50,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   setCoachMarkOpen,
 }) => {
   const { t } = useTranslation();
-  const { masterData } = useMaster();
+  const { categories: resolvedCategories, spreads: resolvedSpreads } =
+    useMaster();
   const {
     currentPlan,
     remainingReadings,
@@ -72,10 +73,26 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     isPersonal,
     selectedTargetMode,
   } = useSalon();
-  const selectedCategory = isPersonal ? personalCategory : quickCategory;
+  const rawSelectedCategory = isPersonal ? personalCategory : quickCategory;
   const setSelectedCategory = isPersonal ? setPersonalCategory : setQuickCategory;
-  const selectedSpread = isPersonal ? personalSpread : quickSpread;
+  const rawSelectedSpread = isPersonal ? personalSpread : quickSpread;
   const setSelectedSpread = isPersonal ? setPersonalSpread : setQuickSpread;
+  // salon store に保存された Category / Spread は保存時点の言語版オブジェクト
+  // (id だけは言語非依存)。現在言語に合わせて resolved* から引き直す。
+  const selectedCategory = useMemo(() => {
+    if (!rawSelectedCategory) return null;
+    return (
+      resolvedCategories.find((c) => c.id === rawSelectedCategory.id) ??
+      rawSelectedCategory
+    );
+  }, [rawSelectedCategory, resolvedCategories]);
+  const selectedSpread = useMemo(() => {
+    if (!rawSelectedSpread) return null;
+    return (
+      resolvedSpreads.find((s) => s.id === rawSelectedSpread.id) ??
+      rawSelectedSpread
+    );
+  }, [rawSelectedSpread, resolvedSpreads]);
 
   // コーチマークのスポットライト対象: カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
   // 最外 div にするとボタン・利用回数テキストまで強調範囲に入り、暗幕が画面下半分に回らなくなる。
@@ -218,24 +235,26 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   }, [onFullyVisible]);
 
   // カテゴリーの取得とフィルタリング
+  // resolvedCategories は現在の UI 言語 (ja/en) に解決済み。
+  // フィルタ条件は言語非依存の `category.no` を使う (category.name は表示用で
+  // EN モードでは "Love" 等に変わるため identity 判定に使うと壊れる)。
   const availableCategories = useMemo(() => {
-    if (!masterData.categories) return [];
-
+    if (!resolvedCategories) return [];
+    // 並び順固定のために no でソート (decorator/resolver は元順序を壊さないが念のため)
+    const GUEST_FREE_CATEGORY_NOS = [1, 2, 3]; // 恋愛, 仕事, 今日の運勢
     return (
-      masterData.categories
+      resolvedCategories
         .filter((category: ReadingCategory) => {
           // claraMode: meanings に対応する4カテゴリのみ（love/career/health/money）
-          if (claraMode) return (CLARA_CATEGORY_NAMES as readonly string[]).includes(category.name);
-          // GUESTとFREEは、恋愛・健康・金運を除外
+          if (claraMode)
+            return (CLARA_CATEGORY_NOS as readonly number[]).includes(
+              category.no,
+            );
+          // GUESTとFREEは、恋愛・仕事・今日の運勢のみ表示
           if (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") {
-            if (["恋愛", "仕事", "今日の運勢"].includes(category.name)) {
-              return true;
-            } else {
-              return false;
-            }
-          } else {
-            return true;
+            return GUEST_FREE_CATEGORY_NOS.includes(category.no);
           }
+          return true;
         })
         // bioプロパティをdescriptionからコピー
         .map((category: ReadingCategory) => ({
@@ -243,7 +262,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           bio: category.description,
         }))
     );
-  }, [masterData, currentPlan, claraMode]);
+  }, [resolvedCategories, currentPlan, claraMode]);
 
   const categoryItems: AccordionItem[] = [
     {
@@ -266,27 +285,29 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   ];
 
   // スプレッドの取得とフィルタリング
+  // resolvedSpreads は現在の UI 言語に解決済み。
+  // カテゴリ一致判定は言語非依存の id (stc.categoryId / stc.category.id) を使う。
   const availableSpreads = useMemo(() => {
-    if (!masterData.spreads || !masterData.categories)
-      return [];
+    if (!resolvedSpreads) return [];
 
-    return masterData.spreads
+    return resolvedSpreads
       .filter((spread: Spread) => {
         // spread.plan, spread.categoriesが存在しない場合はfalse(データ破損)
         if (!isPersonal) {
           if (!spread.categories) return false;
-          // スプレッド内のカテゴリー一覧にselectedCategoryが含まれているか
-          const spreadCatetories = spread.categories.map(
-            (stc: SpreadToCategory) => stc.category?.name
-          );
+          // 言語非依存の categoryId でマッチング
+          const spreadCategoryIds = spread.categories
+            .map((stc: SpreadToCategory) => stc.categoryId ?? stc.category?.id)
+            .filter(Boolean);
+          const targetCategoryId = selectedCategory?.id ?? "";
           if (claraMode) {
             // claraMode: カテゴリー一致のみ確認（プラン制限なし）
-            return spreadCatetories.includes(selectedCategory?.name || "");
+            return spreadCategoryIds.includes(targetCategoryId);
           }
           if (!spread.plan || !currentPlan) return false;
           if (
             currentPlan.no >= spread.plan!.no &&
-            spreadCatetories.includes(selectedCategory?.name || "")
+            spreadCategoryIds.includes(targetCategoryId)
           ) {
             return true;
           }
@@ -301,9 +322,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     currentPlan,
     isPersonal,
     claraMode,
-    masterData.categories,
-    masterData.spreads,
-    selectedCategory?.name,
+    resolvedSpreads,
+    selectedCategory?.id,
   ]);
 
   const spreadItems: AccordionItem[] = [

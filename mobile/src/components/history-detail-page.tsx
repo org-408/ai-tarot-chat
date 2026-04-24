@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ChatMessage, Reading, TarotCard } from "../../../shared/lib/types";
+import { useMaster } from "../lib/hooks/use-master";
 import { useSalon } from "../lib/hooks/use-salon";
 import { HistoryPanel } from "./history-panel";
 import UpperViewer from "./upper-viewer";
@@ -33,12 +34,31 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
   const tarotistName = reading.tarotist?.name ?? "Clara";
   const messages: ChatMessage[] = reading.chatMessages ?? [];
 
+  // 履歴データは保存時点の言語版。UI 現在言語に引き直す。
+  const { spreadById, categoryById } = useMaster();
+  const resolvedCategory = reading.categoryId
+    ? categoryById.get(reading.categoryId) ?? reading.category ?? null
+    : reading.category ?? null;
+  const resolvedSpread = reading.spreadId
+    ? spreadById.get(reading.spreadId) ?? reading.spread ?? null
+    : reading.spread ?? null;
+
   // salon ストアに読み込みデータをセット（ClaraPage と同じパターン）
+  // DrawnCard.position / description は保存時点の言語版なので、resolvedSpread.cells
+  // から order で引き直して現在言語の position / description を上書きする。
   useEffect(() => {
-    const cards = (reading.cards ?? []).map((dc) => ({
-      ...dc,
-      card: dc.card ?? cardMap.get(dc.cardId),
-    }));
+    const cellByOrder = new Map(
+      (resolvedSpread?.cells ?? []).map((c) => [c.order, c]),
+    );
+    const cards = (reading.cards ?? []).map((dc) => {
+      const cell = cellByOrder.get(dc.order);
+      return {
+        ...dc,
+        card: dc.card ?? cardMap.get(dc.cardId),
+        position: cell?.position ?? dc.position,
+        description: cell?.description ?? dc.description,
+      };
+    });
     setDrawnCards(cards);
     setIsRevealingCompleted(true);
     setUpperViewerMode("profile");
@@ -49,7 +69,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
       setUpperViewerMode("grid");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reading.id]);
+  }, [reading.id, resolvedSpread]);
 
   return (
     <div className="main-container">
@@ -67,7 +87,10 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {drawnCards.length > 0 && (
-            <UpperViewer profileTarotistName={tarotistName} spread={reading.spread!} />
+            <UpperViewer
+              profileTarotistName={tarotistName}
+              spread={resolvedSpread ?? reading.spread!}
+            />
           )}
         </motion.div>
 
@@ -91,8 +114,8 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
         <div className="flex-1 min-h-0">
           <HistoryPanel
             messages={messages}
-            category={reading.category ?? null}
-            spread={reading.spread ?? null}
+            category={resolvedCategory}
+            spread={resolvedSpread}
             customQuestion={reading.customQuestion ?? null}
             createdAt={reading.createdAt}
             onClose={onClose}

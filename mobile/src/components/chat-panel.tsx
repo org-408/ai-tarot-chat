@@ -169,6 +169,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         spread,
         category,
         drawnCards,
+        // Phase 2.1: サーバー側で英語 prompt に切り替えるために現在の言語を送信
+        language: i18n.language?.startsWith("en") ? "en" : "ja",
         ...(isPhase2 && { initialLen }),
       },
       fetch: transportFetch,
@@ -365,15 +367,29 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             console.warn("Empty AI response in Phase1-2, not advancing to spread selection");
             return;
           }
-          // 【特におすすめのスプレッド】ヘッダー以降のみをパース対象にする（3提案部分の誤検出を防ぐ）
-          const headerIdx = str.indexOf("【特におすすめのスプレッド】");
-          const targetStr = headerIdx >= 0 ? str.slice(headerIdx) : str;
+          // Phase1-2 で AI が提示する「特におすすめのスプレッド」セクションを検出。
+          // JA (「【特におすすめのスプレッド】」) と EN ("## Top recommendation")
+          // の両ヘッダーを受け入れ、ヘッダー以降だけをパース対象にする。
+          const headerIdx = [
+            "【特におすすめのスプレッド】",
+            "## Top recommendation",
+            "Top recommendation",
+          ]
+            .map((h) => str.indexOf(h))
+            .filter((i) => i >= 0)
+            .sort((a, b) => a - b)[0];
+          const targetStr =
+            typeof headerIdx === "number" ? str.slice(headerIdx) : str;
           const match = targetStr.match(/\{(\d+)\}:\s*\{([^}]+)\}/);
           const spreadNo = match ? parseInt(match[1], 10) : undefined;
           const spreadName = match ? match[2] : "";
           console.log("Extracted spread no, name:", spreadNo, spreadName);
+          // 言語非依存の no を優先し、name は JA / EN (i18n.en.name) どちらとも照合する
           const spread = masterData.spreads.find(
-            (s) => s.no === spreadNo || s.name === spreadName,
+            (s) =>
+              s.no === spreadNo ||
+              s.name === spreadName ||
+              s.i18n?.en?.name === spreadName,
           );
           console.log("Found spread:", spread);
           if (spread) {
