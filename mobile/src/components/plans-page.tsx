@@ -20,7 +20,7 @@ interface PlansPageProps {
 const PlansPage: React.FC<PlansPageProps> = ({
   payload,
   currentPlan,
-  masterData,
+  masterData: _masterData,
   onChangePlan,
   isChangingPlan,
 }) => {

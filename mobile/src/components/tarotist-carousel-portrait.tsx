@@ -27,7 +27,7 @@ interface TarotistCarouselPortraitProps {
 }
 
 const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
-  masterData,
+  masterData: _masterData,
   currentPlan,
   selectedTarotist,
   onSelectTarotist,
