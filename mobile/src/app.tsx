@@ -375,6 +375,10 @@ function App() {
   };
 
   // 🔥 ログアウト処理
+  //
+  // サインアウト後の遷移は currentPlan 変化を検知する useEffect（上部）が
+  // pageType ベースで到達可能性判定して行う。ここで setPageType を呼んで
+  // 横取りしないこと（.claude/rules/plan-change-navigation.md アンチパターン3）。
   const handleLogout = async () => {
     try {
       console.log("ログアウト開始");
@@ -382,7 +386,6 @@ function App() {
       console.log("ログアウト成功");
 
       useAppStore.getState().resetLastPageType();
-      setPageType("home");
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
