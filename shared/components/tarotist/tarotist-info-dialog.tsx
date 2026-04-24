@@ -9,6 +9,31 @@ function renderStars(quality: number): string {
 /** canUse 判定に必要なプランの最小型 */
 type PlanLike = { no: number };
 
+/** 翻訳文字列（shared コンポーネントは i18n ライブラリ非依存なので props で受ける） */
+export interface TarotistInfoDialogLabels {
+  /** プランバッジ文字列（例: "プレミアムプラン" / "Premium plan"） */
+  planBadge: string;
+  /** おすすめ度ラベル（例: "おすすめ度:"） */
+  recommendation: string;
+  /** 利用可能メッセージ（例: "✓ この占い師は利用可能です"） */
+  canUse: string;
+  /** アップグレードボタン文言（例: "プレミアムプランにアップグレード"） */
+  upgradeButton: string;
+  /** 認証中表示（例: "認証中..."） */
+  authenticating: string;
+  /** 閉じるボタン（例: "閉じる"） */
+  close: string;
+}
+
+const DEFAULT_LABELS: TarotistInfoDialogLabels = {
+  planBadge: "",
+  recommendation: "おすすめ度:",
+  canUse: "✓ この占い師は利用可能です",
+  upgradeButton: "アップグレード",
+  authenticating: "認証中...",
+  close: "閉じる",
+};
+
 export interface TarotistInfoDialogProps {
   tarotist: Tarotist;
   /** 現在のユーザープラン。canUse 判定に使用 */
@@ -21,6 +46,8 @@ export interface TarotistInfoDialogProps {
   onUpgrade?: (planCode: string) => void;
   /** アップグレード処理中フラグ */
   isUpgrading?: boolean;
+  /** 翻訳文字列。未指定時は日本語デフォルト */
+  labels?: TarotistInfoDialogLabels;
 }
 
 /**
@@ -35,6 +62,7 @@ export function TarotistInfoDialog({
   onClose,
   onUpgrade,
   isUpgrading = false,
+  labels = DEFAULT_LABELS,
 }: TarotistInfoDialogProps) {
   const primaryColor = tarotist.primaryColor ?? "#7c3aed";
   const accentColor = tarotist.accentColor ?? "#8b5cf6";
@@ -58,7 +86,7 @@ export function TarotistInfoDialog({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
         onClick={onClose}
       >
         <motion.div
@@ -86,13 +114,13 @@ export function TarotistInfoDialog({
               }}
             />
             {/* プランバッジ */}
-            {tarotist.plan && (
+            {tarotist.plan && labels.planBadge && (
               <div className="absolute top-3 right-3 z-10">
                 <span
                   className="text-white text-xs px-3 py-1 rounded-full font-semibold"
                   style={{ backgroundColor: tarotist.plan.accentColor ?? accentColor }}
                 >
-                  {tarotist.plan.name}プラン
+                  {labels.planBadge}
                 </span>
               </div>
             )}
@@ -102,7 +130,7 @@ export function TarotistInfoDialog({
           <div className="p-6" style={{
             background: `linear-gradient(to bottom, ${primaryColor}22 0%, white 30%)`,
           }}>
-            {/* 名前（筆記体） */}
+            {/* 名前(筆記体) */}
             <h2
               className="text-3xl font-bold text-center mb-1"
               style={{
@@ -131,7 +159,7 @@ export function TarotistInfoDialog({
             {/* おすすめ度 */}
             {tarotist.quality != null && (
               <div className="flex items-center justify-center gap-2 mb-4 pb-4 border-b border-gray-100">
-                <span className="text-xs text-gray-500">おすすめ度:</span>
+                <span className="text-xs text-gray-500">{labels.recommendation}</span>
                 <span className="text-base">{renderStars(tarotist.quality)}</span>
               </div>
             )}
@@ -155,9 +183,7 @@ export function TarotistInfoDialog({
                     className="w-full py-3 px-4 text-sm text-white rounded-xl font-semibold transition-all shadow-md disabled:opacity-50"
                     style={{ backgroundColor: accentColor }}
                   >
-                    {isUpgrading
-                      ? "認証中..."
-                      : `${tarotist.plan?.name ?? "上位"}プランにアップグレード`}
+                    {isUpgrading ? labels.authenticating : labels.upgradeButton}
                   </button>
                 ) : (
                   <div
@@ -168,7 +194,7 @@ export function TarotistInfoDialog({
                       backgroundColor: `${primaryColor}44`,
                     }}
                   >
-                    ✓ この占い師は利用可能です
+                    {labels.canUse}
                   </div>
                 )}
               </div>
@@ -180,7 +206,7 @@ export function TarotistInfoDialog({
               onClick={onClose}
               className="w-full py-2.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
             >
-              閉じる
+              {labels.close}
             </button>
           </div>
         </motion.div>

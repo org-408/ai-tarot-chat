@@ -13,6 +13,7 @@ import i18n from "../i18n";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { removeBannerAd, showBannerAd } from "../lib/utils/admob";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 import { getCardImagePath } from "../lib/utils/salon";
 
 const HistoryDetailPage = lazy(() => import("./history-detail-page"));
@@ -488,6 +489,24 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
         <TarotistInfoDialog
           tarotist={selectedTarotistProfile}
           onClose={() => setSelectedTarotistProfile(null)}
+          labels={{
+            planBadge: getPlanDisplayName(
+              selectedTarotistProfile.plan?.code,
+              t,
+              selectedTarotistProfile.plan?.name,
+            ),
+            recommendation: t("tarotist.recommendLevel"),
+            canUse: t("tarotist.profileCanUse"),
+            upgradeButton: t("plans.upgradeTo", {
+              plan: getPlanDisplayName(
+                selectedTarotistProfile.plan?.code,
+                t,
+                selectedTarotistProfile.plan?.name,
+              ),
+            }),
+            authenticating: t("plans.authenticating"),
+            close: t("common.close"),
+          }}
         />
       )}
 

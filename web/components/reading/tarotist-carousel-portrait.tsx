@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Plan, Tarotist } from "@shared/lib/types";
 import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
 import { useClientStore } from "@/lib/client/stores/client-store";
+import { getPlanDisplayName } from "@/lib/utils/plan-display";
 import { PurchaseLoadingOverlay } from "@shared/components/ui/purchase-loading-overlay";
 
 type Mode = "carousel" | "portrait";
@@ -387,7 +388,11 @@ export function TarotistCarouselPortrait({
                               {upgrading === tarotist.id
                                 ? tTarotist("processing")
                                 : tTarotist("upgradeToPlan", {
-                                    plan: tarotist.plan?.name ?? "PREMIUM",
+                                    plan: getPlanDisplayName(
+                                      tarotist.plan?.code,
+                                      tPlans,
+                                      tarotist.plan?.name,
+                                    ),
                                   })}
                             </motion.button>
                           ))}

@@ -111,7 +111,15 @@
     "processing": "Processing...",
     "changingPlanTitle": "Changing plan",
     "changingPlanLine1": "Switching your plan",
-    "changingPlanLine2": "Please wait a moment"
+    "changingPlanLine2": "Please wait a moment",
+    "badgeGuest": "Guest",
+    "badgeFree": "Free",
+    "badgeStandard": "Standard",
+    "badgePremium": "Premium",
+    "displayGuest": "Guest plan",
+    "displayFree": "Free plan",
+    "displayStandard": "Standard plan",
+    "displayPremium": "Premium plan"
   },
   "settings": {
     "title": "Settings",
@@ -159,7 +167,10 @@
     "alwaysAvailable": "Anytime",
     "getReading": "Get a reading",
     "processing": "Processing...",
-    "upgradeToPlan": "Upgrade to {plan}"
+    "upgradeToPlan": "Upgrade to {plan}",
+    "recommendation": "Recommendation",
+    "canUse": "✓ Available with your plan",
+    "authenticating": "Authenticating..."
   },
   "auth": {
     "signInTitle": "AI Reflection Dialogue",

@@ -129,7 +129,8 @@
     "selectPersona": "このAI占い師を選ぶ",
     "previousPersona": "前のAI占い師",
     "nextPersona": "次のAI占い師",
-    "showPersonaIndex": "AI占い師 {{index}} を表示"
+    "showPersonaIndex": "AI占い師 {{index}} を表示",
+    "profileCanUse": "✓ この占い師は利用可能です"
   },
   "history": {
     "pageTitle": "セッション履歴",

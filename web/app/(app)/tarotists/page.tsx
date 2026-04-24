@@ -5,6 +5,7 @@ import { TarotistInfoDialog } from "@shared/components/tarotist/tarotist-info-di
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
 import { useRevenuecat } from "@/lib/client/revenuecat/hooks/use-revenuecat";
+import { getPlanDisplayName } from "@/lib/utils/plan-display";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,6 +13,7 @@ import { AnimatePresence, motion } from "framer-motion";
 export default function TarotistsPage() {
   const t = useTranslations("tarotist");
   const tPlans = useTranslations("plans");
+  const tCommon = useTranslations("common");
   const [selected, setSelected] = useState<Tarotist | null>(null);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -157,6 +159,24 @@ export default function TarotistsPage() {
             onClose={() => setSelected(null)}
             onUpgrade={handleUpgrade}
             isUpgrading={isUpgrading}
+            labels={{
+              planBadge: getPlanDisplayName(
+                selected.plan?.code,
+                tPlans,
+                selected.plan?.name,
+              ),
+              recommendation: t("recommendation"),
+              canUse: t("canUse"),
+              upgradeButton: t("upgradeToPlan", {
+                plan: getPlanDisplayName(
+                  selected.plan?.code,
+                  tPlans,
+                  selected.plan?.name,
+                ),
+              }),
+              authenticating: t("authenticating"),
+              close: tCommon("close"),
+            }}
           />
         )}
       </AnimatePresence>
