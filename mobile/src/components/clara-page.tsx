@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   DrawnCard,
   MasterData,
@@ -8,6 +9,7 @@ import type {
   ReadingCategory,
   Spread,
 } from "../../../shared/lib/types";
+import i18n from "../i18n";
 import { useSalon } from "../lib/hooks/use-salon";
 import { drawRandomCards } from "../lib/utils/salon";
 import CategorySpreadSelector from "./category-spread-selector";
@@ -22,9 +24,8 @@ import UpperViewer from "./upper-viewer";
 /** スプレッドビューを表示してからプロフィールへ切り替えるまでの時間 (ms) */
 const SPREAD_VIEW_DISPLAY_MS = 2000;
 
-const CLARA_DISCLAIMER =
-  "📖 それぞれのカードの意味をお伝えしました！\n本当はカード同士の関係も読めると良いのですが、まだ勉強中で…💦\n 各カードのメッセージを組み合わせた総合的な解釈は、あなたの直感に委ねます。\nきっと答えはあなたの中にあります 🌟";
-
+// カテゴリ名 → meaning キー変換テーブル。
+// カテゴリ名はマスターデータ側が日本語で送出するため、キーも日本語で一致させる。
 const CATEGORY_TO_MEANING_KEY: Record<string, string> = {
   恋愛: "love",
   仕事: "career",
@@ -43,26 +44,33 @@ function buildClaraMessages(
 ): string[] {
   const meaningKey = CATEGORY_TO_MEANING_KEY[categoryName] ?? "love";
 
-  const introMessage =
-    `こんにちは、Claraです。\n` +
-    `今回は「${categoryName}」について、スプレッド「${spreadName}」でカードを読み解いていきますね。\n` +
-    `それぞれの位置がどんな意味を持つのかもあわせて、1枚ずつ丁寧に見ていきましょう。`;
+  const introMessage = i18n.t("clara.intro", {
+    category: categoryName,
+    spread: spreadName,
+  });
 
   const cardMessages = drawnCards.map((dc) => {
     const card = dc.card!;
     const meaning =
       card.meanings?.find((m) => m.category === meaningKey) ??
       card.meanings?.[0];
-    const orientation = dc.isReversed ? "逆位置" : "正位置";
+    const orientation = dc.isReversed
+      ? i18n.t("reading.reversed")
+      : i18n.t("reading.upright");
     const text = dc.isReversed ? meaning?.reversed : meaning?.upright;
     const fallback = (
       dc.isReversed ? card.reversedKeywords : card.uprightKeywords
-    )?.join("、");
+    )?.join(i18n.t("common.listSeparator"));
 
-    return `**${dc.position}（${orientation}）: ${card.name}**\n\nこのカードの位置は${dc.position}を示しています。\n\n${text ?? fallback ?? ""}`;
+    return i18n.t("clara.cardEntry", {
+      position: dc.position,
+      orientation,
+      name: card.name,
+      text: text ?? fallback ?? "",
+    });
   });
 
-  return [introMessage, ...cardMessages, CLARA_DISCLAIMER];
+  return [introMessage, ...cardMessages, i18n.t("clara.disclaimer")];
 }
 
 // ─────────────────────────────────────────────
@@ -82,6 +90,7 @@ const ClaraPanel: React.FC<ClaraPanelProps> = ({
   category,
   spread,
 }) => {
+  const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -95,7 +104,7 @@ const ClaraPanel: React.FC<ClaraPanelProps> = ({
             {category && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 font-medium">
-                  占い内容
+                  {t("reading.readingContent")}
                 </span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
                   {category.name}
@@ -107,7 +116,7 @@ const ClaraPanel: React.FC<ClaraPanelProps> = ({
               <div className="rounded-xl border border-purple-100 bg-purple-50/60 px-3 py-2.5">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs text-purple-500 font-medium">
-                    🃏 スプレッド
+                    {t("reading.spreadLabel")}
                   </span>
                   <span className="text-xs font-bold text-purple-800">
                     {spread.name}
@@ -138,7 +147,7 @@ const ClaraPanel: React.FC<ClaraPanelProps> = ({
         className="absolute bottom-6 right-6 z-50 bg-white/20 shadow-xl rounded-full px-5 py-3 text-purple-600 font-bold flex items-center gap-2"
         onClick={onBack}
       >
-        <span>← もう一度占う</span>
+        <span>{t("chat.tryAgain")}</span>
       </motion.button>
     </div>
   );
@@ -201,7 +210,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     }
   }, [isRevealingCompleted, setUpperViewerMode]);
 
-  // 「占いを始める」ボタン → reading フェーズへ
+  // 「リーディングを始める」ボタン → reading フェーズへ
   const handleStartReading = () => {
     setDrawnCards([]); // 念のためリセット（ShuffleDialog を確実に開く）
     setPhase("reading");

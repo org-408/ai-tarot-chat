@@ -2,6 +2,7 @@ import type { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type {
   AppJWTPayload,
@@ -44,6 +45,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   onCompleteReading,
   onNavigateToClara,
 }) => {
+  const { t } = useTranslation();
   const {
     selectedPersonalTargetMode,
     selectedPersonalTarotist,
@@ -329,9 +331,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
               {!canStartPersonal && (
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
                   <p className="text-gray-600 text-sm">
-                    本日のパーソナル占いは終了しました。
+                    {t("personal.dailyLimitReached")}
                     <br />
-                    明日またお越しください。
+                    {t("personal.comeBackTomorrow")}
                   </p>
                 </div>
               )}
@@ -359,8 +361,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
           <SpotlightCoachMark
             isOpen={onboardingStage === "stage1"}
             targetEl={inputEl}
-            title="お悩みなど占いたい内容を入力してください"
-            note={"恋愛・仕事・悩みなど、自由に記入できます。"}
+            title={t("personal.coachStage1Title")}
+            note={t("personal.coachStage1Note")}
+            dismissHint={t("common.tapToDismiss")}
             onDismiss={handleOnboardingStage1Dismiss}
           />
 
@@ -368,8 +371,9 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
           <SpotlightCoachMark
             isOpen={onboardingStage === "stage2"}
             targetEl={selectorEl}
-            title="おすすめスプレッドはこちらです"
-            note={"別のスプレッドに変更もできます。"}
+            title={t("personal.coachStage2Title")}
+            note={t("personal.coachStage2Note")}
+            dismissHint={t("common.tapToDismiss")}
             onDismiss={handleOnboardingStage2Dismiss}
           />
         </>

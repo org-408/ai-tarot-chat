@@ -24,6 +24,10 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   build: {
+    // Capacitor ネイティブシェル内に全 JS がバンドル済みのため、
+    // Web 的な「500kB 超えでダウンロードが遅い」警告はこのプロジェクトでは
+    // 実害がない。警告ラインを 1000kB に引き上げる。
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {

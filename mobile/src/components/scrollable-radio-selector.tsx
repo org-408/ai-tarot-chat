@@ -1,4 +1,5 @@
 import React, { type JSX } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SelectorItem {
   id: string;
@@ -25,11 +26,12 @@ function ScrollableRadioSelector<T extends SelectorItem>({
   onSelect,
   maxVisibleItems = 3,
 }: ScrollableRadioSelectorProps<T>): JSX.Element {
+  const { t } = useTranslation();
   const needsScroll = items.length > maxVisibleItems;
   const maxHeight = needsScroll ? `${maxVisibleItems * 4.5}rem` : "auto";
 
   if (!selected || items.length === 0) {
-    return <div>読み込み中...</div>;
+    return <div>{t("common.loading")}</div>;
   }
 
   return (
@@ -71,7 +73,7 @@ function ScrollableRadioSelector<T extends SelectorItem>({
       </div>
       {needsScroll && (
         <div className="text-xs text-gray-400 text-center mt-1">
-          ↕️ スクロールして他の選択肢を見る
+          {t("common.scrollForMore")}
         </div>
       )}
     </div>

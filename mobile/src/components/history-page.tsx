@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   DrawnCard,
   Reading,
@@ -8,6 +9,7 @@ import type {
   Tarotist,
 } from "../../../shared/lib/types";
 import { TarotistInfoDialog } from "../../../shared/components/tarotist/tarotist-info-dialog";
+import i18n from "../i18n";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { removeBannerAd, showBannerAd } from "../lib/utils/admob";
@@ -22,14 +24,15 @@ const HistoryDetailPage = lazy(() => import("./history-detail-page"));
 function formatRelativeDate(date: Date | string) {
   const d = new Date(date);
   const diff = Math.floor((Date.now() - d.getTime()) / 86_400_000);
-  if (diff === 0) return "今日";
-  if (diff === 1) return "昨日";
-  if (diff < 7) return `${diff}日前`;
-  return d.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+  if (diff === 0) return i18n.t("history.today");
+  if (diff === 1) return i18n.t("history.yesterday");
+  if (diff < 7) return i18n.t("history.daysAgo", { count: diff });
+  const locale = i18n.language === "ja" ? "ja-JP" : "en-US";
+  return d.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 function avatarLetter(name: string | undefined | null) {
-  return (name ?? "タ").charAt(0);
+  return (name ?? "T").charAt(0);
 }
 
 function avatarColor(id: string | null | undefined): string {
@@ -78,10 +81,11 @@ const TarotistAvatar: React.FC<{
 // 年 → 月 の2階層グループ化
 function groupByYearMonth(readings: Reading[]) {
   const yearMap = new Map<string, Map<string, Reading[]>>();
+  const locale = i18n.language === "ja" ? "ja-JP" : "en-US";
   for (const r of readings) {
     const d = new Date(r.createdAt);
-    const year = `${d.getFullYear()}年`;
-    const month = d.toLocaleDateString("ja-JP", { month: "long" });
+    const year = i18n.t("history.yearLabel", { year: d.getFullYear() });
+    const month = d.toLocaleDateString(locale, { month: "long" });
     if (!yearMap.has(year)) yearMap.set(year, new Map());
     const monthMap = yearMap.get(year)!;
     if (!monthMap.has(month)) monthMap.set(month, []);
@@ -114,12 +118,6 @@ type FilterTab = "all" | "quick" | "personal";
 
 const TAKE = 20;
 
-const TABS: { id: FilterTab; label: string }[] = [
-  { id: "all", label: "すべて" },
-  { id: "quick", label: "クイック占い" },
-  { id: "personal", label: "パーソナル" },
-];
-
 interface HistoryPageProps {
   initialReading?: Reading;
   onInitialReadingConsumed?: () => void;
@@ -129,6 +127,12 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   initialReading,
   onInitialReadingConsumed,
 }) => {
+  const { t } = useTranslation();
+  const TABS: { id: FilterTab; label: string }[] = [
+    { id: "all", label: t("history.tabAll") },
+    { id: "quick", label: t("history.tabQuick") },
+    { id: "personal", label: t("history.tabPersonal") },
+  ];
   const { readings, readingsTotal, fetchReadings, error, currentPlan } =
     useClient();
   const { decks } = useMaster();
@@ -214,9 +218,13 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
     <div className="h-full overflow-y-auto overscroll-contain bg-gradient-to-b from-purple-50/50 to-white pb-[60px]">
       {/* ページヘッダー */}
       <div className="px-5 pt-5 pb-3">
-        <h1 className="text-xl font-bold text-gray-800">占い履歴</h1>
+        <h1 className="text-xl font-bold text-gray-800">
+          {t("history.pageTitle")}
+        </h1>
         {all.length > 0 && (
-          <p className="text-sm text-gray-400 mt-0.5">{filtered.length}件</p>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {t("history.itemCount", { count: filtered.length })}
+          </p>
         )}
       </div>
 
@@ -245,8 +253,8 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
         <div className="mx-4 mt-2 bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
           <p className="text-sm text-red-600">
             {error.message.includes("hasHistory")
-              ? "履歴機能はご利用のプランでは使用できません"
-              : "履歴の取得に失敗しました"}
+              ? t("history.errorPlanRestricted")
+              : t("history.errorFetchFailed")}
           </p>
         </div>
       )}
@@ -267,14 +275,14 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
       {!isLoading && filtered.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center mt-12 gap-4 px-8">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
-            <span className="text-2xl">🔮</span>
+            <span className="text-2xl">✨</span>
           </div>
           <p className="text-gray-500 text-base text-center">
             {tab === "all"
-              ? "まだ占い履歴がありません"
+              ? t("history.emptyAll")
               : tab === "personal"
-                ? "パーソナル占いの履歴がありません"
-                : "クイック占いの履歴がありません"}
+                ? t("history.emptyPersonal")
+                : t("history.emptyQuick")}
           </p>
         </div>
       )}
@@ -299,7 +307,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                     {year}
                   </span>
                   <span className="text-sm text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {total}件
+                    {t("history.itemCount", { count: total })}
                   </span>
                 </div>
                 <motion.div
@@ -329,7 +337,8 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                           </p>
                           <div className="space-y-2">
                             {items.map((r) => {
-                              const name = r.tarotist?.name ?? "タロティスト";
+                              const name =
+                                r.tarotist?.name ?? t("history.unknownTarotist");
                               const isPersonal = !!r.customQuestion;
                               const cards: DrawnCard[] = r.cards ?? [];
                               const subtitle = isPersonal
@@ -379,7 +388,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                                         )}
                                         {isPersonal && (
                                           <span className="text-sm font-medium text-fuchsia-700 bg-fuchsia-50 px-2 py-0.5 rounded-full border border-fuchsia-100">
-                                            パーソナル
+                                            {t("history.personalTag")}
                                           </span>
                                         )}
                                       </div>
@@ -443,7 +452,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
             className="flex items-center gap-2 text-base text-purple-600 bg-white px-5 py-2.5 rounded-full border border-purple-200 shadow-sm"
           >
             <ChevronDown className="w-4 h-4" />
-            もっと見る
+            {t("history.loadMore")}
           </motion.button>
         </div>
       )}

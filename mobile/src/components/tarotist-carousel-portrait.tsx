@@ -1,7 +1,9 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { MasterData, Plan, Tarotist } from "../../../shared/lib/types";
+import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import {
   canUseTarotist,
   getTarotistColor,
@@ -36,6 +38,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
   onClickTarotist,
   readonly = false,
 }) => {
+  const { t } = useTranslation();
   // 占い師の取得とフィルタリング
   const availableTarotists = useMemo(() => {
     if (!masterData.tarotists) return [];
@@ -112,7 +115,9 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
 
   if (availableTarotists.length === 0) {
     return (
-      <div className="text-center text-gray-500">占い師が見つかりません</div>
+      <div className="text-center text-gray-500">
+        {t("tarotist.notFound")}
+      </div>
     );
   }
 
@@ -212,7 +217,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
               onClick={() => onChangeMode("tarotist")}
               className="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/50 transition-all shadow-md"
             >
-              占い師を変更
+              {t("tarotist.changePersona")}
             </button>
           )}
         </div>
@@ -237,7 +242,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
           className="text-gray-800 bg-white/70
             backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
         >
-          ← 占い師を選んでください →
+          {t("tarotist.swipeHint")}
         </span>
       </motion.div>
 
@@ -319,8 +324,8 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                           }}
                         >
                           {tarotist.provider !== "OFFLINE"
-                            ? tarotist.plan?.name || "GUEST"
-                            : "いつでも"}
+                            ? getPlanBadgeLabel(tarotist.plan?.code, t, tarotist.plan?.name)
+                            : t("tarotist.anytime")}
                         </div>
 
                         {/* アクティブインジケーター */}
@@ -398,7 +403,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                         {/* おすすめ度 - OFFLINEでも表示 */}
                         <div className="flex items-center justify-center gap-2 mb-4">
                           <span className="text-xs text-gray-600">
-                            おすすめ度:
+                            {t("tarotist.recommendLevel")}
                           </span>
                           <span className="text-lg">
                             {renderStars(tarotist.quality || 0)}
@@ -418,7 +423,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                               >
-                                占ってもらう
+                                {t("tarotist.selectPersona")}
                               </motion.button>
                             ) : (
                               <motion.button
@@ -439,8 +444,14 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                                 whileTap={{ scale: 0.98 }}
                               >
                                 {isChangingPlan
-                                  ? "認証中..."
-                                  : `${tarotist.plan?.name}にアップグレード`}
+                                  ? t("plans.authenticating")
+                                  : t("plans.upgradeTo", {
+                                      plan: getPlanDisplayName(
+                                        tarotist.plan?.code,
+                                        t,
+                                        tarotist.plan?.name,
+                                      ),
+                                    })}
                               </motion.button>
                             )}
                           </>
@@ -459,7 +470,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
       <button
         className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg z-10 transition-all"
         onClick={scrollPrev}
-        aria-label="前の占い師"
+        aria-label={t("tarotist.previousPersona")}
       >
         <svg
           className="w-6 h-6"
@@ -478,7 +489,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
       <button
         className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg z-10 transition-all"
         onClick={scrollNext}
-        aria-label="次の占い師"
+        aria-label={t("tarotist.nextPersona")}
       >
         <svg
           className="w-6 h-6"
@@ -506,7 +517,7 @@ const TarotistCarouselPortrait: React.FC<TarotistCarouselPortraitProps> = ({
                 : "w-4 bg-gray-300"
             }`}
             onClick={() => scrollTo(index)}
-            aria-label={`占い師 ${index + 1} を表示`}
+            aria-label={t("tarotist.showPersonaIndex", { index: index + 1 })}
           />
         ))}
       </div>

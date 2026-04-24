@@ -3,6 +3,7 @@ import type { CustomerInfo } from "@revenuecat/purchases-capacitor";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { AppJWTPayload, Plan } from "../../../../shared/lib/types";
+import i18n from "../../i18n";
 import { logWithContext } from "../logger/logger";
 import { storeRepository } from "../repositories/store";
 import { subscriptionService } from "../services/subscription";
@@ -348,9 +349,9 @@ export const useSubscriptionStore = create<SubscriptionState>()(
 
           // ✅ 情報提示型（確認のみ）
           await Dialog.alert({
-            title: "過去の購入が見つかりました",
-            message: "課金情報が復元されますので、サインインしてください。",
-            buttonTitle: "OK",
+            title: i18n.t("subscription.pastPurchaseFoundTitle"),
+            message: i18n.t("subscription.pastPurchaseFoundBody"),
+            buttonTitle: i18n.t("common.ok"),
           });
 
           // ✅ OK 押したら即サインイン
@@ -646,7 +647,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
             );
             set({
               isPurchasing: false,
-              purchaseError: "購入がキャンセルされました",
+              purchaseError: i18n.t("error.purchaseCancelled"),
             });
             throw error;
           }
@@ -696,7 +697,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               );
               set({
                 isPurchasing: false,
-                purchaseError: "購入がキャンセルされました",
+                purchaseError: i18n.t("error.purchaseCancelled"),
               });
               throw error;
             }

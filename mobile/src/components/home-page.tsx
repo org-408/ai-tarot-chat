@@ -1,5 +1,6 @@
 import { BookOpen, History, Sparkles, Star, Zap } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   AppJWTPayload,
   MasterData,
@@ -42,6 +43,7 @@ const HomePage: React.FC<HomePageProps> = ({
   onChangePlan,
   isChangingPlan,
 }) => {
+  const { t, i18n } = useTranslation();
   const { readings, fetchReadings } = useClient();
 
   const canPersonal = currentPlan.hasPersonal;
@@ -60,7 +62,8 @@ const HomePage: React.FC<HomePageProps> = ({
     }
   }, [hasHistory, fetchReadings]);
 
-  const todayLabel = new Date().toLocaleDateString("ja-JP", {
+  const dateLocale = i18n.language === "ja" ? "ja-JP" : "en-US";
+  const todayLabel = new Date().toLocaleDateString(dateLocale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -68,10 +71,10 @@ const HomePage: React.FC<HomePageProps> = ({
   });
 
   const greeting = user?.name
-    ? `おかえりなさい、${user.name}さん`
+    ? t("home.welcomeNamed", { name: user.name })
     : user?.email
-      ? `おかえりなさい`
-      : "ようこそ";
+      ? t("home.welcomeBack")
+      : t("home.welcome");
 
   return (
     <div
@@ -93,7 +96,7 @@ const HomePage: React.FC<HomePageProps> = ({
         {/* 今日の残り */}
         <section>
           <h2 className="text-base font-semibold text-gray-700 mb-2">
-            今日の残り
+            {t("home.todayRemaining")}
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {/* クイック */}
@@ -101,16 +104,20 @@ const HomePage: React.FC<HomePageProps> = ({
               <div className="flex items-center gap-2 mb-1.5">
                 <Zap className="w-4 h-4 text-purple-600" />
                 <span className="text-sm font-medium text-purple-700">
-                  クイック占い
+                  {t("home.quickReading")}
                 </span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-3xl font-bold text-purple-700">
                   {remainingQuick}
                 </span>
-                <span className="text-base text-gray-400">/ {maxQuick} 回</span>
+                <span className="text-base text-gray-400">
+                  {t("home.perCount", { count: maxQuick })}
+                </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">毎日 0 時にリセット</p>
+              <p className="text-xs text-gray-400 mt-1">
+                {t("home.dailyReset")}
+              </p>
             </div>
 
             {/* パーソナル */}
@@ -118,7 +125,7 @@ const HomePage: React.FC<HomePageProps> = ({
               <div className="flex items-center gap-2 mb-1.5">
                 <Sparkles className="w-4 h-4 text-pink-600" />
                 <span className="text-sm font-medium text-pink-700">
-                  パーソナル占い
+                  {t("home.dialogueReading")}
                 </span>
               </div>
               {canPersonal && maxPersonal > 0 ? (
@@ -127,16 +134,18 @@ const HomePage: React.FC<HomePageProps> = ({
                     {remainingPersonal}
                   </span>
                   <span className="text-base text-gray-400">
-                    / {maxPersonal} 回
+                    {t("home.perCount", { count: maxPersonal })}
                   </span>
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">プレミアム限定</div>
+                <div className="text-sm text-gray-500">
+                  {t("home.premiumOnly")}
+                </div>
               )}
               <p className="text-xs text-gray-400 mt-1">
                 {canPersonal && maxPersonal > 0
-                  ? "毎日 0 時にリセット"
-                  : "プレミアムへアップグレード"}
+                  ? t("home.dailyReset")
+                  : t("home.upgradeToPremium")}
               </p>
             </div>
           </div>
@@ -152,10 +161,8 @@ const HomePage: React.FC<HomePageProps> = ({
             <Zap className="w-6 h-6" />
           </div>
           <div className="flex-1 text-left">
-            <div className="font-bold text-lg">クイック占いを始める</div>
-            <p className="text-sm opacity-90 mt-0.5">
-              占い師・ジャンル・スプレッドを選んで占う
-            </p>
+            <div className="font-bold text-lg">{t("home.startQuick")}</div>
+            <p className="text-sm opacity-90 mt-0.5">{t("home.quickDesc")}</p>
           </div>
           <span className="text-xl">→</span>
         </button>
@@ -176,12 +183,12 @@ const HomePage: React.FC<HomePageProps> = ({
           </div>
           <div className="flex-1 text-left">
             <div className="font-semibold text-gray-900 text-base">
-              パーソナル占い
+              {t("home.dialogueReading")}
             </div>
             <p className="text-sm text-gray-500 mt-0.5">
               {canPersonal
-                ? "AI と対話しながらじっくり占う"
-                : "プレミアムへアップグレード"}
+                ? t("home.dialogueDesc")
+                : t("home.upgradeToPremium")}
             </p>
           </div>
           <span className="text-pink-600 font-semibold text-base">→</span>
@@ -198,10 +205,10 @@ const HomePage: React.FC<HomePageProps> = ({
           </div>
           <div className="flex-1 text-left">
             <div className="font-semibold text-gray-900 text-base">
-              占い師を見る
+              {t("home.viewPersonas")}
             </div>
             <p className="text-sm text-gray-500 mt-0.5">
-              タロティストのプロフィールを確認
+              {t("home.viewPersonasDesc")}
             </p>
           </div>
           <span className="text-amber-600 font-semibold text-base">→</span>
@@ -218,10 +225,10 @@ const HomePage: React.FC<HomePageProps> = ({
           </div>
           <div className="flex-1 text-left">
             <div className="font-semibold text-gray-900 text-base">
-              いつでも占い
+              {t("home.offlineReading")}
             </div>
             <p className="text-sm text-gray-500 mt-0.5">
-              Clara とオフラインで占う
+              {t("home.offlineDesc")}
             </p>
           </div>
           <span className="text-sky-600 font-semibold text-base">→</span>
@@ -233,7 +240,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-gray-500" />
               <h3 className="font-semibold text-gray-700 text-base">
-                最近の占い
+                {t("home.recentSessions")}
               </h3>
             </div>
             {hasHistory && readings.length > 0 && (
@@ -242,7 +249,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 onClick={onNavigateToHistory}
                 className="text-sm text-purple-600 active:underline"
               >
-                すべて見る
+                {t("home.viewAll")}
               </button>
             )}
           </div>
@@ -250,21 +257,19 @@ const HomePage: React.FC<HomePageProps> = ({
           {!hasHistory ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-4 flex items-center justify-between gap-3">
               <p className="text-sm text-gray-500">
-                会員登録すると占いの履歴が保存されます
+                {t("home.historySavedGuest")}
               </p>
               <button
                 type="button"
                 onClick={() => onChangePlan("FREE")}
                 className="shrink-0 text-sm font-semibold text-purple-600 active:underline"
               >
-                登録 →
+                {t("home.register")}
               </button>
             </div>
           ) : readings.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-4 text-center">
-              <p className="text-sm text-gray-500">
-                まだ占いの履歴がありません
-              </p>
+              <p className="text-sm text-gray-500">{t("home.noHistory")}</p>
             </div>
           ) : (
             <div
@@ -313,13 +318,13 @@ const HomePage: React.FC<HomePageProps> = ({
                       )}
                       {isPersonal && (
                         <span className="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">
-                          パーソナル
+                          {t("home.personalTag")}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-end mt-1.5">
                       <span className="text-xs text-gray-400">
-                        {new Date(r.createdAt).toLocaleDateString("ja-JP", {
+                        {new Date(r.createdAt).toLocaleDateString(dateLocale, {
                           month: "short",
                           day: "numeric",
                         })}

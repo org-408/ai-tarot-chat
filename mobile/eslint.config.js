@@ -10,6 +10,11 @@ export default defineConfig([
     "dist",
     "android/**",
     "ios/**",
+    // Playwright fixture の `use(page)` が react-hooks/rules-of-hooks に
+    // 誤検知されるため除外。e2e はブラウザ側の test コードで React 非依存。
+    "e2e/**",
+    "playwright.config.ts",
+    "scripts/**",
   ]),
   {
     files: ["**/*.{ts,tsx}"],

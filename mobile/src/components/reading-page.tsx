@@ -5,6 +5,7 @@ const SPREAD_VIEW_DISPLAY_MS = 2000;
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type { MasterData } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
@@ -22,6 +23,7 @@ interface ReadingPageProps {
 }
 
 const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock }) => {
+  const { t } = useTranslation();
   const {
     quickSpread,
     drawnCards,
@@ -182,8 +184,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
       <SpotlightCoachMark
         isOpen={onboardingStage === "stage1"}
         targetEl={upperEl}
-        title="カードを1枚ずつ、めくってみましょう"
-        note={"タップすると、絵柄とメッセージが現れます。"}
+        title={t("reading.coachCardsTitle")}
+        note={t("reading.coachCardsNote")}
+        dismissHint={t("common.tapToDismiss")}
         onDismiss={handleOnboardingStage1Dismiss}
         openDelayMs={400}
       />
@@ -192,8 +195,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
       <SpotlightCoachMark
         isOpen={onboardingStage === "stage2"}
         targetEl={revealButtonEl}
-        title="一度にすべてを開くこともできます"
-        note={"お急ぎのときは、こちらからどうぞ。"}
+        title={t("reading.coachRevealTitle")}
+        note={t("reading.coachRevealNote")}
+        dismissHint={t("common.tapToDismiss")}
         onDismiss={handleOnboardingStage2Dismiss}
       />
     </div>

@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
 import type {
   AppJWTPayload,
   MasterData,
   Plan,
   PlanInput,
 } from "../../../shared/lib/types";
+import { getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 
 interface PlansPageProps {
@@ -21,6 +23,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
   onChangePlan,
   isChangingPlan,
 }) => {
+  const { t } = useTranslation();
   const planCode = currentPlan.code || "GUEST";
   const planData = masterData.plans.reduce((acc, plan) => {
     acc[plan.code as UserPlan] = {
@@ -36,7 +39,6 @@ const PlansPage: React.FC<PlansPageProps> = ({
       maxPersonal: plan.maxPersonal,
       hasPersonal: plan.hasPersonal,
       hasHistory: plan.hasHistory,
-      // データベースから色情報を取得
       primaryColor: plan.primaryColor,
       secondaryColor: plan.secondaryColor,
       accentColor: plan.accentColor,
@@ -52,7 +54,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
   return (
     <div className="main-container">
       {/* ヘッダー */}
-      <div className="page-title pt-3">💎 プラン選択</div>
+      <div className="page-title pt-3">{t("plans.pageTitle")}</div>
 
       {/* 認証状態表示 */}
       <div
@@ -63,12 +65,14 @@ const PlansPage: React.FC<PlansPageProps> = ({
           borderWidth: "2px",
         }}
       >
-        <div className="text-sm text-gray-600">現在の状態</div>
-        <div className="font-bold text-lg">{planData[planCode].name}</div>
+        <div className="text-sm text-gray-600">{t("plans.currentStatus")}</div>
+        <div className="font-bold text-lg">
+          {getPlanDisplayName(planCode, t, planData[planCode].name)}
+        </div>
         <div className="text-sm text-gray-500">¥{planData[planCode].price}</div>
         {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
-            ⚠️ 未認証(有料プラン選択時に自動ログイン)
+            ⚠️ {t("auth.unauthenticatedNoticeShort")}
           </div>
         )}
       </div>
@@ -105,21 +109,23 @@ const PlansPage: React.FC<PlansPageProps> = ({
                 className="absolute -top-2 left-4 text-white text-xs px-2 py-1 rounded"
                 style={{ backgroundColor: plan.accentColor }}
               >
-                おすすめ
+                {t("plans.recommended")}
               </div>
             )}
 
             {/* 認証必須バッジ */}
             {plan.requiresAuth && (
               <div className="absolute -top-2 right-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
-                認証必要
+                {t("plans.authRequired")}
               </div>
             )}
 
             {/* プランヘッダー */}
             <div className="flex justify-between items-start mb-3">
               <div>
-                <div className="font-bold text-lg">{plan.name}</div>
+                <div className="font-bold text-lg">
+                  {getPlanDisplayName(planKey, t, plan.name)}
+                </div>
                 <div className="text-sm text-gray-600">{plan.description}</div>
               </div>
               <div className="text-right">
@@ -129,7 +135,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
                     className="text-xs font-bold"
                     style={{ color: plan.accentColor }}
                   >
-                    利用中
+                    {t("plans.inUse")}
                   </div>
                 )}
               </div>
@@ -137,7 +143,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
 
             {/* 機能リスト */}
             <div className="mb-4">
-              <div className="text-sm font-bold mb-2">主な機能</div>
+              <div className="text-sm font-bold mb-2">{t("plans.features")}</div>
               <ul className="space-y-1">
                 {plan.features.map((feature, index) => (
                   <li
@@ -162,7 +168,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
                     borderColor: plan.accentColor,
                   }}
                 >
-                  現在利用中
+                  {t("plans.currentlyInUse")}
                 </div>
               ) : (planKey === "GUEST" && planCode !== "GUEST") ||
                 planData[planCode].no >= planData[planKey].no ? null : (
@@ -175,10 +181,10 @@ const PlansPage: React.FC<PlansPageProps> = ({
                   }}
                 >
                   {isChangingPlan
-                    ? "認証中..."
+                    ? t("plans.authenticating")
                     : planData[planCode].no < planData[planKey].no
-                    ? "アップグレード"
-                    : "ダウングレード"}
+                    ? t("plans.upgrade")
+                    : t("plans.downgrade")}
                 </button>
               )}
             </div>
@@ -186,7 +192,7 @@ const PlansPage: React.FC<PlansPageProps> = ({
             {/* 認証必須の説明 */}
             {planCode === "GUEST" && (
               <div className="mt-2 text-xs text-orange-600 text-center">
-                このプランを選択すると自動的にログイン画面に移動します
+                {t("plans.guestSigninNotice")}
               </div>
             )}
           </div>
@@ -196,30 +202,12 @@ const PlansPage: React.FC<PlansPageProps> = ({
       {/* 注意事項 */}
       <div className="mt-6 p-3 bg-yellow-50 rounded-lg">
         <div className="text-xs text-yellow-800">
-          <div className="font-bold mb-1">📝 プラン変更について</div>
+          <div className="font-bold mb-1">{t("plans.noticeTitle")}</div>
           <ul className="space-y-1">
-            <li>• フリープランは課金なしで利用可能(サインインが必要です)</li>
-            <li>• 有料プランはサインインが必要です</li>
-            <li>• アップグレードは即座に反映されます</li>
+            <li>{t("plans.noticeFree")}</li>
+            <li>{t("plans.noticePaid")}</li>
+            <li>{t("plans.noticeUpgrade")}</li>
           </ul>
-        </div>
-      </div>
-
-      {/* 競合比較 */}
-      <div className="mt-6 p-4 bg-purple-50 rounded-lg">
-        <div className="text-center">
-          <div className="font-bold text-sm mb-2">💰 他社との比較</div>
-          <div className="text-xs text-gray-600 space-y-1">
-            <div>
-              📊 LINE占い(¥2,550)より <strong>62%安い</strong>
-            </div>
-            <div>
-              🎯 Rint(¥400/¥960)に <strong>AI対話付きで差別化</strong>
-            </div>
-            <div>
-              ✨ 神秘のタロット(買い切り)より <strong>継続的体験</strong>
-            </div>
-          </div>
         </div>
       </div>
     </div>

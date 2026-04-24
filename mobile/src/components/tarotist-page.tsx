@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   AppJWTPayload,
   MasterData,
@@ -11,6 +12,7 @@ import {
   getTarotistColor,
   renderStars,
 } from "../lib/utils/salon";
+import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";
 import { TarotistInfoDialog } from "../../../shared/components/tarotist/tarotist-info-dialog";
 
@@ -31,6 +33,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   isChangingPlan,
   onNavigateToClara: _onNavigateToClara,
 }) => {
+  const { t } = useTranslation();
   const [selectedTarotist, setSelectedTarotist] = useState<Tarotist | null>(
     null
   );
@@ -49,7 +52,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
   return (
     <div className="main-container">
       {/* ヘッダー */}
-      <div className="page-title pt-3">🔮 タロット占い師</div>
+      <div className="page-title pt-3">{t("tarotist.pageTitle")}</div>
 
       {/* 現在の状態表示 */}
       <div
@@ -59,16 +62,16 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
           borderColor: currentColors.secondary,
         }}
       >
-        <div className="text-sm text-gray-600">現在のプラン</div>
+        <div className="text-sm text-gray-600">{t("plans.currentPlan")}</div>
         <div
           className="font-bold text-lg"
           style={{ color: currentColors.accent }}
         >
-          {currentPlan.name}
+          {getPlanDisplayName(currentPlan.code, t, currentPlan.name)}
         </div>
         {!payload.user && (
           <div className="text-xs text-orange-600 mt-1">
-            ⚠️ 未認証(有料プラン選択時に自動ログイン)
+            {t("auth.unauthenticatedNotice")}
           </div>
         )}
       </div>
@@ -100,8 +103,8 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                   style={{ backgroundColor: tarotist.plan!.accentColor }}
                 >
                   {tarotist.provider === "OFFLINE"
-                    ? "オフライン"
-                    : tarotist.plan!.name}
+                    ? t("tarotist.offline")
+                    : getPlanBadgeLabel(tarotist.plan!.code, t, tarotist.plan!.name)}
                 </div>
 
                 <div className="flex gap-4">
@@ -115,7 +118,7 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                       }`}
                       onError={(e) => {
                         e.currentTarget.src =
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='40'%3E🔮%3C/text%3E%3C/svg%3E";
+                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='40'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E";
                       }}
                     />
                   </div>
@@ -155,7 +158,9 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     {/* おすすめ度 */}
                     {tarotist.provider !== "OFFLINE" && (
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="text-sm text-gray-600">おすすめ度:</div>
+                        <div className="text-sm text-gray-600">
+                          {t("tarotist.recommendLevel")}
+                        </div>
                         <div className="text-base">
                           {renderStars(tarotist.quality!)}
                         </div>
@@ -165,13 +170,19 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     {/* ステータス */}
                     {tarotist.provider !== "OFFLINE" && requiresUpgrade ? (
                       <div className="text-xs text-gray-500 text-center">
-                        {tarotist.plan!.name}プラン以上で利用可能
+                        {t("tarotist.requiresPlan", {
+                          plan: getPlanDisplayName(
+                            tarotist.plan!.code,
+                            t,
+                            tarotist.plan!.name,
+                          ),
+                        })}
                       </div>
                     ) : (
                       <div className="text-xs text-green-600 font-bold text-center">
                         {tarotist.provider !== "OFFLINE"
-                          ? "✓ 利用可能"
-                          : "オフライン時のみご利用いただけます"}
+                          ? t("tarotist.available")
+                          : t("tarotist.offlineOnly")}
                       </div>
                     )}
                   </div>
@@ -191,8 +202,14 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
                     }}
                   >
                     {isChangingPlan
-                      ? "認証中..."
-                      : `${tarotist.plan!.name}にアップグレード`}
+                      ? t("plans.authenticating")
+                      : t("plans.upgradeTo", {
+                          plan: getPlanDisplayName(
+                            tarotist.plan!.code,
+                            t,
+                            tarotist.plan!.name,
+                          ),
+                        })}
                   </button>
                 )}
               </div>
@@ -203,13 +220,13 @@ const TarotistPage: React.FC<TarotistPageProps> = ({
       {/* 注意事項 */}
       <div className="mt-6 p-3 bg-purple-50 rounded-lg">
         <div className="text-xs text-purple-800">
-          <div className="font-bold mb-1">📝 占い師について</div>
+          <div className="font-bold mb-1">{t("tarotist.noticeTitle")}</div>
           <ul className="space-y-1">
-            <li>• 各占い師は異なるAIモデルを使用しています</li>
-            <li>• プランによって利用できる占い師が異なります</li>
-            <li>• おすすめ度は各占い師の特性に基づいて独自評価したものです</li>
-            <li>(感じ方には個人差がありますので体験してみてください)</li>
-            <li>• 占い師をタップすると拡大したプロフィールが表示されます</li>
+            <li>{t("tarotist.noticeModels")}</li>
+            <li>{t("tarotist.noticePlans")}</li>
+            <li>{t("tarotist.noticeQuality")}</li>
+            <li>{t("tarotist.noticeQualityNote")}</li>
+            <li>{t("tarotist.noticeTap")}</li>
           </ul>
         </div>
       </div>

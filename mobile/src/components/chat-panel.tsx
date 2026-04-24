@@ -6,6 +6,8 @@ import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import type {
   ReadingErrorCode,
 } from "../../../shared/lib/types";
@@ -65,6 +67,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onSelectorElChange,
   onRevealButtonElChange,
 }) => {
+  const { t } = useTranslation();
   const domain = import.meta.env.VITE_BFF_URL;
 
   const { token } = useAuth();
@@ -112,7 +115,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       response = await fetch(input, init);
     } catch {
       throw new ReadingChatError({
-        message: "通信に失敗しました。電波の良い場所で再度お試しください。",
+        message: i18n.t("error.networkFailure"),
         status: 0,
         code: "NETWORK_OR_STREAM_FAILURE",
         retryable: true,
@@ -174,9 +177,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       const resolvedError = isReadingChatError(err)
         ? err
         : new ReadingChatError({
-            message:
-              err.message ||
-              "通信に失敗しました。電波の良い場所で再度お試しください。",
+            message: err.message || i18n.t("error.networkFailure"),
             status: 0,
             code: "NETWORK_OR_STREAM_FAILURE",
             retryable: true,
@@ -224,7 +225,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
             setMessages((prev) => prev.slice(0, -1));
             setChatError(
               new ReadingChatError({
-                message: "占い師からの応答を受信できませんでした。もう一度お試しください。",
+                message: i18n.t("error.emptyResponse"),
                 status: 0,
                 code: "NETWORK_OR_STREAM_FAILURE",
                 retryable: true,
@@ -287,7 +288,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   const handleSessionClose = useCallback(() => {
     isEndingEarlyRef.current = true;
     sendMessage(
-      { text: "ありがとうございました。今日の占いはここで終わりにします。" },
+      { text: i18n.t("chat.closingMessage") },
       { body: { isEndingEarly: true } },
     );
   }, [sendMessage]);
@@ -529,10 +530,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     if (hasSentInitialMessage.current) return;
     if (!isPhase2 && (isRevealingCompleted || isPersonal)) {
       hasSentInitialMessage.current = true;
-      sendMessage({ text: "よろしくお願いします。" });
+      sendMessage({ text: i18n.t("chat.initialGreeting") });
     } else if (isPhase2 && drawnCards.length > 0) {
       hasSentInitialMessage.current = true;
-      sendMessage({ text: `${spread?.name}で占ってください。` });
+      sendMessage({
+        text: i18n.t("chat.startReadingWithSpread", { spread: spread?.name }),
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersonal, isRevealingCompleted, isPhase2, drawnCards.length]);
@@ -679,8 +682,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-900">
             <div className="font-semibold mb-1">
               {isInputFixableError
-                ? "入力内容を確認してください"
-                : "占いを続けられませんでした"}
+                ? t("chat.errorCheckInput")
+                : t("chat.errorReadingFailed")}
             </div>
             <p className="whitespace-pre-wrap leading-6">{chatError.message}</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -694,7 +697,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   }}
                   className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white"
                 >
-                  もう一度試す
+                  {t("common.retry")}
                 </button>
               )}
               {!isInputFixableError && (
@@ -703,7 +706,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   onClick={onBack}
                   className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold text-rose-700"
                 >
-                  戻る
+                  {t("common.back")}
                 </button>
               )}
             </div>
@@ -748,7 +751,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 animate={!isExhausted ? { opacity: [1, 0.5, 1] } : undefined}
                 transition={{ repeat: Infinity, duration: 3 }}
               >
-                {isExhausted ? "本日の占いは終了しました" : "← もう一度占う"}
+                {isExhausted ? t("chat.dailyLimitReached") : t("chat.tryAgain")}
               </motion.span>
             </motion.button>
           );
@@ -766,10 +769,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           className="px-4 py-5 bg-gray-50 border-t border-gray-200 text-center"
         >
           <div className="text-sm font-medium text-gray-600 mb-1">
-            パーソナル占いセッションが終了しました
+            {t("chat.sessionEnded")}
           </div>
           <div className="text-xs text-gray-400">
-            またいつでもご相談ください
+            {t("chat.contactAnytime")}
           </div>
         </motion.div>
       )}
@@ -798,8 +801,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
               onBlur={handleBlur}
               placeholder={
                 messages.length === 0
-                  ? "まずは話しかけてみましょう"
-                  : "占いたい内容・お悩みを入力してください"
+                  ? t("chat.placeholderStart")
+                  : t("chat.placeholderConsult")
               }
               rows={2}
               className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
@@ -849,15 +852,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     }`}
                   >
                     {isLastQ
-                      ? `💬 最後の質問ができます（残り 1 問）`
-                      : `💬 鑑定について質問できます（残り ${remaining} 問）`}
+                      ? t("chat.lastQuestion")
+                      : t("chat.questionsRemaining", { count: remaining })}
                   </div>
                   <button
                     onClick={handleSessionClose}
                     disabled={isProcessing || hasBlockingError}
                     className="text-xs text-gray-500 underline disabled:opacity-40 ml-2 shrink-0"
                   >
-                    占いを終わる
+                    {t("chat.endSession")}
                   </button>
                 </div>
               </div>
@@ -880,7 +883,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     onKeyDown={handleKeyDown}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
-                    placeholder="カードや鑑定について質問する..."
+                    placeholder={t("chat.placeholderQA")}
                     rows={2}
                     className="w-full resize-none bg-transparent rounded-2xl px-4 py-3 pr-12 text-base text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                     style={{ maxHeight: "120px" }}
