@@ -135,7 +135,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   ];
   const { readings, readingsTotal, fetchReadings, error, currentPlan } =
     useClient();
-  const { decks } = useMaster();
+  const { allDecks } = useMaster();
   const [selectedReading, setSelectedReading] = useState<Reading | null>(
     initialReading ?? null,
   );
@@ -146,8 +146,11 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const initialLoadDone = useRef(false);
 
+  // 履歴に保存された DrawnCard.cardId は作成時点の言語の TarotCard.id を
+  // 参照している。UI 言語を切り替えた後でも履歴画像が引けるよう、
+  // 全言語分の deck からカードを集約してマップを作る。
   const cardMap = new Map<string, TarotCard>(
-    (decks[0]?.cards ?? []).map((c) => [c.id, c]),
+    allDecks.flatMap((d) => d.cards ?? []).map((c) => [c.id, c]),
   );
 
   const all = dedup(readings);

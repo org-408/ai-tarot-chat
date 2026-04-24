@@ -58,10 +58,16 @@ export const getPlanColors = (planCode: string, plans: Plan[]) => {
 // カードをランダムに引く関数
 export const drawRandomCards = (
   masterData: MasterData,
-  selectedSpread: Spread
+  selectedSpread: Spread,
+  /** 対象言語。省略時は i18n の現在言語から判定 */
+  language?: string,
 ): DrawnCard[] => {
-  // TODO: deck を言語指定できるようにする
-  const allCards: TarotCard[] = masterData.decks?.[0]?.cards || TEMP_CARDS;
+  const lang = language ?? (i18n.language?.startsWith("en") ? "en" : "ja");
+  const langDecks = (masterData.decks ?? []).filter(
+    (d) => !d.language || d.language === lang,
+  );
+  const deck = langDecks[0] ?? masterData.decks?.[0];
+  const allCards: TarotCard[] = deck?.cards || TEMP_CARDS;
   const spreadCells: SpreadCell[] = selectedSpread.cells || [];
   const count = spreadCells.length;
   const shuffled = [...allCards].sort(() => Math.random() - 0.5);

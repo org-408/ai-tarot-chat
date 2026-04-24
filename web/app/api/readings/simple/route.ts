@@ -5,6 +5,7 @@ import {
   Tarotist,
 } from "@/../shared/lib/types";
 import { experimentalProviders } from "@/lib/server/ai/models";
+import { buildSimpleSystemPromptEn } from "@/lib/server/ai/prompts/simple-en";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService, clientService } from "@/lib/server/services";
 import {
@@ -90,13 +91,16 @@ export async function POST(req: NextRequest) {
       spread,
       category,
       drawnCards,
+      language: rawLanguage,
     }: {
       messages: UIMessage[];
       tarotist: Tarotist;
       spread: Spread;
       category: ReadingCategory;
       drawnCards: DrawnCard[];
+      language?: string;
     } = await req.json();
+    const language = rawLanguage === "en" ? "en" : "ja";
 
     // ✅ プラン整合性チェック: 現プランで使えないタロティストを弾く
     //   クライアント側で選択状態を保持する設計のため、サーバ側での最終防衛線として必須
@@ -195,8 +199,9 @@ export async function POST(req: NextRequest) {
       tarotist && tarotist.provider ? tarotist.provider.toLowerCase() : "groq";
 
     // systemプロンプトを作成
-    const system =
-      `あなたは、${tarotist.title}の${tarotist.name}です。` +
+    const system = language === "en"
+      ? buildSimpleSystemPromptEn({ tarotist, spread, category, drawnCards })
+      : `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
       `また、あなたは熟練したタロット占い師です。` +
@@ -261,6 +266,7 @@ export async function POST(req: NextRequest) {
       messagesCount: clientMessages?.length,
       debugMode,
       provider,
+      language,
     });
 
     const messages: Awaited<ReturnType<typeof convertToModelMessages>> =

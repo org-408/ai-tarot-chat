@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   AppJWTPayload,
   DrawnCard,
@@ -90,9 +91,16 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [isRevealingComplete, setIsRevealingComplete] = useState(false);
 
+  const { i18n: i18nInstance } = useTranslation();
+  const currentLang = i18nInstance.language?.startsWith("en") ? "en" : "ja";
+
   useEffect(() => {
-    if (selectedSpread && masterData.decks?.[0]?.cards) {
-      const cards = masterData.decks[0].cards;
+    const langDecks = (masterData.decks ?? []).filter(
+      (d) => !d.language || d.language === currentLang,
+    );
+    const deck = langDecks[0] ?? masterData.decks?.[0];
+    if (selectedSpread && deck?.cards) {
+      const cards = deck.cards;
       const shuffled = [...cards].sort(() => Math.random() - 0.5);
       const drawn: DrawnCard[] = (selectedSpread.cells || []).map(
         (cell, index) => {
@@ -117,7 +125,7 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
       setDrawnCards(drawn);
       setFlippedCards(new Set());
     }
-  }, [selectedSpread, masterData]);
+  }, [selectedSpread, masterData, currentLang]);
 
   useEffect(() => {
     if (flippedCards.size > 0 && flippedCards.size === drawnCards.length) {

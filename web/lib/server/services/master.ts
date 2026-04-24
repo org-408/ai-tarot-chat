@@ -25,6 +25,9 @@ export class MasterService {
   /**
    * 全マスタデータを一括取得
    * 読み取り専用のため、トランザクションは不要
+   *
+   * decks は Phase 2.1 以降、ja/en 両方を返す。クライアント側で
+   * 現在のロケールに応じてフィルタする (mobile/src/lib/hooks/use-master.ts)。
    */
   async getAllMasterData(): Promise<MasterData> {
     const [version, plans, levels, categories, spreads, decks, tarotists] =
@@ -34,7 +37,7 @@ export class MasterService {
         spreadService.getAllSpreadLevels(),
         spreadService.getAllReadingCategories(),
         spreadService.getAllSpreads(),
-        tarotService.getAllDecks(),
+        tarotService.getAllDecks(true),
         tarotistService.getAllTarotists(),
       ]);
 

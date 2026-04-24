@@ -169,6 +169,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         spread,
         category,
         drawnCards,
+        // Phase 2.1: サーバー側で英語 prompt に切り替えるために現在の言語を送信
+        language: i18n.language?.startsWith("en") ? "en" : "ja",
         ...(isPhase2 && { initialLen }),
       },
       fetch: transportFetch,
