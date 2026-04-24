@@ -170,6 +170,23 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     }
   };
 
+  // プランバッジは master data 由来の currentPlan.name (日本語固定) を使うと
+  // 英語 UI でも「フリー」等が表示されてしまうため、code から i18n キーで引く。
+  const planBadgeLabel = () => {
+    switch (currentPlan.code) {
+      case "GUEST":
+        return t("plans.badgeGuest");
+      case "FREE":
+        return t("plans.badgeFree");
+      case "STANDARD":
+        return t("plans.badgeStandard");
+      case "PREMIUM":
+        return t("plans.badgePremium");
+      default:
+        return currentPlan.name;
+    }
+  };
+
   if (view === "usage") {
     return <UsagePage onBack={() => setView("main")} />;
   }
@@ -222,7 +239,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
               <div className="flex-1 min-w-0">
                 <span className="inline-block text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-medium mb-1">
-                  {currentPlan.name}
+                  {planBadgeLabel()}
                 </span>
                 <p className="text-sm text-gray-900 truncate">{userEmail}</p>
               </div>

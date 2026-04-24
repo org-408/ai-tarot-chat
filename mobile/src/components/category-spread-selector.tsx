@@ -481,6 +481,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         targetEl={selectorAreaEl}
         title={t("reading.coachTitle")}
         note={t("reading.coachNote")}
+        dismissHint={t("common.tapToDismiss")}
         onDismiss={handleQuickCoachDismiss}
         openDelayMs={400}
       />

@@ -14,7 +14,8 @@
     "reload": "再読み込み",
     "newDayStarted": "新しい日になりました!",
     "listSeparator": "、",
-    "scrollForMore": "↕️ スクロールして他の選択肢を見る"
+    "scrollForMore": "↕️ スクロールして他の選択肢を見る",
+    "tapToDismiss": "画面をタップして閉じる"
   },
   "nav": {
     "home": "ホーム",

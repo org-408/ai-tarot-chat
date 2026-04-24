@@ -26,6 +26,12 @@ export interface SpotlightCoachMarkProps {
   spotlightRadius?: number;
   /** 周囲を暗くする不透明度 (0-1) */
   dimOpacity?: number;
+  /**
+   * 「画面をタップして閉じる」ヒント文言。プラットフォーム側で i18n 化
+   * したテキストを渡す。省略時は日本語デフォルト。
+   * (shared コンポーネントは i18n ライブラリを直接 import しないルール)
+   */
+  dismissHint?: string;
 }
 
 const BUBBLE_MAX_WIDTH = 320;
@@ -54,6 +60,7 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
   spotlightPadding = 8,
   spotlightRadius = 12,
   dimOpacity = 0.6,
+  dismissHint = "画面をタップして閉じる",
 }) => {
   const [visible, setVisible] = useState(false);
   const [pointerActive, setPointerActive] = useState(false);
@@ -266,7 +273,7 @@ export const SpotlightCoachMark: React.FC<SpotlightCoachMarkProps> = ({
               </p>
             )}
             <p className="mt-3 text-sm text-purple-500 tracking-wide">
-              画面をタップして閉じる
+              {dismissHint}
             </p>
           </motion.div>
         </>

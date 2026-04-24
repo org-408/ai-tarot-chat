@@ -363,6 +363,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
             targetEl={inputEl}
             title={t("personal.coachStage1Title")}
             note={t("personal.coachStage1Note")}
+            dismissHint={t("common.tapToDismiss")}
             onDismiss={handleOnboardingStage1Dismiss}
           />
 
@@ -372,6 +373,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
             targetEl={selectorEl}
             title={t("personal.coachStage2Title")}
             note={t("personal.coachStage2Note")}
+            dismissHint={t("common.tapToDismiss")}
             onDismiss={handleOnboardingStage2Dismiss}
           />
         </>

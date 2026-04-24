@@ -14,7 +14,8 @@
     "reload": "Reload",
     "newDayStarted": "A new day has begun!",
     "listSeparator": ", ",
-    "scrollForMore": "↕️ Scroll to see more options"
+    "scrollForMore": "↕️ Scroll to see more options",
+    "tapToDismiss": "Tap anywhere to dismiss"
   },
   "nav": {
     "home": "Home",

@@ -186,6 +186,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
         targetEl={upperEl}
         title={t("reading.coachCardsTitle")}
         note={t("reading.coachCardsNote")}
+        dismissHint={t("common.tapToDismiss")}
         onDismiss={handleOnboardingStage1Dismiss}
         openDelayMs={400}
       />
@@ -196,6 +197,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
         targetEl={revealButtonEl}
         title={t("reading.coachRevealTitle")}
         note={t("reading.coachRevealNote")}
+        dismissHint={t("common.tapToDismiss")}
         onDismiss={handleOnboardingStage2Dismiss}
       />
     </div>
