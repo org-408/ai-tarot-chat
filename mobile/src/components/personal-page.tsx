@@ -270,17 +270,29 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
   return (
     <div className="main-container">
       {selectedPersonalTargetMode === "tarotist" ? (
-        <TarotistCarouselPortrait
-          masterData={masterData}
-          currentPlan={currentPlan}
-          selectedTarotist={selectedPersonalTarotist}
-          onSelectTarotist={setSelectedPersonalTarotist}
-          selectedMode={selectedPersonalTargetMode}
-          onChangeMode={setSelectedPersonalTargetMode}
-          isPersonal
-          onChangePlan={onChangePlan}
-          isChangingPlan={false}
-        />
+        // portrait モードと同じ fixed ラッパーで viewport 全高を明示する。
+        // .main-container は min-height: 100% なので、子の height: 100% が
+        // 解決できず、カルーセル内部のスワイプヒント/ドットインジケーターが
+        // viewport からはみ出すため揃える（salon-page.tsx と同じ対応）。
+        <div
+          className="fixed left-0 right-0 flex flex-col"
+          style={{
+            top: "calc(50px + env(safe-area-inset-top))",
+            bottom: 0,
+          }}
+        >
+          <TarotistCarouselPortrait
+            masterData={masterData}
+            currentPlan={currentPlan}
+            selectedTarotist={selectedPersonalTarotist}
+            onSelectTarotist={setSelectedPersonalTarotist}
+            selectedMode={selectedPersonalTargetMode}
+            onChangeMode={setSelectedPersonalTargetMode}
+            isPersonal
+            onChangePlan={onChangePlan}
+            isChangingPlan={false}
+          />
+        </div>
       ) : (
         <>
           {/* 上下統合ラッパー */}
