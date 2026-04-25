@@ -456,21 +456,37 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         </span>
       </motion.div>
 
-      {/* コーチマーク強調対象: カテゴリ/スプレッドのアコーディオンと入力欄を囲む。
-          入力欄もチュートリアル時に強調範囲に入るよう同じラッパー内に置く。 */}
+      {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
-        {/* カテゴリー選択アコーディオン（入力補助としてクイック占いでも表示）
-            personal モード（!isPersonal が false）のみ非表示。 */}
-        {(!isPersonal || claraMode) && (
+        {/* クイック占い: ジャンルチップ（入力補助）。
+            タップすると customQuestion にカテゴリ名がセットされ、入力欄に反映される。
+            ユーザーは続けて自由に編集可。 */}
+        {!isPersonal && !claraMode && (
+          <div className="m-1 px-1 flex flex-wrap gap-2 justify-center">
+            {availableCategories.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setCustomQuestion(cat.name)}
+                className="px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-purple-200 text-sm text-purple-700 shadow-sm active:bg-purple-100 active:scale-95 transition-all"
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* clara モード: カテゴリー選択アコーディオン（オフライン占いの選択 UI） */}
+        {claraMode && (
           <div className="m-1">
             <Accordion items={categoryItems} />
           </div>
         )}
 
         {/* クイック占い: 自由入力欄（任意）。
-            空のままなら上のジャンル選択で占う。
+            空のままなら裏のデフォルトカテゴリ（恋愛）で占う。
             書き込めばその文章が customQuestion として AI に届き、優先される。
-            ジャンルチップの下に置くことで「チップ＝入力補助」の関係を視覚化。 */}
+            上のチップタップで内容を流し込む補助にもなる。 */}
         {!isPersonal && !claraMode && (
           <div className="m-1">
             <textarea
