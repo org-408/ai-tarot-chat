@@ -5,19 +5,19 @@ import { getUtmParams, trackEvent } from "@/lib/client/analytics/ga";
 import { logWithContext } from "@/lib/client/logger/logger";
 import { Loader2, Monitor, Shield, Smartphone } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-const errorMessages = {
-  Signin: "サインインに失敗しました。もう一度お試しください。",
-  OAuthSignin: "OAuth認証に失敗しました。",
-  OAuthCallback: "OAuth認証の処理中にエラーが発生しました。",
-  OAuthCreateAccount: "アカウントの作成に失敗しました。",
-  EmailCreateAccount: "メールアカウントの作成に失敗しました。",
-  Callback: "認証コールバックの処理中にエラーが発生しました。",
-  OAuthAccountNotLinked: "別の方法で既に登録されたメールアドレスです。",
-  EmailSignin: "メールの送信に失敗しました。",
-  CredentialsSignin: "認証情報が正しくありません。",
-  default: "認証中にエラーが発生しました。",
+const ERROR_KEY_MAP: Record<string, string> = {
+  Signin: "errorSignin",
+  OAuthSignin: "errorOAuthSignin",
+  OAuthCallback: "errorOAuthCallback",
+  OAuthCreateAccount: "errorOAuthCreateAccount",
+  EmailCreateAccount: "errorEmailCreateAccount",
+  Callback: "errorCallback",
+  OAuthAccountNotLinked: "errorOAuthAccountNotLinked",
+  EmailSignin: "errorEmailSignin",
+  CredentialsSignin: "errorCredentialsSignin",
 };
 
 const useDeviceDetection = () => {
@@ -45,29 +45,33 @@ const GoogleSignInButton = ({
   isLoading,
   onClick,
   isMobile,
+  label,
+  authenticatingLabel,
 }: {
   isLoading: boolean;
   onClick: () => void;
   isMobile: boolean;
+  label: string;
+  authenticatingLabel: string;
 }) => (
   <button
     onClick={onClick}
     disabled={isLoading}
     className={`
-      w-full h-12 bg-white hover:bg-gray-50 disabled:bg-gray-100 
-      border border-gray-300 rounded-lg flex items-center justify-center gap-3 
-      transition-all duration-200 shadow-sm hover:shadow-md 
+      w-full h-12 bg-white hover:bg-gray-50 disabled:bg-gray-100
+      border border-gray-300 rounded-lg flex items-center justify-center gap-3
+      transition-all duration-200 shadow-sm hover:shadow-md
       disabled:shadow-none disabled:cursor-not-allowed
       focus:outline-none focus:ring-2 focus:ring-blue-500/20
       ${isMobile ? "active:scale-95" : "active:scale-[0.98]"}
       ${isLoading ? "signin-loading" : ""}
     `}
-    aria-label="Googleでサインイン"
+    aria-label={label}
   >
     {isLoading ? (
       <>
         <Loader2 className="h-5 w-5 animate-spin text-gray-600" />
-        <span className="text-gray-600 font-medium">認証中...</span>
+        <span className="text-gray-600 font-medium">{authenticatingLabel}</span>
       </>
     ) : (
       <>
@@ -89,7 +93,7 @@ const GoogleSignInButton = ({
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        <span className="text-gray-700 font-medium">Googleでサインイン</span>
+        <span className="text-gray-700 font-medium">{label}</span>
       </>
     )}
   </button>
@@ -99,28 +103,32 @@ const AppleSignInButton = ({
   isLoading,
   onClick,
   isMobile,
+  label,
+  authenticatingLabel,
 }: {
   isLoading: boolean;
   onClick: () => void;
   isMobile: boolean;
+  label: string;
+  authenticatingLabel: string;
 }) => (
   <button
     onClick={onClick}
     disabled={isLoading}
     className={`
-      w-full h-12 bg-black hover:bg-gray-800 disabled:bg-gray-700 text-white 
-      rounded-lg flex items-center justify-center gap-3 transition-all duration-200 
+      w-full h-12 bg-black hover:bg-gray-800 disabled:bg-gray-700 text-white
+      rounded-lg flex items-center justify-center gap-3 transition-all duration-200
       shadow-sm hover:shadow-md disabled:shadow-none disabled:cursor-not-allowed
       focus:outline-none focus:ring-2 focus:ring-gray-400/20
       ${isMobile ? "active:scale-95" : "active:scale-[0.98]"}
       ${isLoading ? "signin-loading" : ""}
     `}
-    aria-label="Appleでサインイン"
+    aria-label={label}
   >
     {isLoading ? (
       <>
         <Loader2 className="h-5 w-5 animate-spin text-white" />
-        <span className="text-white font-medium">認証中...</span>
+        <span className="text-white font-medium">{authenticatingLabel}</span>
       </>
     ) : (
       <>
@@ -133,7 +141,7 @@ const AppleSignInButton = ({
         >
           <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
         </svg>
-        <span className="text-white font-medium">Appleでサインイン</span>
+        <span className="text-white font-medium">{label}</span>
       </>
     )}
   </button>
@@ -142,9 +150,15 @@ const AppleSignInButton = ({
 const PlatformInfo = ({
   isMobileApp,
   isMobile,
+  mobileAppLabel,
+  mobileLabel,
+  desktopLabel,
 }: {
   isMobileApp: boolean;
   isMobile: boolean;
+  mobileAppLabel: string;
+  mobileLabel: string;
+  desktopLabel: string;
 }) => {
   if (!isMobileApp && !isMobile) return null;
 
@@ -154,17 +168,17 @@ const PlatformInfo = ({
       {isMobileApp ? (
         <>
           <Smartphone className="h-4 w-4" />
-          <span>モバイルアプリ版</span>
+          <span>{mobileAppLabel}</span>
         </>
       ) : isMobile ? (
         <>
           <Smartphone className="h-4 w-4" />
-          <span>モバイル版</span>
+          <span>{mobileLabel}</span>
         </>
       ) : (
         <>
           <Monitor className="h-4 w-4" />
-          <span>デスクトップ版</span>
+          <span>{desktopLabel}</span>
         </>
       )}
     </div>
@@ -174,10 +188,11 @@ const PlatformInfo = ({
 interface SignInFormProps {
   error?: string;
   isMobileApp?: boolean;
-  // deviceId は不要 - チケット方式を使用
+  locale: "ja" | "en";
 }
 
-export function SignInForm({ error, isMobileApp }: SignInFormProps) {
+export function SignInForm({ error, isMobileApp, locale }: SignInFormProps) {
+  const t = useTranslations("auth");
   const [isLoading, setIsLoading] = useState(false);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const { isMobile } = useDeviceDetection();
@@ -230,14 +245,20 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
     }
   };
 
+  const errorMessage = error
+    ? t(ERROR_KEY_MAP[error] ?? "errorDefault")
+    : null;
+
+  const termsHref = `/terms?lang=${locale}`;
+  const privacyHref = `/privacy?lang=${locale}`;
+
   return (
     <>
-      {error && (
+      {errorMessage && (
         <Alert className="mb-6 border-red-200 bg-red-50/90 backdrop-blur-sm">
           <Shield className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            {errorMessages[error as keyof typeof errorMessages] ||
-              errorMessages.default}
+            {errorMessage}
           </AlertDescription>
         </Alert>
       )}
@@ -247,49 +268,59 @@ export function SignInForm({ error, isMobileApp }: SignInFormProps) {
           isLoading={isLoading && activeProvider === "google"}
           onClick={() => handleSignIn("google")}
           isMobile={isMobile}
+          label={t("signinWithGoogle")}
+          authenticatingLabel={t("signinAuthenticating")}
         />
 
         <AppleSignInButton
           isLoading={isLoading && activeProvider === "apple"}
           onClick={() => handleSignIn("apple")}
           isMobile={isMobile}
+          label={t("signinWithApple")}
+          authenticatingLabel={t("signinAuthenticating")}
         />
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-6 text-white/60 text-sm">
         <div className="flex items-center gap-2">
           <Shield className="w-3 h-3 text-green-400" />
-          <span>安全な認証</span>
+          <span>{t("secureAuth")}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-          <span>データ保護</span>
+          <span>{t("dataProtection")}</span>
         </div>
       </div>
 
       <div className="mt-8 space-y-3 text-center">
-        <PlatformInfo isMobileApp={!!isMobileApp} isMobile={isMobile} />
+        <PlatformInfo
+          isMobileApp={!!isMobileApp}
+          isMobile={isMobile}
+          mobileAppLabel={t("platformMobileApp")}
+          mobileLabel={t("platformMobile")}
+          desktopLabel={t("platformDesktop")}
+        />
 
         <p className="text-xs text-white/70 leading-relaxed">
-          サインインすることで、
+          {t("termsAgreementPrefix")}
           <a
-            href="/terms"
+            href={termsHref}
             className="text-sky-200 hover:text-sky-100 underline underline-offset-2 transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
-            利用規約
+            {t("termsLink")}
           </a>
-          および
+          {t("andConnector")}
           <a
-            href="/privacy"
+            href={privacyHref}
             className="text-sky-200 hover:text-sky-100 underline underline-offset-2 transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
-            プライバシーポリシー
+            {t("privacyLink")}
           </a>
-          に同意したものとみなされます。
+          {t("agreementSuffix")}
         </p>
       </div>
     </>
