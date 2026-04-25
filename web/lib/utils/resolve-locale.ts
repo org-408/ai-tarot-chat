@@ -1,5 +1,4 @@
-const SUPPORTED_LOCALES = ["ja", "en"] as const;
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
+export type Locale = "ja" | "en";
 
 function isSupported(value: string | undefined | null): value is Locale {
   return value === "ja" || value === "en";

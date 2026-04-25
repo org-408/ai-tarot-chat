@@ -290,9 +290,9 @@ function PrivacyEN() {
         <div className="space-y-8 text-sm leading-relaxed">
           <section>
             <p className="text-gray-700">
-              {DEVELOPER_NAME} ("the Company") sets forth the following policy
-              regarding the handling of personal information of users of{" "}
-              {APP_NAME_EN} ("the App").
+              {DEVELOPER_NAME} (&quot;the Company&quot;) sets forth the
+              following policy regarding the handling of personal information
+              of users of {APP_NAME_EN} (&quot;the App&quot;).
             </p>
           </section>
 
@@ -436,7 +436,7 @@ function PrivacyEN() {
 
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
-              Article 6. Children's Privacy
+              Article 6. Children&apos;s Privacy
             </h2>
             <p className="text-gray-700">
               The App is not intended for individuals under 13 years of age, and

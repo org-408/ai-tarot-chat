@@ -310,11 +310,11 @@ function TermsEN() {
         <div className="space-y-8 text-sm leading-relaxed">
           <section>
             <p className="text-gray-700">
-              These Terms of Service ("the Terms") set forth the conditions of
-              use for {APP_NAME_EN} ("the App"), provided by {DEVELOPER_NAME}{" "}
-              ("the Company"). Please read these Terms carefully before using
-              the App. By installing or using the App, you are deemed to have
-              agreed to these Terms.
+              These Terms of Service (&quot;the Terms&quot;) set forth the
+              conditions of use for {APP_NAME_EN} (&quot;the App&quot;),
+              provided by {DEVELOPER_NAME} (&quot;the Company&quot;). Please
+              read these Terms carefully before using the App. By installing
+              or using the App, you are deemed to have agreed to these Terms.
             </p>
           </section>
 
@@ -361,7 +361,7 @@ function TermsEN() {
               </li>
               <li>
                 The management and security of account information are the
-                user's responsibility.
+                user&apos;s responsibility.
               </li>
               <li>
                 Please contact us promptly if you discover unauthorized use of
@@ -448,7 +448,7 @@ function TermsEN() {
                 Reverse engineering, modifying, or duplicating the App
               </li>
               <li>
-                Unauthorized access or excessive load on the App's servers
+                Unauthorized access or excessive load on the App&apos;s servers
               </li>
               <li>Acts that infringe the rights of other users or third parties</li>
               <li>Spam, phishing, or fraudulent activity</li>
@@ -492,8 +492,8 @@ function TermsEN() {
                 </h3>
                 <p className="text-gray-600">
                   In the event of damages caused by reasons attributable to the
-                  Company, the Company's total liability shall be limited to
-                  the amount you paid to the Company in the preceding one
+                  Company, the Company&apos;s total liability shall be limited
+                  to the amount you paid to the Company in the preceding one
                   month.
                 </p>
               </div>
