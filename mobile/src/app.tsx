@@ -541,7 +541,7 @@ function App() {
     if (isPageRestored) return;
     if (!clientIsReady || !currentPlan) return;
 
-    const RESTORABLE_PAGES: PageType[] = ["home", "salon", "personal", "clara"];
+    const RESTORABLE_PAGES: PageType[] = ["home", "salon", "personal"];
     const stored = useAppStore.getState().lastPageType;
     let target: PageType = "home";
 
