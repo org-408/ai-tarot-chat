@@ -396,12 +396,23 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   return (
     <div>
-      {/* メイン説明文（フォント大・太字で強調。ボタンに見えない素のテキスト） */}
-      <h2 className="text-center py-4 text-lg font-bold text-purple-700">
-        {isPersonal
-          ? t("reading.pickSpreadOnly")
-          : t("reading.pickContent")}
-      </h2>
+      {/* メイン説明文（pulsing アニメーション + フォント大）。
+          色・背景は元のまま、フォントサイズだけ強調。 */}
+      <motion.div
+        className="text-center py-4"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: [1, 0.5, 1] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+      >
+        <span
+          className="text-gray-800 bg-white/70
+            backdrop-blur-sm px-4 py-2 rounded-full shadow-md text-lg font-bold"
+        >
+          {isPersonal
+            ? t("reading.pickSpreadOnly")
+            : t("reading.pickContent")}
+        </span>
+      </motion.div>
 
       {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
