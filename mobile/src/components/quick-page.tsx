@@ -1,3 +1,5 @@
+import type { PluginListenerHandle } from "@capacitor/core";
+import { Keyboard } from "@capacitor/keyboard";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -76,8 +78,43 @@ const QuickPage: React.FC<QuickPageProps> = ({
     onStartReading();
   };
 
-  const [keyboardHeight] = useState(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isTopCollapsed, setIsTopCollapsed] = useState(false);
+
+  // キーボード高さを検出して下半分を持ち上げる（chat-panel.tsx と同じパターン）。
+  // クイック占いの自由入力欄にフォーカスしたときにキーボードで隠れないように。
+  useEffect(() => {
+    let showListener: PluginListenerHandle | undefined;
+    let hideListener: PluginListenerHandle | undefined;
+
+    const setupCapacitorListeners = async () => {
+      try {
+        showListener = await Keyboard.addListener("keyboardWillShow", (info) => {
+          setKeyboardHeight(info.keyboardHeight);
+        });
+        hideListener = await Keyboard.addListener("keyboardWillHide", () => {
+          setKeyboardHeight(0);
+        });
+      } catch {
+        // Web 環境（npm run dev）は Capacitor Keyboard 不在なので visualViewport にフォールバック
+      }
+    };
+    setupCapacitorListeners();
+
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const offset = window.innerHeight - window.visualViewport.height;
+        setKeyboardHeight(offset > 0 ? offset : 0);
+      }
+    };
+    window.visualViewport?.addEventListener("resize", handleResize);
+
+    return () => {
+      showListener?.remove();
+      hideListener?.remove();
+      window.visualViewport?.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // クイック占いチュートリアル（セレクターへのコーチマーク）
   // サロン画面ライフサイクルで保持することで、占い師選択モード ↔ portrait モードの
