@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type {
   ReadingCategory,
   Spread,
@@ -22,22 +21,15 @@ interface CategorySpreadSelectorProps {
    * セクション全体が画面内に完全に収まって、かつスクロールが一定時間止まった
    * タイミングで 1 回だけ呼ばれる。ボタン直後のセンチネル要素に IntersectionObserver
    * を当てて「完全可視」を検知し、さらに scroll 停止判定で確実に落ち着いてから発火する。
+   * パーソナル占い Stage2 コーチマーク（personal-page.tsx）が利用。
    */
   onFullyVisible?: () => void;
   /**
    * コーチマークのスポットライト対象となる「セレクター領域」要素を親に通知する。
-   * セレクター領域 = カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
-   * 「占いを始める」ボタンや利用回数テキストは含めない（強調対象を絞るため）。
-   * null 通知はアンマウント時。
+   * パーソナル占い Stage2 コーチマーク（personal-page.tsx）が利用。
+   * クイック占いのコーチマークは廃止済み（チップファースト化で不要になった）。
    */
   onCoachTargetElChange?: (el: HTMLElement | null) => void;
-  /** プラン変更中 or プラン失効通知が表示中か（クイック占いコーチマーク発火ブロック用） */
-  isPlanDialogShowing?: boolean;
-  /** サロン画面ライフサイクルで「既に一度コーチマークを出したか」を保持する sticky ref */
-  coachShownRef?: React.MutableRefObject<boolean>;
-  /** コーチマークが現在表示中か（quick-page で hoist） */
-  coachMarkOpen?: boolean;
-  setCoachMarkOpen?: (open: boolean) => void;
 }
 
 const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
@@ -45,10 +37,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   claraMode = false,
   onFullyVisible,
   onCoachTargetElChange,
-  isPlanDialogShowing = false,
-  coachShownRef,
-  coachMarkOpen = false,
-  setCoachMarkOpen,
 }) => {
   const { t } = useTranslation();
   const { categories: resolvedCategories, spreads: resolvedSpreads } =
@@ -57,7 +45,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     currentPlan,
     remainingReadings,
     remainingPersonal,
-    quickOnboardedAt,
   } = useClient();
   const {
     quickCategory,
@@ -72,7 +59,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     lastClaraSpreadId,
     setLastClaraSelection,
     isPersonal,
-    selectedTargetMode,
     customQuestion,
     setCustomQuestion,
   } = useReading();
@@ -106,47 +92,15 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     () => (customQuestion?.trim().length ?? 0) > 0,
   );
 
-  // コーチマークのスポットライト対象: カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
-  // 最外 div にするとボタン・利用回数テキストまで強調範囲に入り、暗幕が画面下半分に回らなくなる。
-  // クイック占いコーチマーク（本コンポーネント内）とパーソナル占い Stage2 コーチマーク（personal-page.tsx）の両方から参照される。
-  const [selectorAreaEl, setSelectorAreaEl] = useState<HTMLDivElement | null>(null);
+  // セレクター領域要素の参照。パーソナル占い Stage2 コーチマーク
+  // （personal-page.tsx）のスポットライト対象として親に通知する。
+  // クイック占いのコーチマークは廃止（チップファースト化により不要になった）。
   const selectorAreaRefCallback = useCallback(
     (el: HTMLDivElement | null) => {
-      setSelectorAreaEl(el);
       onCoachTargetElChange?.(el);
     },
     [onCoachTargetElChange]
   );
-
-  // クイック占いコーチマークの発火条件:
-  //   a: !quickOnboardedAt          (未完了)
-  //   b: !isPlanDialogShowing       (プラン変更中/失効ダイアログなし)
-  //   c: selectedTargetMode !== "tarotist"  (portrait モード = セレクタ表示中)
-  //   d: !coachShownRef.current     (サロンライフサイクルで未表示)
-  //   e: !coachMarkOpen             (現在表示中でない)
-  //   + !isPersonal && !claraMode
-  const shouldShowQuickCoach =
-    !isPersonal &&
-    !claraMode &&
-    !quickOnboardedAt &&
-    !isPlanDialogShowing &&
-    selectedTargetMode !== "tarotist" &&
-    !!coachShownRef &&
-    !coachShownRef.current &&
-    !coachMarkOpen &&
-    !!setCoachMarkOpen;
-
-  useEffect(() => {
-    if (shouldShowQuickCoach && coachShownRef && setCoachMarkOpen) {
-      coachShownRef.current = true;
-      setCoachMarkOpen(true);
-    }
-  }, [shouldShowQuickCoach, coachShownRef, setCoachMarkOpen]);
-
-  const handleQuickCoachDismiss = () => {
-    setCoachMarkOpen?.(false);
-    // markOnboarded("quick") はここでは呼ばない（reading-page の Stage2 完了で立てる）
-  };
 
   // セクション直後のセンチネルを IntersectionObserver で監視し、
   // 「完全可視」+「スクロール停止（= 対象位置が動いていない）」の両方を満たした
@@ -442,19 +396,12 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   return (
     <div>
-      {/* メイン説明文（プライマリ CTA 的に目立たせる） */}
-      <motion.div
-        className="text-center py-3"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: [1, 0.7, 1] }}
-        transition={{ repeat: Infinity, duration: 3 }}
-      >
-        <span className="inline-block px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-base font-bold shadow-lg">
-          {isPersonal
-            ? t("reading.pickSpreadOnly")
-            : t("reading.pickCategoryAndSpread")}
-        </span>
-      </motion.div>
+      {/* メイン説明文（フォント大・太字で強調。ボタンに見えない素のテキスト） */}
+      <h2 className="text-center py-4 text-lg font-bold text-purple-700">
+        {isPersonal
+          ? t("reading.pickSpreadOnly")
+          : t("reading.pickContent")}
+      </h2>
 
       {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
@@ -496,7 +443,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         )}
 
         {/* クイック占い: 自由入力欄（折りたたみセカンダリ）。
-            デフォルト閉じ。「詳しく書く」をタップで展開。
+            トグル自体は他のセクションと同じ重みで表示する（小さく隠さない）。
+            デフォルト閉じ。タップで展開。
             空のまま占う場合は上のチップ選択（categoryId）で AI に投げる。
             書き込めばその文章が customQuestion として優先される。 */}
         {!isPersonal && !claraMode && (
@@ -504,14 +452,17 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             <button
               type="button"
               onClick={() => setIsAdvancedOpen((v) => !v)}
-              className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 py-2 active:text-gray-700"
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border border-purple-200 text-base text-gray-700 shadow-sm active:bg-purple-50"
             >
-              <span>{t("reading.writeMore")}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">📝</span>
+                <span>{t("reading.writeMore")}</span>
+              </span>
               <motion.div
                 animate={{ rotate: isAdvancedOpen ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <ChevronDown size={12} />
+                <ChevronDown size={18} className="text-purple-500" />
               </motion.div>
             </button>
             {isAdvancedOpen && (
@@ -522,7 +473,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
                 placeholder={t("reading.questionPlaceholder")}
                 rows={3}
                 maxLength={500}
-                className="w-full rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
+                className="w-full mt-2 rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
               />
             )}
           </div>
@@ -563,16 +514,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         />
       </div>
 
-      {/* クイック占い初回のコーチマーク: セレクター領域のみ明るく照らす */}
-      <SpotlightCoachMark
-        isOpen={coachMarkOpen}
-        targetEl={selectorAreaEl}
-        title={t("reading.coachTitle")}
-        note={t("reading.coachNote")}
-        dismissHint={t("common.tapToDismiss")}
-        onDismiss={handleQuickCoachDismiss}
-        openDelayMs={400}
-      />
     </div>
   );
 };
