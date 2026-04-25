@@ -11,7 +11,9 @@ import Google from "next-auth/providers/google";
 // Apple client_secret は Auth.js v5 の `AUTH_APPLE_SECRET` を使わず、起動時に
 // .p8 秘密鍵から ES256 JWT を生成する方式に統一（180日失効問題を構造的に回避）。
 // 必要な env が揃っていない環境（開発機など）では Apple プロバイダーを登録しない。
-async function buildAppleProvider() {
+// 同期関数にしているのは tsx の CJS トランスパイル（seed.ts 経路）で
+// top-level await が使えないため。
+function buildAppleProvider() {
   const teamId = process.env.AUTH_APPLE_TEAM_ID;
   const keyId = process.env.AUTH_APPLE_KEY_ID;
   const clientId = process.env.AUTH_APPLE_ID;
@@ -27,18 +29,17 @@ async function buildAppleProvider() {
     return null;
   }
 
-  const clientSecret = await createAppleClientSecret({
+  const clientSecret = createAppleClientSecret({
     teamId,
     keyId,
     clientId,
     privateKey: rawPrivateKey.replace(/\\n/g, "\n"),
-    expiresIn: "180d",
   });
 
   return Apple({ clientId, clientSecret });
 }
 
-const appleProvider = await buildAppleProvider();
+const appleProvider = buildAppleProvider();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
