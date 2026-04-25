@@ -301,17 +301,24 @@ export function resolveLocale(
 
 サーバー側 Server Component / `generateMetadata` 内では `next/headers` の `cookies()` / `headers()` から値を取り出して渡す。
 
-#### タスク 5-1: Privacy / Terms の JA リポジション
+#### タスク 5-1: Privacy / Terms / delete-account の JA リポジション
 
-[web/app/privacy/page.tsx](../web/app/privacy/page.tsx) と [web/app/terms/page.tsx](../web/app/terms/page.tsx) を計画書 **§9 Privacy / Terms 置換** の表に従って修正。
+計画書 **§9 JA リポジション置換ルール** の表に従って修正:
 
-加えて [web/app/delete-account/page.tsx](../web/app/delete-account/page.tsx) の `appName` 定数・metadata も「`AIタロット占い`」が残っていれば「`AI対話リーディング体験`」または「`Ariadne`」に置換。
+- [web/app/privacy/page.tsx](../web/app/privacy/page.tsx) — title metadata / `appName` 定数 / 本文中の「占い」→「リーディング」
+- [web/app/terms/page.tsx](../web/app/terms/page.tsx) — 同上
+- [web/app/delete-account/page.tsx](../web/app/delete-account/page.tsx) — title metadata / description / `appName` 定数
 
-#### タスク 5-2: ランディング
+#### タスク 5-2: ランディング + 構造化データ + OG
 
 [web/app/page.tsx](../web/app/page.tsx) と [web/app/home-client.tsx](../web/app/home-client.tsx)、および [web/app/[locale]/(marketing)/page.tsx](../web/app/[locale]/\(marketing\)/page.tsx):
 - 見出し・CTA・紹介文の「占い」を「リーディング / セッション / 対話」寄せに薄める
 - ブログリンクをフッターのみに弱化（ヒーロー・上部ナビから削除）
+
+加えて以下も §9 の置換ルールを適用（同 PR で対応）:
+
+- [web/app/[locale]/(marketing)/layout.tsx:65](../web/app/[locale]/\(marketing\)/layout.tsx) の JSON-LD `alternateName: "Ariadne AIタロット占い"` → `"Ariadne AI対話リーディング体験"`（※同ファイル `description` の「AI占い師」は §9 OK パターンのため残してよい）
+- [web/app/api/og/route.tsx:74](../web/app/api/og/route.tsx) と [web/app/api/og/feature/route.tsx:74](../web/app/api/og/feature/route.tsx) の `chars`（Google Fonts サブセット用文字集合）— OG テンプレに描画する文字を「占い」→「リーディング / 対話」寄せに変えた場合、`chars` も同期して更新する（テンプレ修正に合わせて派生作業）
 
 #### タスク 5-3: サインイン JA 文言（5-7 と統合）
 
@@ -457,13 +464,26 @@ grep -rniE "fortune|predict|horoscope|destiny|fate|zodiac" web/app/privacy web/a
 #   /privacy?lang=ja → JA
 ```
 
-##### 5-6-7: アプリ名の他露出チェック
+##### 5-6-7: アプリ名の他露出チェック（スコープ限定）
 
 ```bash
-# "AIタロット占い" の残骸がないか全リポ grep
-grep -rn "AIタロット占い" .
+# Apple 4.3(b) スコープ内に "AIタロット占い" の残骸がないか grep
+# blog 系 (web/app/blog/, web/lib/server/services/blog-post.ts) は SEO 資産保護で対象外
+grep -rn "AIタロット占い" \
+  web/app/privacy \
+  web/app/terms \
+  web/app/delete-account \
+  "web/app/[locale]/(marketing)" \
+  web/app/api/og
 # 期待: 該当なし（あれば "AI対話リーディング体験" か "Ariadne" に置換）
+
+# 参考: 全リポ grep するとブログ系 18 箇所 (SEO 資産) が出るが、これは想定内
+grep -rn "AIタロット占い" --include="*.ts" --include="*.tsx" --include="*.json" .
 ```
+
+**スコープ判定**:
+- ✅ 置換対象: Privacy / Terms / delete-account / `[locale]/(marketing)/layout.tsx` JSON-LD / `api/og` 文字セット
+- ❌ 据え置き: `web/app/blog/` 配下、`web/lib/server/services/blog-post.ts`（plan §7「変更しないもの」、SEO 資産保護）
 
 #### タスク 5-7: Web サインイン + マーケティング LP の多言語化（**`[locale]/` 移設なし**）
 

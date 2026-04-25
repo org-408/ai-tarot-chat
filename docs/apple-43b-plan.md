@@ -396,7 +396,15 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 
 「占い師」単体はキャラクタープロフィール等の自然な表記では残す。1 画面あたりの「占い」出現 5 → 1〜2 に削減。
 
-### Privacy / Terms 置換
+### JA リポジション置換ルール（Privacy / Terms / その他 metadata 系）
+
+> **スコープ補足**: 下記の置換表は **Privacy / Terms に限定されない**。`appName` 定数 / metadata title / JSON-LD `alternateName` / OG 画像生成のフォントサブセット文字 など **同パターンが現れる全ての箇所** に適用する。具体的な対象ファイル:
+> - `web/app/privacy/page.tsx` / `web/app/terms/page.tsx`
+> - `web/app/delete-account/page.tsx`
+> - `web/app/[locale]/(marketing)/layout.tsx`（JSON-LD `alternateName`）
+> - `web/app/api/og/route.tsx` / `web/app/api/og/feature/route.tsx`（フォントサブセット文字 — テンプレ文の修正に合わせて更新）
+>
+> **スコープ外（変更しない）**: `web/app/blog/` 配下と `web/lib/server/services/blog-post.ts`（SEO 資産保護、§7「変更しないもの」参照）
 
 | 箇所 | before | after |
 |---|---|---|
