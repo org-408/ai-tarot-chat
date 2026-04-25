@@ -1,11 +1,11 @@
 export const metadata = {
-  title: "利用規約 | Ariadne - AIタロット占い",
-  description: "Ariadne - AIタロット占いアプリの利用規約",
+  title: "利用規約 | Ariadne - AI対話リーディング体験",
+  description: "Ariadne - AI対話リーディング体験の利用規約",
 };
 
 export default function TermsPage() {
   const lastUpdated = "2026年3月20日";
-  const appName = "Ariadne - AIタロット占い";
+  const appName = "Ariadne - AI対話リーディング体験";
   const developerName = "Atelier Flow Lab";
   const contactEmail = "support@ariadne-ai.app";
 
@@ -14,7 +14,6 @@ export default function TermsPage() {
       <div className="max-w-2xl mx-auto px-6 py-10">
         {/* ヘッダー */}
         <div className="mb-8 text-center">
-          <div className="text-4xl mb-3">🔮</div>
           <h1 className="text-2xl font-bold text-gray-900">{appName}</h1>
           <p className="text-lg font-semibold text-gray-700 mt-1">利用規約</p>
           <p className="text-sm text-gray-500 mt-2">最終更新日：{lastUpdated}</p>
@@ -36,7 +35,7 @@ export default function TermsPage() {
               第1条　サービスの概要
             </h2>
             <p className="text-gray-700">
-              本アプリは、AIを活用したタロットカード占いサービスを提供します。占い結果はAIが生成するものであり、エンターテインメント目的でのご利用を前提としています。プロの占い師によるサービスではありません。
+              本アプリは、AIとの対話を通じたタロットカード・リーディング体験サービスを提供します。リーディング結果はAIが生成するものであり、エンターテインメント目的でのご利用を前提としています。プロのタロット占い師による人的サービスではありません。
             </p>
           </section>
 
@@ -161,10 +160,10 @@ export default function TermsPage() {
             <div className="space-y-3">
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">
-                  （1）占い結果について
+                  （1）リーディング結果について
                 </h3>
                 <p className="text-gray-600">
-                  本アプリの占い結果はAIが生成するエンターテインメントコンテンツです。占い結果の正確性・的中率を保証するものではなく、医療・法律・財務などの専門的アドバイスの代替として利用しないでください。占い結果に基づいた判断・行動はお客様自身の責任において行ってください。
+                  本アプリのリーディング結果はAIが生成するエンターテインメントコンテンツです。リーディング結果の正確性・的中率を保証するものではなく、医療・法律・財務などの専門的アドバイスの代替として利用しないでください。リーディング結果に基づいた判断・行動はお客様自身の責任において行ってください。
                 </p>
               </div>
               <div>
