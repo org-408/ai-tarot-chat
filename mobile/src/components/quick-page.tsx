@@ -2,7 +2,7 @@ import type { PluginListenerHandle } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   AppJWTPayload,
   MasterData,
@@ -116,12 +116,8 @@ const QuickPage: React.FC<QuickPageProps> = ({
     };
   }, []);
 
-  // クイック占いチュートリアル（セレクターへのコーチマーク）
-  // サロン画面ライフサイクルで保持することで、占い師選択モード ↔ portrait モードの
-  // 往復による CategorySpreadSelector 再マウントでも再発火しない。
-  const coachShownRef = useRef(false);
-  const [coachMarkOpen, setCoachMarkOpen] = useState(false);
-  const isPlanDialogShowing = isChangingPlan || isPlanExpiredShowing;
+  // クイック占いのコーチマークは廃止（チップファースト UX で不要になった）。
+  // 関連 state（coachShownRef / coachMarkOpen）も削除済み。
 
   return (
     <div className="main-container">
@@ -204,10 +200,6 @@ const QuickPage: React.FC<QuickPageProps> = ({
               <div className="flex-1 overflow-y-auto pb-52">
                 <CategorySpreadSelector
                   handleStartReading={handleStartReading}
-                  isPlanDialogShowing={isPlanDialogShowing}
-                  coachShownRef={coachShownRef}
-                  coachMarkOpen={coachMarkOpen}
-                  setCoachMarkOpen={setCoachMarkOpen}
                 />
               </div>
             </motion.div>
