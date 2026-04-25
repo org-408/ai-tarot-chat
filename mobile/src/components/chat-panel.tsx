@@ -85,6 +85,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     drawnCards,
     isRevealingCompleted,
     isPersonal,
+    customQuestion,
     setCustomQuestion,
     setPersonalSpread,
   } = useReading();
@@ -169,6 +170,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         spread,
         category,
         drawnCards,
+        // クイック占いの自由入力欄（任意）。空文字なら category 駆動の従来挙動。
+        // パーソナル占いは customQuestion を chat-panel ではなく Phase1 で送るため、
+        // ここでは送らない（パーソナル側のフローを壊さないため明示的にガード）。
+        ...(!isPersonal && customQuestion?.trim() ? { customQuestion: customQuestion.trim() } : {}),
         // Phase 2.1: サーバー側で英語 prompt に切り替えるために現在の言語を送信
         language: i18n.language?.startsWith("en") ? "en" : "ja",
         ...(isPhase2 && { initialLen }),

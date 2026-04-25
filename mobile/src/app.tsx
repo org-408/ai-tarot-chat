@@ -150,7 +150,11 @@ function App() {
   // 🌐 言語 / i18n 初期化（端末言語 or ユーザー設定で ja/en を決定）
   const { isReady: languageIsReady } = useLanguage();
 
-  const [pageType, setPageType] = useState<PageType>("home");
+  // 起動時のデフォルトはクイック占い画面。
+  // ハブ的なホーム画面を経由せず「占う」画面に直行することで、
+  // 初回ユーザーが何をすればよいか迷わないようにする。
+  // 過去の `lastPageType` がホワイトリストに該当する場合は復元 effect が上書きする。
+  const [pageType, setPageType] = useState<PageType>("quick");
   const [isPageRestored, setIsPageRestored] = useState(false);
   // パーソナル占い再起動用キー（インクリメントで強制再マウント）
   const [personalPageKey, setPersonalPageKey] = useState(0);
@@ -173,7 +177,7 @@ function App() {
     console.log("[App] Force unlock triggered by long press");
     useReadingStore.getState().init();
     setIsNavigationLocked(false);
-    setPageType("home");
+    setPageType("quick");
     setPersonalPageKey((k) => k + 1);
     setShowForceUnlockToast(true);
   }, []);
@@ -326,7 +330,7 @@ function App() {
         (pageType !== "history" || currentPlan.hasHistory);
 
       if (!pageStillAccessible) {
-        setPageType("home");
+        setPageType("quick");
       }
       setPlanExpiredNotification("toast");
     }
@@ -396,7 +400,7 @@ function App() {
     await Http.executeRequest({ method: "DELETE", path: "/api/clients/me", requiresAuth: true });
     await appLogout();
     useAppStore.getState().resetLastPageType();
-    setPageType("home");
+    setPageType("quick");
   };
 
   // 🔥 RevenueCat Customer Center へ移動
@@ -543,12 +547,14 @@ function App() {
 
     const RESTORABLE_PAGES: PageType[] = ["home", "quick", "personal"];
     const stored = useAppStore.getState().lastPageType;
-    let target: PageType = "home";
+    // デフォルトは "quick"（クイック占い）。ホーム画面廃止に伴うエントリポイント
+    // 変更（PR 3）の一環。ホーム画面自体はサイドメニュー等から到達可能のまま。
+    let target: PageType = "quick";
 
     if (stored && RESTORABLE_PAGES.includes(stored)) {
       // personal はプラン到達可能性チェックが必要
       if (stored === "personal" && !currentPlan.hasPersonal) {
-        target = "home";
+        target = "quick";
       } else {
         target = stored;
       }

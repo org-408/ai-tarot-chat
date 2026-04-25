@@ -36,8 +36,10 @@ export function buildQuickSystemPromptEn(args: {
   spread: Spread;
   category: ReadingCategory;
   drawnCards: DrawnCard[];
+  /** クイック占いの自由入力。空 / null のときは category 駆動の従来挙動。 */
+  customQuestion?: string | null;
 }): string {
-  const { tarotist, spread, category, drawnCards } = args;
+  const { tarotist, spread, category, drawnCards, customQuestion } = args;
 
   const persona = tarotist.i18n?.en ?? getTarotistEn(tarotist.name);
   const title = persona?.title ?? tarotist.title;
@@ -58,12 +60,17 @@ export function buildQuickSystemPromptEn(args: {
       ? `* No cards have been drawn yet. Please shuffle and draw ${cellsCount} cards as required by this spread.`
       : `* The cards drawn for this reading are:\n${formatDrawnCards(drawnCards)}`;
 
+  const topicLine = customQuestion
+    ? `* The querent's own words about what they would like to reflect on: ${customQuestion}\n` +
+      `* Topic context (for reference): ${categoryNameEn}.\n`
+    : `* The topic the querent would like to reflect on: ${categoryNameEn}.\n`;
+
   return (
     `You are ${tarotist.name}, a ${title}.\n` +
     `Your character traits: ${trait}.\n` +
     `Background: ${bio}\n` +
     `You are an experienced tarot reader.\n` +
-    `* The topic the querent would like to reflect on: ${categoryNameEn}.\n` +
+    `${topicLine}` +
     `* The spread being used: ${spreadLabel.name}.\n` +
     `${cardContext}\n\n` +
     `【Response format】\n\n` +

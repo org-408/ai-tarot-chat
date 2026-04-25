@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
       category,
       drawnCards,
       language: rawLanguage,
+      customQuestion: rawCustomQuestion,
     }: {
       messages: UIMessage[];
       tarotist: Tarotist;
@@ -99,7 +100,13 @@ export async function POST(req: NextRequest) {
       category: ReadingCategory;
       drawnCards: DrawnCard[];
       language?: string;
+      customQuestion?: string;
     } = await req.json();
+    // クイック占いの自由入力欄（任意）。trim 済み・空なら null 扱い。
+    const customQuestion =
+      typeof rawCustomQuestion === "string" && rawCustomQuestion.trim().length > 0
+        ? rawCustomQuestion.trim()
+        : null;
     const language = rawLanguage === "en" ? "en" : "ja";
 
     // ✅ プラン整合性チェック: 現プランで使えないタロティストを弾く
@@ -159,7 +166,7 @@ export async function POST(req: NextRequest) {
         },
       ];
       try {
-        await clientService.saveReading({ mode: "QUICK",
+        await clientService.saveReading({ mode: "QUICK", customQuestion: customQuestion ?? undefined,
           clientId,
           deviceId,
           tarotistId: tarotist.id,
@@ -200,12 +207,15 @@ export async function POST(req: NextRequest) {
 
     // systemプロンプトを作成
     const system = language === "en"
-      ? buildQuickSystemPromptEn({ tarotist, spread, category, drawnCards })
+      ? buildQuickSystemPromptEn({ tarotist, spread, category, drawnCards, customQuestion })
       : `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
       `また、あなたは熟練したタロット占い師です。` +
-      `* 占いたいジャンルは${category.name}です。` +
+      (customQuestion
+        ? `* 相談者の悩み・質問: ${customQuestion}\n` +
+          `* 占いたいジャンル（参考）: ${category.name}\n`
+        : `* 占いたいジャンルは${category.name}です。`) +
       `* スプレッドは${spread.name}です。` +
       (drawnCards.length === 0
         ? `* まだカードは引かれていません。スプレッドに必要な${
@@ -333,7 +343,7 @@ export async function POST(req: NextRequest) {
                   message: text,
                 },
               ];
-              await clientService.saveReading({ mode: "QUICK",
+              await clientService.saveReading({ mode: "QUICK", customQuestion: customQuestion ?? undefined,
                 clientId,
                 deviceId,
                 tarotistId: tarotist.id,
