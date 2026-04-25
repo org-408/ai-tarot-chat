@@ -533,20 +533,21 @@ function App() {
   }, [clientIsReady, refreshUsage]);
 
   // 🔥 前回の pageType を復元（プラン／認証が揃ってから一度だけ実行）
+  //
+  // 復元対象は「占う目的の延長線上にある画面」のみのホワイトリスト方式。
+  // 設定・プラン・履歴・占い師選択などの周辺画面で終了した場合はホームに戻す。
+  // （設定画面で終了 → 設定画面で起動、のような違和感のある起動を防ぐ）
   useEffect(() => {
     if (isPageRestored) return;
     if (!clientIsReady || !currentPlan) return;
 
+    const RESTORABLE_PAGES: PageType[] = ["home", "salon", "personal"];
     const stored = useAppStore.getState().lastPageType;
     let target: PageType = "home";
 
-    if (stored) {
-      if (stored === "reading") {
-        // reading は salon からの遷移専用。途中で中断した場合は salon に戻す
-        target = "salon";
-      } else if (stored === "personal" && !currentPlan.hasPersonal) {
-        target = "home";
-      } else if (stored === "history" && !currentPlan.hasHistory) {
+    if (stored && RESTORABLE_PAGES.includes(stored)) {
+      // personal はプラン到達可能性チェックが必要
+      if (stored === "personal" && !currentPlan.hasPersonal) {
         target = "home";
       } else {
         target = stored;
