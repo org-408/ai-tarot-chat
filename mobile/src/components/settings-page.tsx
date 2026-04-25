@@ -32,9 +32,17 @@ interface SettingsPageProps {
 
 const BFF_URL =
   import.meta.env.VITE_BFF_URL || "https://ai-tarot-chat.onrender.com";
-const PRIVACY_POLICY_URL =
+const PRIVACY_POLICY_BASE_URL =
   import.meta.env.VITE_PRIVACY_POLICY_URL || `${BFF_URL}/privacy`;
-const TERMS_URL = import.meta.env.VITE_TERMS_URL || `${BFF_URL}/terms`;
+const TERMS_BASE_URL = import.meta.env.VITE_TERMS_URL || `${BFF_URL}/terms`;
+
+// 現在のアプリ内言語を ?lang= クエリで Web 側に伝達する。
+// OS の Accept-Language とは独立してアプリ内で言語を切り替えられるようにするため、
+// 起動時に固定するのではなく開く時点で組み立てる。
+function buildUrlWithLang(baseUrl: string, lang: SupportedLang): string {
+  const sep = baseUrl.includes("?") ? "&" : "?";
+  return `${baseUrl}${sep}lang=${lang}`;
+}
 
 // ─── 共通UIパーツ ─────────────────────────────────────────────
 
@@ -330,12 +338,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         <Row
           icon={<ExternalLink size={16} />}
           label={t("settings.privacyPolicy")}
-          onClick={() => openUrl(PRIVACY_POLICY_URL)}
+          onClick={() => openUrl(buildUrlWithLang(PRIVACY_POLICY_BASE_URL, lang))}
         />
         <Row
           icon={<ExternalLink size={16} />}
           label={t("settings.termsOfUse")}
-          onClick={() => openUrl(TERMS_URL)}
+          onClick={() => openUrl(buildUrlWithLang(TERMS_BASE_URL, lang))}
         />
       </RowGroup>
 

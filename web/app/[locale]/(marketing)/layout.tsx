@@ -213,12 +213,12 @@ export default async function MarketingLayout({ children, params }: Props) {
               <h3 className="text-white font-semibold mb-3">法的情報</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/privacy" className="hover:text-white transition-colors">
+                  <Link href={`/privacy?lang=${locale}`} className="hover:text-white transition-colors">
                     プライバシーポリシー
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="hover:text-white transition-colors">
+                  <Link href={`/terms?lang=${locale}`} className="hover:text-white transition-colors">
                     利用規約
                   </Link>
                 </li>
