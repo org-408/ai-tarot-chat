@@ -28,7 +28,7 @@ export default async function proxy(req: NextRequest) {
     pathname.startsWith("/delete-account") ||
     pathname.startsWith("/admin") ||           // 管理画面
     pathname.startsWith("/signin") ||          // 管理者サインイン
-    pathname.startsWith("/simple") ||          // アプリページ (locale なし)
+    pathname.startsWith("/quick") ||           // アプリページ (locale なし)
     pathname.startsWith("/personal") ||
     pathname.startsWith("/clara") ||
     pathname.startsWith("/history") ||
