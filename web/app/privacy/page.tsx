@@ -1,11 +1,11 @@
 export const metadata = {
-  title: "プライバシーポリシー | Ariadne - AIタロット占い",
-  description: "Ariadne - AIタロット占いアプリのプライバシーポリシー",
+  title: "プライバシーポリシー | Ariadne - AI対話リーディング体験",
+  description: "Ariadne - AI対話リーディング体験のプライバシーポリシー",
 };
 
 export default function PrivacyPage() {
   const lastUpdated = "2026年3月20日";
-  const appName = "Ariadne - AIタロット占い";
+  const appName = "Ariadne - AI対話リーディング体験";
   const developerName = "Atelier Flow Lab";
   const contactEmail = "support@ariadne-ai.app";
 
@@ -14,7 +14,6 @@ export default function PrivacyPage() {
       <div className="max-w-2xl mx-auto px-6 py-10">
         {/* ヘッダー */}
         <div className="mb-8 text-center">
-          <div className="text-4xl mb-3">🔮</div>
           <h1 className="text-2xl font-bold text-gray-900">{appName}</h1>
           <p className="text-lg font-semibold text-gray-700 mt-1">
             プライバシーポリシー
@@ -47,7 +46,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
                   <li>デバイス識別子（端末固有のID）</li>
                   <li>OS種別・バージョン、アプリバージョン</li>
-                  <li>本アプリの利用状況（占い実施回数、利用プランなど）</li>
+                  <li>本アプリの利用状況（リーディング実施回数、利用プランなど）</li>
                 </ul>
               </div>
               <div>
@@ -58,7 +57,7 @@ export default function PrivacyPage() {
                   <li>
                     ソーシャルログイン（Google・Apple）利用時：メールアドレス、表示名、プロフィール画像URL
                   </li>
-                  <li>占いに入力した相談内容・質問文</li>
+                  <li>リーディングに入力した相談内容・質問文</li>
                 </ul>
               </div>
             </div>
@@ -73,7 +72,7 @@ export default function PrivacyPage() {
               <li>本アプリのサービス提供および機能改善</li>
               <li>ユーザーアカウントの識別・管理</li>
               <li>サブスクリプション（課金）の管理</li>
-              <li>AIによるタロット占い結果の生成</li>
+              <li>AIによるリーディング応答の生成</li>
               <li>利用状況の分析およびサービス品質向上</li>
               <li>お問い合わせへの対応</li>
             </ul>
@@ -105,12 +104,12 @@ export default function PrivacyPage() {
                 {
                   name: "Google Gemini API",
                   url: "https://policies.google.com/privacy",
-                  desc: "AI占い結果の生成",
+                  desc: "AIリーディング応答の生成",
                 },
                 {
                   name: "Groq",
                   url: "https://groq.com/privacy-policy",
-                  desc: "AI占い結果の生成",
+                  desc: "AIリーディング応答の生成",
                 },
                 {
                   name: "Google Sign-In",

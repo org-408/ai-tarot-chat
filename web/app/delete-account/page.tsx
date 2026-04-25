@@ -1,10 +1,10 @@
 export const metadata = {
-  title: "アカウント削除 | Ariadne - AIタロット占い",
-  description: "Ariadne - AIタロット占いアプリのアカウント削除について",
+  title: "アカウント削除 | Ariadne - AI対話リーディング体験",
+  description: "Ariadne - AI対話リーディング体験のアカウント削除について",
 };
 
 export default function DeleteAccountPage() {
-  const appName = "Ariadne - AIタロット占い";
+  const appName = "Ariadne - AI対話リーディング体験";
   const developerName = "Atelier Flow Lab";
   const contactEmail = "support@ariadne-ai.app";
 
@@ -13,7 +13,6 @@ export default function DeleteAccountPage() {
       <div className="max-w-2xl mx-auto px-6 py-10">
         {/* ヘッダー */}
         <div className="mb-8 text-center">
-          <div className="text-4xl mb-3">🔮</div>
           <h1 className="text-2xl font-bold text-gray-900">{appName}</h1>
           <p className="text-lg font-semibold text-gray-700 mt-1">
             アカウント削除
@@ -54,7 +53,7 @@ export default function DeleteAccountPage() {
             </h2>
             <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
               <li>アカウント情報（メールアドレス、表示名、プロフィール画像）</li>
-              <li>タロット占いの履歴・チャット履歴</li>
+              <li>リーディング履歴・チャット履歴</li>
               <li>お気に入りスプレッドの登録情報</li>
               <li>利用状況データ</li>
             </ul>
