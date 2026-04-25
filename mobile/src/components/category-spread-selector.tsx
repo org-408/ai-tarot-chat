@@ -96,6 +96,9 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     );
   }, [rawSelectedSpread, resolvedSpreads]);
 
+  // クイック占い入力欄への参照（チップタップ時のカーソル位置挿入に使用）。
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   // コーチマークのスポットライト対象: カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
   // 最外 div にするとボタン・利用回数テキストまで強調範囲に入り、暗幕が画面下半分に回らなくなる。
   // クイック占いコーチマーク（本コンポーネント内）とパーソナル占い Stage2 コーチマーク（personal-page.tsx）の両方から参照される。
@@ -459,15 +462,35 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
       {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
         {/* クイック占い: ジャンルチップ（入力補助）。
-            タップすると customQuestion にカテゴリ名がセットされ、入力欄に反映される。
-            ユーザーは続けて自由に編集可。 */}
+            タップ時に textarea のカーソル位置にカテゴリ名を挿入する。
+            未フォーカスのときは末尾に追記。挿入後はカーソルを挿入文字の直後に移動。 */}
         {!isPersonal && !claraMode && (
           <div className="m-1 px-1 flex flex-wrap gap-2 justify-center">
             {availableCategories.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setCustomQuestion(cat.name)}
+                // 入力欄の blur を防ぐため onMouseDown で preventDefault
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  const ta = textareaRef.current;
+                  const text = cat.name;
+                  if (!ta) {
+                    setCustomQuestion((customQuestion ?? "") + text);
+                    return;
+                  }
+                  const start = ta.selectionStart ?? customQuestion.length;
+                  const end = ta.selectionEnd ?? customQuestion.length;
+                  const next =
+                    customQuestion.slice(0, start) + text + customQuestion.slice(end);
+                  setCustomQuestion(next);
+                  // カーソルを挿入後の位置に移動
+                  requestAnimationFrame(() => {
+                    ta.focus();
+                    const cursor = start + text.length;
+                    ta.setSelectionRange(cursor, cursor);
+                  });
+                }}
                 className="px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-purple-200 text-sm text-purple-700 shadow-sm active:bg-purple-100 active:scale-95 transition-all"
               >
                 {cat.name}
@@ -490,6 +513,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         {!isPersonal && !claraMode && (
           <div className="m-1">
             <textarea
+              ref={textareaRef}
               value={customQuestion}
               onChange={(e) => setCustomQuestion(e.target.value)}
               placeholder={t("reading.questionPlaceholder")}
