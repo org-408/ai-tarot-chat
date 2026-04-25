@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { AppSidebar } from "@/components/nav/app-sidebar";
+import { SessionExpiredBanner } from "@/components/providers/session-expired-banner";
 import { UsagePoller } from "@/components/providers/usage-poller";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ export default async function RootPage() {
       <TooltipProvider>
         <SidebarProvider>
           <UsagePoller />
+          <SessionExpiredBanner />
           <AppSidebar />
           <SidebarInset>
             <main className="flex-1 p-4 md:p-6">

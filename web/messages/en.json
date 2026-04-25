@@ -14,7 +14,9 @@
     "signInWithGoogle": "Sign in with Google",
     "continueAsGuest": "Continue as Guest",
     "or": "or",
-    "lockedDuringReading": "Cannot leave during a reading"
+    "lockedDuringReading": "Cannot leave during a reading",
+    "sessionExpiredMessage": "Your session has expired. Please sign in again to continue.",
+    "signInAgain": "Sign in again"
   },
   "chat": {
     "placeholder": "Type a message...",

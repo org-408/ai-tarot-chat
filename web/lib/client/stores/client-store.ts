@@ -3,6 +3,7 @@
 import type { Reading } from "@shared/lib/types";
 import { create } from "zustand";
 import {
+  ClientApiError,
   fetchReadings,
   fetchUsage,
   type UsageStats,
@@ -18,6 +19,9 @@ interface ClientState {
   isLoadingReadings: boolean;
   usageError: string | null;
   readingsError: string | null;
+  // NextAuth セッションが切れた状態。401 検知時に立て、UsagePoller 停止 +
+  // セッション切れバナー表示のトリガーに使う。
+  isSessionExpired: boolean;
 
   refreshUsage: () => Promise<void>;
   fetchReadings: (opts?: { next?: boolean }) => Promise<void>;
@@ -34,16 +38,21 @@ export const useClientStore = create<ClientState>((set, get) => ({
   isLoadingReadings: false,
   usageError: null,
   readingsError: null,
+  isSessionExpired: false,
 
   refreshUsage: async () => {
+    if (get().isSessionExpired) return;
     set({ isLoadingUsage: true, usageError: null });
     try {
       const usage = await fetchUsage();
       set({ usage, isLoadingUsage: false });
     } catch (error) {
+      const isAuthError =
+        error instanceof ClientApiError && error.status === 401;
       set({
         isLoadingUsage: false,
         usageError: error instanceof Error ? error.message : "エラー",
+        isSessionExpired: isAuthError ? true : get().isSessionExpired,
       });
     }
   },

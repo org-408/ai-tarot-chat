@@ -16,7 +16,9 @@
     "or": "または",
     "backToSalon": "サロンに戻る",
     "backToHome": "ホームに戻る",
-    "lockedDuringReading": "占い中は移動できません"
+    "lockedDuringReading": "占い中は移動できません",
+    "sessionExpiredMessage": "セッションが切れました。続けるには再サインインしてください。",
+    "signInAgain": "再サインイン"
   },
   "chat": {
     "placeholder": "メッセージを入力...",

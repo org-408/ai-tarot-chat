@@ -1,5 +1,19 @@
 import type { Reading } from "@shared/lib/types";
 
+/**
+ * Web クライアント側 API 呼び出しの失敗を表すエラー。
+ * status を持たせることで呼び出し側が 401（要再サインイン）を判別できる。
+ */
+export class ClientApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ClientApiError";
+  }
+}
+
 export interface UsageStats {
   plan: {
     code: string;
@@ -26,7 +40,9 @@ export async function fetchUsage(): Promise<UsageStats> {
     credentials: "include",
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("利用状況の取得に失敗しました");
+  if (!res.ok) {
+    throw new ClientApiError(res.status, "利用状況の取得に失敗しました");
+  }
   return res.json();
 }
 
