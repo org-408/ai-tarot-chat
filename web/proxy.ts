@@ -24,6 +24,7 @@ export default async function proxy(req: NextRequest) {
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/terms") ||
+    pathname.startsWith("/support") ||
     pathname.startsWith("/delete-account") ||
     pathname.startsWith("/admin") ||           // 管理画面
     pathname.startsWith("/signin") ||          // 管理者サインイン
