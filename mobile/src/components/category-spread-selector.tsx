@@ -442,19 +442,12 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   return (
     <div>
-      {/* メイン説明文（プライマリ CTA 的に目立たせる） */}
-      <motion.div
-        className="text-center py-3"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: [1, 0.7, 1] }}
-        transition={{ repeat: Infinity, duration: 3 }}
-      >
-        <span className="inline-block px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-base font-bold shadow-lg">
-          {isPersonal
-            ? t("reading.pickSpreadOnly")
-            : t("reading.pickCategoryAndSpread")}
-        </span>
-      </motion.div>
+      {/* メイン説明文（フォント大・太字で強調。ボタンに見えない素のテキスト） */}
+      <h2 className="text-center py-4 text-lg font-bold text-purple-700">
+        {isPersonal
+          ? t("reading.pickSpreadOnly")
+          : t("reading.pickContent")}
+      </h2>
 
       {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
@@ -496,7 +489,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
         )}
 
         {/* クイック占い: 自由入力欄（折りたたみセカンダリ）。
-            デフォルト閉じ。「詳しく書く」をタップで展開。
+            トグル自体は他のセクションと同じ重みで表示する（小さく隠さない）。
+            デフォルト閉じ。タップで展開。
             空のまま占う場合は上のチップ選択（categoryId）で AI に投げる。
             書き込めばその文章が customQuestion として優先される。 */}
         {!isPersonal && !claraMode && (
@@ -504,14 +498,17 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             <button
               type="button"
               onClick={() => setIsAdvancedOpen((v) => !v)}
-              className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 py-2 active:text-gray-700"
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border border-purple-200 text-base text-gray-700 shadow-sm active:bg-purple-50"
             >
-              <span>{t("reading.writeMore")}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">📝</span>
+                <span>{t("reading.writeMore")}</span>
+              </span>
               <motion.div
                 animate={{ rotate: isAdvancedOpen ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <ChevronDown size={12} />
+                <ChevronDown size={18} className="text-purple-500" />
               </motion.div>
             </button>
             {isAdvancedOpen && (
@@ -522,7 +519,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
                 placeholder={t("reading.questionPlaceholder")}
                 rows={3}
                 maxLength={500}
-                className="w-full rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
+                className="w-full mt-2 rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
               />
             )}
           </div>
