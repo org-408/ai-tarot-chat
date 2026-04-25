@@ -161,8 +161,8 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
     tab === "all"
       ? all
       : tab === "personal"
-        ? all.filter((r) => !!r.customQuestion)
-        : all.filter((r) => !r.customQuestion);
+        ? all.filter((r) => r.mode === "PERSONAL")
+        : all.filter((r) => r.mode === "QUICK");
 
   useEffect(() => {
     if (initialLoadDone.current) return;
@@ -343,7 +343,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
                             {items.map((r) => {
                               const name =
                                 r.tarotist?.name ?? t("history.unknownTarotist");
-                              const isPersonal = !!r.customQuestion;
+                              const isPersonal = r.mode === "PERSONAL";
                               const cards: DrawnCard[] = r.cards ?? [];
                               // 保存時点と UI 現在言語が異なる場合に備え、id から現在言語版を引き直す
                               const resolvedCategory = r.categoryId

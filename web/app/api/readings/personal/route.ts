@@ -280,7 +280,7 @@ export async function POST(req: NextRequest) {
                 message: mockText,
               },
             ];
-            await clientService.saveReading({
+            await clientService.saveReading({ mode: "PERSONAL",
               clientId,
               deviceId,
               tarotistId: tarotist.id,
@@ -333,7 +333,7 @@ export async function POST(req: NextRequest) {
                   message: mockText,
                 },
               ];
-              await clientService.saveReading({
+              await clientService.saveReading({ mode: "PERSONAL",
                 readingId: existingReading.id,
                 clientId,
                 deviceId,
@@ -653,7 +653,7 @@ export async function POST(req: NextRequest) {
                     message: text,
                   },
                 ];
-                await clientService.saveReading({
+                await clientService.saveReading({ mode: "PERSONAL",
                   clientId,
                   deviceId,
                   tarotistId: tarotist.id,
@@ -714,7 +714,7 @@ export async function POST(req: NextRequest) {
                     "パーソナル占い Q&A: 既存リーディングが見つからないため新規作成",
                     { clientId },
                   );
-                  await clientService.saveReading({
+                  await clientService.saveReading({ mode: "PERSONAL",
                     clientId,
                     deviceId,
                     tarotistId: tarotist.id,
@@ -732,7 +732,7 @@ export async function POST(req: NextRequest) {
                     { clientId },
                   );
                 } else {
-                  await clientService.saveReading({
+                  await clientService.saveReading({ mode: "PERSONAL",
                     readingId: existingReading.id,
                     clientId,
                     deviceId,

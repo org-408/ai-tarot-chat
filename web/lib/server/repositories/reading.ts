@@ -44,6 +44,7 @@ export class ReadingRepository extends BaseRepository {
         spreadId: spread.id,
         categoryId: category?.id ?? null,
         customQuestion: reading.customQuestion,
+        mode: reading.mode ?? "QUICK",
         cards: Array.isArray(reading.cards)
           ? {
               create: reading.cards.map((card) => ({
@@ -93,6 +94,7 @@ export class ReadingRepository extends BaseRepository {
         spreadId: spread.id,
         categoryId: category?.id ?? null,
         customQuestion: reading.customQuestion,
+        mode: reading.mode ?? "QUICK",
         cards: {
           deleteMany: {},
           create: Array.isArray(reading.cards)
@@ -151,7 +153,7 @@ export class ReadingRepository extends BaseRepository {
 
   async getLatestPersonalReadingForClient(clientId: string): Promise<Reading | null> {
     return (await this.db.reading.findFirst({
-      where: { clientId, customQuestion: { not: null } },
+      where: { clientId, mode: "PERSONAL" },
       orderBy: { createdAt: "desc" },
       include: {
         client: true,

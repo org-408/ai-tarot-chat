@@ -61,7 +61,7 @@ export class RankingRepository extends BaseRepository {
           where: {
             createdAt: { gte: periodStart, lt: periodEnd },
             categoryId: { not: null },
-            customQuestion: { not: null },
+            mode: "PERSONAL",
           },
           _count: { categoryId: true },
         });

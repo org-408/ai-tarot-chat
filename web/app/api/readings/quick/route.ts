@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
         },
       ];
       try {
-        await clientService.saveReading({
+        await clientService.saveReading({ mode: "QUICK",
           clientId,
           deviceId,
           tarotistId: tarotist.id,
@@ -333,7 +333,7 @@ export async function POST(req: NextRequest) {
                   message: text,
                 },
               ];
-              await clientService.saveReading({
+              await clientService.saveReading({ mode: "QUICK",
                 clientId,
                 deviceId,
                 tarotistId: tarotist.id,
