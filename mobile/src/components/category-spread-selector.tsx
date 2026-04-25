@@ -12,6 +12,7 @@ import { useMaster } from "../lib/hooks/use-master";
 import { useReading } from "../lib/hooks/use-reading";
 import { CLARA_CATEGORY_NOS } from "../lib/utils/offline-reading";
 import Accordion, { type AccordionItem } from "./accordion";
+import CategoryChipSelector from "./category-chip-selector";
 import ScrollableRadioSelector from "./scrollable-radio-selector";
 
 interface CategorySpreadSelectorProps {
@@ -225,26 +226,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     );
   }, [resolvedCategories, claraMode]);
 
-  const categoryItems: AccordionItem[] = [
-    {
-      id: "category",
-      title: t("reading.categoryTitle", {
-        name: selectedCategory?.name || t("reading.pleaseSelect"),
-      }),
-      subtitle: selectedCategory ? selectedCategory.description : undefined,
-      icon: "🎴",
-      content: (
-        <ScrollableRadioSelector
-          title={t("reading.pickCategory")}
-          items={availableCategories}
-          selected={selectedCategory}
-          onSelect={setSelectedCategory}
-          maxVisibleItems={3}
-        />
-      ),
-    },
-  ];
-
   // スプレッドの取得とフィルタリング
   // resolvedSpreads は現在の UI 言語に解決済み。
   // カテゴリ一致判定は言語非依存の id (stc.categoryId / stc.category.id) を使う。
@@ -416,41 +397,16 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
       {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
-        {/* クイック占い: ジャンルチップ（プライマリ選択 UI）。
-            横スクロール、全カテゴリ表示。タップ → setSelectedCategory で
-            選択状態を切り替え。選択中はハイライト。
-            customQuestion を上書きしないため、ユーザーは「ジャンルだけで占う」
-            「ジャンル＋自由入力」両方の使い方ができる。 */}
-        {!isPersonal && !claraMode && (
-          <div
-            className="m-1 px-2 flex gap-2 overflow-x-auto pb-1"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {availableCategories.map((cat) => {
-              const isSelected = cat.id === selectedCategory?.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full backdrop-blur-sm border text-sm shadow-sm active:scale-95 transition-all ${
-                    isSelected
-                      ? "bg-purple-600 border-purple-600 text-white"
-                      : "bg-white/80 border-purple-200 text-purple-700"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* clara モード: カテゴリー選択アコーディオン（オフライン占いの選択 UI） */}
-        {claraMode && (
-          <div className="m-1">
-            <Accordion items={categoryItems} />
-          </div>
+        {/* ジャンルチップ（クイック・Clara 共通プライマリ選択 UI）。
+            横スクロール、選択中はハイライト。
+            クイック: customQuestion と併用可（ジャンルだけ / ジャンル＋自由入力）。
+            Clara: 4 カテゴリ固定（CLARA_CATEGORY_NOS）。 */}
+        {!isPersonal && (
+          <CategoryChipSelector
+            categories={availableCategories}
+            selected={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
         )}
 
         {/* クイック占い: 自由入力欄（折りたたみセカンダリ）。
