@@ -9,8 +9,8 @@ import { useTranslation } from "react-i18next";
 import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
 import type { MasterData } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
-import { useSalon } from "../lib/hooks/use-salon";
-import { drawRandomCards } from "../lib/utils/salon";
+import { useReading } from "../lib/hooks/use-reading";
+import { drawRandomCards } from "../lib/utils/reading-helpers";
 import { ChatPanel } from "./chat-panel";
 import ShuffleDialog from "./shuffle-dialog";
 import UpperViewer from "./upper-viewer";
@@ -30,7 +30,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({ masterData, onBack, onUnlock 
     setDrawnCards,
     isRevealingCompleted,
     setUpperViewerMode,
-  } = useSalon();
+  } = useReading();
 
   const { remainingReadings, quickOnboardedAt, markOnboarded } = useClient();
 

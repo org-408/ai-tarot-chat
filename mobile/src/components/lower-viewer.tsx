@@ -2,7 +2,7 @@ import AutoHeight from "embla-carousel-auto-height";
 import useEmblaCarousel from "embla-carousel-react";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import type { UserPlan } from "../types";
 import CategorySpreadSelector from "./category-spread-selector";
 import { ChatPanel } from "./chat-panel";
@@ -24,7 +24,7 @@ const LowerViewer: React.FC<LowerViewerProps> = ({
   onBack,
 }) => {
   const { isPersonal, setIsPersonal, lowerViewerMode, setLowerViewerMode } =
-    useSalon();
+    useReading();
   const [showHint, setShowHint] = useState(true);
 
   const [selectedIndex, setSelectedIndex] = useState(0);

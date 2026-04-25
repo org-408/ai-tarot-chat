@@ -1,10 +1,10 @@
-import { useSalonStore } from "../stores/salon";
+import { useReadingStore } from "../stores/reading";
 
 /**
- * Salon（サロン）情報のフック
+ * Reading 情報のフック
  *
  */
-export function useSalon() {
+export function useReading() {
   const {
     selectedTarotist,
     selectedPersonalTarotist,
@@ -42,7 +42,7 @@ export function useSalon() {
     setLowerViewerMode,
     setIsPersonal,
     setMessages,
-  } = useSalonStore();
+  } = useReadingStore();
 
   return {
     // ============================================

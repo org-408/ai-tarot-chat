@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 
 interface RevealPromptPanelProps {
   isAllRevealed?: boolean;
@@ -14,7 +14,7 @@ export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
   onRevealButtonElChange,
 }) => {
   const { t } = useTranslation();
-  const { setIsRevealingCompleted } = useSalon();
+  const { setIsRevealingCompleted } = useReading();
 
   const buttonRefCallback = useCallback(
     (el: HTMLButtonElement | null) => {

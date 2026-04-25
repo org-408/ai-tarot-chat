@@ -7,7 +7,7 @@ interface RevealPromptPanelProps {
 
 /**
  * カードをめくるよう促すパネル。全カードめくり済みなら非表示。
- * プラットフォーム非依存 (useSalon なし)。
+ * プラットフォーム非依存 (useReading なし)。
  */
 export const RevealPromptPanel: React.FC<RevealPromptPanelProps> = ({
   isAllRevealed = false,

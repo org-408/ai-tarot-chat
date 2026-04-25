@@ -94,7 +94,7 @@
     "personalBadge": "パーソナル",
     "historyEmpty": "まだ占い履歴がありません。占いを始めてみましょう"
   },
-  "simple": {
+  "quick": {
     "title": "クイック占い",
     "aiReading": "AIがリーディングしています...",
     "readAgain": "もう一度占う",

@@ -68,7 +68,7 @@ interface CategorySpreadSelectorProps {
 
 /**
  * カテゴリー & スプレッド選択コンポーネント。
- * プラットフォーム非依存 (useSalon/useMaster なし)。
+ * プラットフォーム非依存 (useReading/useMaster なし)。
  */
 export const CategorySpreadSelector: React.FC<
   CategorySpreadSelectorProps

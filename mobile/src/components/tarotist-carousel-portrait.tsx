@@ -9,7 +9,7 @@ import {
   canUseTarotist,
   getTarotistColor,
   renderStars,
-} from "../lib/utils/salon";
+} from "../lib/utils/reading-helpers";
 import type { SelectTargetMode, UserPlan } from "../types";
 
 interface TarotistCarouselPortraitProps {

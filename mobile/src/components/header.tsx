@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import { useForceLongPress } from "../lib/hooks/use-force-unlock";
 import type { PageType, UserPlan } from "../types";
 
@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   setShowProfile,
 }) => {
   const { t } = useTranslation();
-  const { selectedTarotist, isPersonal } = useSalon();
+  const { selectedTarotist, isPersonal } = useReading();
 
   const { handlers: longPressHandlers, progress, isHolding } = useForceLongPress(
     onForceUnlock ?? (() => {}),
@@ -38,19 +38,19 @@ const Header: React.FC<HeaderProps> = ({
     switch (currentPage) {
       case "home":
         return t("header.home");
-      case "salon":
+      case "quick":
       case "reading":
         switch (currentPlan) {
           case "FREE":
-            return t("header.salonFree");
+            return t("header.quickFree");
           case "STANDARD":
-            return t("header.salonStandard");
+            return t("header.quickStandard");
           case "PREMIUM":
             return isPersonal
               ? t("header.personalPremium")
-              : t("header.salonPremium");
+              : t("header.quickPremium");
           default:
-            return t("header.salonDefault");
+            return t("header.quickDefault");
         }
       case "personal":
         return t("header.personal");
@@ -73,15 +73,15 @@ const Header: React.FC<HeaderProps> = ({
     switch (currentPage) {
       case "home":
         return t("header.homeSubtitle");
-      case "salon":
+      case "quick":
         switch (currentPlan) {
           case "GUEST":
-            return t("header.salonSubtitleGuest");
+            return t("header.quickSubtitleGuest");
           case "FREE":
-            return t("header.salonSubtitleFree");
+            return t("header.quickSubtitleFree");
           case "STANDARD":
           case "PREMIUM":
-            return t("header.salonSubtitlePaid");
+            return t("header.quickSubtitlePaid");
           default:
             return "";
         }

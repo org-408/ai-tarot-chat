@@ -7,7 +7,7 @@ import { SpreadRevealColumn } from "@/components/reading/spread-reveal-column";
 import { TwoColumnReadingLayout } from "@/components/reading/two-column-reading-layout";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
-import { useSalonStore } from "@/lib/client/stores/salon-store";
+import { useReadingStore } from "@/lib/client/stores/reading-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type {
   DrawnCard,
@@ -116,7 +116,7 @@ function ClaraReadingView({
     setDrawnCards,
     setIsRevealingCompleted,
     setIsLocked,
-  } = useSalonStore();
+  } = useReadingStore();
 
   const [isShuffleDone, setIsShuffleDone] = useState(false);
   const [rightVisible, setRightVisible] = useState(true);
@@ -245,7 +245,7 @@ export default function ClaraPage() {
     setQuickCategory,
     setIsLocked,
     resetSession,
-  } = useSalonStore();
+  } = useReadingStore();
   const { refreshUsage, usage } = useClientStore();
 
   const [phase, setPhase] = useState<Phase>("selection");

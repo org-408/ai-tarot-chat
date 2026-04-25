@@ -8,7 +8,7 @@ import { TwoColumnReadingLayout } from "@/components/reading/two-column-reading-
 import { useReadingChat } from "@shared/hooks/use-reading-chat";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
-import { useSalonStore } from "@/lib/client/stores/salon-store";
+import { useReadingStore } from "@/lib/client/stores/reading-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type {
   DrawnCard,
@@ -26,10 +26,10 @@ import { RefreshCw } from "lucide-react";
 type Phase = "selection" | "reading";
 
 // ─────────────────────────────────────────────────────────────
-// SimpleReadingView — reading phase 丸ごと分離（key で強制リマウント）
+// QuickReadingView — reading phase 丸ごと分離（key で強制リマウント）
 // ─────────────────────────────────────────────────────────────
 
-interface SimpleReadingViewProps {
+interface QuickReadingViewProps {
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory | null;
@@ -59,7 +59,7 @@ interface SimpleReadingViewProps {
   };
 }
 
-interface SimpleReadingChatProps {
+interface QuickReadingChatProps {
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory | null;
@@ -70,10 +70,10 @@ interface SimpleReadingChatProps {
   onReadAgain: () => void;
   onRefreshUsage: () => Promise<void>;
   onUnlock: () => void;
-  labels: SimpleReadingViewProps["labels"];
+  labels: QuickReadingViewProps["labels"];
 }
 
-function SimpleReadingChat({
+function QuickReadingChat({
   tarotist,
   spread,
   category,
@@ -85,7 +85,7 @@ function SimpleReadingChat({
   onRefreshUsage,
   onUnlock,
   labels,
-}: SimpleReadingChatProps) {
+}: QuickReadingChatProps) {
   const {
     messages,
     status,
@@ -99,7 +99,7 @@ function SimpleReadingChat({
     handleRetry,
   } = useReadingChat(
     {
-      api: "/api/readings/simple",
+      api: "/api/readings/quick",
       token,
       isPersonal: false,
       tarotist,
@@ -160,7 +160,7 @@ function SimpleReadingChat({
   );
 }
 
-function SimpleReadingView({
+function QuickReadingView({
   tarotist,
   spread,
   category,
@@ -171,7 +171,7 @@ function SimpleReadingView({
   onHeaderBack,
   onRefreshUsage,
   labels,
-}: SimpleReadingViewProps) {
+}: QuickReadingViewProps) {
   const {
     drawnCards,
     isRevealingCompleted,
@@ -179,7 +179,7 @@ function SimpleReadingView({
     setDrawnCards,
     setIsRevealingCompleted,
     setIsLocked,
-  } = useSalonStore();
+  } = useReadingStore();
 
   const [isShuffleDone, setIsShuffleDone] = useState(false);
   const [rightVisible, setRightVisible] = useState(true);
@@ -219,7 +219,7 @@ function SimpleReadingView({
         }
         left={
           drawnCards.length > 0 ? (
-            <SimpleReadingChat
+            <QuickReadingChat
               key={`quick-chat-${spread.id}`}
               tarotist={tarotist}
               spread={spread}
@@ -263,11 +263,11 @@ function SimpleReadingView({
 }
 
 // ─────────────────────────────────────────────────────────────
-// SimplePage
+// QuickPage
 // ─────────────────────────────────────────────────────────────
 
-export default function SimplePage() {
-  const t = useTranslations("simple");
+export default function QuickPage() {
+  const t = useTranslations("quick");
   const tSalon = useTranslations("salon");
   const tCommon = useTranslations("common");
   const tReading = useTranslations("reading");
@@ -290,7 +290,7 @@ export default function SimplePage() {
     setQuickCategory,
     setIsLocked,
     resetSession,
-  } = useSalonStore();
+  } = useReadingStore();
   const { refreshUsage, usage, clearReadings } = useClientStore();
 
   const handleReadingSaved = useCallback(async () => {
@@ -352,7 +352,7 @@ export default function SimplePage() {
     masterData
   ) {
     return (
-      <SimpleReadingView
+      <QuickReadingView
         key={readingKey}
         tarotist={selectedTarotist}
         spread={selectedSpread}

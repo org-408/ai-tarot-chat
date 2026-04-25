@@ -11,7 +11,7 @@ import {
   getPlanColors,
   getTarotistColor,
   renderStars,
-} from "../lib/utils/salon";
+} from "../lib/utils/reading-helpers";
 import { useMaster } from "../lib/hooks/use-master";
 import { getPlanBadgeLabel, getPlanDisplayName } from "../lib/utils/plan-display";
 import type { UserPlan } from "../types";

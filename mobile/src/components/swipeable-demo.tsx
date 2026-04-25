@@ -10,7 +10,7 @@ import type {
   Spread,
   UsageStats,
 } from "../../../shared/lib/types";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import type { UserPlan } from "../types";
 import { ChatPanel } from "./chat-panel";
 import SpreadViewerSwipe from "./spread-viewer-swipe";
@@ -18,7 +18,7 @@ import SwipeableContainer from "./swipeable-container";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 
 /**
- * 実際のSalonPageとReadingPageのコンポーネントを使った
+ * 実際のQuickPageとReadingPageのコンポーネントを使った
  * SwipeableContainerのデモ
  */
 interface SwipeableDemoProps {
@@ -45,7 +45,7 @@ const SwipeableDemo: React.FC<SwipeableDemoProps> = ({
     selectedTarotist,
     setSelectedTarotist,
     setSelectedTargetMode,
-  } = useSalon();
+  } = useReading();
 
   const [upperIndex, setUpperIndex] = useState(0);
   const [lowerIndex, setLowerIndex] = useState(0);

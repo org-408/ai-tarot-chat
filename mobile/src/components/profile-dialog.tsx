@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import type { Plan, Tarotist } from "../../../shared/lib/types";
 import { getPlanDisplayName } from "../lib/utils/plan-display";
-import { canUseTarotist, renderStars } from "../lib/utils/salon";
+import { canUseTarotist, renderStars } from "../lib/utils/reading-helpers";
 import type { UserPlan } from "../types";
 
 interface ProfileDialogProps {

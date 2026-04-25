@@ -5,7 +5,7 @@ export type UserPlan = "GUEST" | "FREE" | "STANDARD" | "PREMIUM";
 
 export type PageType =
   | "home"
-  | "salon"
+  | "quick"
   | "personal"
   | "reading"
   | "chat"

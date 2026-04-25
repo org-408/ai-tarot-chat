@@ -18,7 +18,7 @@ interface HomePageProps {
   currentPlan: Plan;
   masterData: MasterData;
   usageStats: UsageStats;
-  onNavigateToSalon: () => void;
+  onNavigateToQuick: () => void;
   onNavigateToPersonal: () => void;
   onNavigateToClara: () => void;
   onNavigateToTarotist: () => void;
@@ -35,7 +35,7 @@ const HomePage: React.FC<HomePageProps> = ({
   payload,
   currentPlan,
   usageStats,
-  onNavigateToSalon,
+  onNavigateToQuick,
   onNavigateToPersonal,
   onNavigateToClara,
   onNavigateToTarotist,
@@ -157,7 +157,7 @@ const HomePage: React.FC<HomePageProps> = ({
         {/* プライマリ CTA: クイック占い */}
         <button
           type="button"
-          onClick={onNavigateToSalon}
+          onClick={onNavigateToQuick}
           className="w-full rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white p-5 shadow-md active:opacity-80 flex items-center gap-4 transition-opacity"
         >
           <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">

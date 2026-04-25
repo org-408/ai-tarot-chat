@@ -11,9 +11,9 @@ import { useClient } from "./lib/hooks/use-client";
 import { useLanguage } from "./lib/hooks/use-language";
 import { useLifecycle } from "./lib/hooks/use-lifecycle";
 import { useMaster } from "./lib/hooks/use-master";
-import { useSalon } from "./lib/hooks/use-salon";
+import { useReading } from "./lib/hooks/use-reading";
 import { useAppStore } from "./lib/stores/app";
-import { useSalonStore } from "./lib/stores/salon";
+import { useReadingStore } from "./lib/stores/reading";
 import { useSubscription } from "./lib/hooks/use-subscription";
 import { showInterstitialAd } from "./lib/utils/admob";
 import { Http } from "./lib/utils/http";
@@ -21,7 +21,7 @@ import { PurchaseCancelledError } from "./lib/utils/purchase-cancelled-error";
 import TarotSplashScreen from "./splashscreen";
 import type { PageType, UserPlan } from "./types";
 
-import SalonPage from "./components/salon-page";
+import QuickPage from "./components/quick-page";
 
 const loadPersonalPage = () => import("./components/personal-page");
 const loadClaraPage = () => import("./components/clara-page");
@@ -171,7 +171,7 @@ function App() {
   // 🔥 ロック中のメニュー長押しによる強制アンロック（ハング時の救済措置）
   const handleForceUnlock = useCallback(() => {
     console.log("[App] Force unlock triggered by long press");
-    useSalonStore.getState().init();
+    useReadingStore.getState().init();
     setIsNavigationLocked(false);
     setPageType("home");
     setPersonalPageKey((k) => k + 1);
@@ -281,7 +281,7 @@ function App() {
     selectedPersonalTarotist,
     setSelectedTargetMode,
     setSelectedPersonalTargetMode,
-  } = useSalon();
+  } = useReading();
 
   // 起動時・プラン変更時: 現プランで使えない占い師が選択されていれば、
   //   占い師選択モードに戻してユーザーに再確認を促す（選択状態そのものは保持）。
@@ -541,7 +541,7 @@ function App() {
     if (isPageRestored) return;
     if (!clientIsReady || !currentPlan) return;
 
-    const RESTORABLE_PAGES: PageType[] = ["home", "salon", "personal"];
+    const RESTORABLE_PAGES: PageType[] = ["home", "quick", "personal"];
     const stored = useAppStore.getState().lastPageType;
     let target: PageType = "home";
 
@@ -632,7 +632,7 @@ function App() {
             currentPlan={currentPlan!}
             masterData={masterData}
             usageStats={usageStats}
-            onNavigateToSalon={() => setPageType("salon")}
+            onNavigateToQuick={() => setPageType("quick")}
             onNavigateToPersonal={() => setPageType("personal")}
             onNavigateToClara={() => setPageType("clara")}
             onNavigateToTarotist={() => setPageType("tarotist")}
@@ -642,9 +642,9 @@ function App() {
             isChangingPlan={isChangingPlan}
           />
         );
-      case "salon":
+      case "quick":
         return (
-          <SalonPage
+          <QuickPage
             payload={payload}
             currentPlan={currentPlan!}
             masterData={masterData}
@@ -675,7 +675,7 @@ function App() {
           <ReadingPage
             masterData={masterData}
             onBack={() => {
-              setPageType("salon");
+              setPageType("quick");
             }}
             onUnlock={() => setIsNavigationLocked(false)}
           />
@@ -727,7 +727,7 @@ function App() {
           <ClaraPage
             masterData={masterData}
             currentPlan={currentPlan!}
-            onBack={() => setPageType("salon")}
+            onBack={() => setPageType("quick")}
           />
         );
       case "history":
@@ -756,7 +756,7 @@ function App() {
             currentPlan={currentPlan!}
             masterData={masterData}
             usageStats={usageStats}
-            onNavigateToSalon={() => setPageType("salon")}
+            onNavigateToQuick={() => setPageType("quick")}
             onNavigateToPersonal={() => setPageType("personal")}
             onNavigateToClara={() => setPageType("clara")}
             onNavigateToTarotist={() => setPageType("tarotist")}

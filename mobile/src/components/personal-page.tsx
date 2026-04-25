@@ -10,9 +10,9 @@ import type {
   Plan,
 } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import { showInterstitialAd } from "../lib/utils/admob";
-import { drawRandomCards } from "../lib/utils/salon";
+import { drawRandomCards } from "../lib/utils/reading-helpers";
 import type { UserPlan } from "../types";
 import { ChatPanel } from "./chat-panel";
 import ShuffleDialog from "./shuffle-dialog";
@@ -62,7 +62,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
     setSelectedPersonalTargetMode,
     setIsPersonal,
     init,
-  } = useSalon();
+  } = useReading();
 
   const { remainingPersonal, personalOnboardedAt, markOnboarded } = useClient();
   const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
@@ -273,7 +273,7 @@ const PersonalPage: React.FC<PersonalPageProps> = ({
         // portrait モードと同じ fixed ラッパーで viewport 全高を明示する。
         // .main-container は min-height: 100% なので、子の height: 100% が
         // 解決できず、カルーセル内部のスワイプヒント/ドットインジケーターが
-        // viewport からはみ出すため揃える（salon-page.tsx と同じ対応）。
+        // viewport からはみ出すため揃える（quick-page.tsx と同じ対応）。
         <div
           className="fixed left-0 right-0 flex flex-col"
           style={{

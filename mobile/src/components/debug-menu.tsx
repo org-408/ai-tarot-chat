@@ -64,7 +64,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
       await appLogout();
       console.log("ログアウト成功");
 
-      handleSetPageType("salon");
+      handleSetPageType("quick");
     } catch (err) {
       console.error("ログアウトエラー:", err);
     }
@@ -181,7 +181,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
                 onClick={() => {
                   handleChangePlan("FREE");
                   setDevMenuOpen(false);
-                  handleSetPageType("salon");
+                  handleSetPageType("quick");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan!.code === "FREE"
@@ -195,7 +195,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
                 onClick={() => {
                   handleChangePlan("STANDARD");
                   setDevMenuOpen(false);
-                  handleSetPageType("salon");
+                  handleSetPageType("quick");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan!.code === "STANDARD"
@@ -209,7 +209,7 @@ export const DebugMenu: React.FC<DebugMenuProps> = ({
                 onClick={() => {
                   handleChangePlan("PREMIUM");
                   setDevMenuOpen(false);
-                  handleSetPageType("salon");
+                  handleSetPageType("quick");
                 }}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   currentPlan!.code === "PREMIUM"

@@ -43,7 +43,7 @@ export interface SpreadSuggestion {
 }
 
 export interface UseReadingChatConfig {
-  /** API エンドポイント (/api/readings/simple または /api/readings/personal) */
+  /** API エンドポイント (/api/readings/quick または /api/readings/personal) */
   api: string;
   /** JWT トークン */
   token: string | null | undefined;

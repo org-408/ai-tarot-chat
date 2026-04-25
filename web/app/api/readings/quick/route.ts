@@ -5,7 +5,7 @@ import {
   Tarotist,
 } from "@/../shared/lib/types";
 import { experimentalProviders } from "@/lib/server/ai/models";
-import { buildSimpleSystemPromptEn } from "@/lib/server/ai/prompts/simple-en";
+import { buildQuickSystemPromptEn } from "@/lib/server/ai/prompts/quick-en";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { authService, clientService } from "@/lib/server/services";
 import {
@@ -52,20 +52,20 @@ const RETRY_COUNT = 3;
 export async function POST(req: NextRequest) {
   let clientId = "";
   try {
-    logWithContext("info", "シンプル占いリクエスト開始", {
-      path: "/api/readings/simple",
+    logWithContext("info", "クイック占いリクエスト開始", {
+      path: "/api/readings/quick",
     });
 
     // sessionチェック（独自トークン検証）
     const payload = await authService.verifyApiRequest(req);
     if ("error" in payload || !payload) {
-      logWithContext("warn", "認証失敗", { path: "/api/readings/simple" });
+      logWithContext("warn", "認証失敗", { path: "/api/readings/quick" });
       return createReadingErrorResponse({
         code: "UNAUTHORIZED",
         message:
           "セッションの確認に失敗しました。いったん戻って再度お試しください。",
         status: 401,
-        phase: "simple",
+        phase: "quick",
       });
     }
 
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         message:
           "セッション情報が見つかりません。いったん戻って再度お試しください。",
         status: 401,
-        phase: "simple",
+        phase: "quick",
       });
     }
     logWithContext("info", "Client ID確認", { clientId });
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
         message:
           "アカウント情報の取得に失敗しました。いったん戻って再度お試しください。",
         status: 401,
-        phase: "simple",
+        phase: "quick",
       });
     }
     if (tarotist?.plan && tarotist.plan.no > client.plan.no) {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
         message:
           "この占い師は現在のプランではご利用いただけません。プランをアップグレードするか、別の占い師をお選びください。",
         status: 403,
-        phase: "simple",
+        phase: "quick",
       });
     }
 
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
           code: "LIMIT_REACHED",
           message: "本日のクイック占い回数上限に達しました。",
           status: 429,
-          phase: "simple",
+          phase: "quick",
         });
       }
     }
@@ -200,7 +200,7 @@ export async function POST(req: NextRequest) {
 
     // systemプロンプトを作成
     const system = language === "en"
-      ? buildSimpleSystemPromptEn({ tarotist, spread, category, drawnCards })
+      ? buildQuickSystemPromptEn({ tarotist, spread, category, drawnCards })
       : `あなたは、${tarotist.title}の${tarotist.name}です。` +
       `あなたの特徴は${tarotist.trait}です。` +
       `あなたのプロフィールは${tarotist.bio}です。` +
@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
       `- 回答は必ず一回で完結させること。複数回に分けて回答しないこと\n` +
       `- 1回の回答は200文字以上300文字以内とすること\n`;
 
-    logWithContext("debug", "シンプル占いリクエストボディ受信", {
+    logWithContext("debug", "クイック占いリクエストボディ受信", {
       tarotistId: tarotist?.id,
       spreadId: spread?.id,
       categoryId: category?.id,
@@ -369,7 +369,7 @@ export async function POST(req: NextRequest) {
       } catch (error) {
         logWithContext(
           "error",
-          `[readings/simple/route] シンプル占い試行${i + 1}回目失敗`,
+          `[readings/quick/route] クイック占い試行${i + 1}回目失敗`,
           { error, clientId },
         );
         if (i === RETRY_COUNT - 1) {
@@ -378,20 +378,20 @@ export async function POST(req: NextRequest) {
             message:
               "ただいま占いが混み合っています。少し時間をおいてもう一度お試しください。",
             status: 503,
-            phase: "simple",
+            phase: "quick",
             retryable: true,
           });
         }
         const nextModel = i === 0 ? "gpt5nano" : "claude_h";
         logWithContext(
           "warn",
-          `[readings/simple/route] プロバイダ失敗、${nextModel} にフォールバック (${i + 2}回目)`,
+          `[readings/quick/route] プロバイダ失敗、${nextModel} にフォールバック (${i + 2}回目)`,
           { clientId },
         );
       }
     }
   } catch (error) {
-    logWithContext("error", "[readings/simple/route] シンプル占いエラー", {
+    logWithContext("error", "[readings/quick/route] クイック占いエラー", {
       error,
       clientId,
     });
@@ -399,7 +399,7 @@ export async function POST(req: NextRequest) {
       code: "INTERNAL_ERROR",
       message: "占いの開始に失敗しました。時間をおいてもう一度お試しください。",
       status: 500,
-      phase: "simple",
+      phase: "quick",
     });
   }
 }

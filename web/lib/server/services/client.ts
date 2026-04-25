@@ -480,7 +480,7 @@ export class ClientService {
                 lastDateField: "lastReadingDate" as const,
                 limit: plan.maxReadings,
                 message: "本日のクイック占い回数上限に達しました。",
-                phase: "simple" as const,
+                phase: "quick" as const,
               };
 
         const quotaConsumed = await clientRepo.incrementUsageIfWithinLimit({
@@ -724,7 +724,7 @@ export class ClientService {
               lastDateField: "lastReadingDate" as const,
               limit: plan.maxReadings,
               message: "本日の占い回数上限に達しました。",
-              phase: "simple" as const,
+              phase: "quick" as const,
             };
 
         let quotaConsumed = true;

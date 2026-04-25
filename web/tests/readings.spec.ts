@@ -241,7 +241,7 @@ test.describe("リーディング保存・利用回数テスト", () => {
       u("msg_1", "今日の運勢を占ってください。"),
     ];
 
-    const res = await callReadingApi(request, "/api/readings/simple", {
+    const res = await callReadingApi(request, "/api/readings/quick", {
       token: normalApiToken,
       messages,
       tarotist,
@@ -508,7 +508,7 @@ test.describe("Reading/ChatMessage 所有関係: Web 経路（Device なし）",
 
     const messages: UIMessage[] = [u("msg_1", "今日の運勢を占ってください。")];
 
-    const res = await callReadingApi(request, "/api/readings/simple", {
+    const res = await callReadingApi(request, "/api/readings/quick", {
       token: webNoDeviceApiToken,
       messages,
       tarotist,
@@ -535,7 +535,7 @@ test.describe("Reading/ChatMessage 所有関係: Web 経路（Device なし）",
 
     const messages: UIMessage[] = [u("msg_1", "今日の運勢を占ってください。")];
 
-    const res = await callReadingApi(request, "/api/readings/simple", {
+    const res = await callReadingApi(request, "/api/readings/quick", {
       token: webSyntheticDeviceApiToken,
       messages,
       tarotist,
@@ -557,7 +557,7 @@ test.describe("Reading 履歴 API: cards の復元に必要な情報を返す", 
     const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
     const tarotCard = await getAnyTarotCard();
 
-    await callReadingApi(request, "/api/readings/simple", {
+    await callReadingApi(request, "/api/readings/quick", {
       token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
@@ -604,7 +604,7 @@ test.describe("Reading 履歴 API: cards の復元に必要な情報を返す", 
     const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
     const tarotCard = await getAnyTarotCard();
 
-    await callReadingApi(request, "/api/readings/simple", {
+    await callReadingApi(request, "/api/readings/quick", {
       token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
@@ -651,7 +651,7 @@ test.describe("Reading/ChatMessage 所有関係: スキーマ整合性", () => {
   test("ChatMessage.clientId は Reading.clientId と一致する（required 冗長キーの整合性）", async ({ request }) => {
     const { normalApiToken, normalClientId, tarotist, spread, category } = fixtures;
 
-    await callReadingApi(request, "/api/readings/simple", {
+    await callReadingApi(request, "/api/readings/quick", {
       token: normalApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,
@@ -715,7 +715,7 @@ test.describe("履歴 API: Client 中心の取得", () => {
   test("client 配下の Reading を /api/clients/readings で取得できる", async ({ request }) => {
     const { premiumApiToken, premiumClientId, tarotist, spread, category } = fixtures;
 
-    const saveRes = await callReadingApi(request, "/api/readings/simple", {
+    const saveRes = await callReadingApi(request, "/api/readings/quick", {
       token: premiumApiToken,
       messages: [u("msg_1", "占ってください。")],
       tarotist,

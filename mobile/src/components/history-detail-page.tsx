@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { ChatMessage, Reading, TarotCard } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import { HistoryPanel } from "./history-panel";
 import UpperViewer from "./upper-viewer";
 
@@ -20,7 +20,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
     isRevealingCompleted,
     setIsRevealingCompleted,
     setUpperViewerMode,
-  } = useSalon();
+  } = useReading();
 
   const [isTopCollapsed, setIsTopCollapsed] = useState(false);
 
@@ -54,7 +54,7 @@ const HistoryDetailPage: React.FC<HistoryDetailPageProps> = ({ reading, cardMap,
     [decks],
   );
 
-  // salon ストアに読み込みデータをセット（ClaraPage と同じパターン）
+  // reading ストアに読み込みデータをセット（ClaraPage と同じパターン）
   // DrawnCard.position / description / card は保存時点の言語版なので、
   // resolvedSpread.cells と現在言語 deck から引き直して上書きする。
   useEffect(() => {

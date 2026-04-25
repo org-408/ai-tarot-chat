@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CARD_ASPECT, MAX_CARD_HEIGHT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
-import { getCardImagePath } from "../lib/utils/salon";
+import { getCardImagePath } from "../lib/utils/reading-helpers";
 
 interface GridViewProps {
   spread: Spread;

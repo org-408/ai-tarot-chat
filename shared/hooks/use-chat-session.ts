@@ -378,7 +378,7 @@ export function useChatSession(
         }
       }
 
-      // 利用回数の UI 更新: simple 占いと Phase2 は サーバーで消費済みのため refresh
+      // 利用回数の UI 更新: quick 占いと Phase2 は サーバーで消費済みのため refresh
       if ((!isPersonal || isPhase2) && onRefreshUsage) {
         try {
           await onRefreshUsage();

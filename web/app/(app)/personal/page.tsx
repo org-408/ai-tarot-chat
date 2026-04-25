@@ -9,7 +9,7 @@ import { TwoColumnReadingLayout } from "@/components/reading/two-column-reading-
 import { useReadingChat } from "@shared/hooks/use-reading-chat";
 import { useClientStore } from "@/lib/client/stores/client-store";
 import { useMasterStore } from "@/lib/client/stores/master-store";
-import { useSalonStore } from "@/lib/client/stores/salon-store";
+import { useReadingStore } from "@/lib/client/stores/reading-store";
 import { drawRandomCards } from "@/lib/client/services/draw-service";
 import type {
   MasterData,
@@ -96,12 +96,12 @@ function PersonalReadingView({
     setDrawnCards,
     setIsRevealingCompleted,
     setIsLocked,
-  } = useSalonStore();
+  } = useReadingStore();
 
   const [rightVisible, setRightVisible] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
   const [isShuffleDone, setIsShuffleDone] = useState(false);
-  // AI 推薦スプレッド（salon-store に即 commit せず、ユーザー確定まで保持）。
+  // AI 推薦スプレッド（reading-store に即 commit せず、ユーザー確定まで保持）。
   // 即 commit すると useReadingChat の deriveStage が "spread-suggest" → "awaiting-draw"
   // に進んで、スプレッド選択 UI が一瞬で消えてしまうため。
   const [suggestedSpread, setSuggestedSpread] = useState<Spread | null>(null);
@@ -136,9 +136,9 @@ function PersonalReadingView({
       onRefreshToken,
       onUnlock: () => setIsLocked(false),
       onSpreadSuggested: (suggestion) => {
-        // AI 推薦をローカル state に保持（salon-store へは commit しない）。
+        // AI 推薦をローカル state に保持（reading-store へは commit しない）。
         // CategorySpreadSelector の initialSpread としてデフォルト選択に反映させる。
-        // ユーザーが「占いを始める」で確定したタイミングで初めて salon-store に書く。
+        // ユーザーが「占いを始める」で確定したタイミングで初めて reading-store に書く。
         const matched = masterData.spreads?.find(
           (s) =>
             (suggestion.spreadNo !== undefined && s.no === suggestion.spreadNo) ||
@@ -353,7 +353,7 @@ export default function PersonalPage() {
     setPersonalCategory,
     resetSession,
     setIsLocked,
-  } = useSalonStore();
+  } = useReadingStore();
   const { refreshUsage, usage, clearReadings } = useClientStore();
   const router = useRouter();
 

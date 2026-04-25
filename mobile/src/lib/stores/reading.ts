@@ -16,7 +16,7 @@ import type {
 } from "../../types";
 import { useMasterStore } from "./master";
 
-interface SalonState {
+interface ReadingState {
   selectedTarotist: Tarotist | null;
   selectedPersonalTarotist: Tarotist | null;
   quickCategory: ReadingCategory;
@@ -60,7 +60,7 @@ interface SalonState {
 
 // 初期値をマスターデータから取得する
 // 占い師は未選択（null）スタート。プラン変更時に現プランで使えない占い師は
-// salon-page で null に戻され、ユーザーに再選択を促す。
+// quick-page で null に戻され、ユーザーに再選択を促す。
 const initialCategory: ReadingCategory = useMasterStore
   .getState()
   .masterData.categories.find((c) => c.no === 1)!;
@@ -68,7 +68,7 @@ const initialSpread: Spread = useMasterStore
   .getState()
   .masterData.spreads.find((s) => s.plan?.code === "GUEST")!;
 
-export const useSalonStore = create<SalonState>()(
+export const useReadingStore = create<ReadingState>()(
   persist(
     (set) => ({
       selectedTarotist: null,
@@ -132,6 +132,7 @@ export const useSalonStore = create<SalonState>()(
       setMessages: (messages) => set({ messages }),
     }),
     {
+      // 永続化キーは互換性のため "salon-storage" のまま維持
       name: "salon-storage",
       version: 2,
       storage: createJSONStorage(() => ({
@@ -149,7 +150,7 @@ export const useSalonStore = create<SalonState>()(
       })),
       migrate: (persistedState: unknown, version) => {
         const state = persistedState as Record<string, unknown> | null;
-        if (!state) return persistedState as SalonState;
+        if (!state) return persistedState as ReadingState;
 
         if (version < 2) {
           const legacyCategory = state.selectedCategory as ReadingCategory | undefined;
@@ -164,7 +165,7 @@ export const useSalonStore = create<SalonState>()(
           };
         }
 
-        return state as unknown as SalonState;
+        return state as unknown as ReadingState;
       },
       // セッション固有の状態は永続化しない。
       // isPersonal / drawnCards / isRevealingCompleted / messages は
