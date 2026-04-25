@@ -25,8 +25,6 @@ interface QuickPageProps {
   ) => void;
   onStartReading: () => void;
   isChangingPlan: boolean;
-  /** プラン失効ダイアログ/トーストが表示中か（チュートリアル発火ブロック用） */
-  isPlanExpiredShowing: boolean;
 }
 
 const QuickPage: React.FC<QuickPageProps> = ({
@@ -35,7 +33,6 @@ const QuickPage: React.FC<QuickPageProps> = ({
   usageStats,
   onChangePlan,
   isChangingPlan,
-  isPlanExpiredShowing,
   onStartReading,
 }) => {
   const {
