@@ -1,35 +1,88 @@
-export const metadata = {
-  title: "利用規約 | Ariadne - AI対話リーディング体験",
-  description: "Ariadne - AI対話リーディング体験の利用規約",
-};
+import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
+import { resolveLocale, type Locale } from "@/lib/utils/resolve-locale";
 
-export default function TermsPage() {
-  const lastUpdated = "2026年3月20日";
-  const appName = "Ariadne - AI対話リーディング体験";
-  const developerName = "Atelier Flow Lab";
-  const contactEmail = "support@ariadne-ai.app";
+type SearchParams = { lang?: string };
 
+async function getLocale(searchParams: Promise<SearchParams>): Promise<Locale> {
+  const sp = await searchParams;
+  const c = await cookies();
+  const h = await headers();
+  return resolveLocale(sp, c.get("NEXT_LOCALE")?.value, h.get("accept-language"));
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const locale = await getLocale(searchParams);
+  const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
+  return locale === "en"
+    ? {
+        title: "Terms of Service | Ariadne: AI Reflection Dialogue",
+        description:
+          "Terms of Service for Ariadne: AI Reflection Dialogue, an AI-facilitated tarot reflection dialogue experience.",
+        alternates: {
+          canonical: `${baseUrl}/terms?lang=en`,
+          languages: {
+            ja: `${baseUrl}/terms`,
+            en: `${baseUrl}/terms?lang=en`,
+            "x-default": `${baseUrl}/terms`,
+          },
+        },
+      }
+    : {
+        title: "利用規約 | Ariadne - AI対話リーディング体験",
+        description: "Ariadne - AI対話リーディング体験の利用規約",
+        alternates: {
+          canonical: `${baseUrl}/terms`,
+          languages: {
+            ja: `${baseUrl}/terms`,
+            en: `${baseUrl}/terms?lang=en`,
+            "x-default": `${baseUrl}/terms`,
+          },
+        },
+      };
+}
+
+const APP_NAME_JA = "Ariadne - AI対話リーディング体験";
+const APP_NAME_EN = "Ariadne: AI Reflection Dialogue";
+const DEVELOPER_NAME = "Atelier Flow Lab";
+const CONTACT_EMAIL = "support@ariadne-ai.app";
+const LAST_UPDATED_JA = "2026年3月20日";
+const LAST_UPDATED_EN = "March 20, 2026";
+
+export default async function TermsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const locale = await getLocale(searchParams);
+  return locale === "en" ? <TermsEN /> : <TermsJA />;
+}
+
+function TermsJA() {
   return (
     <div className="min-h-screen bg-white text-gray-800">
       <div className="max-w-2xl mx-auto px-6 py-10">
-        {/* ヘッダー */}
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{appName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{APP_NAME_JA}</h1>
           <p className="text-lg font-semibold text-gray-700 mt-1">利用規約</p>
-          <p className="text-sm text-gray-500 mt-2">最終更新日：{lastUpdated}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            最終更新日：{LAST_UPDATED_JA}
+          </p>
         </div>
 
         <div className="space-y-8 text-sm leading-relaxed">
-          {/* 前文 */}
           <section>
             <p className="text-gray-700">
-              本利用規約（以下「本規約」）は、{developerName}
-              （以下「当社」）が提供する{appName}
+              本利用規約（以下「本規約」）は、{DEVELOPER_NAME}
+              （以下「当社」）が提供する{APP_NAME_JA}
               （以下「本アプリ」）の利用に関する条件を定めるものです。本アプリをご利用になる前に、本規約をよくお読みください。本アプリのインストールまたはご利用をもって、本規約に同意いただいたものとみなします。
             </p>
           </section>
 
-          {/* 第1条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第1条　サービスの概要
@@ -39,7 +92,6 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* 第2条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第2条　利用資格
@@ -55,7 +107,6 @@ export default function TermsPage() {
             </ul>
           </section>
 
-          {/* 第3条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第3条　アカウント・ゲスト利用
@@ -76,7 +127,6 @@ export default function TermsPage() {
             </ul>
           </section>
 
-          {/* 第4条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第4条　料金・サブスクリプション
@@ -134,7 +184,6 @@ export default function TermsPage() {
             </div>
           </section>
 
-          {/* 第5条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第5条　禁止事項
@@ -152,7 +201,6 @@ export default function TermsPage() {
             </ul>
           </section>
 
-          {/* 第6条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第6条　免責事項
@@ -185,7 +233,6 @@ export default function TermsPage() {
             </div>
           </section>
 
-          {/* 第7条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第7条　知的財産権
@@ -195,7 +242,6 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* 第8条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第8条　規約の変更
@@ -205,7 +251,6 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* 第9条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第9条　準拠法・管轄裁判所
@@ -215,7 +260,6 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* 第10条 */}
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
               第10条　お問い合わせ
@@ -226,23 +270,300 @@ export default function TermsPage() {
             <div className="bg-gray-50 rounded-lg p-4 text-gray-700 space-y-1">
               <p>
                 <span className="font-semibold">事業者名：</span>
-                {developerName}
+                {DEVELOPER_NAME}
               </p>
               <p>
                 <span className="font-semibold">メール：</span>
                 <a
-                  href={`mailto:${contactEmail}`}
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="text-purple-600 underline"
                 >
-                  {contactEmail}
+                  {CONTACT_EMAIL}
                 </a>
               </p>
             </div>
           </section>
 
-          {/* フッター */}
           <div className="pt-4 text-center text-xs text-gray-400">
-            © {new Date().getFullYear()} {developerName}. All rights reserved.
+            © {new Date().getFullYear()} {DEVELOPER_NAME}. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TermsEN() {
+  return (
+    <div className="min-h-screen bg-white text-gray-800">
+      <div className="max-w-2xl mx-auto px-6 py-10">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">{APP_NAME_EN}</h1>
+          <p className="text-lg font-semibold text-gray-700 mt-1">
+            Terms of Service
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Last updated: {LAST_UPDATED_EN}
+          </p>
+        </div>
+
+        <div className="space-y-8 text-sm leading-relaxed">
+          <section>
+            <p className="text-gray-700">
+              These Terms of Service ("the Terms") set forth the conditions of
+              use for {APP_NAME_EN} ("the App"), provided by {DEVELOPER_NAME}{" "}
+              ("the Company"). Please read these Terms carefully before using
+              the App. By installing or using the App, you are deemed to have
+              agreed to these Terms.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 1. Service Overview
+            </h2>
+            <p className="text-gray-700">
+              The App provides an AI-facilitated tarot reflection dialogue
+              experience. Reading responses are generated by AI and are intended
+              for entertainment purposes only. The App is not a service provided
+              by professional human tarot readers.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 2. Eligibility
+            </h2>
+            <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
+              <li>The App is intended for users aged 13 or older.</li>
+              <li>
+                Users under 13 require the consent of a parent or guardian.
+              </li>
+              <li>
+                If you cannot agree to these Terms, please refrain from using
+                the App.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 3. Account and Guest Use
+            </h2>
+            <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
+              <li>
+                The App can be used as a guest without account registration.
+                Some features, however, require account registration.
+              </li>
+              <li>
+                Account registration uses Google authentication or Apple
+                authentication.
+              </li>
+              <li>
+                The management and security of account information are the
+                user's responsibility.
+              </li>
+              <li>
+                Please contact us promptly if you discover unauthorized use of
+                your account by a third party.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 4. Pricing and Subscriptions
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (1) Free and Paid Plans
+                </h3>
+                <p className="text-gray-600">
+                  The App offers a free Guest plan and a free plan, in addition
+                  to paid Standard and Premium plans. Features and usage limits
+                  for each plan are as described within the App.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (2) Billing and Payment
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
+                  <li>
+                    Paid plans are billed through the App Store (iOS) or Google
+                    Play (Android).
+                  </li>
+                  <li>Billing is managed through RevenueCat.</li>
+                  <li>
+                    Prices are as displayed in your store of use (tax
+                    inclusive).
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (3) Auto-renewal of Subscriptions
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
+                  <li>
+                    Paid plans renew automatically unless cancelled at least 24
+                    hours before the end of the current period.
+                  </li>
+                  <li>
+                    Cancellations should be made via the App Store (Settings &gt;
+                    Subscriptions) or Google Play (Subscription management).
+                  </li>
+                  <li>
+                    Refunds for cancellations during a billing period are
+                    governed by App Store and Google Play policies.
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (4) Free Trial
+                </h3>
+                <p className="text-gray-600">
+                  When a free trial is offered, the subscription will
+                  automatically transition to the paid plan unless you cancel
+                  before the trial ends.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 5. Prohibited Conduct
+            </h2>
+            <p className="mb-2 text-gray-700">
+              Users must not engage in any of the following.
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-gray-600 ml-2">
+              <li>
+                Acts that violate laws, regulations, or public order and morals
+              </li>
+              <li>
+                Reverse engineering, modifying, or duplicating the App
+              </li>
+              <li>
+                Unauthorized access or excessive load on the App's servers
+              </li>
+              <li>Acts that infringe the rights of other users or third parties</li>
+              <li>Spam, phishing, or fraudulent activity</li>
+              <li>Other acts that the Company deems inappropriate</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 6. Disclaimers
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (1) Reading Responses
+                </h3>
+                <p className="text-gray-600">
+                  Reading responses produced by the App are entertainment
+                  content generated by AI. The App does not guarantee the
+                  accuracy of any reading response, and reading responses must
+                  not be used as a substitute for professional advice in
+                  medical, legal, financial, or similar fields. Any decisions or
+                  actions you take based on reading responses are at your sole
+                  responsibility.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (2) Service Continuity
+                </h3>
+                <p className="text-gray-600">
+                  The Company may suspend or terminate the service without
+                  notice due to maintenance, system failure, natural disasters,
+                  or other reasons. The Company assumes no liability for any
+                  resulting damages.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  (3) Limitation of Liability
+                </h3>
+                <p className="text-gray-600">
+                  In the event of damages caused by reasons attributable to the
+                  Company, the Company's total liability shall be limited to
+                  the amount you paid to the Company in the preceding one
+                  month.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 7. Intellectual Property Rights
+            </h2>
+            <p className="text-gray-700">
+              All intellectual property rights in the contents of the App
+              (including text, images, design, and program code) belong to the
+              Company or rightful owners. Use, reproduction, or distribution
+              beyond the scope explicitly permitted by these Terms is
+              prohibited.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 8. Changes to the Terms
+            </h2>
+            <p className="text-gray-700">
+              The Company may revise these Terms as necessary. The revised
+              Terms become effective from the time they are posted on this
+              page. Continued use of the App after such changes constitutes
+              acceptance of the revised Terms.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 9. Governing Law and Jurisdiction
+            </h2>
+            <p className="text-gray-700">
+              These Terms shall be governed by and construed in accordance with
+              the laws of Japan. The Tokyo District Court shall be the
+              exclusive court of first instance for any disputes related to
+              these Terms.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200">
+              Article 10. Contact
+            </h2>
+            <p className="text-gray-700 mb-2">
+              For questions or complaints regarding these Terms, please contact
+              us:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-4 text-gray-700 space-y-1">
+              <p>
+                <span className="font-semibold">Company name: </span>
+                {DEVELOPER_NAME}
+              </p>
+              <p>
+                <span className="font-semibold">Email: </span>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="text-purple-600 underline"
+                >
+                  {CONTACT_EMAIL}
+                </a>
+              </p>
+            </div>
+          </section>
+
+          <div className="pt-4 text-center text-xs text-gray-400">
+            © {new Date().getFullYear()} {DEVELOPER_NAME}. All rights reserved.
           </div>
         </div>
       </div>

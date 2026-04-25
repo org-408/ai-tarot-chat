@@ -383,8 +383,8 @@ export default function SettingsPage() {
 
         {/* 法的情報 */}
         <SettingsGroup title={t("legal")}>
-          <SettingsRow label={t("privacy")} href="/privacy" />
-          <SettingsRow label={t("terms")} href="/terms" />
+          <SettingsRow label={t("privacy")} href={`/privacy?lang=${locale}`} />
+          <SettingsRow label={t("terms")} href={`/terms?lang=${locale}`} />
         </SettingsGroup>
 
         {/* アカウント管理（削除） */}

@@ -22,7 +22,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   entries.push(
     { url: `${baseUrl}/blog`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${baseUrl}/terms`, changeFrequency: "yearly", priority: 0.3 }
+    { url: `${baseUrl}/privacy?lang=en`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/terms`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/terms?lang=en`, changeFrequency: "yearly", priority: 0.3 }
   );
 
   // 公開済みブログ記事
