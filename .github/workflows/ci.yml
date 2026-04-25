@@ -72,6 +72,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Apple 4.3(b) 対策: ja.json/en.json と Apple 審査員が踏むパス配下の
+      # ソースに NG ワード (fortune/predict/horoscope/destiny/fate/zodiac) や
+      # 英語ページの日本語混入 (翻訳漏れ) がないかを検査。
+      - name: i18n audit
+        run: npm run lint:i18n
+
       - name: Type check
         run: npx tsc --noEmit
 

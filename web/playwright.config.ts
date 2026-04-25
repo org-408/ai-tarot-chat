@@ -19,7 +19,13 @@ export default defineConfig({
     // ── 未認証テスト（公開ページ・リダイレクト確認）──
     {
       name: "unauthenticated",
-      testMatch: ["**/smoke.spec.ts", "**/pages.spec.ts"],
+      testMatch: [
+        "**/smoke.spec.ts",
+        "**/pages.spec.ts",
+        // Apple 4.3(b): locale 解決の HTTP スモーク + resolveLocale 単体
+        "**/locale-smoke.spec.ts",
+        "**/resolve-locale.spec.ts",
+      ],
       use: { browserName: "chromium" },
     },
     // ── 認証済みテスト（アプリページ内容確認）──

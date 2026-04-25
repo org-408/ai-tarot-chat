@@ -26,6 +26,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:prompts": "node scripts/audit-ai-prompts.mjs",
+    "lint:i18n": "node scripts/i18n-audit.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
