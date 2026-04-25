@@ -286,7 +286,7 @@ Thank you for your consideration.
 | モバイル Phase 2.2（JA ハードコード残り + 追補） | ✅ 完了 | #241 / PR #242 |
 | モバイル Phase 3（EN 翻訳 + NG ワード検証） | ✅ 完了 | Phase 2/2.1/2.2 内 |
 | モバイル Phase 4（Settings 言語切替 UI） | ✅ 完了 | Phase 2 内 |
-| Web（Phase 5、5-1〜5-7） | ❌ 未着手 | — |
+| Web（Phase 5、5-1〜5-9） | ❌ 未着手 | **2026-04-25 改訂: `[locale]/` 移設なし方針** |
 
 **詳細進捗は [GitHub Issue #234](https://github.com/org-408/ai-tarot-chat/issues/234) body が source of truth。各 PR マージ直後に checkbox を更新する運用（2026-04-24 確定）。**
 
@@ -301,11 +301,13 @@ Thank you for your consideration.
 - ユーザー選択は `@capacitor/preferences` に保存
 
 ### Web（`web/`）
-- [web/app/privacy/page.tsx](../web/app/privacy/page.tsx) : `appName` 定数・サービス定義・「占い」→「リーディング」
+- [web/app/privacy/page.tsx](../web/app/privacy/page.tsx) : `appName` 定数・サービス定義・「占い」→「リーディング」+ `?lang=` クエリで JA/EN 切替（5-6）
 - [web/app/terms/page.tsx](../web/app/terms/page.tsx) : 同上
 - [web/app/page.tsx](../web/app/page.tsx) + [web/app/home-client.tsx](../web/app/home-client.tsx) : 見出し・CTA・紹介文を「リーディング / セッション / 対話」寄せに薄める。ブログリンクをフッターのみに弱化
-- [web/app/auth/](../web/app/auth/) : タイトル・見出しの「占い」を軽く薄める
-- [web/app/(app)/](../web/app/\(app\)/) : **プレローンチ段階・4.3b スコープ外**。日本語のみ「占い」→「リーディング」の軽いテキストスイープを実施（i18n 化はしない、ロジック変更なし）
+- [web/app/auth/signin/page.tsx](../web/app/auth/signin/page.tsx) : 現位置のまま `getTranslations` で JA/EN 切替（5-7）。マーケ LP 誘導リンクを `/${locale}` / `/${locale}/pricing` に動的化
+- [web/app/[locale]/(marketing)/](../web/app/[locale]/\(marketing\)/) : `useTranslations` 化、`en.json` に翻訳追加（5-7-2）
+- [web/app/(app)/](../web/app/\(app\)/) : **既に i18n 化済み（`useTranslations` 使用）。4.3(b) スコープ外として 4.3(b) 通過後に正式 i18n 化（`t()` + `ja.json`/`en.json` 追加）で本対応**（旧 Task 5-4 は延期、本セッション 2026-04-25 改訂）
+- [web/lib/utils/resolve-locale.ts](../web/lib/utils/resolve-locale.ts) **新規**: `?lang=` > `NEXT_LOCALE` cookie > `Accept-Language` > `defaultLocale="ja"` の優先順で locale を解決する共通ヘルパ
 - **`web/app/support/page.tsx` 新規作成**: サポートページ（FAQ + お問い合わせ連絡先）。§6 参照
 
 ### 変更しないもの
@@ -316,16 +318,19 @@ Thank you for your consideration.
 
 ### Web ランディング / サインインページの扱い
 
-> **追補（2026-04-25）**: 下記の「`useTranslations` + Accept-Language / `NEXT_LOCALE` cookie に乗せる」方針は、**`[locale]` セグメント方式（`/ja/auth/signin` / `/en/auth/signin` への移設）に改訂**された。モバイル → Web への locale 伝播はパスで行う（Issue #234 Task 5-7 / 5-9）。以下の記述は初期検討の経緯として残す。
+> **追補（2026-04-25 改訂、PR #248 を上書き）**: PR #248 で示した「`[locale]` セグメント方式（`/ja/auth/signin` / `/en/auth/signin` への移設）」は **廃案**。サインイン・Privacy・Terms を移設すると既存 redirect / href の大量修正・配布済みモバイルアプリ互換性などの副作用が大きいため、**現位置のまま `?lang=` クエリ + cookie + Accept-Language で内部判定する方式**に再改訂した。詳細は Issue #234 / `apple-43b-instructions.md` Phase 5 を参照。
 
 `ariadne-ai.app/` は **実質的に `/auth/signin` を兼ねるマーケティング入口** として機能する（未認証アクセスはサインインページへリダイレクト）。App Store Connect の Marketing URL は `ariadne-ai.app/` のまま、内部で多言語化する方針を採る。
 
-- **サインインページ** (`web/app/auth/signin/page.tsx`) は現状 JA 直書き → **内部翻訳切替** (`useTranslations` + Accept-Language / `NEXT_LOCALE` cookie) を追加
+- **サインインページ** (`web/app/auth/signin/page.tsx`) は **現位置のまま**、内部で `getTranslations({ locale })` を直接呼んで JA/EN を切り替える
+  - locale 解決順: `?lang=` クエリ > `NEXT_LOCALE` cookie > `Accept-Language` > `defaultLocale="ja"`
   - **併せて**: サインイン内のマーケ LP 誘導リンク（現状 `href="/ja"` / `href="/ja/pricing"` ハードコード）を `/${locale}` / `/${locale}/pricing` に動的化。サインインが「サインイン + マーケ誘導」を兼ねる設計
 - **独立マーケティング LP** (`web/app/[locale]/(marketing)/page.tsx` 配下) は next-intl の土台既に完動 (middleware / routing / `messages/{ja,en}.json`)。コンテンツが JA 直書きなだけ → `useTranslations` 移行 + `en.json` に翻訳追加で完了
+- **Privacy / Terms** (`web/app/privacy/page.tsx` / `web/app/terms/page.tsx`) も **現位置のまま**、ファイル内で locale 分岐して JA/EN 本文を出し分ける
 - **Marketing URL は `ariadne-ai.app/` のまま**（変更不要）。Accept-Language が en のアクセスはサインインページが EN 表示、かつ内部リンクで `/en` LP に遷移できる
+- **モバイル → Web** へは `?lang=` クエリで現在言語を伝達。OS は ja-JP のままアプリ内で EN を選択しているケースで Web サインインも EN にするための明示シグナル
 
-> 当初 "英語化はスコープ外" としていたが、アプリ内 UI + AI プロンプト + Privacy/Terms が EN 化される整合性から、サインイン + `[locale]/(marketing)/` の翻訳も同時に行うことにした (2026-04-24)。実装コストは「JA 直書き → `useTranslations` + `en.json` 追加」で既存土台を活用できるため低い。
+> 当初 "英語化はスコープ外" としていたが、アプリ内 UI + AI プロンプト + Privacy/Terms が EN 化される整合性から、サインイン + `[locale]/(marketing)/` の翻訳も同時に行うことにした (2026-04-24)。実装コストは「JA 直書き → `useTranslations` / `getTranslations` + `en.json` 追加」で既存土台を活用できるため低い。
 
 ---
 
@@ -391,7 +396,15 @@ grep -rniE "fortune|predict|horoscope|destiny|fate" src/components/ --include="*
 
 「占い師」単体はキャラクタープロフィール等の自然な表記では残す。1 画面あたりの「占い」出現 5 → 1〜2 に削減。
 
-### Privacy / Terms 置換
+### JA リポジション置換ルール（Privacy / Terms / その他 metadata 系）
+
+> **スコープ補足**: 下記の置換表は **Privacy / Terms に限定されない**。`appName` 定数 / metadata title / JSON-LD `alternateName` / OG 画像生成のフォントサブセット文字 など **同パターンが現れる全ての箇所** に適用する。具体的な対象ファイル:
+> - `web/app/privacy/page.tsx` / `web/app/terms/page.tsx`
+> - `web/app/delete-account/page.tsx`
+> - `web/app/[locale]/(marketing)/layout.tsx`（JSON-LD `alternateName`）
+> - `web/app/api/og/route.tsx` / `web/app/api/og/feature/route.tsx`（フォントサブセット文字 — テンプレ文の修正に合わせて更新）
+>
+> **スコープ外（変更しない）**: `web/app/blog/` 配下と `web/lib/server/services/blog-post.ts`（SEO 資産保護、§7「変更しないもの」参照）
 
 | 箇所 | before | after |
 |---|---|---|
