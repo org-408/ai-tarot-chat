@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import SpotlightCoachMark from "../../../shared/components/ui/spotlight-coach-mark";
@@ -96,8 +97,14 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     );
   }, [rawSelectedSpread, resolvedSpreads]);
 
-  // クイック占い入力欄への参照（チップタップ時のカーソル位置挿入に使用）。
+  // クイック占い入力欄への参照（折りたたみセクションで使用）
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 「詳しく書く」セクションの開閉。既に customQuestion に文字が入っていれば
+  // 自動展開（前回入力を尊重）。空ならデフォルトで折りたたみ。
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState<boolean>(
+    () => (customQuestion?.trim().length ?? 0) > 0,
+  );
 
   // コーチマークのスポットライト対象: カテゴリ/スプレッドのアコーディオンだけを囲む内側 div。
   // 最外 div にするとボタン・利用回数テキストまで強調範囲に入り、暗幕が画面下半分に回らなくなる。
@@ -245,8 +252,6 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   // EN モードでは "Love" 等に変わるため identity 判定に使うと壊れる)。
   const availableCategories = useMemo(() => {
     if (!resolvedCategories) return [];
-    // 並び順固定のために no でソート (decorator/resolver は元順序を壊さないが念のため)
-    const GUEST_FREE_CATEGORY_NOS = [1, 2, 3]; // 恋愛, 仕事, 今日の運勢
     return (
       resolvedCategories
         .filter((category: ReadingCategory) => {
@@ -255,10 +260,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
             return (CLARA_CATEGORY_NOS as readonly number[]).includes(
               category.no,
             );
-          // GUESTとFREEは、恋愛・仕事・今日の運勢のみ表示
-          if (currentPlan!.code === "GUEST" || currentPlan!.code === "FREE") {
-            return GUEST_FREE_CATEGORY_NOS.includes(category.no);
-          }
+          // クイック・パーソナル: 全カテゴリをフルオープン（プラン制限なし）
           return true;
         })
         // bioプロパティをdescriptionからコピー
@@ -267,7 +269,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           bio: category.description,
         }))
     );
-  }, [resolvedCategories, currentPlan, claraMode]);
+  }, [resolvedCategories, claraMode]);
 
   const categoryItems: AccordionItem[] = [
     {
@@ -440,62 +442,49 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
 
   return (
     <div>
-      {/* スワイプヒント */}
+      {/* メイン説明文（プライマリ CTA 的に目立たせる） */}
       <motion.div
-        className="text-center py-4"
+        className="text-center py-3"
         initial={{ opacity: 1 }}
-        animate={{ opacity: [1, 0.5, 1] }}
+        animate={{ opacity: [1, 0.7, 1] }}
         transition={{ repeat: Infinity, duration: 3 }}
       >
-        <span
-          className="text-gray-800 bg-white/70
-            backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
-        >
+        <span className="inline-block px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white text-base font-bold shadow-lg">
           {isPersonal
             ? t("reading.pickSpreadOnly")
-            : claraMode
-              ? t("reading.pickCategoryAndSpread")
-              : t("reading.askAnything")}
+            : t("reading.pickCategoryAndSpread")}
         </span>
       </motion.div>
 
       {/* コーチマーク強調対象: ジャンルチップ・入力欄・スプレッドアコーディオンを囲む。 */}
       <div ref={selectorAreaRefCallback}>
-        {/* クイック占い: ジャンルチップ（入力補助）。
-            タップ時に textarea のカーソル位置にカテゴリ名を挿入する。
-            未フォーカスのときは末尾に追記。挿入後はカーソルを挿入文字の直後に移動。 */}
+        {/* クイック占い: ジャンルチップ（プライマリ選択 UI）。
+            横スクロール、全カテゴリ表示。タップ → setSelectedCategory で
+            選択状態を切り替え。選択中はハイライト。
+            customQuestion を上書きしないため、ユーザーは「ジャンルだけで占う」
+            「ジャンル＋自由入力」両方の使い方ができる。 */}
         {!isPersonal && !claraMode && (
-          <div className="m-1 px-1 flex flex-wrap gap-2 justify-center">
-            {availableCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                // 入力欄の blur を防ぐため onMouseDown で preventDefault
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  const ta = textareaRef.current;
-                  const text = cat.name;
-                  if (!ta) {
-                    setCustomQuestion((customQuestion ?? "") + text);
-                    return;
-                  }
-                  const start = ta.selectionStart ?? customQuestion.length;
-                  const end = ta.selectionEnd ?? customQuestion.length;
-                  const next =
-                    customQuestion.slice(0, start) + text + customQuestion.slice(end);
-                  setCustomQuestion(next);
-                  // カーソルを挿入後の位置に移動
-                  requestAnimationFrame(() => {
-                    ta.focus();
-                    const cursor = start + text.length;
-                    ta.setSelectionRange(cursor, cursor);
-                  });
-                }}
-                className="px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-purple-200 text-sm text-purple-700 shadow-sm active:bg-purple-100 active:scale-95 transition-all"
-              >
-                {cat.name}
-              </button>
-            ))}
+          <div
+            className="m-1 px-2 flex gap-2 overflow-x-auto pb-1"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {availableCategories.map((cat) => {
+              const isSelected = cat.id === selectedCategory?.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full backdrop-blur-sm border text-sm shadow-sm active:scale-95 transition-all ${
+                    isSelected
+                      ? "bg-purple-600 border-purple-600 text-white"
+                      : "bg-white/80 border-purple-200 text-purple-700"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -506,21 +495,36 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           </div>
         )}
 
-        {/* クイック占い: 自由入力欄（任意）。
-            空のままなら裏のデフォルトカテゴリ（恋愛）で占う。
-            書き込めばその文章が customQuestion として AI に届き、優先される。
-            上のチップタップで内容を流し込む補助にもなる。 */}
+        {/* クイック占い: 自由入力欄（折りたたみセカンダリ）。
+            デフォルト閉じ。「詳しく書く」をタップで展開。
+            空のまま占う場合は上のチップ選択（categoryId）で AI に投げる。
+            書き込めばその文章が customQuestion として優先される。 */}
         {!isPersonal && !claraMode && (
           <div className="m-1">
-            <textarea
-              ref={textareaRef}
-              value={customQuestion}
-              onChange={(e) => setCustomQuestion(e.target.value)}
-              placeholder={t("reading.questionPlaceholder")}
-              rows={3}
-              maxLength={500}
-              className="w-full rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
-            />
+            <button
+              type="button"
+              onClick={() => setIsAdvancedOpen((v) => !v)}
+              className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 py-2 active:text-gray-700"
+            >
+              <span>{t("reading.writeMore")}</span>
+              <motion.div
+                animate={{ rotate: isAdvancedOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown size={12} />
+              </motion.div>
+            </button>
+            {isAdvancedOpen && (
+              <textarea
+                ref={textareaRef}
+                value={customQuestion}
+                onChange={(e) => setCustomQuestion(e.target.value)}
+                placeholder={t("reading.questionPlaceholder")}
+                rows={3}
+                maxLength={500}
+                className="w-full rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
+              />
+            )}
           </div>
         )}
 
