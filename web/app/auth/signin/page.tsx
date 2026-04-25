@@ -1,7 +1,12 @@
 import { SignInViewTracker } from "@/components/analytics/signin-view-tracker";
 import { SignInForm } from "@/components/auth/signin-form";
+import { resolveLocale, type Locale } from "@/lib/utils/resolve-locale";
 import { ChevronDown } from "lucide-react";
+import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { MonteCarlo } from "next/font/google";
+import { cookies, headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -12,6 +17,46 @@ interface SearchParams {
   callbackUrl?: string;
   error?: string;
   isMobile?: string;
+  lang?: string;
+}
+
+async function resolveLocaleFromRequest(searchLang: string | undefined): Promise<Locale> {
+  const cookieStore = await cookies();
+  const headerList = await headers();
+  return resolveLocale(
+    { lang: searchLang },
+    cookieStore.get("NEXT_LOCALE")?.value,
+    headerList.get("accept-language")
+  );
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const locale = await resolveLocaleFromRequest(params.lang);
+  const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
+  const t = await getTranslations({ locale, namespace: "auth" });
+  const title =
+    locale === "ja"
+      ? "サインイン | Ariadne - AI対話リーディング体験"
+      : "Sign in | Ariadne: AI Reflection Dialogue";
+
+  return {
+    title,
+    description: t("signinCardDescription"),
+    alternates: {
+      canonical: `${baseUrl}/auth/signin`,
+      languages: {
+        ja: `${baseUrl}/auth/signin?lang=ja`,
+        en: `${baseUrl}/auth/signin?lang=en`,
+        "x-default": `${baseUrl}/auth/signin`,
+      },
+    },
+    robots: { index: false, follow: false },
+  };
 }
 
 const LoadingSkeleton = () => (
@@ -68,7 +113,8 @@ function CardFan({ size = "md" }: { size?: "sm" | "md" }) {
 
 const HERO_TAROTISTS = ["Ariadne", "Sophia", "Clara", "Luna"] as const;
 
-function SignInHeroPanel() {
+async function SignInHeroPanel({ locale }: { locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "auth" });
   return (
     <div
       className="hidden lg:flex lg:w-2/3 relative flex-col overflow-hidden"
@@ -77,9 +123,7 @@ function SignInHeroPanel() {
           "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)",
       }}
     >
-      {/* メインコンテンツ: 左半分にテキスト・右半分に画像、各中央寄せ */}
       <div className="flex flex-1 items-center">
-        {/* 左半分: テキストグループ（中央寄せ） */}
         <div className="w-1/2 flex justify-center items-center">
           <div className="flex flex-col">
             <div className="flex items-end gap-5 mb-6">
@@ -91,19 +135,16 @@ function SignInHeroPanel() {
                 >
                   Ariadne
                 </h1>
-                <p
-                  className="text-2xl font-bold"
-                  style={{ color: "#87CEEB" }}
-                >
-                  AI Reflection Dialogue
+                <p className="text-2xl font-bold" style={{ color: "#87CEEB" }}>
+                  {t("signInTitle")}
                 </p>
               </div>
             </div>
             <p className="text-violet-200 text-lg mb-1">
-              8人のAI占い師と22種のスプレッドで
+              {t("signinHeroSubtitle")}
             </p>
             <p className="text-white/80 text-base mb-8">
-              本格的なタロットリーディングを体験しよう
+              {t("signinHeroDescription")}
             </p>
             <div className="flex gap-3">
               {["iOS", "Android"].map((p) => (
@@ -118,7 +159,6 @@ function SignInHeroPanel() {
           </div>
         </div>
 
-        {/* 右半分: 画像グループ（中央寄せ） */}
         <div className="w-1/2 flex justify-center items-center">
           <div className="grid grid-cols-2 gap-4">
             {HERO_TAROTISTS.map((name) => (
@@ -139,7 +179,6 @@ function SignInHeroPanel() {
         </div>
       </div>
 
-      {/* 右端グラデーション */}
       <div
         className="absolute inset-y-0 right-0 w-16 pointer-events-none"
         style={{
@@ -147,13 +186,12 @@ function SignInHeroPanel() {
         }}
       />
 
-      {/* 下部: マーケティングページリンク */}
       <Link
-        href="/ja"
+        href={`/${locale}`}
         className="flex flex-col items-center gap-1 pb-8 text-violet-200 hover:text-white transition-colors"
       >
         <span className="text-sm font-medium tracking-wide">
-          サービスの詳細・料金を見る
+          {t("signinViewDetails")}
         </span>
         <ChevronDown className="w-5 h-5 animate-bounce" />
       </Link>
@@ -161,14 +199,16 @@ function SignInHeroPanel() {
   );
 }
 
-// モバイル WebView 向けレイアウト（従来通り）
-function MobileSignInLayout({
+async function MobileSignInLayout({
   error,
   stars,
+  locale,
 }: {
   error?: string;
   stars: ReturnType<typeof generateStars>;
+  locale: Locale;
 }) {
+  const t = await getTranslations({ locale, namespace: "auth" });
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-800 via-purple-800 to-pink-800 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden">
@@ -214,11 +254,11 @@ function MobileSignInLayout({
                 className="text-xl font-medium mt-1"
                 style={{ color: "#87CEEB" }}
               >
-                AI Reflection Dialogue
+                {t("signInTitle")}
               </div>
             </div>
             <p className="text-white/80 text-lg font-medium">
-              AIと対話するタロット占い
+              {t("signInSubtitle")}
             </p>
             <div className="flex items-center justify-center gap-2 mt-6 mb-2">
               <div className="w-8 h-px bg-gradient-to-r from-transparent to-white/40" />
@@ -227,20 +267,26 @@ function MobileSignInLayout({
             </div>
           </div>
           <Suspense fallback={<LoadingSkeleton />}>
-            <SignInForm error={error} isMobileApp />
+            <SignInForm error={error} isMobileApp locale={locale} />
           </Suspense>
         </div>
         <div className="text-center mt-6 text-white/50 text-sm">
-          <p>数千年の叡智と最新AI技術の融合</p>
-          <p className="mt-1">あなただけの運命を照らします</p>
+          <p>{t("tagline")}</p>
+          <p className="mt-1">{t("taglineSubline")}</p>
         </div>
       </div>
     </div>
   );
 }
 
-// Web ブラウザ向けレイアウト（ヒーローパネル左・サインインカード右）
-function WebSignInLayout({ error }: { error?: string }) {
+async function WebSignInLayout({
+  error,
+  locale,
+}: {
+  error?: string;
+  locale: Locale;
+}) {
+  const t = await getTranslations({ locale, namespace: "auth" });
   return (
     <div
       className="min-h-screen flex"
@@ -249,9 +295,8 @@ function WebSignInLayout({ error }: { error?: string }) {
           "linear-gradient(135deg, #3d2472 0%, #6040a8 50%, #8b58d0 100%)",
       }}
     >
-      <SignInHeroPanel />
+      <SignInHeroPanel locale={locale} />
 
-      {/* 右カラム: サインインカード */}
       <div className="w-full lg:w-1/3 lg:flex-none flex flex-col items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="bg-violet-200/20 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-violet-300/30">
@@ -259,9 +304,11 @@ function WebSignInLayout({ error }: { error?: string }) {
               <SignInViewTracker />
             </Suspense>
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-white mb-2">サインイン</h2>
+              <h2 className="text-xl font-bold text-white mb-2">
+                {t("signinCardTitle")}
+              </h2>
               <p className="text-sm text-violet-200">
-                Google または Apple アカウントで続けてください
+                {t("signinCardDescription")}
               </p>
             </div>
             <Suspense
@@ -272,15 +319,15 @@ function WebSignInLayout({ error }: { error?: string }) {
                 </div>
               }
             >
-              <SignInForm error={error} isMobileApp={false} />
+              <SignInForm error={error} isMobileApp={false} locale={locale} />
             </Suspense>
           </div>
 
           <Link
-            href="/ja/pricing"
+            href={`/${locale}/pricing`}
             className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-violet-400/50 bg-violet-500/20 text-violet-100 hover:bg-violet-400/30 hover:text-white transition-all text-sm font-medium"
           >
-            料金プランを見る <span aria-hidden>→</span>
+            {t("signinViewPricing")} <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
@@ -296,9 +343,22 @@ export default async function SignInPage({
   const params = await searchParams;
   const isMobileApp = params.isMobile === "true";
 
-  if (isMobileApp) {
-    return <MobileSignInLayout error={params.error} stars={generateStars()} />;
-  }
+  const locale = await resolveLocaleFromRequest(params.lang);
+  const messages = (await import(`@/messages/${locale}.json`)).default;
 
-  return <WebSignInLayout error={params.error} />;
+  const layout = isMobileApp ? (
+    <MobileSignInLayout
+      error={params.error}
+      stars={generateStars()}
+      locale={locale}
+    />
+  ) : (
+    <WebSignInLayout error={params.error} locale={locale} />
+  );
+
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      {layout}
+    </NextIntlClientProvider>
+  );
 }

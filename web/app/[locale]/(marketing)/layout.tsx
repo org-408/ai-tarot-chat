@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 
@@ -16,14 +17,11 @@ export async function generateMetadata({
   const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
   const ogLocale = OG_LOCALE[locale] ?? "ja_JP";
   const isJa = locale === "ja";
+  const t = await getTranslations({ locale, namespace: "marketing" });
 
   const brand = isJa ? "Ariadne - AI対話リーディング体験" : "Ariadne: AI Reflection Dialogue";
-  const titleDefault = isJa
-    ? "Ariadne - AI対話リーディング体験 — AIとの対話で読み解く、あなたの内側"
-    : "Ariadne: AI Reflection Dialogue — AI-facilitated tarot reflection";
-  const description = isJa
-    ? "8人の個性豊かなAI占い師と22種のスプレッドで、AIとの対話を通じたタロットリーディングを体験しよう。iOS・Android対応。"
-    : "Engage in AI-facilitated tarot reflection dialogue with 8 distinctive AI personas and 22 spreads. iOS and Android. Free plan available.";
+  const titleDefault = t("metaTitle");
+  const description = t("metaDescription");
   const twitterDescription = isJa
     ? "8人の個性豊かなAI占い師と22種以上のスプレッドで、AIとの対話によるタロットリーディングを体験しよう"
     : "AI-facilitated tarot reflection dialogue with 8 personas and 22+ spreads.";
@@ -67,12 +65,11 @@ export default async function MarketingLayout({ children, params }: Props) {
   const { locale } = await params;
   const baseUrl = process.env.AUTH_URL ?? "https://ariadne-ai.app";
   const isJa = locale === "ja";
+  const t = await getTranslations({ locale, namespace: "marketing" });
 
   const brand = isJa ? "Ariadne - AI対話リーディング体験" : "Ariadne: AI Reflection Dialogue";
   const altName = isJa ? "Ariadne AI対話リーディング体験" : "Ariadne AI Reflection Dialogue";
-  const jsonLdDescription = isJa
-    ? "8人の個性豊かなAI占い師と22種のスプレッドで、AIとの対話を通じたタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。"
-    : "Engage in AI-facilitated tarot reflection dialogue with 8 distinctive AI personas and 22 spreads. iOS and Android. Free plan available.";
+  const jsonLdDescription = t("metaDescription");
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -92,9 +89,9 @@ export default async function MarketingLayout({ children, params }: Props) {
   };
 
   const navLinks = [
-    { href: `/${locale}#features`, label: "機能" },
-    { href: `/${locale}/pricing`, label: "料金" },
-    { href: `/${locale}/download`, label: "ダウンロード" },
+    { href: `/${locale}#features`, label: t("navFeatures") },
+    { href: `/${locale}/pricing`, label: t("navPricing") },
+    { href: `/${locale}/download`, label: t("navDownload") },
   ];
 
   return (
@@ -143,7 +140,7 @@ export default async function MarketingLayout({ children, params }: Props) {
               ctaName="start_now"
               className="inline-flex items-center gap-2 rounded-full bg-purple-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-800 transition-colors"
             >
-              <span>今すぐ始める</span>
+              <span>{t("headerCta")}</span>
               <span>→</span>
             </TrackedLink>
           </div>
@@ -170,23 +167,21 @@ export default async function MarketingLayout({ children, params }: Props) {
                 />
                 <span>{brand}</span>
               </div>
-              <p className="text-sm leading-relaxed">
-                8人のAI占い師と共に、
-                <br />
-                あなたの未来を読み解こう。
-              </p>
+              <p className="text-sm leading-relaxed">{t("footerCopy")}</p>
             </div>
 
             {/* リンク */}
             <div>
-              <h3 className="text-white font-semibold mb-3">リンク</h3>
+              <h3 className="text-white font-semibold mb-3">
+                {t("footerLinks")}
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
                     href={`/${locale}#features`}
                     className="hover:text-white transition-colors"
                   >
-                    機能紹介
+                    {t("footerLinkFeatures")}
                   </Link>
                 </li>
                 <li>
@@ -194,7 +189,7 @@ export default async function MarketingLayout({ children, params }: Props) {
                     href={`/${locale}/pricing`}
                     className="hover:text-white transition-colors"
                   >
-                    料金プラン
+                    {t("footerLinkPricing")}
                   </Link>
                 </li>
                 <li>
@@ -202,7 +197,7 @@ export default async function MarketingLayout({ children, params }: Props) {
                     href={`/${locale}/download`}
                     className="hover:text-white transition-colors"
                   >
-                    ダウンロード
+                    {t("footerLinkDownload")}
                   </Link>
                 </li>
               </ul>
@@ -210,16 +205,24 @@ export default async function MarketingLayout({ children, params }: Props) {
 
             {/* 法的情報 */}
             <div>
-              <h3 className="text-white font-semibold mb-3">法的情報</h3>
+              <h3 className="text-white font-semibold mb-3">
+                {t("footerLegal")}
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href={`/privacy?lang=${locale}`} className="hover:text-white transition-colors">
-                    プライバシーポリシー
+                  <Link
+                    href={`/privacy?lang=${locale}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {isJa ? "プライバシーポリシー" : "Privacy Policy"}
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/terms?lang=${locale}`} className="hover:text-white transition-colors">
-                    利用規約
+                  <Link
+                    href={`/terms?lang=${locale}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {isJa ? "利用規約" : "Terms of Service"}
                   </Link>
                 </li>
               </ul>
@@ -228,9 +231,7 @@ export default async function MarketingLayout({ children, params }: Props) {
 
           <div className="mt-8 pt-8 border-t border-slate-800 text-center text-xs">
             <p>© {new Date().getFullYear()} Atelier Flow Lab. All rights reserved.</p>
-            <p className="mt-1 text-slate-500">
-              ※リーディング結果はエンターテインメントを目的としており、結果を保証するものではありません。
-            </p>
+            <p className="mt-1 text-slate-500">{t("footerDisclaimer")}</p>
           </div>
         </div>
       </footer>
