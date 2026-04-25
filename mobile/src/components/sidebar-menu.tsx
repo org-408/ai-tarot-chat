@@ -42,7 +42,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       description: t("nav.homeDesc"),
     },
     {
-      id: "salon",
+      id: "quick",
       label: t("nav.quickReading"),
       icon: "✨",
       available: !isOffline,

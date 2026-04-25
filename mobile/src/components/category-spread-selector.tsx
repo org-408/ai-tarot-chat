@@ -9,7 +9,7 @@ import type {
 } from "../../../shared/lib/types";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import { CLARA_CATEGORY_NOS } from "../lib/utils/offline-reading";
 import Accordion, { type AccordionItem } from "./accordion";
 import ScrollableRadioSelector from "./scrollable-radio-selector";
@@ -34,7 +34,7 @@ interface CategorySpreadSelectorProps {
   isPlanDialogShowing?: boolean;
   /** サロン画面ライフサイクルで「既に一度コーチマークを出したか」を保持する sticky ref */
   coachShownRef?: React.MutableRefObject<boolean>;
-  /** コーチマークが現在表示中か（salon-page で hoist） */
+  /** コーチマークが現在表示中か（quick-page で hoist） */
   coachMarkOpen?: boolean;
   setCoachMarkOpen?: (open: boolean) => void;
 }
@@ -72,12 +72,12 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     setLastClaraSelection,
     isPersonal,
     selectedTargetMode,
-  } = useSalon();
+  } = useReading();
   const rawSelectedCategory = isPersonal ? personalCategory : quickCategory;
   const setSelectedCategory = isPersonal ? setPersonalCategory : setQuickCategory;
   const rawSelectedSpread = isPersonal ? personalSpread : quickSpread;
   const setSelectedSpread = isPersonal ? setPersonalSpread : setQuickSpread;
-  // salon store に保存された Category / Spread は保存時点の言語版オブジェクト
+  // reading store に保存された Category / Spread は保存時点の言語版オブジェクト
   // (id だけは言語非依存)。現在言語に合わせて resolved* から引き直す。
   const selectedCategory = useMemo(() => {
     if (!rawSelectedCategory) return null;
@@ -355,7 +355,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   ];
 
   useEffect(() => {
-    console.log("[SalonPage] availableCategories changed", availableCategories);
+    console.log("[QuickPage] availableCategories changed", availableCategories);
     const isSelectedInList = availableCategories.some(
       (c) => c.id === selectedCategory?.id
     );
@@ -381,7 +381,7 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
   ]);
 
   useEffect(() => {
-    console.log("[SalonPage] availableSpreads changed", availableSpreads);
+    console.log("[QuickPage] availableSpreads changed", availableSpreads);
     const isSelectedInList = availableSpreads.some(
       (spread) => spread.id === selectedSpread?.id
     );

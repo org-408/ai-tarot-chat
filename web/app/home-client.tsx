@@ -160,7 +160,7 @@ export default function HomeClient() {
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* クイック占い */}
         <Link
-          href="/simple"
+          href="/quick"
           className="group relative bg-white rounded-2xl shadow-sm border p-5 hover:shadow-md transition-shadow flex flex-col gap-3"
         >
           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">

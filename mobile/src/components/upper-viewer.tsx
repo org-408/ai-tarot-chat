@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
-import { useSalon } from "../lib/hooks/use-salon";
-import { getCardImagePath } from "../lib/utils/salon";
+import { useReading } from "../lib/hooks/use-reading";
+import { getCardImagePath } from "../lib/utils/reading-helpers";
 import CarouselView from "./carousel-view";
 import GridView from "./grid-view";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
@@ -31,9 +31,9 @@ const UpperViewer: React.FC<UpperViewerProps> = ({ claraMode = false, profileTar
     selectedTarotist,
     selectedPersonalTarotist,
     isPersonal,
-  } = useSalon();
+  } = useReading();
 
-  const { upperViewerMode, setUpperViewerMode } = useSalon();
+  const { upperViewerMode, setUpperViewerMode } = useReading();
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [selectedCard, setSelectedCard] = useState<DrawnCard | null>(null);
 

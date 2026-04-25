@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useClientStore } from "@/lib/client/stores/client-store";
-import { useSalonStore } from "@/lib/client/stores/salon-store";
+import { useReadingStore } from "@/lib/client/stores/reading-store";
 import { useTranslations } from "next-intl";
 import { MonteCarlo } from "next/font/google";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { data: session } = useSession();
   const { usage } = useClientStore();
-  const { isLocked } = useSalonStore();
+  const { isLocked } = useReadingStore();
 
   const navigate = (path: string) => router.push(path ? `/${path}` : "/");
 
@@ -48,7 +48,7 @@ export function AppSidebar() {
 
   const NAV_ITEMS = [
     { key: "home" as const, icon: Home, path: "", disabled: false },
-    { key: "quick" as const, icon: Zap, path: "simple", disabled: false },
+    { key: "quick" as const, icon: Zap, path: "quick", disabled: false },
     { key: "personal" as const, icon: Sparkles, path: "personal", disabled: !canPersonal },
     { key: "clara" as const, icon: BookOpen, path: "clara", disabled: false },
     { key: "tarotists" as const, icon: Star, path: "tarotists", disabled: false },

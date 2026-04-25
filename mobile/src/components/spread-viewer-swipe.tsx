@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { CARD_ASPECT } from "../../../shared/lib/constants";
 import type { DrawnCard, Spread } from "../../../shared/lib/types";
-import { getCardImagePath } from "../lib/utils/salon";
+import { getCardImagePath } from "../lib/utils/reading-helpers";
 import type { SpreadViewModeType } from "../types";
 import CarouselView from "./carousel-view";
 import GridView from "./grid-view";

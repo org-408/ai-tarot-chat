@@ -6,7 +6,7 @@ import type {
   UsageStats,
 } from "../../../shared/lib/types";
 import { useMaster } from "../lib/hooks/use-master";
-import { getPlanColors } from "../lib/utils/salon";
+import { getPlanColors } from "../lib/utils/reading-helpers";
 
 interface CurrentPlanViewProps {
   masterData: MasterData;

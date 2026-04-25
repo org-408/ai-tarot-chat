@@ -14,7 +14,7 @@ import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
 import { removeBannerAd, showBannerAd } from "../lib/utils/admob";
 import { getPlanDisplayName } from "../lib/utils/plan-display";
-import { getCardImagePath } from "../lib/utils/salon";
+import { getCardImagePath } from "../lib/utils/reading-helpers";
 
 const HistoryDetailPage = lazy(() => import("./history-detail-page"));
 

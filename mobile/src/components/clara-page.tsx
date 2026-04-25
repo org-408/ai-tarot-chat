@@ -11,8 +11,8 @@ import type {
 } from "../../../shared/lib/types";
 import i18n from "../i18n";
 import { useMaster } from "../lib/hooks/use-master";
-import { useSalon } from "../lib/hooks/use-salon";
-import { drawRandomCards } from "../lib/utils/salon";
+import { useReading } from "../lib/hooks/use-reading";
+import { drawRandomCards } from "../lib/utils/reading-helpers";
 import CategorySpreadSelector from "./category-spread-selector";
 import { MessageContent } from "./message-content";
 import ShuffleDialog from "./shuffle-dialog";
@@ -176,7 +176,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     setIsRevealingCompleted,
     isRevealingCompleted,
     setUpperViewerMode,
-  } = useSalon();
+  } = useReading();
 
   // Clara は masterData から直接取得（ストアの selectedTarotist は変更しない）
   // 現在言語に解決された tarotists / categories / spreads を取得
@@ -197,7 +197,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
     if (phase !== "reading") return;
     if (!quickSpread || !quickCategory) return;
 
-    // 現在言語に解決済みの category/spread を使う (salon store の quick* は
+    // 現在言語に解決済みの category/spread を使う (reading store の quick* は
     // 初期化時点の言語版で、lang 切替後も更新されないため)
     const resolvedCategory =
       resolvedCategories.find((c) => c.id === quickCategory.id) ?? quickCategory;
@@ -239,7 +239,7 @@ const ClaraPage: React.FC<ClaraPageProps> = ({
   };
 
   // ──────────────────────────────────────────
-  // フェーズ: 選択（SalonPage と同じレイアウト）
+  // フェーズ: 選択（QuickPage と同じレイアウト）
   // ──────────────────────────────────────────
   if (phase === "select") {
     return (

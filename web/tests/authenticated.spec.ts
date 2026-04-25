@@ -46,8 +46,8 @@ async function assertAuthenticatedPage(page: Page, path: string) {
 // ─────────────────────────────────────────────────────────
 
 test.describe("サービスページ（認証済み）", () => {
-  test("/simple: クイック占いUIが表示される", async ({ page }) => {
-    await assertAuthenticatedPage(page, "/simple");
+  test("/quick: クイック占いUIが表示される", async ({ page }) => {
+    await assertAuthenticatedPage(page, "/quick");
     await expect(page.locator("h1, h2").first()).toBeVisible();
   });
 

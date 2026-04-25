@@ -15,7 +15,7 @@ import { useAuth } from "../lib/hooks/use-auth";
 import { useAuthStore } from "../lib/stores/auth";
 import { useClient } from "../lib/hooks/use-client";
 import { useMaster } from "../lib/hooks/use-master";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import {
   createReadingChatErrorFromResponse,
   isReadingChatError,
@@ -87,7 +87,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     isPersonal,
     setCustomQuestion,
     setPersonalSpread,
-  } = useSalon();
+  } = useReading();
 
   // パーソナル占いは専用占い師、クイック占いは選択占い師を使用
   const tarotist = isPersonal ? selectedPersonalTarotist : selectedTarotist;
@@ -158,7 +158,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     ...(initialMessages && { messages: initialMessages }),
     transport: new DefaultChatTransport({
       api: !isPersonal
-        ? `${domain}/api/readings/simple`
+        ? `${domain}/api/readings/quick`
         : `${domain}/api/readings/personal`,
       headers: {
         "Content-Type": "application/json",

@@ -4,7 +4,7 @@ import type { DrawnCard, ReadingCategory, Spread, Tarotist } from "@shared/lib/t
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-interface SalonState {
+interface ReadingState {
   // クイック占い選択（永続化）
   quickTarotist: Tarotist | null;
   quickSpread: Spread | null;
@@ -43,7 +43,7 @@ const sessionInitial = {
   isLocked: false,
 };
 
-export const useSalonStore = create<SalonState>()(
+export const useReadingStore = create<ReadingState>()(
   persist(
     (set) => ({
       quickTarotist: null,
@@ -67,6 +67,7 @@ export const useSalonStore = create<SalonState>()(
       resetSession: () => set(sessionInitial),
     }),
     {
+      // 永続化キーは互換性のため "salon-store" のまま維持
       name: "salon-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({

@@ -11,7 +11,7 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const navigationItems: NavigationItem[] = [
     {
-      id: "salon",
+      id: "quick",
       label: "占い",
       icon: "🔮",
       available: true,

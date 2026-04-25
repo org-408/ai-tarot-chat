@@ -5,7 +5,7 @@ import { useMaster } from "../lib/hooks/use-master";
 import { usePlanPrices } from "../lib/hooks/use-plan-prices";
 import { getPlanDisplayName } from "../lib/utils/plan-display";
 import { formatPlanPrice } from "../lib/utils/plan-price";
-import { getPlanColors } from "../lib/utils/salon";
+import { getPlanColors } from "../lib/utils/reading-helpers";
 import type { UserPlan } from "../types";
 import Accordion, { type AccordionItem } from "./accordion";
 

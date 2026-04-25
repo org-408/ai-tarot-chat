@@ -31,7 +31,7 @@ function formatDrawnCards(drawnCards: DrawnCard[]): string {
     .trim();
 }
 
-export function buildSimpleSystemPromptEn(args: {
+export function buildQuickSystemPromptEn(args: {
   tarotist: Tarotist;
   spread: Spread;
   category: ReadingCategory;

@@ -95,7 +95,6 @@
     "positionFallback": "位置{{n}}",
     "positionDescriptionFallback": "このカードの位置は{{position}}を示しています"
   },
-  "salon": {},
   "personal": {
     "dailyLimitReached": "本日の対話リーディングは終了しました。",
     "comeBackTomorrow": "明日またお越しください。",
@@ -270,11 +269,11 @@
   "header": {
     "home": "🏠 ホーム",
     "homeSubtitle": "今日のリーディングをはじめよう",
-    "salonFree": "✨ タロットリーディング",
-    "salonStandard": "⭐ 本格タロットリーディング",
-    "salonPremium": "本格タロットリーディング",
+    "quickFree": "✨ タロットリーディング",
+    "quickStandard": "⭐ 本格タロットリーディング",
+    "quickPremium": "本格タロットリーディング",
     "personalPremium": "🤖 対話リーディング",
-    "salonDefault": "✨ タロットリーディング",
+    "quickDefault": "✨ タロットリーディング",
     "personal": "✨ 対話リーディング",
     "personalSubtitle": "AIと対話しながら本格リーディング",
     "plans": "💎 プラン選択",
@@ -287,9 +286,9 @@
     "settingsSubtitle": "アプリの設定を管理",
     "clara": "📖 オフラインリーディング",
     "claraSubtitle": "Clara と一緒にオフラインリーディング",
-    "salonSubtitleGuest": "お試しでタロットリーディング",
-    "salonSubtitleFree": "お気軽なタロットリーディング",
-    "salonSubtitlePaid": "本格的なタロットリーディング",
+    "quickSubtitleGuest": "お試しでタロットリーディング",
+    "quickSubtitleFree": "お気軽なタロットリーディング",
+    "quickSubtitlePaid": "本格的なタロットリーディング",
     "readingSubtitleWithName": "AI占い師: {{name}}",
     "openMenu": "メニューを開く"
   },

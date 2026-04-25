@@ -67,7 +67,7 @@ export type ReadingErrorCode =
   | "INTERNAL_ERROR";
 
 export type ReadingErrorPhase =
-  | "simple"
+  | "quick"
   | "personal-intake"
   | "personal-reading";
 

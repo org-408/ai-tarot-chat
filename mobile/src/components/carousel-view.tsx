@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CARD_ASPECT, MAX_CARD_HEIGHT } from "../../../shared/lib/constants";
 import type { DrawnCard } from "../../../shared/lib/types";
-import { getCardImagePath } from "../lib/utils/salon";
+import { getCardImagePath } from "../lib/utils/reading-helpers";
 
 // カルーセルコンポーネント
 interface CarouselViewProps {

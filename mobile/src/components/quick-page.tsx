@@ -7,12 +7,12 @@ import type {
   Plan,
   UsageStats,
 } from "../../../shared/lib/types";
-import { useSalon } from "../lib/hooks/use-salon";
+import { useReading } from "../lib/hooks/use-reading";
 import type { UserPlan } from "../types";
 import CategorySpreadSelector from "./category-spread-selector";
 import TarotistCarouselPortrait from "./tarotist-carousel-portrait";
 
-interface SalonPageProps {
+interface QuickPageProps {
   payload: AppJWTPayload;
   currentPlan: Plan;
   masterData: MasterData;
@@ -27,7 +27,7 @@ interface SalonPageProps {
   isPlanExpiredShowing: boolean;
 }
 
-const SalonPage: React.FC<SalonPageProps> = ({
+const QuickPage: React.FC<QuickPageProps> = ({
   currentPlan,
   masterData,
   usageStats,
@@ -44,19 +44,19 @@ const SalonPage: React.FC<SalonPageProps> = ({
     setSelectedTarotist,
     setSelectedTargetMode,
     init,
-  } = useSalon();
+  } = useReading();
 
   useEffect(() => {
-    console.log("[SalonPage] Mounted");
+    console.log("[QuickPage] Mounted");
     init();
   }, [init]);
 
   useEffect(() => {
-    console.log("[SalonPage] isChangingPlan changed", isChangingPlan);
+    console.log("[QuickPage] isChangingPlan changed", isChangingPlan);
   }, [isChangingPlan]);
 
   useMemo(() => {
-    console.log("[SalonPage] masterData or usageStats changed", {
+    console.log("[QuickPage] masterData or usageStats changed", {
       masterData,
       usageStats,
     });
@@ -71,7 +71,7 @@ const SalonPage: React.FC<SalonPageProps> = ({
   };
 
   const handleStartReading = () => {
-    console.log("[SalonPage] handleStartReading called");
+    console.log("[QuickPage] handleStartReading called");
     if (!selectedTarotist || !quickSpread || !quickCategory) return;
     onStartReading();
   };
@@ -181,4 +181,4 @@ const SalonPage: React.FC<SalonPageProps> = ({
   );
 };
 
-export default SalonPage;
+export default QuickPage;

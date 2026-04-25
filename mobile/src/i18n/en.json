@@ -95,7 +95,6 @@
     "positionFallback": "Position {{n}}",
     "positionDescriptionFallback": "This card represents position {{position}}"
   },
-  "salon": {},
   "personal": {
     "dailyLimitReached": "Today's dialogue readings are complete.",
     "comeBackTomorrow": "Please come back tomorrow.",
@@ -270,11 +269,11 @@
   "header": {
     "home": "🏠 Home",
     "homeSubtitle": "Start today's reflection",
-    "salonFree": "✨ Tarot Reading",
-    "salonStandard": "⭐ Full Tarot Reading",
-    "salonPremium": "Full Tarot Reading",
+    "quickFree": "✨ Tarot Reading",
+    "quickStandard": "⭐ Full Tarot Reading",
+    "quickPremium": "Full Tarot Reading",
     "personalPremium": "🤖 Dialogue Reading",
-    "salonDefault": "✨ Tarot Reading",
+    "quickDefault": "✨ Tarot Reading",
     "personal": "✨ Dialogue Reading",
     "personalSubtitle": "Reflect in depth through AI dialogue",
     "plans": "💎 Choose a plan",
@@ -287,9 +286,9 @@
     "settingsSubtitle": "Manage app settings",
     "clara": "📖 Offline Reading",
     "claraSubtitle": "Reflect with Clara, even offline",
-    "salonSubtitleGuest": "Try a tarot-based reading",
-    "salonSubtitleFree": "A casual tarot-based reading",
-    "salonSubtitlePaid": "An in-depth tarot-based reading",
+    "quickSubtitleGuest": "Try a tarot-based reading",
+    "quickSubtitleFree": "A casual tarot-based reading",
+    "quickSubtitlePaid": "An in-depth tarot-based reading",
     "readingSubtitleWithName": "Persona: {{name}}",
     "openMenu": "Open menu"
   },
