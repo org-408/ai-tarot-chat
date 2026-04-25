@@ -617,6 +617,8 @@ npm run build
 
 型エラー・ビルドエラーがゼロになったら staging にブランチを push、PR 作成。
 
+> **検証カバレッジ**: 4.3(b) 関連の自動テスト (i18n audit / resolveLocale 単体 / locale-smoke) と、依然として手動確認が必要な項目は [docs/apple-43b-verification.md](apple-43b-verification.md) を参照。Phase 7 提出前のチェックリストとしても使う。
+
 ```bash
 gh pr create --base staging --title "feat: 4.3(b) 対応 - i18n + リポジション" --body "..."
 ```
