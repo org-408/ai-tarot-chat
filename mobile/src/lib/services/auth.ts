@@ -135,7 +135,15 @@ export class AuthService {
     logWithContext("info", "[AuthService] OAuth signin started");
 
     const baseUrl = import.meta.env.VITE_BFF_URL || "http://localhost:3000";
-    const url = new URL("/auth/signin?isMobile=true", baseUrl).toString();
+    // 現在のアプリ内言語を ?lang= クエリで Web サインインに伝達する。
+    // OS の Accept-Language とは独立してアプリ内で言語を切り替えられるようにするため、
+    // 「日本で英語設定」のユーザーが Web サインインを開いたとき EN 表示になるよう
+    // 開く瞬間に i18n.language を読む。
+    const lang = i18n.language?.startsWith("en") ? "en" : "ja";
+    const url = new URL(
+      `/auth/signin?isMobile=true&lang=${lang}`,
+      baseUrl
+    ).toString();
 
     // Deep link の scheme（capacitor.config.ts と一致させる）
     const callbackScheme =
