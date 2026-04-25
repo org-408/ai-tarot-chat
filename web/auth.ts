@@ -1,3 +1,4 @@
+import { createAppleClientSecret } from "@/lib/server/auth/apple-client-secret";
 import { logWithContext } from "@/lib/server/logger/logger";
 import { clientService } from "@/lib/server/services/client";
 import { prisma } from "@/prisma/prisma";
@@ -6,6 +7,38 @@ import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+
+// Apple client_secret は Auth.js v5 の `AUTH_APPLE_SECRET` を使わず、起動時に
+// .p8 秘密鍵から ES256 JWT を生成する方式に統一（180日失効問題を構造的に回避）。
+// 必要な env が揃っていない環境（開発機など）では Apple プロバイダーを登録しない。
+async function buildAppleProvider() {
+  const teamId = process.env.AUTH_APPLE_TEAM_ID;
+  const keyId = process.env.AUTH_APPLE_KEY_ID;
+  const clientId = process.env.AUTH_APPLE_ID;
+  const rawPrivateKey = process.env.AUTH_APPLE_PRIVATE_KEY;
+
+  if (!teamId || !keyId || !clientId || !rawPrivateKey) {
+    logWithContext("warn", "[Apple] Missing env vars, Apple provider disabled", {
+      hasTeamId: !!teamId,
+      hasKeyId: !!keyId,
+      hasClientId: !!clientId,
+      hasPrivateKey: !!rawPrivateKey,
+    });
+    return null;
+  }
+
+  const clientSecret = await createAppleClientSecret({
+    teamId,
+    keyId,
+    clientId,
+    privateKey: rawPrivateKey.replace(/\\n/g, "\n"),
+    expiresIn: "180d",
+  });
+
+  return Apple({ clientId, clientSecret });
+}
+
+const appleProvider = await buildAppleProvider();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -17,7 +50,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
     }),
-    Apple,
+    ...(appleProvider ? [appleProvider] : []),
     // E2E テスト専用 Credentials プロバイダー
     // OAuth フローなしでサインインフロー（jwt コールバック → Client 作成）を検証できる
     ...(process.env.E2E_MOCK_AUTH === "true"
