@@ -72,6 +72,8 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
     setLastClaraSelection,
     isPersonal,
     selectedTargetMode,
+    customQuestion,
+    setCustomQuestion,
   } = useReading();
   const rawSelectedCategory = isPersonal ? personalCategory : quickCategory;
   const setSelectedCategory = isPersonal ? setPersonalCategory : setQuickCategory;
@@ -446,17 +448,38 @@ const CategorySpreadSelector: React.FC<CategorySpreadSelectorProps> = ({
           className="text-gray-800 bg-white/70
             backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
         >
-          {!isPersonal
-            ? t("reading.pickCategoryAndSpread")
-            : t("reading.pickSpreadOnly")}
+          {isPersonal
+            ? t("reading.pickSpreadOnly")
+            : claraMode
+              ? t("reading.pickCategoryAndSpread")
+              : t("reading.askAnything")}
         </span>
       </motion.div>
+
+      {/* クイック占い: 入力欄（任意）。
+          空のままなら裏のデフォルトジャンル（恋愛 / 1 枚）で占う。
+          書き込めばその文章が customQuestion として AI に届き、優先される。 */}
+      {!isPersonal && !claraMode && (
+        <div className="m-1">
+          <textarea
+            value={customQuestion}
+            onChange={(e) => setCustomQuestion(e.target.value)}
+            placeholder={t("reading.questionPlaceholder")}
+            rows={3}
+            maxLength={500}
+            className="w-full rounded-xl border border-purple-200 bg-white/90 backdrop-blur-sm px-4 py-3 text-base text-gray-800 placeholder-gray-400 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 resize-none"
+          />
+        </div>
+      )}
 
       {/* コーチマーク強調対象: カテゴリ/スプレッドのアコーディオンだけを囲む。
           ここにボタンや注釈を入れると暗幕範囲が狭まり強調されなくなる。 */}
       <div ref={selectorAreaRefCallback}>
-        {/* カテゴリー選択アコーディオン */}
-        {(!isPersonal || claraMode) && (
+        {/* カテゴリー選択アコーディオン
+            クイック占い (PR 3 以降) は入力欄に統合したため非表示。
+            personal モード（!isPersonal が false）では元々表示しない。
+            clara モード（オフライン占い）は引き続き表示。 */}
+        {claraMode && (
           <div className="m-1">
             <Accordion items={categoryItems} />
           </div>
