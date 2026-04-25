@@ -201,8 +201,8 @@ export default function HistoryPage() {
   }, [initMaster]);
 
   const filtered = readings.filter((r) => {
-    if (tab === "quick") return !r.customQuestion;
-    if (tab === "personal") return !!r.customQuestion;
+    if (tab === "quick") return r.mode === "QUICK";
+    if (tab === "personal") return r.mode === "PERSONAL";
     return true;
   });
 

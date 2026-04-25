@@ -646,8 +646,18 @@ export class ClientService {
           );
           throw new Error("Either customQuestion or category must be provided");
         }
+        // モードは params.mode が指定されていれば優先、無ければ customQuestion の有無から推定。
+        // PR 3 で salon に customQuestion を追加すると customQuestion 単独では
+        // 判別できなくなるため、API 呼び出し元が明示的に mode を渡す前提にしてある。
         const isPersonalReading =
-          !!customQuestion && customQuestion.trim().length > 0;
+          params.mode === "PERSONAL" ||
+          (params.mode === undefined &&
+            !!customQuestion &&
+            customQuestion.trim().length > 0);
+        const resolvedMode: "QUICK" | "PERSONAL" = isPersonalReading
+          ? "PERSONAL"
+          : "QUICK";
+        const paramsWithMode: SaveReadingInput = { ...params, mode: resolvedMode };
 
         // クイック・パーソナルのリセット要否を独立して判定
         // 例: lastPersonalReadingDate が昨日でも、今日のクイック占いカウントは消してはいけない
@@ -694,7 +704,7 @@ export class ClientService {
             throw new Error("Reading not found");
           }
 
-          savedReading = await ReadingRepo.updateReading(readingId, params);
+          savedReading = await ReadingRepo.updateReading(readingId, paramsWithMode);
           logWithContext("info", "Updated existing reading", {
             clientId,
             readingId: savedReading.id,
@@ -752,7 +762,7 @@ export class ClientService {
           });
         }
 
-        savedReading = await ReadingRepo.createReading(params);
+        savedReading = await ReadingRepo.createReading(paramsWithMode);
         logWithContext("info", "Saved new reading", {
           readingId: savedReading.id,
         });

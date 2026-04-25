@@ -442,6 +442,7 @@ model Reading {
   categoryId    String?
   category      ReadingCategory? @relation(fields: [categoryId], references: [id])
   customQuestion String?   @db.Text // ユーザーが入力したカスタム質問
+  mode          ReadingMode @default(QUICK) // 占いモード（QUICK / PERSONAL）
   cards         DrawnCard[]  // 選択されたカード配列
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -454,6 +455,15 @@ model Reading {
   @@index([tarotistId])
   @@index([spreadId])
   @@index([categoryId])
+  @@index([mode])
+}
+
+// 占いモード
+// QUICK    : クイック占い（カード即解釈、1 ターン）
+// PERSONAL : パーソナル占い（3 問対話形式、PREMIUM 限定）
+enum ReadingMode {
+  QUICK
+  PERSONAL
 }
 
 // リーディングで引いたカードモデル

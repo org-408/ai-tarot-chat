@@ -12,6 +12,11 @@ export type ChatType =
 
 export type ChatRole = "USER" | "TAROTIST";
 
+// Reading の占いモード
+// QUICK    : クイック占い（カード即解釈、1 ターン）
+// PERSONAL : パーソナル占い（3 問対話形式、PREMIUM 限定）
+export type ReadingMode = "QUICK" | "PERSONAL";
+
 export type Account = {
   id: string;
   userId: string;
@@ -404,6 +409,9 @@ export type Reading = {
   categoryId?: string | null;
   category?: ReadingCategory;
   customQuestion?: string;
+  // QUICK / PERSONAL。新規作成時は省略可（サーバ側で QUICK にフォールバック）。
+  // 既存レコードや一覧 API のレスポンスでは常に値が入る。
+  mode?: ReadingMode;
   cards: DrawnCard[];
   createdAt: Date;
   updatedAt: Date;

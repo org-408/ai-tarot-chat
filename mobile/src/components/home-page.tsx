@@ -282,7 +282,7 @@ const HomePage: React.FC<HomePageProps> = ({
               style={{ scrollbarWidth: "none" }}
             >
               {readings.slice(0, 5).map((r: Reading) => {
-                const isPersonal = !!r.customQuestion;
+                const isPersonal = r.mode === "PERSONAL";
                 // 保存時点と UI 現在言語が異なる場合に備え、id から現在言語版を引き直す
                 const resolvedCategory = r.categoryId
                   ? categoryById.get(r.categoryId) ?? r.category
