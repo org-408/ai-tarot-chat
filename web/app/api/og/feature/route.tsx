@@ -71,7 +71,9 @@ async function fetchGoogleFont(cssUrl: string): Promise<ArrayBuffer | undefined>
 
 async function loadJapaneseFont(): Promise<ArrayBuffer | undefined> {
   if (cachedFont) return cachedFont;
-  const chars = "AIタロット占い人の本格的なリーディングを体験しよう種スプレッド";
+  // フォントサブセットに必要な全ての日本語文字（OG テンプレ表示文字に同期して更新）
+  // 本テンプレで使用: "AI対話リーディング体験" + "8人のAI占い師と22種のスプレッドで本格的なタロットリーディングを体験しよう"
+  const chars = "AI対話リーディング体験人のと8占い師22種スプレッドで本格的なタロットをしよう";
   const cssUrl = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(chars)}`;
   cachedFont = await fetchGoogleFont(cssUrl);
   return cachedFont;
@@ -147,7 +149,7 @@ export async function GET() {
             ) : (
               <span style={{ fontSize: 56, fontWeight: 400, color: "#87CEEB", marginRight: 10 }}>Ariadne</span>
             )}
-            <span style={{ fontSize: 52, fontWeight: 700, color: "white" }}>- AI Tarot Chat</span>
+            <span style={{ fontSize: 44, fontWeight: 700, color: "white" }}>- AI対話リーディング体験</span>
           </div>
         </div>
 

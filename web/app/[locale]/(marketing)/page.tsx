@@ -12,9 +12,9 @@ import { HeroCards } from "@/components/marketing/hero-cards";
 import { CTACards } from "@/components/marketing/cta-cards";
 
 export const metadata: Metadata = {
-  title: "Ariadne - AI Tarot Chat — AIが読み解くあなたの未来",
+  title: "Ariadne - AI対話リーディング体験 — AIとの対話で読み解く、あなたの内側",
   description:
-    "8人の個性豊かなAI占い師と22種のスプレッドで、本格的なタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。",
+    "8人の個性豊かなAI占い師と22種のスプレッドで、AIとの対話を通じたタロットリーディングを体験しよう。iOS・Android対応。無料プランあり。",
 };
 
 const features = [
@@ -22,7 +22,7 @@ const features = [
     icon: "🧙‍♀️",
     title: "8人の個性豊かなAI占い師",
     description:
-      "元気な駆け出し占い師から、最高峰の至高の占い師まで。あなたの気分や悩みに合ったキャラクターを選べます。",
+      "駆け出しから至高まで、それぞれ異なる個性を持つAI占い師。あなたの気分や悩みに合ったキャラクターを選べます。",
   },
   {
     icon: "🃏",
@@ -34,7 +34,7 @@ const features = [
     icon: "💬",
     title: "対話型リーディング",
     description:
-      "占い結果に疑問があればその場で質問できます（プレミアム）。AIがあなたの状況を深く理解して寄り添います。",
+      "リーディング結果に疑問があればその場で質問できます（プレミアム）。AIがあなたの状況を深く理解して寄り添います。",
   },
   {
     icon: "📱",
@@ -90,7 +90,7 @@ const planHighlights = [
     color: "bg-yellow-50 border-yellow-200",
     headingColor: "text-yellow-700",
     badge: "おすすめ",
-    features: ["1日3回", "全スプレッド", "パーソナル占い", "AI対話", "広告なし"],
+    features: ["1日3回", "全スプレッド", "対話リーディング", "AI対話", "広告なし"],
   },
 ];
 
@@ -141,7 +141,7 @@ export default async function LandingPage({ params }: Props) {
             <p className="text-lg sm:text-xl text-purple-200 max-w-2xl mx-auto mb-10 leading-relaxed">
               個性豊かな8人のAI占い師と、22種のスプレッドで
               <br className="hidden sm:block" />
-              本格的なタロットリーディングを体験しよう。
+              AIとの対話を通じたタロットリーディングを体験しよう。
             </p>
 
             {/* CTAボタン */}
@@ -184,10 +184,10 @@ export default async function LandingPage({ params }: Props) {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              なぜ AI Tarot Chat なのか
+              なぜ Ariadne なのか
             </h2>
             <p className="text-slate-600 text-lg max-w-xl mx-auto">
-              最先端のAIと伝統のタロットが融合した、まったく新しい占い体験。
+              最先端のAIと伝統のタロットが融合した、まったく新しい対話リーディング体験。
             </p>
           </div>
 
