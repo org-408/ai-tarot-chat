@@ -7,11 +7,11 @@ import type { RankingItem, RankingResponse } from "@/lib/server/services/ranking
 type TabKey = "tarotists" | "spreads" | "categories" | "cards" | "personalCategories";
 
 const TABS: { key: TabKey; label: string; short: string }[] = [
-  { key: "tarotists", label: "占い師", short: "占い師" },
+  { key: "tarotists", label: "AI占い師", short: "占い師" },
   { key: "spreads", label: "スプレッド", short: "スプレッド" },
   { key: "categories", label: "ジャンル", short: "ジャンル" },
   { key: "cards", label: "引かれたカード", short: "カード" },
-  { key: "personalCategories", label: "パーソナル占いのテーマ", short: "パーソナル" },
+  { key: "personalCategories", label: "対話リーディングのテーマ", short: "対話" },
 ];
 
 export function RankingTabs({ data }: { data: RankingResponse }) {

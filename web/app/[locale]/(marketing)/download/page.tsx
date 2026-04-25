@@ -4,7 +4,7 @@ import { NotifyForm } from "@/components/marketing/notify-form";
 export const metadata: Metadata = {
   title: "ダウンロード",
   description:
-    "AI Tarot Chatをダウンロードしよう。iOS（App Store）・Android（Google Play）対応。近日公開予定です。",
+    "Ariadne - AI対話リーディング体験をダウンロードしよう。iOS（App Store）・Android（Google Play）対応。近日公開予定です。",
 };
 
 const platforms = [
@@ -37,12 +37,12 @@ const steps = [
   },
   {
     step: "2",
-    title: "すぐに占いを開始",
-    description: "登録不要のゲストプランで、今すぐタロット占いを体験できます。",
+    title: "すぐにリーディングを開始",
+    description: "登録不要のゲストプランで、今すぐタロットリーディングを体験できます。",
   },
   {
     step: "3",
-    title: "占い師を選ぶ",
+    title: "AI占い師を選ぶ",
     description:
       "8人の個性豊かなAI占い師の中から、今日の気分に合った一人を選んで。",
   },
@@ -67,7 +67,7 @@ export default function DownloadPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-5xl mb-6">📱</div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-4">
-            AI Tarot Chat を始めよう
+            Ariadne を始めよう
           </h1>
           <p className="text-purple-200 text-lg max-w-xl mx-auto">
             iOS・Androidアプリを準備中です。

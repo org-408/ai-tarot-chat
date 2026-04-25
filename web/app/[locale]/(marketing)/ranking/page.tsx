@@ -17,7 +17,7 @@ export async function generateMetadata({
   return {
     title: "人気ランキング",
     description:
-      "Ariadne で人気の占い師・スプレッド・ジャンル・カードをランキング形式で紹介。過去30日のデータをもとに更新。",
+      "Ariadne で人気のAI占い師・スプレッド・ジャンル・カードをランキング形式で紹介。過去30日のデータをもとに更新。",
     alternates: {
       canonical: `${baseUrl}/${locale}/ranking`,
       languages: {
@@ -27,9 +27,9 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title: "人気ランキング | Ariadne - AI Tarot Chat",
+      title: "人気ランキング | Ariadne - AI対話リーディング体験",
       description:
-        "占い師・スプレッド・ジャンル・カードの人気ランキング。過去30日のデータから。",
+        "AI占い師・スプレッド・ジャンル・カードの人気ランキング。過去30日のデータから。",
       type: "website",
       images: [{ url: "/api/og", width: 1200, height: 630, alt: "Ariadne 人気ランキング" }],
     },
@@ -60,7 +60,7 @@ export default async function RankingPage({ params }: Props) {
             人気ランキング
           </h1>
           <p className="text-purple-200 text-base sm:text-lg">
-            過去{data.periodDays}日間に Ariadne で最も利用された占い師・スプレッド・ジャンル・カード
+            過去{data.periodDays}日間に Ariadne で最も利用されたAI占い師・スプレッド・ジャンル・カード
           </p>
           {data.generatedAt && (
             <p className="mt-3 text-xs text-purple-300">
@@ -84,7 +84,7 @@ export default async function RankingPage({ params }: Props) {
             あなたもタロットリーディングを始めよう
           </h2>
           <p className="text-purple-200 mb-8">
-            ランキング上位の占い師・スプレッドで、今すぐ占ってみませんか？
+            ランキング上位のAI占い師・スプレッドで、今すぐリーディングしてみませんか？
           </p>
           <Link
             href={`/${locale}`}

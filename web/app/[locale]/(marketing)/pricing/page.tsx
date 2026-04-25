@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "料金プラン",
   description:
-    "AI Tarot Chatの料金プラン一覧。無料のゲストプランから本格的なプレミアムプランまで。いつでも解約可能。",
+    "Ariadne - AI対話リーディング体験の料金プラン一覧。無料のゲストプランから本格的なプレミアムプランまで。いつでも解約可能。",
 };
 
 type Plan = {
@@ -70,7 +70,7 @@ const plans: Plan[] = [
       "Google / Appleアカウントで登録",
       "1日3回まで利用可能",
       "基本スプレッド3種類",
-      "占い履歴を保存可能",
+      "リーディング履歴を保存可能",
       "広告表示あり",
     ],
     tarotists: ["🌸 Lily", "🌙 Luna", "📚 Clara（オフライン）"],
@@ -88,7 +88,7 @@ const plans: Plan[] = [
     name: "スタンダード",
     price: "¥480",
     priceNote: "/ 月",
-    description: "多彩なスプレッドと占い師で本格体験。広告なし。",
+    description: "多彩なスプレッドとAI占い師で本格体験。広告なし。",
     color: "bg-blue-50",
     borderColor: "border-blue-300",
     headingColor: "text-blue-700",
@@ -99,7 +99,7 @@ const plans: Plan[] = [
       "1日3回まで利用可能",
       "ケルト十字を含む全22種のスプレッド",
       "全カテゴリ・多彩なスプレッド",
-      "占い履歴を保存可能",
+      "リーディング履歴を保存可能",
       "広告なし",
     ],
     tarotists: ["🌸 Lily", "🌙 Luna", "⭐ Stella", "🔮 Celine", "📚 Clara"],
@@ -125,10 +125,10 @@ const plans: Plan[] = [
     requiresAuth: true,
     features: [
       "1日3回すべてのスプレッドが利用可能",
-      "1日1回パーソナル占い",
-      "占う内容の入力・AIへの質問が可能",
+      "1日1回対話リーディング",
+      "リーディング内容の入力・AIへの質問が可能",
       "全カテゴリ・全スプレッド",
-      "占い履歴を保存可能",
+      "リーディング履歴を保存可能",
       "広告なし",
     ],
     tarotists: [
@@ -156,12 +156,12 @@ const comparisonRows = [
   { label: "ユーザー登録", values: ["不要", "必要", "必要", "必要"] },
   { label: "1日の利用回数", values: ["1回", "3回", "3回", "3回"] },
   { label: "スプレッド数", values: ["3種", "3種", "22種", "24種"] },
-  { label: "パーソナル占い", values: ["×", "×", "×", "1日1回"] },
+  { label: "対話リーディング", values: ["×", "×", "×", "1日1回"] },
   { label: "AI対話（質問）", values: ["×", "×", "×", "○"] },
-  { label: "占い履歴", values: ["×", "○", "○", "○"] },
+  { label: "リーディング履歴", values: ["×", "○", "○", "○"] },
   { label: "広告", values: ["あり", "あり", "なし", "なし"] },
   {
-    label: "利用できる占い師",
+    label: "利用できるAI占い師",
     values: ["2人", "3人", "5人", "8人全員"],
   },
 ];
@@ -235,7 +235,7 @@ export default function PricingPage() {
                 {/* 占い師一覧 */}
                 <div className="mb-5 p-3 bg-white/60 rounded-xl">
                   <p className="text-xs font-semibold text-slate-500 mb-2">
-                    利用できる占い師
+                    利用できるAI占い師
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {plan.tarotists.map((t) => (
@@ -342,11 +342,11 @@ export default function PricingPage() {
               },
               {
                 q: "オフラインでも使えますか？",
-                a: "見習い占い師のClara（📚）はオフラインでも利用可能です。インターネット接続がない環境でも基本的な占いをお楽しみいただけます。",
+                a: "見習いAI占い師のClara（📚）はオフラインでも利用可能です。インターネット接続がない環境でも基本的なリーディングをお楽しみいただけます。",
               },
               {
                 q: "データはデバイス間で同期されますか？",
-                a: "ユーザー登録（フリープラン以上）をいただくと、複数のデバイス間で占い履歴が同期されます。",
+                a: "ユーザー登録（フリープラン以上）をいただくと、複数のデバイス間でリーディング履歴が同期されます。",
               },
             ].map((faq) => (
               <div
